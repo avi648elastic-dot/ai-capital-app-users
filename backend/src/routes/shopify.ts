@@ -1,33 +1,31 @@
-import { Request, Response } from 'express';
-import User from '../models/User';
-
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import axios from 'axios';
-import User from '../models/User';
 import jwt from 'jsonwebtoken';
+import User, { IUser } from '../models/User';
 
 const router = express.Router();
 
-// ✅ Middleware לאימות משתמש
-const authMiddleware = async (req: any, res: any, next: any) => {
+// Middleware לאימות משתמש
+const authMiddleware = async (req: any, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token provided' });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as { id: string };
-    req.user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.id);
 
-    if (!req.user) return res.status(404).json({ message: 'User not found' });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
+    req.user = user; // ✅ הוספת המשתמש ל־Request
     next();
   } catch (error) {
     console.error('Auth error:', error);
-    res.status(401).json({ message: 'Invalid or expired token' });
+    return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
 
 // ✅ שמירת פרטי Shopify API למשתמש
-router.post('/connect', authMiddleware, async (req, res) => {
+router.post('/connect', authMiddleware, async (req: any, res: Response) => {
   try {
     const { apiKey, apiSecret, shopDomain } = req.body;
 
@@ -35,10 +33,11 @@ router.post('/connect', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Missing Shopify credentials' });
     }
 
-    req.user.apiKey = apiKey;
-    req.user.apiSecret = apiSecret;
-    req.user.shopDomain = shopDomain;
-    await req.user.save();
+    const user = req.user as IUser;
+    user.apiKey = apiKey;
+    user.apiSecret = apiSecret;
+    user.shopDomain = shopDomain;
+    await user.save();
 
     res.json({ message: 'Shopify credentials saved successfully' });
   } catch (error: any) {
@@ -48,18 +47,17 @@ router.post('/connect', authMiddleware, async (req, res) => {
 });
 
 // ✅ בדיקה אם יש חיבור קיים ל־Shopify
-router.get('/status', authMiddleware, async (req, res) => {
+router.get('/status', authMiddleware, async (req: any, res: Response) => {
   try {
-    const { apiKey, shopDomain } = req.user;
-
-    if (!apiKey || !shopDomain) {
+    const user = req.user as IUser;
+    if (!user.apiKey || !user.shopDomain) {
       return res.json({ connected: false });
     }
 
     res.json({
       connected: true,
-      shopDomain: req.user.shopDomain,
-      apiKey: '***' + req.user.apiKey.slice(-4),
+      shopDomain: user.shopDomain,
+      apiKey: '***' + user.apiKey.slice(-4),
     });
   } catch (error: any) {
     console.error('Error checking Shopify connection:', error);
@@ -67,20 +65,23 @@ router.get('/status', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ קבלת מוצרים מהחנות
-router.get('/products', authMiddleware, async (req, res) => {
+// ✅ קבלת מוצרים מהחנות Shopify
+router.get('/products', authMiddleware, async (req: any, res: Response) => {
   try {
-    const { apiKey, apiSecret, shopDomain } = req.user;
+    const user = req.user as IUser;
 
-    if (!apiKey || !apiSecret || !shopDomain) {
+    if (!user.apiKey || !user.apiSecret || !user.shopDomain) {
       return res.status(400).json({ message: 'Shopify credentials not found' });
     }
 
-    const response = await axios.get(`https://${shopDomain}/admin/api/2023-10/products.json`, {
-      headers: {
-        'X-Shopify-Access-Token': apiSecret,
-      },
-    });
+    const response = await axios.get(
+      `https://${user.shopDomain}/admin/api/2023-10/products.json`,
+      {
+        headers: {
+          'X-Shopify-Access-Token': user.apiSecret,
+        },
+      }
+    );
 
     res.json({ products: response.data.products });
   } catch (error: any) {
