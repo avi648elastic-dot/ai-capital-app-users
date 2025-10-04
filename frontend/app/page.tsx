@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+// ✅ כל הבקשות ישלחו קובצי cookie גם לדומיין אחר (cross-site)
+axios.defaults.withCredentials = true;
+
 type MeUser = {
   id: string;
   email: string;
@@ -20,7 +23,9 @@ export default function Page() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  // ✅ בטעינה: אם יש טוקן – מחליטים לפי /api/onboarding/status
+  /**
+   * ✅ בטעינה — אם יש token נבדוק סטטוס onboarding
+   */
   useEffect(() => {
     const token = Cookies.get('token');
     if (!token) {
@@ -32,7 +37,9 @@ export default function Page() {
       try {
         const { data } = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
 
         if (data?.onboardingCompleted) {
@@ -40,15 +47,17 @@ export default function Page() {
         } else {
           router.replace('/onboarding');
         }
-      } catch (e) {
-        // אם נפל – מנקים טוקן ונשארים במסך ההתחברות
+      } catch (err) {
+        console.error('❌ Token check failed:', err);
         Cookies.remove('token');
         setCheckingToken(false);
       }
     })();
   }, [router]);
 
-  // ✅ התחברות/הרשמה -> שמירת טוקן -> החלטה לפי /api/onboarding/status
+  /**
+   * ✅ התחברות / הרשמה
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -67,12 +76,19 @@ export default function Page() {
         return;
       }
 
-      Cookies.set('token', token, { expires: 7 });
+      // ✅ cookie מוגדר נכון לפרודקשן (https)
+      Cookies.set('token', token, {
+        expires: 7,
+        secure: true,
+        sameSite: 'None', // חובה בפרודקשן
+      });
 
-      // ההכרעה הסופית – רק לפי סטטוס ה-Onboarding
+      // ✅ נבדוק שוב את הסטטוס
       const { data: status } = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       if (status?.onboardingCompleted) {
@@ -81,6 +97,7 @@ export default function Page() {
         router.replace('/onboarding');
       }
     } catch (err: any) {
+      console.error('❌ Auth error:', err);
       setError(err?.response?.data?.message || 'Server error — please try again');
     } finally {
       setLoading(false);
@@ -90,7 +107,9 @@ export default function Page() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // בזמן בדיקת הטוקן – ספינר קצר כדי לא להבהב בין מסכים
+  /**
+   * ⏳ בזמן בדיקה של הטוקן – נציג ספינר
+   */
   if (checkingToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -102,6 +121,9 @@ export default function Page() {
     );
   }
 
+  /**
+   * 🧠 טופס התחברות / הרשמה
+   */
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       <div className="max-w-md w-full mx-4">
