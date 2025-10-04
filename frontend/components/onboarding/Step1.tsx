@@ -23,19 +23,22 @@ export default function Step1({ onComplete }: Step1Props) {
         return;
       }
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/check-existing`, {
-        hasExistingPortfolio: hasPortfolio,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
-      onComplete({ hasExistingPortfolio: hasPortfolio });
-} catch (error) {
-  const err = error as any; // ✅ תיקון חובה ל-TypeScript
-  console.error('Error saving portfolio preference:', err);
-  alert('Error: ' + (err?.response?.data?.message || 'Something went wrong'));
-} finally {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/check-existing`,
+        { hasExistingPortfolio: hasPortfolio },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
+      onComplete({ hasExistingPortfolio: hasPortfolio });
+
+    } catch (error: unknown) {
+      console.error('Error saving portfolio preference:', error);
+      // ✅ תוקן בהתאם לכללי TypeScript המחמירים
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err?.response?.data?.message || 'Something went wrong';
+      alert('Error: ' + message);
+
+    } finally {
       setLoading(false);
     }
   };
