@@ -1,84 +1,88 @@
 import express from 'express';
+import axios from 'axios';
 import User from '../models/User';
-import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 const router = express.Router();
 
-// Shopify webhook for subscription events
-router.post('/webhook', async (req, res) => {
+// ✅ Middleware לאימות משתמש
+const authMiddleware = async (req: any, res: any, next: any) => {
   try {
-    const { email, subscription_status, plan_name } = req.body;
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token provided' });
 
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as { id: string };
+    req.user = await User.findById(decoded.id);
 
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!req.user) return res.status(404).json({ message: 'User not found' });
 
-    // Update subscription status
-    if (subscription_status === 'active') {
-      user.subscriptionActive = true;
-      
-      // Generate API key if not exists
-      if (!user.apiKey) {
-        user.apiKey = crypto.randomBytes(32).toString('hex');
-      }
-    } else if (subscription_status === 'cancelled' || subscription_status === 'expired') {
-      user.subscriptionActive = false;
-      user.apiKey = undefined;
-    }
-
-    await user.save();
-
-    res.json({ 
-      message: 'Subscription updated successfully',
-      subscriptionActive: user.subscriptionActive,
-      planName: plan_name || 'Unknown'
-    });
+    next();
   } catch (error) {
-    console.error('Shopify webhook error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('Auth error:', error);
+    res.status(401).json({ message: 'Invalid or expired token' });
+  }
+};
+
+// ✅ שמירת פרטי Shopify API למשתמש
+router.post('/connect', authMiddleware, async (req, res) => {
+  try {
+    const { apiKey, apiSecret, shopDomain } = req.body;
+
+    if (!apiKey || !apiSecret || !shopDomain) {
+      return res.status(400).json({ message: 'Missing Shopify credentials' });
+    }
+
+    req.user.apiKey = apiKey;
+    req.user.apiSecret = apiSecret;
+    req.user.shopDomain = shopDomain;
+    await req.user.save();
+
+    res.json({ message: 'Shopify credentials saved successfully' });
+  } catch (error: any) {
+    console.error('Error saving Shopify credentials:', error);
+    res.status(500).json({ message: 'Failed to save Shopify credentials', error: error.message });
   }
 });
 
-// Mock subscription endpoint for testing
-router.post('/mock-subscription', async (req, res) => {
+// ✅ בדיקה אם יש חיבור קיים ל־Shopify
+router.get('/status', authMiddleware, async (req, res) => {
   try {
-    const { email, action } = req.body;
+    const { apiKey, shopDomain } = req.user;
 
-    if (!email || !action) {
-      return res.status(400).json({ message: 'Email and action are required' });
+    if (!apiKey || !shopDomain) {
+      return res.json({ connected: false });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    if (action === 'activate') {
-      user.subscriptionActive = true;
-      if (!user.apiKey) {
-        user.apiKey = crypto.randomBytes(32).toString('hex');
-      }
-    } else if (action === 'deactivate') {
-      user.subscriptionActive = false;
-      user.apiKey = undefined;
-    }
-
-    await user.save();
-
-    res.json({ 
-      message: `Subscription ${action}d successfully`,
-      subscriptionActive: user.subscriptionActive,
-      apiKey: user.apiKey
+    res.json({
+      connected: true,
+      shopDomain: req.user.shopDomain,
+      apiKey: '***' + req.user.apiKey.slice(-4),
     });
-  } catch (error) {
-    console.error('Mock subscription error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+  } catch (error: any) {
+    console.error('Error checking Shopify connection:', error);
+    res.status(500).json({ message: 'Failed to check Shopify connection', error: error.message });
+  }
+});
+
+// ✅ קבלת מוצרים מהחנות
+router.get('/products', authMiddleware, async (req, res) => {
+  try {
+    const { apiKey, apiSecret, shopDomain } = req.user;
+
+    if (!apiKey || !apiSecret || !shopDomain) {
+      return res.status(400).json({ message: 'Shopify credentials not found' });
+    }
+
+    const response = await axios.get(`https://${shopDomain}/admin/api/2023-10/products.json`, {
+      headers: {
+        'X-Shopify-Access-Token': apiSecret,
+      },
+    });
+
+    res.json({ products: response.data.products });
+  } catch (error: any) {
+    console.error('Error fetching Shopify products:', error);
+    res.status(500).json({ message: 'Failed to fetch products', error: error.message });
   }
 });
 
