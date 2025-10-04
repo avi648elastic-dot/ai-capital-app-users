@@ -11,38 +11,40 @@ import shopifyRoutes from './routes/shopify';
 import onboardingRoutes from './routes/onboarding';
 import adminRoutes from './routes/admin';
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT; // ✅ Render מגדיר את זה אוטומטית — לא נוגעים!
 
-// 🧠 Helper: timestamped log
-const log = (msg: string) => console.log(`[${new Date().toISOString()}] ${msg}`);
+// ✅ Render מחייב להשתמש ב־process.env.PORT
+const PORT = Number(process.env.PORT) || 10000;
 
-// --- Security Middleware ---
+// 🔒 אבטחה
 app.use(helmet());
 
-// --- Rate Limiting ---
+// 🔄 Rate Limit
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
 app.use(limiter);
 
-// --- Allowed Origins (CORS) ---
+// ✅ רשימת דומיינים מותרים לגישה
 const allowedOrigins = [
+  'https://ai-capital.vercel.app',
   'https://ai-capital-app7-qalnn40zw-avi648elastic-dots-projects.vercel.app',
   'https://ai-capital-app7.onrender.com',
-  'http://localhost:3000',
+  'http://localhost:3000'
 ];
 
+// ⚙️ CORS – כולל לוג של מי נחסם
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        log(`❌ Blocked CORS from: ${origin}`);
+        console.warn('❌ Blocked CORS from:', origin);
         callback(new Error('Not allowed by CORS'));
       }
     },
@@ -50,22 +52,18 @@ app.use(
   })
 );
 
-// --- Body Parsing ---
+// 🧠 Body Parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// --- Routes ---
+// ✅ מסלולים ראשיים
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/shopify', shopifyRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/admin', adminRoutes);
 
-// --- Health Check (Render מזהה לפי זה שהאפליקציה חיה) ---
-app.get('/', (req, res) => {
-  res.send('✅ AiCapital Backend is Running!');
-});
-
+// 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -74,62 +72,57 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// --- Error Handling ---
+// 🌐 דף בית בסיסי
+app.get('/', (req, res) => {
+  res.send('✅ AiCapital Backend is Running and Healthy!');
+});
+
+// ⚠️ טיפול בשגיאות כלליות
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  log(`❗ Error: ${err.message}`);
+  console.error('❌ Error:', err);
   res.status(500).json({
     message: 'Internal server error',
     ...(process.env.NODE_ENV === 'development' && { error: err.message }),
   });
 });
 
-// --- 404 Handler ---
+// 🚫 404 – לא נמצא
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// --- MongoDB Connection ---
+// 🧩 חיבור למסד הנתונים
 const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI;
-    if (!mongoURI) throw new Error('Missing MONGODB_URI in environment');
+    if (!mongoURI) throw new Error('Missing MONGODB_URI in environment variables');
     await mongoose.connect(mongoURI);
-    log('✅ MongoDB connected successfully');
+    console.log('✅ MongoDB connected successfully');
   } catch (error) {
-    log(`❌ MongoDB connection error: ${(error as Error).message}`);
+    console.error('❌ MongoDB connection error:', error);
     process.exit(1);
   }
 };
 
-// --- Start Server ---
+// 🚀 הפעלת השרת
 const startServer = async () => {
   await connectDB();
 
-  const server = app.listen(PORT, () => {
-    log(`🚀 Server running on port ${PORT}`);
-    log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
-
-  // 🛑 Graceful shutdown (Render שולחת SIGTERM)
-  process.on('SIGTERM', () => {
-    log('🧹 SIGTERM received. Closing server gracefully...');
-    server.close(() => {
-      log('✅ Server closed. Exiting process.');
-      process.exit(0);
-    });
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 };
 
-// --- Global Error Handling ---
+// 🧯 טיפול בחריגות בלתי צפויות
 process.on('unhandledRejection', (err: any) => {
-  log(`💥 Unhandled Promise Rejection: ${err.message}`);
+  console.error('Unhandled Promise Rejection:', err);
   process.exit(1);
 });
 
 process.on('uncaughtException', (err: any) => {
-  log(`💥 Uncaught Exception: ${err.message}`);
+  console.error('Uncaught Exception:', err);
   process.exit(1);
 });
 
-// --- Run ---
 startServer();
