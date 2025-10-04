@@ -24,7 +24,7 @@ export default function Page() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  // ✅ אם יש טוקן קיים, נבדוק לאן להפנות
+  // ✅ אם יש טוקן קיים - לבדוק אם יש צורך ב-onboarding
   useEffect(() => {
     const token = Cookies.get('token');
     if (!token) return;
@@ -35,12 +35,11 @@ export default function Page() {
       })
       .then((res) => {
         const user = res.data?.user;
-        if (user) {
-          if (user.onboardingCompleted) {
-            router.push('/dashboard');
-          } else {
-            router.push('/onboarding');
-          }
+        if (!user) return;
+        if (user.onboardingCompleted) {
+          router.push('/dashboard');
+        } else {
+          router.push('/onboarding');
         }
       })
       .catch(() => {
@@ -61,17 +60,32 @@ export default function Page() {
         formData
       );
 
-      if (data.token) {
-        Cookies.set('token', data.token, { expires: 7 });
-        const user = data.user;
-
-        if (!user?.onboardingCompleted) {
-          router.push('/onboarding');
-        } else {
-          router.push('/dashboard');
-        }
-      } else {
+      if (!data || !data.token) {
         setError('Unexpected response from server');
+        return;
+      }
+
+      Cookies.set('token', data.token, { expires: 7 });
+
+      // ✅ נבדוק שוב את סטטוס המשתמש כדי להחליט לאן להפנות
+      const { data: me } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
+        {
+          headers: { Authorization: `Bearer ${data.token}` },
+        }
+      );
+
+      const user = me?.user;
+      if (!user) {
+        setError('Failed to load user data');
+        return;
+      }
+
+      // ✅ אם המשתמש השלים Onboarding – לדשבורד, אחרת – ל-setup
+      if (user.onboardingCompleted) {
+        router.push('/dashboard');
+      } else {
+        router.push('/onboarding');
       }
     } catch (err: any) {
       const message =
@@ -97,16 +111,16 @@ export default function Page() {
           <div className="flex mb-6 bg-gray-700 rounded-lg p-1">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium ${
-                isLogin ? 'bg-primary-600 text-white' : 'text-gray-400'
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                isLogin ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
               Login
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium ${
-                !isLogin ? 'bg-primary-600 text-white' : 'text-gray-400'
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                !isLogin ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
               Sign Up
@@ -116,7 +130,7 @@ export default function Page() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Name</label>
+                <label className="block text-sm text-gray-300 mb-1">Full Name</label>
                 <input
                   name="name"
                   value={formData.name}
@@ -161,7 +175,7 @@ export default function Page() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary"
+              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading
                 ? 'Processing...'
