@@ -11,6 +11,11 @@ export interface IUser extends Document {
   totalCapital?: number;
   riskTolerance?: number;
   createdAt: Date;
+
+  // 🟢 שדות חדשים עבור Shopify Integration
+  apiKey?: string;
+  apiSecret?: string;
+  shopDomain?: string;
 }
 
 const UserSchema: Schema = new Schema(
@@ -24,6 +29,11 @@ const UserSchema: Schema = new Schema(
     portfolioSource: { type: String },
     totalCapital: { type: Number, default: 0 },
     riskTolerance: { type: Number, default: 0 },
+
+    // 🟢 תוספת Shopify
+    apiKey: { type: String },
+    apiSecret: { type: String },
+    shopDomain: { type: String },
   },
   { timestamps: true }
 );
