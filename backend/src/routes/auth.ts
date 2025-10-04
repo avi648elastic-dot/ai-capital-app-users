@@ -1,43 +1,132 @@
-c5a145
-#10 extracting sha256:3697be50c98b9d071df4637e1d3491d00e7b9f3a732768c876d82309b3c5a145 3.2s done
-#10 sha256:461077a72fb7fe40d34a37d6a1958c4d16772d0dd77f572ec50a1fdc41a3754d 446B / 446B done
-#10 extracting sha256:461077a72fb7fe40d34a37d6a1958c4d16772d0dd77f572ec50a1fdc41a3754d
-#10 extracting sha256:461077a72fb7fe40d34a37d6a1958c4d16772d0dd77f572ec50a1fdc41a3754d 0.0s done
-#10 sha256:cd26c28fac9edd874625f99977e6340763bfcf5012f2cdb04b7b7771d0ec733d 92B / 92B done
-#10 extracting sha256:cd26c28fac9edd874625f99977e6340763bfcf5012f2cdb04b7b7771d0ec733d 0.0s done
-#10 sha256:8b6dcf6e0d4f6ee005d7824cfe2c67866ccd309d100580d1db55f0af6e24adde 23.61kB / 23.61kB done
-#10 extracting sha256:8b6dcf6e0d4f6ee005d7824cfe2c67866ccd309d100580d1db55f0af6e24adde 0.0s done
-#10 sha256:993be9e57a07511a10a5aab92ea17db36567d3b95d2fd7316e692e812a895b52 16.78MB / 42.20MB 0.2s
-#10 sha256:993be9e57a07511a10a5aab92ea17db36567d3b95d2fd7316e692e812a895b52 42.20MB / 42.20MB 0.4s done
-#10 extracting sha256:993be9e57a07511a10a5aab92ea17db36567d3b95d2fd7316e692e812a895b52
-#10 extracting sha256:993be9e57a07511a10a5aab92ea17db36567d3b95d2fd7316e692e812a895b52 22.8s done
-#10 CACHED
-#11 [5/6] COPY backend/ .
-#11 DONE 0.1s
-#12 [6/6] RUN npm run build
-#12 0.249 
-#12 0.249 > aicapital-backend@1.0.0 build
-#12 0.249 > tsc
-#12 0.249 
-#12 3.512 src/routes/auth.ts(49,33): error TS18046: 'user._id' is of type 'unknown'.
-#12 3.512 src/routes/auth.ts(95,33): error TS18046: 'user._id' is of type 'unknown'.
-#12 ERROR: process "/bin/sh -c npm run build" did not complete successfully: exit code: 2
-------
- > [6/6] RUN npm run build:
-0.249 
-0.249 > aicapital-backend@1.0.0 build
-0.249 > tsc
-0.249 
-3.512 src/routes/auth.ts(49,33): error TS18046: 'user._id' is of type 'unknown'.
-3.512 src/routes/auth.ts(95,33): error TS18046: 'user._id' is of type 'unknown'.
-------
-Dockerfile:13
---------------------
-  11 |     
-  12 |     # בניית TypeScript ל-JS
-  13 | >>> RUN npm run build
-  14 |     
-  15 |     EXPOSE 5000
---------------------
-error: failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 2
-error: exit status 1
+import { Router, Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import User from '../models/User';
+
+const router = Router();
+
+/**
+ * 📌 SIGNUP - רישום משתמש חדש
+ */
+router.post('/signup', async (req: Request, res: Response) => {
+  console.log("📩 [SIGNUP] Incoming request");
+  console.log("👉 Body:", req.body);
+
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      subscriptionActive: true,
+      onboardingCompleted: false,
+    });
+
+    await user.save();
+
+    const token = jwt.sign(
+      { id: String(user._id), email: user.email }, // ✅ טיפוס מחרוזת
+      process.env.JWT_SECRET as string,
+      { expiresIn: '7d' }
+    );
+
+    return res.status(201).json({
+      message: 'User created successfully',
+      token,
+      user: {
+        id: String(user._id),
+        name: user.name,
+        email: user.email,
+        onboardingCompleted: user.onboardingCompleted,
+        subscriptionActive: user.subscriptionActive,
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ Signup error:", error.message);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+/**
+ * 📌 LOGIN - כניסה למערכת
+ */
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Missing email or password' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { id: String(user._id), email: user.email }, // ✅ גם כאן טיפוס מחרוזת
+      process.env.JWT_SECRET as string,
+      { expiresIn: '7d' }
+    );
+
+    return res.json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: String(user._id),
+        name: user.name,
+        email: user.email,
+        onboardingCompleted: user.onboardingCompleted,
+        subscriptionActive: user.subscriptionActive,
+      },
+    });
+  } catch (error: any) {
+    console.error("❌ Login error:", error.message);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+/**
+ * 📌 ME - שליפת נתוני משתמש לפי הטוקן
+ */
+router.get('/me', async (req: any, res: Response) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    return res.json({
+      user: {
+        id: String(user._id),
+        name: user.name,
+        email: user.email,
+        onboardingCompleted: user.onboardingCompleted,
+        subscriptionActive: user.subscriptionActive,
+      },
+    });
+  } catch (error: any) {
+    console.error('❌ Auth check error:', error.message);
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+});
+
+export default router;
