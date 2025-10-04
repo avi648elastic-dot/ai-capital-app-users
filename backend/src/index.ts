@@ -23,7 +23,7 @@ const PORT = Number(process.env.PORT) || 10000;
 // 🔒 אבטחה
 app.use(helmet());
 
-// 🍪 Cookies parser
+// 🧁 Cookie Parser – חובה בשביל לזהות token מה-cookie
 app.use(cookieParser());
 
 // 🔄 Rate Limit
@@ -33,7 +33,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// ✅ דומיינים מותרים לגישה
+// ✅ רשימת דומיינים מותרים לגישה
 const allowedOrigins = [
   'https://ai-capital.vercel.app',
   'https://ai-capital-app7-qalnn40zw-avi648elastic-dots-projects.vercel.app',
@@ -41,7 +41,7 @@ const allowedOrigins = [
   'http://localhost:3000',
 ];
 
-// ⚙️ הגדרת CORS — כולל credentials מלאים (מאפשר שליחת cookies/token)
+// ⚙️ CORS – כולל credentials כדי להעביר cookies
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -52,29 +52,13 @@ app.use(
         callback(new Error('Not allowed by CORS'));
       }
     },
-    credentials: true,
-    exposedHeaders: ['Authorization'],
+    credentials: true, // חשוב מאוד — מאפשר שליחת cookies
   })
 );
 
 // 🧠 Body Parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-
-// ✅ כותרות תגובה כדי לוודא תמיכה ב-CORS בפרודקשן
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-  );
-  res.header(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, PATCH, DELETE, OPTIONS'
-  );
-  next();
-});
 
 // ✅ מסלולים ראשיים
 app.use('/api/auth', authRoutes);
@@ -92,7 +76,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// 🌍 דף בית בסיסי
+// 🌐 דף בית בסיסי
 app.get('/', (req, res) => {
   res.send('✅ AiCapital Backend is Running and Healthy!');
 });
