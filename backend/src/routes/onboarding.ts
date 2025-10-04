@@ -1,209 +1,34 @@
-import express from 'express';
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import User from '../models/User';
-import Portfolio from '../models/Portfolio';
-import { authenticateToken } from '../middleware/auth';
-import { portfolioGenerator } from '../services/portfolioGenerator';
 
-const router = express.Router();
+export interface AuthenticatedRequest extends Request {
+  user?: any;
+}
 
-// Check onboarding status
-router.get('/status', authenticateToken, async (req, res) => {
+export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const user = await User.findById(req.user!._id);
-    res.json({
-      onboardingCompleted: user?.onboardingCompleted || false,
-      portfolioType: user?.portfolioType,
-      portfolioSource: user?.portfolioSource,
-    });
-  } catch (error) {
-    console.error('Get onboarding status error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: 'No authorization header' });
+    }
 
-// Step 1: Check if user has existing portfolio
-router.post('/check-existing', authenticateToken, async (req, res) => {
-  try {
-    const { hasExistingPortfolio } = req.body;
-    
-    if (hasExistingPortfolio) {
-      // User has existing portfolio - they'll import it
-      await User.findByIdAndUpdate(req.user!._id, {
-        portfolioSource: 'imported',
-      });
-    } else {
-      // User wants to create new portfolio
-      await User.findByIdAndUpdate(req.user!._id, {
-        portfolioSource: 'ai-generated',
-      });
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Token missing' });
     }
-    
-    res.json({ message: 'Portfolio preference saved' });
-  } catch (error) {
-    console.error('Check existing portfolio error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
 
-// Step 2a: Import existing portfolio
-router.post('/import-portfolio', authenticateToken, async (req, res) => {
-  try {
-    const { stocks, totalCapital, riskTolerance } = req.body;
-    
-    if (!stocks || !Array.isArray(stocks) || stocks.length === 0) {
-      return res.status(400).json({ message: 'Stocks array is required' });
-    }
-    
-    // Update user with portfolio info
-    await User.findByIdAndUpdate(req.user!._id, {
-      portfolioType: 'imported',
-      portfolioSource: 'imported',
-      totalCapital,
-      riskTolerance: riskTolerance || 7,
-    });
-    
-    // Process and save each stock
-    const portfolioItems = [];
-    for (const stock of stocks) {
-      const { stopLoss, takeProfit } = portfolioGenerator.calculateStopLossAndTakeProfit(
-        stock.entryPrice,
-        riskTolerance || 7
-      );
-      
-      const portfolioItem = new Portfolio({
-        userId: req.user!._id,
-        ticker: stock.ticker.toUpperCase(),
-        shares: Number(stock.shares),
-        entryPrice: Number(stock.entryPrice),
-        currentPrice: Number(stock.currentPrice),
-        stopLoss,
-        takeProfit,
-        notes: stock.notes || '',
-      });
-      
-      await portfolioItem.save();
-      portfolioItems.push(portfolioItem);
-    }
-    
-    // Complete onboarding
-    await User.findByIdAndUpdate(req.user!._id, {
-      onboardingCompleted: true,
-    });
-    
-    res.json({
-      message: 'Portfolio imported successfully',
-      portfolio: portfolioItems,
-    });
-  } catch (error) {
-    console.error('Import portfolio error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as { id: string };
+    const user = await User.findById(decoded.id);
 
-// Step 2b: Generate AI portfolio
-router.post('/generate-portfolio', authenticateToken, async (req, res) => {
-  try {
-    const { portfolioType, totalCapital, riskTolerance } = req.body;
-    
-    if (!portfolioType || !totalCapital) {
-      return res.status(400).json({ message: 'Portfolio type and total capital are required' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
-    
-    if (!['solid', 'dangerous'].includes(portfolioType)) {
-      return res.status(400).json({ message: 'Portfolio type must be solid or dangerous' });
-    }
-    
-    // Generate portfolio
-    const generatedStocks = portfolioGenerator.generatePortfolio(
-      portfolioType,
-      Number(totalCapital),
-      Number(riskTolerance) || 7
-    );
-    
-    // Enhance with AI decisions
-    const enhancedStocks = await portfolioGenerator.validateAndEnhancePortfolio(generatedStocks);
-    
-    // Update user
-    await User.findByIdAndUpdate(req.user!._id, {
-      portfolioType,
-      portfolioSource: 'ai-generated',
-      totalCapital: Number(totalCapital),
-      riskTolerance: Number(riskTolerance) || 7,
-    });
-    
-    res.json({
-      message: 'Portfolio generated successfully',
-      portfolio: enhancedStocks,
-      portfolioType,
-    });
-  } catch (error) {
-    console.error('Generate portfolio error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
 
-// Step 3: Confirm and save generated portfolio
-router.post('/confirm-portfolio', authenticateToken, async (req, res) => {
-  try {
-    const { portfolio } = req.body;
-    
-    if (!portfolio || !Array.isArray(portfolio)) {
-      return res.status(400).json({ message: 'Portfolio array is required' });
-    }
-    
-    // Clear existing portfolio
-    await Portfolio.deleteMany({ userId: req.user!._id });
-    
-    // Save new portfolio
-    const portfolioItems = [];
-    for (const stock of portfolio) {
-      const portfolioItem = new Portfolio({
-        userId: req.user!._id,
-        ticker: stock.ticker.toUpperCase(),
-        shares: Number(stock.shares),
-        entryPrice: Number(stock.entryPrice),
-        currentPrice: Number(stock.currentPrice),
-        stopLoss: Number(stock.stopLoss),
-        takeProfit: Number(stock.takeProfit),
-        action: stock.action || 'HOLD',
-        reason: stock.reason || '',
-        color: stock.color || 'yellow',
-        notes: stock.notes || '',
-      });
-      
-      await portfolioItem.save();
-      portfolioItems.push(portfolioItem);
-    }
-    
-    // Complete onboarding
-    await User.findByIdAndUpdate(req.user!._id, {
-      onboardingCompleted: true,
-    });
-    
-    res.json({
-      message: 'Portfolio confirmed and saved',
-      portfolio: portfolioItems,
-    });
-  } catch (error) {
-    console.error('Confirm portfolio error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    req.user = user;
+    next();
+  } catch (error: any) {
+    console.error('Auth middleware error:', error.message);
+    res.status(401).json({ message: 'Invalid or expired token' });
   }
-});
-
-// Skip onboarding (for testing or if user wants to set up later)
-router.post('/skip', authenticateToken, async (req, res) => {
-  try {
-    await User.findByIdAndUpdate(req.user!._id, {
-      onboardingCompleted: true,
-      portfolioType: 'solid',
-      portfolioSource: 'imported',
-    });
-    
-    res.json({ message: 'Onboarding skipped' });
-  } catch (error) {
-    console.error('Skip onboarding error:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-export default router;
+};
