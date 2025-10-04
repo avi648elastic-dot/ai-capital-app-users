@@ -82,6 +82,8 @@ export default function Page() {
       );
 
       const user = me?.user;
+      console.log("🚀 USER FROM /api/auth/me:", user);
+
       if (!user) {
         setError('Failed to load user data');
         return;
