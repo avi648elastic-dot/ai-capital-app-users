@@ -12,7 +12,7 @@ export interface IUser extends Document {
   riskTolerance?: number;
   createdAt: Date;
 
-  // 🟢 שדות חדשים עבור Shopify Integration
+  // ✅ נוספו שדות Shopify
   apiKey?: string;
   apiSecret?: string;
   shopDomain?: string;
@@ -30,7 +30,7 @@ const UserSchema: Schema = new Schema(
     totalCapital: { type: Number, default: 0 },
     riskTolerance: { type: Number, default: 0 },
 
-    // 🟢 תוספת Shopify
+    // ✅ Shopify integration fields
     apiKey: { type: String },
     apiSecret: { type: String },
     shopDomain: { type: String },
