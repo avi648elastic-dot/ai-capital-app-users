@@ -10,6 +10,7 @@ interface User {
   email: string;
   name: string;
   subscriptionActive: boolean;
+  onboardingCompleted?: boolean;
 }
 
 export default function Page() {
@@ -23,6 +24,7 @@ export default function Page() {
   const [error, setError] = useState('');
   const router = useRouter();
 
+  // ✅ בדיקת טוקן קיים
   useEffect(() => {
     const token = Cookies.get('token');
     if (!token) return;
@@ -32,8 +34,13 @@ export default function Page() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        if (res.data?.user) {
-          router.push('/dashboard');
+        const user = res.data?.user;
+        if (user) {
+          if (user.onboardingCompleted) {
+            router.push('/dashboard');
+          } else {
+            router.push('/onboarding');
+          }
         }
       })
       .catch(() => {
@@ -41,6 +48,7 @@ export default function Page() {
       });
   }, [router]);
 
+  // ✅ התחברות / הרשמה
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -55,7 +63,15 @@ export default function Page() {
 
       if (data.token) {
         Cookies.set('token', data.token, { expires: 7 });
-        router.push('/dashboard');
+        const completed = data.user?.onboardingCompleted ?? false;
+
+        if (!completed) {
+          console.log('🧭 Redirecting to onboarding...');
+          router.push('/onboarding');
+        } else {
+          console.log('📊 Redirecting to dashboard...');
+          router.push('/dashboard');
+        }
       } else {
         setError('Unexpected response from server');
       }
