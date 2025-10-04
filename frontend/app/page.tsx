@@ -14,30 +14,29 @@ interface User {
 
 export default function Home() {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
+  // 🧠 קבע את כתובת השרת עם fallback
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const token = Cookies.get('token');
     if (token) {
-      // Verify token and get user data
-      axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(response => {
-        setUser(response.data.user);
-        router.push('/dashboard');
-      })
-      .catch(() => {
-        Cookies.remove('token');
-      });
+      axios
+        .get(`${API_BASE}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          setUser(response.data.user);
+          router.push('/dashboard');
+        })
+        .catch(() => {
+          Cookies.remove('token');
+        });
     }
   }, [router]);
 
@@ -48,24 +47,22 @@ export default function Home() {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, formData);
-      
+      const response = await axios.post(`${API_BASE}${endpoint}`, formData);
+
       const { token, user: userData } = response.data;
       Cookies.set('token', token, { expires: 7 });
       setUser(userData);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred');
+      console.error('❌ Login/Signup error:', err.response?.data || err.message);
+      setError(err.response?.data?.message || 'An error occurred while processing your request');
     } finally {
       setLoading(false);
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   if (user) {
@@ -93,9 +90,7 @@ export default function Home() {
               type="button"
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                isLogin
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-400 hover:text-white'
+                isLogin ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
               Login
@@ -104,9 +99,7 @@ export default function Home() {
               type="button"
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                !isLogin
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-400 hover:text-white'
+                !isLogin ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
               Sign Up
@@ -173,7 +166,7 @@ export default function Home() {
               disabled={loading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : (isLogin ? 'Login' : 'Sign Up')}
+              {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
             </button>
           </form>
 
