@@ -32,23 +32,30 @@ export default function Page() {
     const token = Cookies.get('token');
     if (!token) return;
 
-    axios
-      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
+    (async () => {
+      try {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const user = res.data?.user;
-        if (!user) return;
+        console.log('🔹 useEffect user:', user);
 
-        if (user.onboardingCompleted) {
-          router.push('/dashboard');
-        } else {
-          router.push('/onboarding');
+        if (!user) {
+          Cookies.remove('token');
+          return;
         }
-      })
-      .catch(() => {
+
+        // אם המשתמש לא השלים Onboarding – נשלח ל-onboarding
+        if (!user.onboardingCompleted || user.onboardingCompleted === false) {
+          router.push('/onboarding');
+        } else {
+          router.push('/dashboard');
+        }
+      } catch (err) {
+        console.error('❌ Error fetching user:', err);
         Cookies.remove('token');
-      });
+      }
+    })();
   }, [router]);
 
   /**
@@ -82,7 +89,7 @@ export default function Page() {
       );
 
       const user = me?.user;
-      console.log("🚀 USER FROM /api/auth/me:", user);
+      console.log('🚀 USER FROM /api/auth/me:', user);
 
       if (!user) {
         setError('Failed to load user data');
@@ -90,10 +97,12 @@ export default function Page() {
       }
 
       // 🔹 נוודא הפניה נכונה
-      if (user.onboardingCompleted) {
-        router.push('/dashboard');
-      } else {
+      if (!user.onboardingCompleted || user.onboardingCompleted === false) {
+        console.log('🧭 Redirecting to /onboarding ...');
         router.push('/onboarding');
+      } else {
+        console.log('🧭 Redirecting to /dashboard ...');
+        router.push('/dashboard');
       }
     } catch (err: any) {
       const message =
