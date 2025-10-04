@@ -1,6 +1,7 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IUser extends Document {
+  _id: Types.ObjectId; // ✅ נוספה שורה זו
   name: string;
   email: string;
   password: string;
@@ -12,7 +13,6 @@ export interface IUser extends Document {
   riskTolerance?: number;
   createdAt: Date;
 
-  // ✅ נוספו שדות Shopify
   apiKey?: string;
   apiSecret?: string;
   shopDomain?: string;
@@ -30,7 +30,6 @@ const UserSchema: Schema<IUser> = new Schema(
     totalCapital: { type: Number, default: 0 },
     riskTolerance: { type: Number, default: 0 },
 
-    // ✅ Shopify integration fields
     apiKey: { type: String },
     apiSecret: { type: String },
     shopDomain: { type: String },
