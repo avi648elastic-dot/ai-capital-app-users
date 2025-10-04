@@ -1,4 +1,6 @@
 import { decisionEngine } from './decisionEngine';
+import User from '../models/User'; // ✅ נוספה הגדרה למודל המשתמש לעדכון מצב onboarding
+import Portfolio from '../models/Portfolio'; // ✅ נוספה תמיכה ליצירת תיק אמיתי בבסיס הנתונים
 
 interface StockData {
   symbol: string;
@@ -20,6 +22,9 @@ interface GeneratedStock {
   takeProfit: number;
   allocation: number; // percentage of total capital
   riskScore: number;
+  action?: string;
+  reason?: string;
+  color?: string;
 }
 
 export class PortfolioGenerator {
@@ -39,7 +44,7 @@ export class PortfolioGenerator {
       { symbol: 'JNJ', current: 160, top30D: 165, top60D: 162, thisMonthPercent: 1.5, lastMonthPercent: 2.1, volatility: 0.12, marketCap: 420000000000 },
       { symbol: 'PG', current: 155, top30D: 158, top60D: 156, thisMonthPercent: 0.8, lastMonthPercent: 1.5, volatility: 0.10, marketCap: 380000000000 },
       { symbol: 'KO', current: 60, top30D: 62, top60D: 61, thisMonthPercent: 1.2, lastMonthPercent: 0.8, volatility: 0.08, marketCap: 260000000000 },
-      
+
       // Dangerous stocks (high volatility, growth potential)
       { symbol: 'TSLA', current: 250, top30D: 280, top60D: 260, thisMonthPercent: -5.2, lastMonthPercent: 12.3, volatility: 0.45, marketCap: 800000000000 },
       { symbol: 'NVDA', current: 450, top30D: 480, top60D: 460, thisMonthPercent: 15.2, lastMonthPercent: 8.7, volatility: 0.38, marketCap: 1100000000000 },
@@ -50,20 +55,92 @@ export class PortfolioGenerator {
     ];
   }
 
+  /**
+   * 🎯 יצירת תיק השקעות לפי סוג (סולידי / מסוכן)
+   */
+  async generateAndSavePortfolio(
+    userId: string,
+    portfolioType: 'solid' | 'dangerous',
+    totalCapital: number,
+    riskTolerance: number = 7
+  ): Promise<GeneratedStock[]> {
+    const generatedPortfolio = this.generatePortfolio(portfolioType, totalCapital, riskTolerance);
+    const enhanced = await this.validateAndEnhancePortfolio(generatedPortfolio);
+
+    // מחיקת תיק ישן ושמירת חדש
+    await Portfolio.deleteMany({ userId });
+    const portfolioDocs = enhanced.map((item) => ({
+      userId,
+      ticker: item.ticker,
+      shares: item.shares,
+      entryPrice: item.entryPrice,
+      currentPrice: item.currentPrice,
+      stopLoss: item.stopLoss,
+      takeProfit: item.takeProfit,
+      action: item.action,
+      reason: item.reason,
+      color: item.color,
+    }));
+    await Portfolio.insertMany(portfolioDocs);
+
+    // ✅ סימון השלמת Onboarding
+    await User.findByIdAndUpdate(userId, {
+      onboardingCompleted: true,
+      portfolioType,
+      portfolioSource: 'ai-generated',
+    });
+
+    return enhanced;
+  }
+
+  /**
+   * 🧠 בחירת מניות
+   */
+  private selectStocks(portfolioType: 'solid' | 'dangerous'): StockData[] {
+    if (portfolioType === 'solid') {
+      return this.stockDatabase
+        .filter((s) => s.volatility < 0.25 && s.marketCap > 100000000000)
+        .sort((a, b) => b.thisMonthPercent - a.thisMonthPercent)
+        .slice(0, 6);
+    } else {
+      return this.stockDatabase
+        .filter((s) => s.volatility > 0.30)
+        .sort((a, b) => b.thisMonthPercent - a.thisMonthPercent)
+        .slice(0, 6);
+    }
+  }
+
+  /**
+   * 💰 חישוב תיק לפי הקצאות
+   */
+  private calculateAllocations(stocks: StockData[], portfolioType: 'solid' | 'dangerous'): number[] {
+    const numStocks = stocks.length;
+    const baseAllocation = 100 / numStocks;
+
+    if (portfolioType === 'solid') {
+      return stocks.map(() => baseAllocation);
+    } else {
+      const totalVolatility = stocks.reduce((sum, s) => sum + s.volatility, 0);
+      return stocks.map((s) => (s.volatility / totalVolatility) * 100);
+    }
+  }
+
+  /**
+   * 📈 הפעלת החישוב עצמו
+   */
   generatePortfolio(portfolioType: 'solid' | 'dangerous', totalCapital: number, riskTolerance: number = 7): GeneratedStock[] {
     const stocks = this.selectStocks(portfolioType);
     const allocations = this.calculateAllocations(stocks, portfolioType);
-    
-    return stocks.map((stock, index) => {
-      const allocation = allocations[index];
+
+    return stocks.map((stock, i) => {
+      const allocation = allocations[i];
       const capitalAllocation = (totalCapital * allocation) / 100;
       const shares = Math.floor(capitalAllocation / stock.current);
       const entryPrice = stock.current;
-      
-      // Calculate stop loss and take profit based on risk tolerance
+
       const stopLoss = entryPrice * (1 - riskTolerance / 100);
-      const takeProfit = entryPrice * (1 + riskTolerance * 1.5 / 100); // 1.5x risk for reward
-      
+      const takeProfit = entryPrice * (1 + (riskTolerance * 1.5) / 100);
+
       return {
         ticker: stock.symbol,
         shares,
@@ -77,52 +154,19 @@ export class PortfolioGenerator {
     });
   }
 
-  private selectStocks(portfolioType: 'solid' | 'dangerous'): StockData[] {
-    let filteredStocks: StockData[];
-    
-    if (portfolioType === 'solid') {
-      // Select low volatility, stable stocks
-      filteredStocks = this.stockDatabase
-        .filter(stock => stock.volatility < 0.25 && stock.marketCap > 100000000000) // Large cap, low volatility
-        .sort((a, b) => b.thisMonthPercent - a.thisMonthPercent)
-        .slice(0, 6); // Top 6 performers
-    } else {
-      // Select high volatility, growth stocks
-      filteredStocks = this.stockDatabase
-        .filter(stock => stock.volatility > 0.30) // High volatility
-        .sort((a, b) => b.thisMonthPercent - a.thisMonthPercent)
-        .slice(0, 6); // Top 6 performers
-    }
-    
-    return filteredStocks;
-  }
-
-  private calculateAllocations(stocks: StockData[], portfolioType: 'solid' | 'dangerous'): number[] {
-    const numStocks = stocks.length;
-    const baseAllocation = 100 / numStocks;
-    
-    if (portfolioType === 'solid') {
-      // More equal distribution for solid portfolio
-      return stocks.map(() => baseAllocation);
-    } else {
-      // Risk-weighted distribution for dangerous portfolio
-      const totalVolatility = stocks.reduce((sum, stock) => sum + stock.volatility, 0);
-      return stocks.map(stock => (stock.volatility / totalVolatility) * 100);
-    }
-  }
-
-  calculateStopLossAndTakeProfit(entryPrice: number, riskTolerance: number): { stopLoss: number; takeProfit: number } {
+  calculateStopLossAndTakeProfit(entryPrice: number, riskTolerance: number) {
     const stopLoss = entryPrice * (1 - riskTolerance / 100);
-    const takeProfit = entryPrice * (1 + riskTolerance * 1.5 / 100);
-    
+    const takeProfit = entryPrice * (1 + (riskTolerance * 1.5) / 100);
     return { stopLoss, takeProfit };
   }
 
+  /**
+   * 🤖 חיבור למנוע החלטות - קבלת החלטות BUY / HOLD / SELL
+   */
   async validateAndEnhancePortfolio(portfolio: any[]): Promise<any[]> {
-    // Load current stock data
     await decisionEngine.loadStockData();
-    
-    return portfolio.map(item => {
+
+    return portfolio.map((item) => {
       const decision = decisionEngine.decideActionEnhanced({
         ticker: item.ticker,
         entryPrice: item.entryPrice,
@@ -130,7 +174,7 @@ export class PortfolioGenerator {
         stopLoss: item.stopLoss,
         takeProfit: item.takeProfit,
       });
-      
+
       return {
         ...item,
         action: decision.action,
