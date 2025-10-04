@@ -24,7 +24,7 @@ export default function Page() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  // ✅ בדיקת טוקן קיים
+  // ✅ אם יש טוקן קיים, נבדוק לאן להפנות
   useEffect(() => {
     const token = Cookies.get('token');
     if (!token) return;
@@ -63,13 +63,11 @@ export default function Page() {
 
       if (data.token) {
         Cookies.set('token', data.token, { expires: 7 });
-        const completed = data.user?.onboardingCompleted ?? false;
+        const user = data.user;
 
-        if (!completed) {
-          console.log('🧭 Redirecting to onboarding...');
+        if (!user?.onboardingCompleted) {
           router.push('/onboarding');
         } else {
-          console.log('📊 Redirecting to dashboard...');
           router.push('/dashboard');
         }
       } else {
