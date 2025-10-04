@@ -70,7 +70,7 @@ export default function AdminDashboard() {
 
       setUsers(usersResponse.data.users);
       setStats(statsResponse.data);
-    } catch (error) {
+    } catch (error: any) {   // ✅ תוקן כאן
       console.error('Error fetching admin data:', error);
       if (error.response?.status === 403) {
         alert('Admin access required');
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
       );
 
       fetchData(); // Refresh data
-    } catch (error) {
+    } catch (error: any) {   // ✅ תוקן כאן
       console.error(`Error ${action} user:`, error);
       alert(`Error ${action}ing user`);
     }
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
       
       setSelectedUser(response.data.user);
       setUserPortfolio(response.data.portfolio);
-    } catch (error) {
+    } catch (error: any) {   // ✅ תוקן כאן
       console.error('Error fetching user portfolio:', error);
     }
   };
