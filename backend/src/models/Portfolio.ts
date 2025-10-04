@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IPortfolio extends Document {
-  user: mongoose.Types.ObjectId;
+  userId: string;
   ticker: string;
   shares: number;
   entryPrice: number;
@@ -12,21 +12,23 @@ export interface IPortfolio extends Document {
   notes?: string;
   action: 'BUY' | 'HOLD' | 'SELL';
   reason?: string;
+  color?: string; // ✅ נוספה השורה הזאת
 }
 
-const PortfolioSchema: Schema = new Schema(
+const PortfolioSchema = new Schema<IPortfolio>(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: String, required: true },
     ticker: { type: String, required: true },
     shares: { type: Number, required: true },
     entryPrice: { type: Number, required: true },
-    currentPrice: { type: Number, default: 0 },
-    stopLoss: { type: Number },
-    takeProfit: { type: Number },
+    currentPrice: { type: Number, required: true },
+    stopLoss: Number,
+    takeProfit: Number,
     date: { type: Date, default: Date.now },
-    notes: { type: String },
+    notes: String,
     action: { type: String, enum: ['BUY', 'HOLD', 'SELL'], required: true },
-    reason: { type: String }
+    reason: String,
+    color: String, // ✅ כאן בדיוק
   },
   { timestamps: true }
 );
