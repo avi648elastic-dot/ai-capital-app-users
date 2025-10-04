@@ -1,7 +1,7 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IPortfolio extends Document {
-  userId: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
   ticker: string;
   shares: number;
   entryPrice: number;
@@ -12,71 +12,23 @@ export interface IPortfolio extends Document {
   notes?: string;
   action: 'BUY' | 'HOLD' | 'SELL';
   reason?: string;
-  color?: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
-const PortfolioSchema = new Schema<IPortfolio>({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+const PortfolioSchema: Schema = new Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    ticker: { type: String, required: true },
+    shares: { type: Number, required: true },
+    entryPrice: { type: Number, required: true },
+    currentPrice: { type: Number, default: 0 },
+    stopLoss: { type: Number },
+    takeProfit: { type: Number },
+    date: { type: Date, default: Date.now },
+    notes: { type: String },
+    action: { type: String, enum: ['BUY', 'HOLD', 'SELL'], required: true },
+    reason: { type: String }
   },
-  ticker: {
-    type: String,
-    required: true,
-    uppercase: true,
-    trim: true,
-  },
-  shares: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  entryPrice: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  currentPrice: {
-    type: Number,
-    required: true,
-    min: 0,
-  },
-  stopLoss: {
-    type: Number,
-    min: 0,
-  },
-  takeProfit: {
-    type: Number,
-    min: 0,
-  },
-  date: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  },
-  notes: {
-    type: String,
-    trim: true,
-  },
-  action: {
-    type: String,
-    enum: ['BUY', 'HOLD', 'SELL'],
-    default: 'HOLD',
-  },
-  reason: {
-    type: String,
-  },
-  color: {
-    type: String,
-  },
-}, {
-  timestamps: true,
-});
-
-// Index for efficient queries
-PortfolioSchema.index({ userId: 1, ticker: 1 });
+  { timestamps: true }
+);
 
 export default mongoose.model<IPortfolio>('Portfolio', PortfolioSchema);
