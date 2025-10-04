@@ -30,10 +30,12 @@ export default function Step1({ onComplete }: Step1Props) {
       });
       
       onComplete({ hasExistingPortfolio: hasPortfolio });
-    } catch (error) {
-      console.error('Error saving portfolio preference:', error);
-      alert('Error: ' + (error.response?.data?.message || 'Something went wrong'));
-    } finally {
+} catch (error) {
+  const err = error as any; // ✅ תיקון חובה ל-TypeScript
+  console.error('Error saving portfolio preference:', err);
+  alert('Error: ' + (err?.response?.data?.message || 'Something went wrong'));
+} finally {
+
       setLoading(false);
     }
   };
