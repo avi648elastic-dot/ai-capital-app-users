@@ -18,7 +18,7 @@ export interface IUser extends Document {
   shopDomain?: string;
 }
 
-const UserSchema: Schema = new Schema(
+const UserSchema: Schema<IUser> = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
