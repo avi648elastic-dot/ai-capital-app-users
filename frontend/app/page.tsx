@@ -5,62 +5,50 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-interface User {
+type MeUser = {
   id: string;
   email: string;
   name: string;
   subscriptionActive: boolean;
-  onboardingCompleted?: boolean;
-}
+};
 
 export default function Page() {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [checkingToken, setCheckingToken] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
 
-  /**
-   * ✅ אם יש טוקן קיים – לבדוק את הסטטוס של המשתמש
-   * ולהחליט האם לשלוח ל-onboarding או ל-dashboard
-   */
+  // ✅ בטעינה: אם יש טוקן – מחליטים לפי /api/onboarding/status
   useEffect(() => {
     const token = Cookies.get('token');
-    if (!token) return;
+    if (!token) {
+      setCheckingToken(false);
+      return;
+    }
 
     (async () => {
       try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const user = res.data?.user;
-        console.log('🔹 useEffect user:', user);
+        const { data } = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-        if (!user) {
-          Cookies.remove('token');
-          return;
-        }
-
-        // אם המשתמש לא השלים Onboarding – נשלח ל-onboarding
-        if (!user.onboardingCompleted || user.onboardingCompleted === false) {
-          router.push('/onboarding');
+        if (data?.onboardingCompleted) {
+          router.replace('/dashboard');
         } else {
-          router.push('/dashboard');
+          router.replace('/onboarding');
         }
-      } catch (err) {
-        console.error('❌ Error fetching user:', err);
+      } catch (e) {
+        // אם נפל – מנקים טוקן ונשארים במסך ההתחברות
         Cookies.remove('token');
+        setCheckingToken(false);
       }
     })();
   }, [router]);
 
-  /**
-   * ✅ התחברות או הרשמה
-   */
+  // ✅ התחברות/הרשמה -> שמירת טוקן -> החלטה לפי /api/onboarding/status
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -73,74 +61,61 @@ export default function Page() {
         formData
       );
 
-      if (!data?.token) {
+      const token: string | undefined = data?.token;
+      if (!token) {
         setError('Unexpected response from server');
         return;
       }
 
-      Cookies.set('token', data.token, { expires: 7 });
+      Cookies.set('token', token, { expires: 7 });
 
-      // 🔹 נבדוק את סטטוס המשתמש לפי ה-token
-      const { data: me } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`,
-        {
-          headers: { Authorization: `Bearer ${data.token}` },
-        }
+      // ההכרעה הסופית – רק לפי סטטוס ה-Onboarding
+      const { data: status } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const user = me?.user;
-      console.log('🚀 USER FROM /api/auth/me:', user);
-
-      if (!user) {
-        setError('Failed to load user data');
-        return;
-      }
-
-      // 🔹 נוודא הפניה נכונה
-      if (!user.onboardingCompleted || user.onboardingCompleted === false) {
-        console.log('🧭 Redirecting to /onboarding ...');
-        router.push('/onboarding');
+      if (status?.onboardingCompleted) {
+        router.replace('/dashboard');
       } else {
-        console.log('🧭 Redirecting to /dashboard ...');
-        router.push('/dashboard');
+        router.replace('/onboarding');
       }
     } catch (err: any) {
-      const message =
-        err.response?.data?.message || 'Server error — please try again';
-      setError(message);
+      setError(err?.response?.data?.message || 'Server error — please try again');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
-  /**
-   * ✅ ממשק משתמש
-   */
+  // בזמן בדיקת הטוקן – ספינר קצר כדי לא להבהב בין מסכים
+  if (checkingToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-primary-500 mx-auto" />
+          <p className="mt-4 text-gray-400">Checking session…</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       <div className="max-w-md w-full mx-4">
         <div className="card p-8">
-          {/* כותרת */}
-          <h1 className="text-3xl font-bold text-center text-white mb-6">
-            AiCapital
-          </h1>
-          <p className="text-center text-gray-400 mb-6">
-            Professional Portfolio Management
-          </p>
+          <h1 className="text-3xl font-bold text-center text-white mb-2">AiCapital</h1>
+          <p className="text-center text-gray-400 mb-6">Professional Portfolio Management</p>
 
-          {/* טאבים Login / Sign Up */}
+          {/* Tabs */}
           <div className="flex mb-6 bg-gray-700 rounded-lg p-1">
             <button
               type="button"
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                isLogin
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-400 hover:text-white'
+                isLogin ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
               Login
@@ -149,22 +124,18 @@ export default function Page() {
               type="button"
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                !isLogin
-                  ? 'bg-primary-600 text-white'
-                  : 'text-gray-400 hover:text-white'
+                !isLogin ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
               Sign Up
             </button>
           </div>
 
-          {/* טופס */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
-                <label className="block text-sm text-gray-300 mb-1">
-                  Full Name
-                </label>
+                <label className="block text-sm text-gray-300 mb-1">Full Name</label>
                 <input
                   name="name"
                   value={formData.name}
@@ -176,9 +147,7 @@ export default function Page() {
             )}
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">
-                Email
-              </label>
+              <label className="block text-sm text-gray-300 mb-1">Email</label>
               <input
                 name="email"
                 type="email"
@@ -190,9 +159,7 @@ export default function Page() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">
-                Password
-              </label>
+              <label className="block text-sm text-gray-300 mb-1">Password</label>
               <input
                 name="password"
                 type="password"
@@ -205,9 +172,7 @@ export default function Page() {
             </div>
 
             {error && (
-              <div className="bg-red-900 text-red-300 px-3 py-2 rounded">
-                {error}
-              </div>
+              <div className="bg-red-900 text-red-300 px-3 py-2 rounded">{error}</div>
             )}
 
             <button
@@ -215,19 +180,13 @@ export default function Page() {
               disabled={loading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading
-                ? 'Processing...'
-                : isLogin
-                ? 'Login'
-                : 'Create Account'}
+              {loading ? 'Processing…' : isLogin ? 'Login' : 'Create Account'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-400">
-              {isLogin
-                ? "Don't have an account? "
-                : 'Already have an account? '}
+              {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
