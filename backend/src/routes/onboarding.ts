@@ -12,10 +12,7 @@ const router = express.Router();
 router.get('/status', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user!._id);
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     return res.json({
       onboardingCompleted: user.onboardingCompleted || false,
@@ -34,7 +31,6 @@ router.get('/status', authenticateToken, async (req, res) => {
 router.post('/check-existing', authenticateToken, async (req, res) => {
   try {
     const { hasExistingPortfolio } = req.body;
-
     if (typeof hasExistingPortfolio !== 'boolean') {
       return res.status(400).json({ message: 'Invalid hasExistingPortfolio flag' });
     }
@@ -44,7 +40,6 @@ router.post('/check-existing', authenticateToken, async (req, res) => {
     };
 
     await User.findByIdAndUpdate(req.user!._id, updateData);
-
     return res.json({ message: 'Portfolio preference saved', ...updateData });
   } catch (error) {
     console.error('❌ Check existing portfolio error:', error);
@@ -58,24 +53,19 @@ router.post('/check-existing', authenticateToken, async (req, res) => {
 router.post('/import-portfolio', authenticateToken, async (req, res) => {
   try {
     const { stocks, totalCapital, riskTolerance } = req.body;
-
     if (!stocks || !Array.isArray(stocks) || stocks.length === 0) {
       return res.status(400).json({ message: 'Stocks array is required' });
     }
 
     const user = await User.findById(req.user!._id);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // עדכון פרטי משתמש
     user.portfolioType = 'imported';
     user.portfolioSource = 'imported';
     user.totalCapital = totalCapital || 0;
     user.riskTolerance = riskTolerance || 7;
     await user.save();
 
-    // מחיקת תיקים ישנים ושמירת חדשים
     await Portfolio.deleteMany({ userId: req.user!._id });
     const portfolioItems = [];
 
@@ -100,7 +90,6 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
       portfolioItems.push(item);
     }
 
-    // סימון סיום Onboarding
     user.onboardingCompleted = true;
     await user.save();
 
@@ -115,7 +104,7 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
 });
 
 /**
- * 📌 STEP 2B – המשתמש מבקש מה-AI לבנות תיק
+ * 📌 STEP 2B – המשתמש מבקש מה-AI לבנות תיק ולשמור אותו
  */
 router.post('/generate-portfolio', authenticateToken, async (req, res) => {
   try {
@@ -136,19 +125,43 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
       Number(riskTolerance) || 7
     );
 
+    // שדרוג התיק ע"י Decision Engine
     const enhancedStocks = await portfolioGenerator.validateAndEnhancePortfolio(generatedStocks);
 
+    // מחיקת תיק קודם (אם יש)
+    await Portfolio.deleteMany({ userId: req.user!._id });
+
+    // שמירת התיק החדש למסד הנתונים
+    const savedItems = [];
+    for (const stock of enhancedStocks) {
+      const newItem = new Portfolio({
+        userId: req.user!._id,
+        ticker: stock.ticker,
+        shares: stock.shares,
+        entryPrice: stock.entryPrice,
+        currentPrice: stock.currentPrice,
+        stopLoss: stock.stopLoss,
+        takeProfit: stock.takeProfit,
+        action: stock.action || 'HOLD',
+        reason: stock.reason || '',
+        color: stock.color || 'yellow',
+      });
+      await newItem.save();
+      savedItems.push(newItem);
+    }
+
+    // עדכון פרטי המשתמש וסימון סיום Onboarding
     await User.findByIdAndUpdate(req.user!._id, {
       portfolioType,
       portfolioSource: 'ai-generated',
       totalCapital: Number(totalCapital),
       riskTolerance: Number(riskTolerance) || 7,
+      onboardingCompleted: true,
     });
 
     return res.json({
-      message: 'AI portfolio generated successfully',
-      portfolio: enhancedStocks,
-      portfolioType,
+      message: 'AI portfolio generated and saved successfully',
+      portfolio: savedItems,
     });
   } catch (error) {
     console.error('❌ Generate portfolio error:', error);
@@ -157,12 +170,11 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
 });
 
 /**
- * 📌 STEP 3 – אישור ושמירת תיק סופי
+ * 📌 STEP 3 – אישור תיק סופי (למקרה של עריכה ידנית)
  */
 router.post('/confirm-portfolio', authenticateToken, async (req, res) => {
   try {
     const { portfolio } = req.body;
-
     if (!portfolio || !Array.isArray(portfolio)) {
       return res.status(400).json({ message: 'Portfolio array is required' });
     }
@@ -202,7 +214,7 @@ router.post('/confirm-portfolio', authenticateToken, async (req, res) => {
 });
 
 /**
- * 🧪 TEST MODE – דילוג על Onboarding (לבדיקות בלבד)
+ * 🧪 TEST MODE – דילוג על Onboarding
  */
 router.post('/skip', authenticateToken, async (req, res) => {
   try {
