@@ -6,52 +6,56 @@ import User from '../models/User';
 const router = Router();
 
 /**
+ * 🛠 פונקציית עזר – הפקת JWT וכתיבה גם כ־cookie
+ */
+const issueToken = (userId: string, email: string, res: Response) => {
+  const token = jwt.sign({ id: userId, email }, process.env.JWT_SECRET as string, {
+    expiresIn: '7d',
+  });
+
+  // שולח גם כ-cookie כדי לעבוד בפרודקשן (Vercel + Render)
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // שבוע
+  });
+
+  return token;
+};
+
+/**
  * 📌 SIGNUP - רישום משתמש חדש
  */
 router.post('/signup', async (req: Request, res: Response) => {
-  console.log("📩 [SIGNUP] Incoming request");
-  console.log("👉 Body:", req.body);
+  console.log('📩 [SIGNUP] Request body:', req.body);
 
   try {
     const { name, email, password } = req.body;
 
-    // בדיקה שחסרים נתונים
     if (!name || !email || !password) {
-      console.warn("⚠️ Missing fields:", { name, email, password });
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // בדיקה אם המשתמש כבר קיים
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.warn("⚠️ User already exists:", email);
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // הצפנת הסיסמה
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // יצירת משתמש חדש
     const user = new User({
       name,
       email,
       password: hashedPassword,
       subscriptionActive: true,
-      onboardingCompleted: false, // חשוב מאוד – שלא יידלג על התהליך
+      onboardingCompleted: false,
     });
 
     await user.save();
 
-    // יצירת טוקן JWT
-    const token = jwt.sign(
-      { id: String(user._id), email: user.email },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '7d' }
-    );
+    const token = issueToken(String(user._id), user.email, res);
 
-    console.log(`✅ Signup successful for ${email}`);
-
-    // החזרת תגובה ללקוח
     return res.status(201).json({
       message: 'User created successfully',
       token,
@@ -64,7 +68,7 @@ router.post('/signup', async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error("❌ Signup error:", error.message);
+    console.error('❌ Signup error:', error.message);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -73,36 +77,26 @@ router.post('/signup', async (req: Request, res: Response) => {
  * 📌 LOGIN - כניסה למערכת
  */
 router.post('/login', async (req: Request, res: Response) => {
-  console.log("📩 [LOGIN] Incoming request");
-  console.log("👉 Body:", req.body);
+  console.log('📩 [LOGIN] Request body:', req.body);
 
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      console.warn("⚠️ Missing credentials");
       return res.status(400).json({ message: 'Missing email or password' });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      console.warn("⚠️ User not found:", email);
       return res.status(400).json({ message: 'User not found' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      console.warn("⚠️ Invalid password for:", email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign(
-      { id: String(user._id), email: user.email },
-      process.env.JWT_SECRET as string,
-      { expiresIn: '7d' }
-    );
-
-    console.log(`✅ Login successful for ${email}`);
+    const token = issueToken(String(user._id), user.email, res);
 
     return res.json({
       message: 'Login successful',
@@ -116,7 +110,7 @@ router.post('/login', async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    console.error("❌ Login error:", error.message);
+    console.error('❌ Login error:', error.message);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -125,23 +119,33 @@ router.post('/login', async (req: Request, res: Response) => {
  * 📌 ME - שליפת נתוני משתמש לפי הטוקן
  */
 router.get('/me', async (req: any, res: Response) => {
-  console.log("📩 [ME] Checking token and returning user info");
+  console.log('📩 [ME] Token validation attempt');
 
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    let token: string | undefined;
+
+    // קודם נבדוק אם קיים בכותרת Authorization
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+
+    // אם לא – נבדוק אם יש cookie
+    if (!token && req.cookies?.token) {
+      token = req.cookies.token;
+    }
+
     if (!token) {
-      console.warn("⚠️ No token provided");
-      return res.status(401).json({ message: 'No token provided' });
+      console.warn('⚠️ No token provided');
+      return res.status(401).json({ message: 'Access token required' });
     }
 
     const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
-      console.warn("⚠️ User not found by ID:", decoded.id);
+      console.warn('⚠️ User not found for token ID:', decoded.id);
       return res.status(404).json({ message: 'User not found' });
     }
-
-    console.log(`✅ User fetched: ${user.email}`);
 
     return res.json({
       user: {
