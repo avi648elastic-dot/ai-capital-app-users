@@ -156,11 +156,17 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
     console.log('✅ [GENERATE PORTFOLIO] Enhanced stocks:', enhancedStocks.length);
 
     // מחיקת תיק קודם (אם יש)
+    console.log('🔍 [GENERATE PORTFOLIO] Deleting old portfolio...');
     await Portfolio.deleteMany({ userId: req.user!._id });
+    console.log('✅ [GENERATE PORTFOLIO] Old portfolio deleted');
 
     // שמירת התיק החדש למסד הנתונים
+    console.log('🔍 [GENERATE PORTFOLIO] Saving new portfolio...');
     const savedItems = [];
-    for (const stock of enhancedStocks) {
+    for (let i = 0; i < enhancedStocks.length; i++) {
+      const stock = enhancedStocks[i];
+      console.log(`🔍 [GENERATE PORTFOLIO] Saving stock ${i + 1}/${enhancedStocks.length}: ${stock.ticker}`);
+      
       const newItem = new Portfolio({
         userId: req.user!._id,
         ticker: stock.ticker,
@@ -175,9 +181,12 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
       });
       await newItem.save();
       savedItems.push(newItem);
+      console.log(`✅ [GENERATE PORTFOLIO] Saved stock: ${stock.ticker}`);
     }
+    console.log('✅ [GENERATE PORTFOLIO] All stocks saved');
 
     // עדכון פרטי המשתמש וסימון סיום Onboarding
+    console.log('🔍 [GENERATE PORTFOLIO] Updating user...');
     await User.findByIdAndUpdate(req.user!._id, {
       portfolioType,
       portfolioSource: 'ai-generated',
@@ -185,7 +194,9 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
       riskTolerance: Number(riskTolerance) || 7,
       onboardingCompleted: true,
     });
+    console.log('✅ [GENERATE PORTFOLIO] User updated');
 
+    console.log('✅ [GENERATE PORTFOLIO] Portfolio generation completed successfully');
     return res.json({
       message: 'AI portfolio generated and saved successfully',
       portfolio: savedItems,
