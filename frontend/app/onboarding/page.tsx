@@ -7,7 +7,6 @@ import Cookies from 'js-cookie';
 import Step1 from '@/components/onboarding/Step1';
 import Step2a from '@/components/onboarding/Step2a';
 import Step2b from '@/components/onboarding/Step2b';
-import Step3 from '@/components/onboarding/Step3';
 
 interface OnboardingStatus {
   onboardingCompleted: boolean;
@@ -49,18 +48,15 @@ export default function OnboardingPage() {
   };
 
   const handleStep2aComplete = (data: any) => {
-    setOnboardingData({ ...onboardingData, ...data });
-    setCurrentStep(3);
+    // Portfolio imported - redirect to dashboard immediately
+    router.push('/dashboard');
   };
 
   const handleStep2bComplete = (data: any) => {
-    setOnboardingData({ ...onboardingData, ...data });
-    setCurrentStep(3);
-  };
-
-  const handleStep3Complete = () => {
+    // Portfolio generated - redirect to dashboard immediately  
     router.push('/dashboard');
   };
+
 
   const goBack = () => {
     if (currentStep > 1) {
@@ -91,7 +87,7 @@ export default function OnboardingPage() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
-            {[1, 2, 3].map((step) => (
+            {[1, 2].map((step) => (
               <div key={step} className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -102,7 +98,7 @@ export default function OnboardingPage() {
                 >
                   {step}
                 </div>
-                {step < 3 && (
+                {step < 2 && (
                   <div
                     className={`w-16 h-1 mx-2 ${
                       step < currentStep ? 'bg-primary-600' : 'bg-gray-700'
@@ -114,7 +110,7 @@ export default function OnboardingPage() {
           </div>
           <div className="text-center mt-2">
             <span className="text-sm text-gray-400">
-              Step {currentStep} of 3
+              Step {currentStep} of 2
             </span>
           </div>
         </div>
@@ -131,14 +127,6 @@ export default function OnboardingPage() {
           
           {currentStep === 2 && onboardingData.hasExistingPortfolio === false && (
             <Step2b onComplete={handleStep2bComplete} onBack={goBack} />
-          )}
-          
-          {currentStep === 3 && (
-            <Step3 
-              onboardingData={onboardingData} 
-              onComplete={handleStep3Complete} 
-              onBack={goBack} 
-            />
           )}
         </div>
       </div>

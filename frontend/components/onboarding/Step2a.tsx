@@ -66,9 +66,12 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
 
-      // Portfolio imported successfully - redirect to dashboard immediately
-      console.log('✅ [STEP2A] Portfolio imported successfully, redirecting to dashboard');
-      window.location.href = '/dashboard';
+      onComplete({ 
+        stocks: validStocks, 
+        totalCapital: Number(totalCapital),
+        riskTolerance: Number(riskTolerance),
+        portfolioType: 'imported'
+      });
     } catch (error) {
       console.error('Error importing portfolio:', error);
       alert('Error importing portfolio. Please try again.');
