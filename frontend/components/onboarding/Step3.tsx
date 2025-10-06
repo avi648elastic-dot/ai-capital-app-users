@@ -31,24 +31,36 @@ export default function Step3({ onboardingData, onComplete, onBack }: Step3Props
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
-    if (onboardingData.generatedPortfolio) {
-      setPortfolio(onboardingData.generatedPortfolio);
-    } else if (onboardingData.stocks) {
-      // Convert imported stocks to the same format
-      const convertedStocks = onboardingData.stocks.map((stock: any) => ({
-        ticker: stock.ticker,
-        shares: stock.shares,
-        entryPrice: stock.entryPrice,
-        currentPrice: stock.currentPrice,
-        stopLoss: 0, // Will be calculated
-        takeProfit: 0, // Will be calculated
-        allocation: 0, // Will be calculated
-        riskScore: 0,
-        action: 'HOLD',
-        reason: 'Imported portfolio',
-        color: 'yellow',
-      }));
-      setPortfolio(convertedStocks);
+    try {
+      console.log('🔍 [STEP3] Onboarding data:', onboardingData);
+      
+      if (onboardingData.generatedPortfolio) {
+        console.log('🔍 [STEP3] Using generated portfolio:', onboardingData.generatedPortfolio);
+        setPortfolio(onboardingData.generatedPortfolio);
+      } else if (onboardingData.stocks) {
+        console.log('🔍 [STEP3] Converting imported stocks');
+        // Convert imported stocks to the same format
+        const convertedStocks = onboardingData.stocks.map((stock: any) => ({
+          ticker: stock.ticker,
+          shares: stock.shares,
+          entryPrice: stock.entryPrice,
+          currentPrice: stock.currentPrice,
+          stopLoss: 0, // Will be calculated
+          takeProfit: 0, // Will be calculated
+          allocation: 0, // Will be calculated
+          riskScore: 0,
+          action: 'HOLD',
+          reason: 'Imported portfolio',
+          color: 'yellow',
+        }));
+        setPortfolio(convertedStocks);
+      } else {
+        console.warn('🔍 [STEP3] No portfolio data found');
+        setPortfolio([]);
+      }
+    } catch (error) {
+      console.error('❌ [STEP3] Error processing portfolio data:', error);
+      setPortfolio([]);
     }
   }, [onboardingData]);
 
