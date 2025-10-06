@@ -11,6 +11,7 @@ import portfolioRoutes from './routes/portfolio';
 import shopifyRoutes from './routes/shopify';
 import onboardingRoutes from './routes/onboarding';
 import adminRoutes from './routes/admin';
+import { schedulerService } from './services/schedulerService';
 
 // Load environment variables
 dotenv.config();
@@ -88,6 +89,27 @@ app.get('/api/simple-test', (req, res) => {
     mongoState: mongoose.connection.readyState,
     corsEnabled: 'ALL_ORIGINS_ALLOWED'
   });
+});
+
+// 📊 Scheduler status endpoint
+app.get('/api/scheduler/status', (req, res) => {
+  const status = schedulerService.getStatus();
+  res.json({
+    status: 'OK',
+    scheduler: status,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 🔧 Manual trigger endpoints (for testing)
+app.post('/api/scheduler/update-stocks', (req, res) => {
+  schedulerService.triggerStockDataUpdate();
+  res.json({ message: 'Stock data update triggered' });
+});
+
+app.post('/api/scheduler/update-portfolios', (req, res) => {
+  schedulerService.triggerPortfolioUpdate();
+  res.json({ message: 'Portfolio update triggered' });
 });
 
 // 🌐 דף בית בסיסי
