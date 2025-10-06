@@ -35,12 +35,9 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
 
-      onComplete({ 
-        portfolioType,
-        totalCapital: Number(totalCapital),
-        riskTolerance: Number(riskTolerance),
-        generatedPortfolio: response.data.portfolio
-      });
+      // Portfolio created successfully - redirect to dashboard immediately
+      console.log('✅ [STEP2B] Portfolio created successfully, redirecting to dashboard');
+      window.location.href = '/dashboard';
     } catch (error) {
       console.error('Error generating portfolio:', error);
       alert('Error generating portfolio. Please try again.');
