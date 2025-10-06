@@ -34,16 +34,25 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
         totalCapital: Number(totalCapital),
         riskTolerance: Number(riskTolerance),
       }, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        timeout: 30000 // 30 second timeout
       });
 
       console.log('✅ [STEP2B] Portfolio generated successfully:', response.data);
+
+      // Validate response data
+      if (!response.data || !response.data.portfolio) {
+        console.error('❌ [STEP2B] Invalid response data:', response.data);
+        throw new Error('Invalid portfolio data received from server');
+      }
+
+      console.log('✅ [STEP2B] Portfolio data validated:', response.data.portfolio.length, 'stocks');
 
       onComplete({ 
         portfolioType,
         totalCapital: Number(totalCapital),
         riskTolerance: Number(riskTolerance),
-        generatedPortfolio: response.data.portfolio || []
+        generatedPortfolio: response.data.portfolio
       });
     } catch (error) {
       console.error('❌ [STEP2B] Error generating portfolio:', error);

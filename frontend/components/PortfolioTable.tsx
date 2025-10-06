@@ -188,15 +188,17 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getActionColor(item.action)}`}>
-                      {item.action}
-                    </span>
-                    {item.reason && (
-                      <div className="text-xs text-gray-400 mt-1 max-w-32 truncate" title={item.reason}>
-                        {item.reason}
-                      </div>
-                    )}
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getActionColor(item.action)} w-fit`}>
+                        {item.action}
+                      </span>
+                      {item.reason && (
+                        <div className="text-xs text-gray-400 mt-1 max-w-48 break-words" title={item.reason}>
+                          {item.reason}
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-300">

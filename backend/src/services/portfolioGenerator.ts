@@ -141,11 +141,30 @@ export class PortfolioGenerator {
     let filteredStocks: StockData[];
     
     if (portfolioType === 'solid') {
-      filteredStocks = this.stockDatabase
-        .filter((s) => s.volatility < 0.25 && s.marketCap > 100000000000);
+      // For solid portfolio, use predefined solid stocks or filter by criteria
+      const solidStockSymbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'JNJ', 'PG', 'KO', 'PFE', 'WMT', 'JPM', 'V', 'MA', 'UNH', 'HD', 'DIS', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'IBM', 'CSCO', 'INTC', 'T', 'VZ', 'XOM', 'CVX', 'BAC', 'WFC', 'GS', 'AXP'];
+      
+      filteredStocks = this.stockDatabase.filter((s) => 
+        solidStockSymbols.includes(s.symbol) && 
+        s.marketCap > 100000000000 // At least 100B market cap
+      );
+      
+      // If no predefined stocks found, fall back to volatility filter
+      if (filteredStocks.length === 0) {
+        filteredStocks = this.stockDatabase.filter((s) => s.volatility < 0.25 && s.marketCap > 100000000000);
+      }
     } else {
-      filteredStocks = this.stockDatabase
-        .filter((s) => s.volatility > 0.30);
+      // For dangerous portfolio, use predefined risky stocks or filter by criteria
+      const dangerousStockSymbols = ['TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD'];
+      
+      filteredStocks = this.stockDatabase.filter((s) => 
+        dangerousStockSymbols.includes(s.symbol)
+      );
+      
+      // If no predefined stocks found, fall back to volatility filter
+      if (filteredStocks.length === 0) {
+        filteredStocks = this.stockDatabase.filter((s) => s.volatility > 0.30);
+      }
     }
 
     // Sort by performance and add some randomness
@@ -157,6 +176,8 @@ export class PortfolioGenerator {
     
     // Shuffle and take 6
     const shuffled = topStocks.sort(() => Math.random() - 0.5);
+    
+    console.log(`🔍 [PORTFOLIO GENERATOR] Selected ${portfolioType} stocks:`, shuffled.slice(0, 6).map(s => s.symbol));
     
     return shuffled.slice(0, 6);
   }

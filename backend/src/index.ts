@@ -159,6 +159,32 @@ app.post('/api/scheduler/test-update', async (req, res) => {
   }
 });
 
+// 🔧 Test portfolio update endpoint
+app.post('/api/test-portfolio-update', async (req, res) => {
+  try {
+    console.log('🔧 [MANUAL] Testing portfolio update...');
+    const { stockDataService } = await import('./services/stockDataService');
+    
+    // Test with some common stocks
+    const testStocks = ['AAPL', 'MSFT', 'GOOGL', 'AMZN'];
+    const realTimeData = await stockDataService.getMultipleStockData(testStocks);
+    
+    res.json({
+      message: 'Portfolio update test completed',
+      stocks: Array.from(realTimeData.entries()).map(([symbol, data]) => ({
+        symbol,
+        current: data.current,
+        top30D: data.top30D,
+        volatility: data.volatility
+      }))
+    });
+  } catch (error) {
+    console.error('❌ [MANUAL] Portfolio update test failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ message: 'Portfolio update test failed', error: errorMessage });
+  }
+});
+
 // 🌐 דף בית בסיסי
 app.get('/', (req, res) => {
   res.send('✅ AiCapital Backend is Running and Healthy! CORS: ALL_ORIGINS_ALLOWED - VERSION 2.0');

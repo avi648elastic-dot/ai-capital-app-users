@@ -22,8 +22,14 @@ router.get('/', authenticateToken, async (req, res) => {
     console.log('🔍 [PORTFOLIO] Updating prices for tickers:', tickers);
 
     // Fetch real-time data for all tickers
+    console.log('🔍 [PORTFOLIO] Fetching real-time data for tickers:', tickers);
     const realTimeData = await stockDataService.getMultipleStockData(tickers);
     console.log('✅ [PORTFOLIO] Fetched real-time data for', realTimeData.size, 'stocks');
+    
+    // Log the actual data we got
+    realTimeData.forEach((data, symbol) => {
+      console.log(`📊 [PORTFOLIO] ${symbol}: $${data.current} (vs stored: $${portfolio.find(p => p.ticker === symbol)?.currentPrice})`);
+    });
 
     // Update portfolio with real-time prices
     const updatedPortfolio = portfolio.map(item => {
