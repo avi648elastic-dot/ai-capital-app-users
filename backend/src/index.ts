@@ -121,7 +121,8 @@ app.post('/api/scheduler/test-update', async (req, res) => {
     res.json({ message: 'Test update completed successfully' });
   } catch (error) {
     console.error('❌ [MANUAL] Test update failed:', error);
-    res.status(500).json({ message: 'Test update failed', error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ message: 'Test update failed', error: errorMessage });
   }
 });
 
