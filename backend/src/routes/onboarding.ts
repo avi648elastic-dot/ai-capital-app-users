@@ -143,7 +143,7 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
 
     // הפעלת האלגוריתם ליצירת תיק
     console.log('🔍 [GENERATE PORTFOLIO] Generating portfolio...');
-    const generatedStocks = portfolioGenerator.generatePortfolio(
+    const generatedStocks = await portfolioGenerator.generatePortfolio(
       portfolioType,
       Number(totalCapital),
       Number(riskTolerance) || 7
