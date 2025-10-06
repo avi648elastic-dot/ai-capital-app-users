@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 interface StockFormProps {
   onSubmit: (data: any) => void;
@@ -19,6 +20,8 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
   });
 
   const [loading, setLoading] = useState(false);
+  const [fetchingPrice, setFetchingPrice] = useState(false);
+  const [autoCalculate, setAutoCalculate] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,11 +45,73 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
     }
   };
 
+  // Auto-fetch current price when ticker is entered
+  useEffect(() => {
+    const fetchCurrentPrice = async () => {
+      if (formData.ticker && formData.ticker.length >= 2) {
+        setFetchingPrice(true);
+        try {
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/test-stock/${formData.ticker.toUpperCase()}`);
+          if (response.data.status === 'OK' && response.data.data) {
+            const currentPrice = response.data.data.current;
+            setFormData(prev => ({
+              ...prev,
+              currentPrice: currentPrice.toString()
+            }));
+            
+            // Auto-calculate stop loss and take profit if enabled
+            if (autoCalculate && formData.entryPrice) {
+              const entryPrice = parseFloat(formData.entryPrice);
+              const stopLoss = (entryPrice * 0.92).toFixed(2); // 8% below entry
+              const takeProfit = (entryPrice * 1.15).toFixed(2); // 15% above entry
+              
+              setFormData(prev => ({
+                ...prev,
+                stopLoss: stopLoss,
+                takeProfit: takeProfit
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching current price:', error);
+        } finally {
+          setFetchingPrice(false);
+        }
+      }
+    };
+
+    // Debounce the API call
+    const timeoutId = setTimeout(fetchCurrentPrice, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [formData.ticker, formData.entryPrice, autoCalculate]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleAutoCalculateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAutoCalculate(e.target.checked);
+    
+    if (e.target.checked && formData.entryPrice && formData.currentPrice) {
+      const entryPrice = parseFloat(formData.entryPrice);
+      const stopLoss = (entryPrice * 0.92).toFixed(2); // 8% below entry
+      const takeProfit = (entryPrice * 1.15).toFixed(2); // 15% above entry
+      
+      setFormData(prev => ({
+        ...prev,
+        stopLoss: stopLoss,
+        takeProfit: takeProfit
+      }));
+    } else if (!e.target.checked) {
+      setFormData(prev => ({
+        ...prev,
+        stopLoss: '',
+        takeProfit: ''
+      }));
+    }
   };
 
   return (
@@ -110,7 +175,7 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
 
           <div>
             <label htmlFor="currentPrice" className="block text-sm font-medium text-gray-300 mb-1">
-              Current Price *
+              Current Price * {fetchingPrice && <span className="text-blue-400 text-xs">(Fetching...)</span>}
             </label>
             <input
               type="number"
@@ -161,6 +226,20 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
               min="0"
             />
           </div>
+        </div>
+
+        {/* Auto-calculate checkbox */}
+        <div className="flex items-center space-x-2 mb-4">
+          <input
+            type="checkbox"
+            id="autoCalculate"
+            checked={autoCalculate}
+            onChange={handleAutoCalculateChange}
+            className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+          />
+          <label htmlFor="autoCalculate" className="text-sm font-medium text-gray-300">
+            Auto-calculate Stop Loss (8% below entry) and Take Profit (15% above entry)
+          </label>
         </div>
 
         <div>
