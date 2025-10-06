@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ArrowLeft, ArrowRight, Shield, Zap } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 
 interface Step2bProps {
   onComplete: (data: any) => void;
@@ -15,6 +16,7 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
   const [totalCapital, setTotalCapital] = useState('');
   const [riskTolerance, setRiskTolerance] = useState('7');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,16 +56,16 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
       // Show success message and redirect
       alert('Portfolio generated successfully! Redirecting to dashboard...');
       
-      // Small delay to show success message
+      // Use Next.js router for navigation
       setTimeout(() => {
         try {
-          window.location.href = '/dashboard';
+          router.push('/dashboard');
         } catch (error) {
-          console.error('❌ [STEP2B] Redirect error:', error);
+          console.error('❌ [STEP2B] Router error:', error);
           // Fallback: try to call onComplete
           onComplete(response.data);
         }
-      }, 2000);
+      }, 1500);
     } catch (error) {
       console.error('❌ [STEP2B] Error generating portfolio:', error);
       console.error('❌ [STEP2B] Error details:', error.response?.data);

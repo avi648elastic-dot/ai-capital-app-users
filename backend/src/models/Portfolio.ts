@@ -12,7 +12,8 @@ export interface IPortfolio extends Document {
   notes?: string;
   action: 'BUY' | 'HOLD' | 'SELL';
   reason?: string;
-  color?: string; // ✅ נוספה השורה הזאת
+  color?: string;
+  portfolioType: 'solid' | 'dangerous'; // New field for portfolio classification
 }
 
 const PortfolioSchema = new Schema<IPortfolio>(
@@ -28,7 +29,8 @@ const PortfolioSchema = new Schema<IPortfolio>(
     notes: String,
     action: { type: String, enum: ['BUY', 'HOLD', 'SELL'], required: true },
     reason: String,
-    color: String, // ✅ כאן בדיוק
+    color: String,
+    portfolioType: { type: String, enum: ['solid', 'dangerous'], required: true, default: 'solid' },
   },
   { timestamps: true }
 );

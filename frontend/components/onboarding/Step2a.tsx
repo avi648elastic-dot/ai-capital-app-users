@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ArrowLeft, Plus, Trash2, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 
 interface Stock {
   ticker: string;
@@ -25,6 +26,7 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
   const [totalCapital, setTotalCapital] = useState('');
   const [riskTolerance, setRiskTolerance] = useState('7');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const addStock = () => {
     setStocks([...stocks, { ticker: '', shares: 0, entryPrice: 0, currentPrice: 0, notes: '' }]);
@@ -72,16 +74,16 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
       // Show success message and redirect
       alert('Portfolio imported successfully! Redirecting to dashboard...');
       
-      // Small delay to show success message
+      // Use Next.js router for navigation
       setTimeout(() => {
         try {
-          window.location.href = '/dashboard';
+          router.push('/dashboard');
         } catch (error) {
-          console.error('❌ [STEP2A] Redirect error:', error);
+          console.error('❌ [STEP2A] Router error:', error);
           // Fallback: try to call onComplete
           onComplete({ success: true });
         }
-      }, 2000);
+      }, 1500);
     } catch (error) {
       console.error('Error importing portfolio:', error);
       alert('Error importing portfolio. Please try again.');

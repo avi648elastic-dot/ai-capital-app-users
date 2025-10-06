@@ -74,7 +74,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // Add stock to portfolio
 router.post('/add', authenticateToken, requireSubscription, async (req, res) => {
   try {
-    const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes } = req.body;
+    const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes, portfolioType } = req.body;
 
     if (!ticker || !shares || !entryPrice || !currentPrice) {
       return res.status(400).json({ message: 'Ticker, shares, entry price, and current price are required' });
@@ -89,6 +89,7 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       stopLoss: stopLoss ? Number(stopLoss) : undefined,
       takeProfit: takeProfit ? Number(takeProfit) : undefined,
       notes,
+      portfolioType: portfolioType || 'solid', // Use provided portfolio type or default to solid
     });
 
     // Get decision for this stock

@@ -99,6 +99,7 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
         stopLoss,
         takeProfit,
         notes: stock.notes || '',
+        portfolioType: 'solid', // Imported portfolios default to solid
       });
 
       await item.save();
@@ -184,6 +185,7 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
           action: stock.action || 'HOLD',
           reason: stock.reason || '',
           color: stock.color || 'yellow',
+          portfolioType: portfolioType, // Add portfolio type
         });
         await newItem.save();
         savedItems.push(newItem);

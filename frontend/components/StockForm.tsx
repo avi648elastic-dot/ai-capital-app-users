@@ -17,6 +17,7 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
     stopLoss: '',
     takeProfit: '',
     notes: '',
+    portfolioType: 'solid' as 'solid' | 'dangerous',
   });
 
   const [loading, setLoading] = useState(false);
@@ -49,11 +50,16 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
   useEffect(() => {
     const fetchCurrentPrice = async () => {
       if (formData.ticker && formData.ticker.length >= 2) {
+        console.log('🔍 [STOCK FORM] Fetching price for:', formData.ticker.toUpperCase());
         setFetchingPrice(true);
         try {
           const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/test-stock/${formData.ticker.toUpperCase()}`);
+          console.log('✅ [STOCK FORM] API response:', response.data);
+          
           if (response.data.status === 'OK' && response.data.data) {
             const currentPrice = response.data.data.current;
+            console.log('✅ [STOCK FORM] Setting current price:', currentPrice);
+            
             setFormData(prev => ({
               ...prev,
               currentPrice: currentPrice.toString()
@@ -71,9 +77,12 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
                 takeProfit: takeProfit
               }));
             }
+          } else {
+            console.warn('⚠️ [STOCK FORM] No data received for:', formData.ticker);
           }
         } catch (error) {
-          console.error('Error fetching current price:', error);
+          console.error('❌ [STOCK FORM] Error fetching current price:', error);
+          console.error('❌ [STOCK FORM] Error details:', error.response?.data);
         } finally {
           setFetchingPrice(false);
         }
@@ -151,6 +160,37 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
               min="1"
               required
             />
+          </div>
+        </div>
+
+        {/* Portfolio Type Selector */}
+        <div>
+          <label className="block text-sm font-medium text-slate-300 mb-2">
+            Portfolio Type
+          </label>
+          <div className="flex space-x-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="portfolioType"
+                value="solid"
+                checked={formData.portfolioType === 'solid'}
+                onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'dangerous' })}
+                className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="ml-2 text-sm text-slate-300">Solid Portfolio</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="portfolioType"
+                value="dangerous"
+                checked={formData.portfolioType === 'dangerous'}
+                onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'dangerous' })}
+                className="w-4 h-4 text-red-600 bg-slate-700 border-slate-600 rounded focus:ring-red-500 focus:ring-2"
+              />
+              <span className="ml-2 text-sm text-slate-300">Dangerous Portfolio</span>
+            </label>
           </div>
         </div>
 

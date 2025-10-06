@@ -30,6 +30,7 @@ interface PortfolioItem {
   action: 'BUY' | 'HOLD' | 'SELL';
   reason?: string;
   color?: string;
+  portfolioType: 'solid' | 'dangerous';
 }
 
 interface PortfolioTotals {
@@ -176,11 +177,12 @@ export default function Dashboard() {
     }
   };
 
+  // Filter portfolio based on portfolio type
   const filteredPortfolio = portfolio.filter(item => {
     if (activeTab === 'solid') {
-      return item.action === 'BUY' || item.action === 'HOLD';
+      return item.portfolioType === 'solid';
     } else {
-      return item.action === 'SELL';
+      return item.portfolioType === 'dangerous';
     }
   });
 
@@ -240,7 +242,7 @@ export default function Dashboard() {
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            Solid Portfolio ({portfolio.filter(p => p.action === 'BUY' || p.action === 'HOLD').length})
+            Solid Portfolio ({portfolio.filter(p => p.portfolioType === 'solid').length})
           </button>
           <button
             onClick={() => setActiveTab('dangerous')}
@@ -250,7 +252,7 @@ export default function Dashboard() {
                 : 'text-gray-400 hover:text-white'
             }`}
           >
-            Dangerous Portfolio ({portfolio.filter(p => p.action === 'SELL').length})
+            Dangerous Portfolio ({portfolio.filter(p => p.portfolioType === 'dangerous').length})
           </button>
         </div>
 
