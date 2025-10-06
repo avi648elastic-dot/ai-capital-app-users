@@ -23,7 +23,7 @@ export default function Step1({ onComplete }: Step1Props) {
       }
 
       await axios.post(
-        `${https://ai-capital-app7.onrender.com}/api/onboarding/check-existing`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/check-existing`,
         { hasExistingPortfolio: hasPortfolio },
         { headers: { Authorization: `Bearer ${token}` } }
       );

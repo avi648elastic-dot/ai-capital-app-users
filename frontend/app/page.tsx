@@ -40,7 +40,7 @@ export default function Page() {
         
         // Test backend connectivity first
         try {
-          const testResponse = await axios.get(`https://ai-capital-app7.onrender.com/api/test`);
+          const testResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/test`);
           console.log('✅ [FRONTEND] Backend test successful:', testResponse.data);
         } catch (testError) {
           console.error('❌ [FRONTEND] Backend test failed:', testError);
@@ -100,7 +100,7 @@ export default function Page() {
 
       // ✅ נבדוק שוב את הסטטוס
       const { data: status } = await axios.get(
-        `https://ai-capital-app7.onrender.com/api/onboarding/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -146,7 +146,7 @@ export default function Page() {
           <h1 className="text-3xl font-bold text-center text-white mb-2">AiCapital</h1>
           <p className="text-center text-gray-400 mb-6">Professional Portfolio Management</p>
           <div className="mb-4 p-2 bg-gray-800 rounded text-xs text-gray-300 text-center">
-            API URL: {process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com'}
+            API URL: {process.env.NEXT_PUBLIC_API_URL || 'NOT SET'}
           </div>
 
           {/* Tabs */}

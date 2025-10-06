@@ -65,7 +65,7 @@ export default function Dashboard() {
 
   const checkOnboardingStatus = async () => {
     try {
-      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/onboarding/status`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       
@@ -86,7 +86,7 @@ export default function Dashboard() {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/auth/me`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setUser(response.data.user);
@@ -100,7 +100,7 @@ export default function Dashboard() {
   const fetchPortfolio = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/portfolio`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setPortfolio(response.data.portfolio);
@@ -114,7 +114,7 @@ export default function Dashboard() {
 
   const handleAddStock = async (stockData: any) => {
     try {
-      await axios.post(`${https://ai-capital-app7.onrender.com}/api/portfolio/add`, stockData, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/add`, stockData, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setShowStockForm(false);
@@ -126,7 +126,7 @@ export default function Dashboard() {
 
   const handleUpdateStock = async (id: string, stockData: any) => {
     try {
-      await axios.put(`${https://ai-capital-app7.onrender.com}/api/portfolio/${id}`, stockData, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/${id}`, stockData, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       fetchPortfolio();
@@ -137,7 +137,7 @@ export default function Dashboard() {
 
   const handleDeleteStock = async (id: string) => {
     try {
-      await axios.delete(`${https://ai-capital-app7.onrender.com}/api/portfolio/${id}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/${id}`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       fetchPortfolio();
@@ -148,7 +148,7 @@ export default function Dashboard() {
 
   const handleUpdateDecisions = async () => {
     try {
-      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/portfolio/decisions`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/decisions`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setPortfolio(response.data.portfolio);
@@ -164,7 +164,7 @@ export default function Dashboard() {
 
   const checkDebugInfo = async () => {
     try {
-      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/onboarding/status`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setDebugInfo(response.data);

@@ -26,7 +26,7 @@ export default function OnboardingPage() {
 
   const checkOnboardingStatus = async () => {
     try {
-      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/onboarding/status`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       
