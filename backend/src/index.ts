@@ -85,7 +85,8 @@ app.get('/api/simple-test', (req, res) => {
     status: 'OK', 
     message: 'Server is running without database',
     timestamp: new Date().toISOString(),
-    mongoState: mongoose.connection.readyState
+    mongoState: mongoose.connection.readyState,
+    corsEnabled: 'ALL_ORIGINS_ALLOWED'
   });
 });
 
