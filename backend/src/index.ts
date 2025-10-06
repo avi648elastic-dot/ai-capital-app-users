@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth';
 import portfolioRoutes from './routes/portfolio';
@@ -15,89 +16,114 @@ import adminRoutes from './routes/admin';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Security middleware
+// ✅ Render מחייב להשתמש ב־process.env.PORT
+const PORT = Number(process.env.PORT) || 10000;
+
+// 🔒 אבטחה
 app.use(helmet());
 
-// Rate limiting
+// 🧁 Cookie Parser – חובה בשביל לזהות token מה-cookie
+app.use(cookieParser());
+
+// 🔄 Rate Limit
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 });
 app.use(limiter);
 
-// CORS configuration
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://yourdomain.com'] 
-    : ['http://localhost:3000'],
-  credentials: true,
-}));
+// ✅ רשימת דומיינים מותרים לגישה
+const allowedOrigins = [
+  'https://ai-capital.vercel.app',
+  'https://ai-capital-app7-qalnn40zw-avi648elastic-dots-projects.vercel.app',
+  'https://ai-capital-app7.onrender.com',
+  'http://localhost:3000',
+];
 
-// Body parsing middleware
+// ⚙️ CORS – כולל credentials כדי להעביר cookies
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn('❌ Blocked CORS from:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true, // חשוב מאוד — מאפשר שליחת cookies
+  })
+);
+
+// 🧠 Body Parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// ✅ מסלולים ראשיים
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/shopify', shopifyRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Health check endpoint
+// 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
   });
 });
 
-// Error handling middleware
+// 🌐 דף בית בסיסי
+app.get('/', (req, res) => {
+  res.send('✅ AiCapital Backend is Running and Healthy!');
+});
+
+// ⚠️ טיפול בשגיאות כלליות
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err);
-  res.status(500).json({ 
+  console.error('❌ Error:', err);
+  res.status(500).json({
     message: 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { error: err.message })
+    ...(process.env.NODE_ENV === 'development' && { error: err.message }),
   });
 });
 
-// 404 handler
+// 🚫 404 – לא נמצא
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Connect to MongoDB
+// 🧩 חיבור למסד הנתונים
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/aicapital';
+    const mongoURI = process.env.MONGODB_URI;
+    if (!mongoURI) throw new Error('Missing MONGODB_URI in environment variables');
     await mongoose.connect(mongoURI);
-    console.log('MongoDB connected successfully');
+    console.log('✅ MongoDB connected successfully');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
+    console.error('❌ MongoDB connection error:', error);
     process.exit(1);
   }
 };
 
-// Start server
+// 🚀 הפעלת השרת
 const startServer = async () => {
   await connectDB();
-  
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 };
 
-// Handle unhandled promise rejections
+// 🧯 טיפול בחריגות בלתי צפויות
 process.on('unhandledRejection', (err: any) => {
   console.error('Unhandled Promise Rejection:', err);
   process.exit(1);
 });
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (err: any) => {
   console.error('Uncaught Exception:', err);
   process.exit(1);

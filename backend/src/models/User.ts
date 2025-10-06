@@ -1,88 +1,40 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IUser extends Document {
+  _id: Types.ObjectId; // ✅ נוספה שורה זו
+  name: string;
   email: string;
   password: string;
-  name: string;
   subscriptionActive: boolean;
-  apiKey?: string;
   onboardingCompleted: boolean;
-  portfolioType?: 'solid' | 'dangerous';
-  portfolioSource?: 'imported' | 'ai-generated';
-  riskTolerance?: number; // percentage for stop loss/take profit
+  portfolioType?: string;
+  portfolioSource?: string;
   totalCapital?: number;
+  riskTolerance?: number;
   createdAt: Date;
-  updatedAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
+
+  apiKey?: string;
+  apiSecret?: string;
+  shopDomain?: string;
 }
 
-const UserSchema = new Schema<IUser>({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true,
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 6,
-  },
-  name: {
-    type: String,
-    required: true,
-    trim: true,
-  },
-  subscriptionActive: {
-    type: Boolean,
-    default: false,
-  },
-  apiKey: {
-    type: String,
-    unique: true,
-    sparse: true,
-  },
-  onboardingCompleted: {
-    type: Boolean,
-    default: false,
-  },
-  portfolioType: {
-    type: String,
-    enum: ['solid', 'dangerous'],
-  },
-  portfolioSource: {
-    type: String,
-    enum: ['imported', 'ai-generated'],
-  },
-  riskTolerance: {
-    type: Number,
-    default: 7, // 7% default risk tolerance
-    min: 1,
-    max: 20,
-  },
-  totalCapital: {
-    type: Number,
-    min: 0,
-  },
-}, {
-  timestamps: true,
-});
+const UserSchema: Schema<IUser> = new Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    subscriptionActive: { type: Boolean, default: false },
+    onboardingCompleted: { type: Boolean, default: false },
+    portfolioType: { type: String },
+    portfolioSource: { type: String },
+    totalCapital: { type: Number, default: 0 },
+    riskTolerance: { type: Number, default: 0 },
 
-// Hash password before saving
-UserSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  
-  const bcrypt = require('bcryptjs');
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
-});
-
-// Compare password method
-UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
-  const bcrypt = require('bcryptjs');
-  return bcrypt.compare(candidatePassword, this.password);
-};
-
+    apiKey: { type: String },
+    apiSecret: { type: String },
+    shopDomain: { type: String },
+  },
+  { timestamps: true }
+);
 
 export default mongoose.model<IUser>('User', UserSchema);

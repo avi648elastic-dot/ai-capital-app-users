@@ -72,7 +72,8 @@ export default function AdminDashboard() {
       setStats(statsResponse.data);
     } catch (error) {
       console.error('Error fetching admin data:', error);
-      if (error.response?.status === 403) {
+      const err = error as any; // ✅ תיקון טיפוס
+      if (err?.response?.status === 403) {
         alert('Admin access required');
         router.push('/dashboard');
       }
@@ -105,7 +106,8 @@ export default function AdminDashboard() {
       fetchData(); // Refresh data
     } catch (error) {
       console.error(`Error ${action} user:`, error);
-      alert(`Error ${action}ing user`);
+      const err = error as any; // ✅ תיקון טיפוס
+      alert(`Error ${action}ing user: ${err?.response?.data?.message || 'Unknown error'}`);
     }
   };
 

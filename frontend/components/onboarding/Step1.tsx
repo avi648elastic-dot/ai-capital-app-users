@@ -10,7 +10,6 @@ interface Step1Props {
 }
 
 export default function Step1({ onComplete }: Step1Props) {
-  const [hasExistingPortfolio, setHasExistingPortfolio] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (hasPortfolio: boolean) => {
@@ -23,16 +22,24 @@ export default function Step1({ onComplete }: Step1Props) {
         return;
       }
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/check-existing`, {
-        hasExistingPortfolio: hasPortfolio,
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/check-existing`,
+        { hasExistingPortfolio: hasPortfolio },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
       onComplete({ hasExistingPortfolio: hasPortfolio });
-    } catch (error) {
+
+    } catch (error: unknown) {
       console.error('Error saving portfolio preference:', error);
-      alert('Error: ' + (error.response?.data?.message || 'Something went wrong'));
+
+      // ✅ זוהי השורה שתוקעת את ה-build שלך, הנה התיקון:
+      if (axios.isAxiosError(error)) {
+        alert('Error: ' + (error.response?.data?.message || 'Something went wrong'));
+      } else {
+        alert('Unexpected error occurred.');
+      }
+
     } finally {
       setLoading(false);
     }
