@@ -11,14 +11,29 @@ const router = express.Router();
  */
 router.get('/status', authenticateToken, async (req, res) => {
   try {
+    console.log('🔍 [ONBOARDING STATUS] Checking for user:', req.user!._id);
     const user = await User.findById(req.user!._id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      console.log('❌ [ONBOARDING STATUS] User not found:', req.user!._id);
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-    return res.json({
+    console.log('📊 [ONBOARDING STATUS] User data:', {
+      id: user._id,
+      email: user.email,
+      onboardingCompleted: user.onboardingCompleted,
+      portfolioType: user.portfolioType,
+      portfolioSource: user.portfolioSource
+    });
+
+    const response = {
       onboardingCompleted: user.onboardingCompleted || false,
       portfolioType: user.portfolioType || null,
       portfolioSource: user.portfolioSource || null,
-    });
+    };
+
+    console.log('✅ [ONBOARDING STATUS] Response:', response);
+    return res.json(response);
   } catch (error) {
     console.error('❌ Get onboarding status error:', error);
     return res.status(500).json({ message: 'Internal server error' });

@@ -39,6 +39,8 @@ const allowedOrigins = [
   'https://ai-capital-app7-qalnn40zw-avi648elastic-dots-projects.vercel.app',
   'https://ai-capital-app7.onrender.com',
   'http://localhost:3000',
+  'https://ai-capital-app7-git-main-avi648elastic-dots-projects.vercel.app',
+  'https://ai-capital-app7.vercel.app',
 ];
 
 // ⚙️ CORS – כולל credentials כדי להעביר cookies
@@ -76,6 +78,23 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// 🧪 Test endpoint for debugging
+app.get('/api/test', (req, res) => {
+  console.log('🧪 [TEST] Frontend reached backend successfully');
+  res.json({ message: 'Backend is reachable from frontend', timestamp: new Date().toISOString() });
+});
+
+// 🧪 Simple test endpoint (no DB required)
+app.get('/api/simple-test', (req, res) => {
+  console.log('🧪 [SIMPLE TEST] Basic server test');
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running without database',
+    timestamp: new Date().toISOString(),
+    mongoState: mongoose.connection.readyState
+  });
+});
+
 // 🌐 דף בית בסיסי
 app.get('/', (req, res) => {
   res.send('✅ AiCapital Backend is Running and Healthy!');
@@ -97,25 +116,55 @@ app.use('*', (req, res) => {
 
 // 🧩 חיבור למסד הנתונים
 const connectDB = async () => {
-  try {
-    const mongoURI = process.env.MONGODB_URI;
-    if (!mongoURI) throw new Error('Missing MONGODB_URI in environment variables');
-    await mongoose.connect(mongoURI);
-    console.log('✅ MongoDB connected successfully');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
+  const mongoURI = process.env.MONGODB_URI;
+  if (!mongoURI) {
+    console.error('❌ Missing MONGODB_URI in environment variables');
+    return;
   }
+
+  console.log('🔍 [MONGODB] Attempting to connect to:', mongoURI.replace(/\/\/.*@/, '//***:***@')); // Hide credentials in logs
+
+  const attemptConnect = async (attempt = 1) => {
+    try {
+      await mongoose.connect(mongoURI);
+      console.log('✅ MongoDB connected successfully');
+    } catch (error) {
+      const backoffMs = Math.min(30000, attempt * 5000);
+      console.error(`❌ MongoDB connection error (attempt ${attempt}). Retrying in ${backoffMs}ms`, error);
+      if (attempt >= 3) {
+        console.error('❌ MongoDB connection failed after 3 attempts. Server will continue but database operations may fail.');
+        return;
+      }
+      setTimeout(() => attemptConnect(attempt + 1), backoffMs);
+    }
+  };
+
+  attemptConnect();
 };
 
 // 🚀 הפעלת השרת
 const startServer = async () => {
-  await connectDB();
+  try {
+    // Start the server immediately so platform health checks can succeed
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
+    // Handle server errors
+    server.on('error', (error: any) => {
+      console.error('❌ Server error:', error);
+      if (error.code === 'EADDRINUSE') {
+        console.error('❌ Port already in use');
+      }
+    });
+
+    // Connect to DB in the background with retries
+    connectDB();
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
 };
 
 // 🧯 טיפול בחריגות בלתי צפויות

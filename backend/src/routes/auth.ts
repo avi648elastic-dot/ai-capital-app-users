@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import User from '../models/User';
 
 const router = Router();
@@ -37,6 +38,12 @@ router.post('/signup', async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.error('❌ [SIGNUP] MongoDB not connected. State:', mongoose.connection.readyState);
+      return res.status(503).json({ message: 'Database temporarily unavailable. Please try again.' });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
@@ -53,6 +60,7 @@ router.post('/signup', async (req: Request, res: Response) => {
     });
 
     await user.save();
+    console.log('✅ [SIGNUP] User created successfully:', user.email);
 
     const token = issueToken(String(user._id), user.email, res);
 
@@ -69,6 +77,7 @@ router.post('/signup', async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('❌ Signup error:', error.message);
+    console.error('❌ Signup error details:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
