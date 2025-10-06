@@ -14,7 +14,7 @@ A full-stack portfolio management application with AI-powered trading decisions,
   - Price vs entry analysis
 - **AI Portfolio Generation**: Automatic stock selection and allocation based on risk preferences
 - **Portfolio Types**: Solid (conservative) and Dangerous (aggressive) portfolio options
-- **Real-time Data**: Integration with Alpha Vantage API for live market data
+- **Real-time Data**: Integration with Finnhub and Financial Modeling Prep APIs for live market data
 - **Professional UI**: Dark theme with TailwindCSS
 - **Charts & Analytics**: Portfolio visualization with Recharts
 - **Admin Dashboard**: Complete user and portfolio management system
@@ -37,7 +37,8 @@ A full-stack portfolio management application with AI-powered trading decisions,
 - TypeScript
 - MongoDB with Mongoose
 - JWT Authentication
-- Alpha Vantage API
+- Finnhub API
+- Financial Modeling Prep API
 - Bcryptjs
 
 ## Quick Start
@@ -45,7 +46,8 @@ A full-stack portfolio management application with AI-powered trading decisions,
 ### Prerequisites
 - Node.js 18+
 - MongoDB
-- Alpha Vantage API Key (free at https://www.alphavantage.co/support/#api-key)
+- Finnhub API Key (free at https://finnhub.io/register)
+- Financial Modeling Prep API Key (free at https://financialmodelingprep.com/developer/docs)
 - Docker (optional)
 
 ### Environment Variables
@@ -57,15 +59,17 @@ NODE_ENV=production
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
-ALPHA_VANTAGE_API_KEY=your_alpha_vantage_api_key
+FINNHUB_API_KEY=your_finnhub_api_key
+FMP_API_KEY=your_fmp_api_key
 GOOGLE_SHEETS_API_KEY=your_google_sheets_api_key
 GOOGLE_SHEETS_SHEET_ID=your_google_sheet_id
 ```
 
 **Important**: 
-- Get your free Alpha Vantage API key at https://www.alphavantage.co/support/#api-key
-- The system will work with mock data if no API key is provided
-- Free tier allows 5 API calls per minute
+- Get your free Finnhub API key at https://finnhub.io/register (60 calls/minute)
+- Get your free FMP API key at https://financialmodelingprep.com/developer/docs (250 calls/day)
+- The system will work with mock data if no API keys are provided
+- Finnhub provides real-time quotes, FMP provides historical data and market cap
 
 ### Development Setup
 

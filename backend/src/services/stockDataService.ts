@@ -29,13 +29,19 @@ interface AlphaVantageTimeSeries {
 }
 
 export class StockDataService {
-  private apiKey: string;
-  private baseUrl = 'https://www.alphavantage.co/query';
+  private finnhubApiKey: string;
+  private fmpApiKey: string;
+  private finnhubBaseUrl = 'https://finnhub.io/api/v1';
+  private fmpBaseUrl = 'https://financialmodelingprep.com/api/v3';
 
   constructor() {
-    this.apiKey = process.env.ALPHA_VANTAGE_API_KEY || 'demo';
-    if (this.apiKey === 'demo') {
-      console.warn('⚠️ Using demo Alpha Vantage API key. Get a real key at https://www.alphavantage.co/support/#api-key');
+    this.finnhubApiKey = process.env.FINNHUB_API_KEY || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g';
+    this.fmpApiKey = process.env.FMP_API_KEY || 'DPQXLdd8vdBNFA1tl5HWXt8Fd7D0Lw6G';
+    
+    if (this.finnhubApiKey === 'demo' || this.fmpApiKey === 'demo') {
+      console.warn('⚠️ Using demo API keys. Consider getting real keys for production use.');
+    } else {
+      console.log('✅ [STOCK DATA] Using provided API keys for real-time data');
     }
   }
 
@@ -46,47 +52,39 @@ export class StockDataService {
     try {
       console.log(`🔍 [STOCK DATA] Fetching data for ${symbol}`);
       
-      // Get current quote
-      const quoteResponse = await this.makeRequest('GLOBAL_QUOTE', { symbol });
-      const quote = quoteResponse['Global Quote'] as AlphaVantageQuote;
-      
-      if (!quote) {
+      // Get current quote from Finnhub (real-time)
+      const quoteResponse = await this.getFinnhubQuote(symbol);
+      if (!quoteResponse) {
         console.error(`❌ [STOCK DATA] No quote data for ${symbol}`);
         return null;
       }
 
-      const currentPrice = parseFloat(quote['05. price']);
-      const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
+      const currentPrice = quoteResponse.c;
+      const changePercent = quoteResponse.dp; // Daily change percentage
 
-      // Get historical data for 30D and 60D highs
-      const timeSeriesResponse = await this.makeRequest('TIME_SERIES_DAILY', { 
-        symbol,
-        outputsize: 'compact' // Last 100 days
-      });
-      
-      const timeSeries = timeSeriesResponse['Time Series (Daily)'] as AlphaVantageTimeSeries;
-      if (!timeSeries) {
-        console.error(`❌ [STOCK DATA] No time series data for ${symbol}`);
+      // Get historical data from FMP for 30D and 60D highs
+      const historicalData = await this.getFMPHistoricalData(symbol);
+      if (!historicalData || historicalData.length === 0) {
+        console.error(`❌ [STOCK DATA] No historical data for ${symbol}`);
         return null;
       }
 
       // Calculate 30D and 60D highs
-      const dates = Object.keys(timeSeries).sort().reverse(); // Most recent first
-      const last30Days = dates.slice(0, 30);
-      const last60Days = dates.slice(0, 60);
+      const last30Days = historicalData.slice(0, 30);
+      const last60Days = historicalData.slice(0, 60);
       
-      const top30D = Math.max(...last30Days.map(date => parseFloat(timeSeries[date]['2. high'])));
-      const top60D = Math.max(...last60Days.map(date => parseFloat(timeSeries[date]['2. high'])));
+      const top30D = Math.max(...last30Days.map(day => day.high));
+      const top60D = Math.max(...last60Days.map(day => day.high));
 
       // Calculate monthly performance
-      const thisMonthPercent = this.calculateMonthlyPerformance(timeSeries, dates);
-      const lastMonthPercent = this.calculateLastMonthPerformance(timeSeries, dates);
+      const thisMonthPercent = this.calculateMonthlyPerformanceFMP(historicalData);
+      const lastMonthPercent = this.calculateLastMonthPerformanceFMP(historicalData);
 
-      // Calculate volatility (simplified)
-      const volatility = this.calculateVolatility(timeSeries, dates.slice(0, 30));
+      // Calculate volatility
+      const volatility = this.calculateVolatilityFMP(historicalData.slice(0, 30));
 
-      // Get market cap (simplified - would need another API call for real data)
-      const marketCap = this.estimateMarketCap(symbol, currentPrice);
+      // Get market cap from FMP
+      const marketCap = await this.getFMPMarketCap(symbol);
 
       const stockData: StockData = {
         symbol: symbol.toUpperCase(),
@@ -104,7 +102,8 @@ export class StockDataService {
         top30D,
         top60D,
         thisMonthPercent: `${thisMonthPercent.toFixed(2)}%`,
-        volatility: `${(volatility * 100).toFixed(2)}%`
+        volatility: `${(volatility * 100).toFixed(2)}%`,
+        marketCap: `${(marketCap / 1000000000).toFixed(1)}B`
       });
 
       return stockData;
@@ -121,8 +120,8 @@ export class StockDataService {
   async getMultipleStockData(symbols: string[]): Promise<Map<string, StockData>> {
     const stockDataMap = new Map<string, StockData>();
     
-    // Process symbols in batches to avoid rate limits
-    const batchSize = 2; // Alpha Vantage free tier allows 5 calls per minute
+    // Process symbols in batches - Finnhub allows 60 calls/minute, FMP allows 250 calls/day
+    const batchSize = 5; // Process 5 stocks at a time
     for (let i = 0; i < symbols.length; i += batchSize) {
       const batch = symbols.slice(i, i + batchSize);
       
@@ -131,21 +130,46 @@ export class StockDataService {
         if (data) {
           stockDataMap.set(symbol, data);
         }
-        // Add delay between requests to respect rate limits
-        await this.delay(12000); // 12 seconds between requests
+        // Add small delay between requests to be respectful
+        await this.delay(1000); // 1 second between requests
       });
 
       await Promise.all(promises);
+      
+      // Add delay between batches
+      if (i + batchSize < symbols.length) {
+        await this.delay(2000); // 2 seconds between batches
+      }
     }
 
     return stockDataMap;
   }
 
   /**
-   * Make API request to Alpha Vantage
+   * Get real-time quote from Finnhub
    */
-  private async makeRequest(functionName: string, params: Record<string, string>): Promise<any> {
-    const url = `${this.baseUrl}?function=${functionName}&apikey=${this.apiKey}&${new URLSearchParams(params).toString()}`;
+  private async getFinnhubQuote(symbol: string): Promise<any> {
+    const url = `${this.finnhubBaseUrl}/quote?symbol=${symbol}&token=${this.finnhubApiKey}`;
+    
+    const response = await axios.get(url, {
+      timeout: 5000,
+      headers: {
+        'User-Agent': 'AiCapital/1.0'
+      }
+    });
+
+    if (response.data.error) {
+      throw new Error(`Finnhub API Error: ${response.data.error}`);
+    }
+
+    return response.data;
+  }
+
+  /**
+   * Get historical data from FMP
+   */
+  private async getFMPHistoricalData(symbol: string): Promise<any[]> {
+    const url = `${this.fmpBaseUrl}/historical-price-full/${symbol}?apikey=${this.fmpApiKey}`;
     
     const response = await axios.get(url, {
       timeout: 10000,
@@ -154,26 +178,42 @@ export class StockDataService {
       }
     });
 
-    if (response.data['Error Message']) {
-      throw new Error(`Alpha Vantage API Error: ${response.data['Error Message']}`);
+    if (response.data.error) {
+      throw new Error(`FMP API Error: ${response.data.error}`);
     }
 
-    if (response.data['Note']) {
-      throw new Error(`Alpha Vantage API Rate Limit: ${response.data['Note']}`);
-    }
-
-    return response.data;
+    return response.data.historical || [];
   }
 
   /**
-   * Calculate monthly performance percentage
+   * Get market cap from FMP
    */
-  private calculateMonthlyPerformance(timeSeries: AlphaVantageTimeSeries, dates: string[]): number {
+  private async getFMPMarketCap(symbol: string): Promise<number> {
+    const url = `${this.fmpBaseUrl}/market-capitalization/${symbol}?apikey=${this.fmpApiKey}`;
+    
+    const response = await axios.get(url, {
+      timeout: 5000,
+      headers: {
+        'User-Agent': 'AiCapital/1.0'
+      }
+    });
+
+    if (response.data.error || !response.data[0]) {
+      return this.estimateMarketCap(symbol, 0);
+    }
+
+    return response.data[0].marketCap || this.estimateMarketCap(symbol, 0);
+  }
+
+  /**
+   * Calculate monthly performance percentage (FMP format)
+   */
+  private calculateMonthlyPerformanceFMP(historicalData: any[]): number {
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     
-    const thisMonthData = dates.filter(date => {
-      const dateObj = new Date(date);
+    const thisMonthData = historicalData.filter(day => {
+      const dateObj = new Date(day.date);
       return dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear;
     });
 
@@ -182,22 +222,22 @@ export class StockDataService {
     const firstDay = thisMonthData[thisMonthData.length - 1]; // First day of month
     const lastDay = thisMonthData[0]; // Most recent day
 
-    const firstPrice = parseFloat(timeSeries[firstDay]['4. close']);
-    const lastPrice = parseFloat(timeSeries[lastDay]['4. close']);
+    const firstPrice = firstDay.close;
+    const lastPrice = lastDay.close;
 
     return ((lastPrice - firstPrice) / firstPrice) * 100;
   }
 
   /**
-   * Calculate last month performance percentage
+   * Calculate last month performance percentage (FMP format)
    */
-  private calculateLastMonthPerformance(timeSeries: AlphaVantageTimeSeries, dates: string[]): number {
+  private calculateLastMonthPerformanceFMP(historicalData: any[]): number {
     const currentDate = new Date();
     const lastMonth = currentDate.getMonth() === 0 ? 11 : currentDate.getMonth() - 1;
     const lastMonthYear = currentDate.getMonth() === 0 ? currentDate.getFullYear() - 1 : currentDate.getFullYear();
     
-    const lastMonthData = dates.filter(date => {
-      const dateObj = new Date(date);
+    const lastMonthData = historicalData.filter(day => {
+      const dateObj = new Date(day.date);
       return dateObj.getMonth() === lastMonth && dateObj.getFullYear() === lastMonthYear;
     });
 
@@ -206,23 +246,23 @@ export class StockDataService {
     const firstDay = lastMonthData[lastMonthData.length - 1];
     const lastDay = lastMonthData[0];
 
-    const firstPrice = parseFloat(timeSeries[firstDay]['4. close']);
-    const lastPrice = parseFloat(timeSeries[lastDay]['4. close']);
+    const firstPrice = firstDay.close;
+    const lastPrice = lastDay.close;
 
     return ((lastPrice - firstPrice) / firstPrice) * 100;
   }
 
   /**
-   * Calculate volatility (standard deviation of daily returns)
+   * Calculate volatility (FMP format)
    */
-  private calculateVolatility(timeSeries: AlphaVantageTimeSeries, dates: string[]): number {
-    if (dates.length < 2) return 0;
+  private calculateVolatilityFMP(historicalData: any[]): number {
+    if (historicalData.length < 2) return 0;
 
     const returns: number[] = [];
     
-    for (let i = 0; i < dates.length - 1; i++) {
-      const currentPrice = parseFloat(timeSeries[dates[i]]['4. close']);
-      const previousPrice = parseFloat(timeSeries[dates[i + 1]]['4. close']);
+    for (let i = 0; i < historicalData.length - 1; i++) {
+      const currentPrice = historicalData[i].close;
+      const previousPrice = historicalData[i + 1].close;
       const dailyReturn = (currentPrice - previousPrice) / previousPrice;
       returns.push(dailyReturn);
     }
