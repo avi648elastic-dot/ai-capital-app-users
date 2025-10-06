@@ -93,10 +93,77 @@ export class StockDataService {
           
           console.log(`✅ [STOCK DATA] Got historical data for ${symbol}`);
         } else {
-          console.warn(`⚠️ [STOCK DATA] No historical data for ${symbol}, using defaults`);
+          console.warn(`⚠️ [STOCK DATA] No FMP historical data for ${symbol}, trying Finnhub historical data`);
+          // Try Finnhub historical data as fallback
+          try {
+            historicalData = await this.getFinnhubHistoricalData(symbol);
+            if (historicalData && historicalData.length > 0) {
+              // Calculate 30D and 60D highs
+              const last30Days = historicalData.slice(0, 30);
+              const last60Days = historicalData.slice(0, 60);
+
+              top30D = Math.max(...last30Days.map(day => day.high));
+              top60D = Math.max(...last60Days.map(day => day.high));
+
+              // Calculate monthly performance using Finnhub data
+              thisMonthPercent = this.calculateMonthlyPerformanceFinnhub(historicalData);
+              lastMonthPercent = this.calculateLastMonthPerformanceFinnhub(historicalData);
+
+              // Calculate volatility using Finnhub data
+              volatility = this.calculateVolatilityFinnhub(historicalData.slice(0, 30));
+              
+              console.log(`✅ [STOCK DATA] Got Finnhub historical data for ${symbol}`);
+            } else {
+              console.warn(`⚠️ [STOCK DATA] No Finnhub historical data for ${symbol}, using daily change fallback`);
+              // Use daily change as fallback
+              const changePercent = quoteResponse.dp || 0;
+              thisMonthPercent = changePercent * 20; // Rough estimate
+              lastMonthPercent = changePercent * 15;
+              volatility = Math.abs(changePercent) / 100;
+            }
+          } catch (finnhubError) {
+            console.warn(`⚠️ [STOCK DATA] Finnhub historical data failed for ${symbol}, using daily change fallback:`, finnhubError);
+            const changePercent = quoteResponse.dp || 0;
+            thisMonthPercent = changePercent * 20;
+            lastMonthPercent = changePercent * 15;
+            volatility = Math.abs(changePercent) / 100;
+          }
         }
       } catch (fmpError) {
-        console.warn(`⚠️ [STOCK DATA] FMP API failed for ${symbol}, using defaults:`, fmpError);
+        console.warn(`⚠️ [STOCK DATA] FMP API failed for ${symbol}, trying Finnhub historical data:`, fmpError);
+        // Try Finnhub historical data as fallback
+        try {
+          historicalData = await this.getFinnhubHistoricalData(symbol);
+          if (historicalData && historicalData.length > 0) {
+            // Calculate 30D and 60D highs
+            const last30Days = historicalData.slice(0, 30);
+            const last60Days = historicalData.slice(0, 60);
+
+            top30D = Math.max(...last30Days.map(day => day.high));
+            top60D = Math.max(...last60Days.map(day => day.high));
+
+            // Calculate monthly performance using Finnhub data
+            thisMonthPercent = this.calculateMonthlyPerformanceFinnhub(historicalData);
+            lastMonthPercent = this.calculateLastMonthPerformanceFinnhub(historicalData);
+
+            // Calculate volatility using Finnhub data
+            volatility = this.calculateVolatilityFinnhub(historicalData.slice(0, 30));
+            
+            console.log(`✅ [STOCK DATA] Got Finnhub historical data for ${symbol}`);
+          } else {
+            console.warn(`⚠️ [STOCK DATA] No Finnhub historical data for ${symbol}, using daily change fallback`);
+            const changePercent = quoteResponse.dp || 0;
+            thisMonthPercent = changePercent * 20;
+            lastMonthPercent = changePercent * 15;
+            volatility = Math.abs(changePercent) / 100;
+          }
+        } catch (finnhubError) {
+          console.warn(`⚠️ [STOCK DATA] Finnhub historical data failed for ${symbol}, using daily change fallback:`, finnhubError);
+          const changePercent = quoteResponse.dp || 0;
+          thisMonthPercent = changePercent * 20;
+          lastMonthPercent = changePercent * 15;
+          volatility = Math.abs(changePercent) / 100;
+        }
       }
 
       const stockData: StockData = {
@@ -176,6 +243,52 @@ export class StockDataService {
     }
 
     return response.data;
+  }
+
+  /**
+   * Get Finnhub historical data for a symbol
+   */
+  private async getFinnhubHistoricalData(symbol: string): Promise<any[]> {
+    try {
+      const endDate = Math.floor(Date.now() / 1000);
+      const startDate = endDate - (60 * 24 * 60 * 60); // 60 days ago
+      
+      const response = await axios.get(`${this.finnhubBaseUrl}/stock/candle`, {
+        params: {
+          symbol: symbol.toUpperCase(),
+          resolution: 'D', // Daily
+          from: startDate,
+          to: endDate,
+          token: this.finnhubApiKey
+        },
+        timeout: 5000,
+        headers: {
+          'User-Agent': 'AiCapital/1.0'
+        }
+      });
+
+      if (response.data.s === 'ok') {
+        const { c, h, l, o, t } = response.data; // close, high, low, open, timestamp
+        const historicalData = [];
+        
+        for (let i = 0; i < c.length; i++) {
+          historicalData.push({
+            date: new Date(t[i] * 1000).toISOString().split('T')[0],
+            open: o[i],
+            high: h[i],
+            low: l[i],
+            close: c[i]
+          });
+        }
+        
+        return historicalData.reverse(); // Most recent first
+      }
+      
+      return [];
+    } catch (error) {
+      console.error(`❌ [FINNHUB] Error fetching historical data for ${symbol}:`, error);
+      return [];
+    }
   }
 
   /**
@@ -316,6 +429,75 @@ export class StockDataService {
     };
     
     return estimates[symbol.toUpperCase()] || 1_000_000_000; // Default 1B shares
+  }
+
+  /**
+   * Calculate monthly performance percentage (Finnhub format)
+   */
+  private calculateMonthlyPerformanceFinnhub(historicalData: any[]): number {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    
+    const thisMonthData = historicalData.filter(day => {
+      const dateObj = new Date(day.date);
+      return dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear;
+    });
+
+    if (thisMonthData.length < 2) return 0;
+
+    const firstDay = thisMonthData[thisMonthData.length - 1]; // First day of month
+    const lastDay = thisMonthData[0]; // Most recent day
+
+    const firstPrice = firstDay.close;
+    const lastPrice = lastDay.close;
+
+    return ((lastPrice - firstPrice) / firstPrice) * 100;
+  }
+
+  /**
+   * Calculate last month performance percentage (Finnhub format)
+   */
+  private calculateLastMonthPerformanceFinnhub(historicalData: any[]): number {
+    const currentDate = new Date();
+    const lastMonth = currentDate.getMonth() === 0 ? 11 : currentDate.getMonth() - 1;
+    const lastMonthYear = currentDate.getMonth() === 0 ? currentDate.getFullYear() - 1 : currentDate.getFullYear();
+    
+    const lastMonthData = historicalData.filter(day => {
+      const dateObj = new Date(day.date);
+      return dateObj.getMonth() === lastMonth && dateObj.getFullYear() === lastMonthYear;
+    });
+
+    if (lastMonthData.length < 2) return 0;
+
+    const firstDay = lastMonthData[lastMonthData.length - 1]; // First day of last month
+    const lastDay = lastMonthData[0]; // Last day of last month
+
+    const firstPrice = firstDay.close;
+    const lastPrice = lastDay.close;
+
+    return ((lastPrice - firstPrice) / firstPrice) * 100;
+  }
+
+  /**
+   * Calculate volatility (Finnhub format)
+   */
+  private calculateVolatilityFinnhub(historicalData: any[]): number {
+    if (historicalData.length < 2) return 0.2; // Default volatility
+
+    const returns = [];
+    for (let i = 1; i < historicalData.length; i++) {
+      const currentPrice = historicalData[i - 1].close;
+      const previousPrice = historicalData[i].close;
+      const dailyReturn = (currentPrice - previousPrice) / previousPrice;
+      returns.push(dailyReturn);
+    }
+
+    // Calculate standard deviation of returns
+    const mean = returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
+    const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - mean, 2), 0) / returns.length;
+    const volatility = Math.sqrt(variance);
+
+    return Math.min(volatility, 1.0); // Cap at 100% volatility
   }
 
   /**
