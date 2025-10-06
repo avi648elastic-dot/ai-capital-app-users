@@ -48,12 +48,13 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
 
       console.log('✅ [STEP2B] Portfolio data validated:', response.data.portfolio.length, 'stocks');
 
-      onComplete({ 
-        portfolioType,
-        totalCapital: Number(totalCapital),
-        riskTolerance: Number(riskTolerance),
-        generatedPortfolio: response.data.portfolio
-      });
+      // Skip Step3 - go directly to dashboard
+      console.log('✅ [STEP2B] Portfolio generated successfully, redirecting to dashboard...');
+      
+      // Small delay to show success message
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1000);
     } catch (error) {
       console.error('❌ [STEP2B] Error generating portfolio:', error);
       console.error('❌ [STEP2B] Error details:', error.response?.data);

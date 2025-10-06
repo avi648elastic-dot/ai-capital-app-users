@@ -247,29 +247,19 @@ export class StockDataService {
    */
   async getMultipleStockData(symbols: string[]): Promise<Map<string, StockData>> {
     const stockDataMap = new Map<string, StockData>();
-    
-    // Process symbols in batches - Finnhub allows 60 calls/minute, FMP allows 250 calls/day
-    const batchSize = 5; // Process 5 stocks at a time
-    for (let i = 0; i < symbols.length; i += batchSize) {
-      const batch = symbols.slice(i, i + batchSize);
-      
-      const promises = batch.map(async (symbol) => {
-        const data = await this.getStockData(symbol);
-        if (data) {
-          stockDataMap.set(symbol, data);
-        }
-        // Add small delay between requests to be respectful
-        await this.delay(1000); // 1 second between requests
-      });
 
-      await Promise.all(promises);
-      
-      // Add delay between batches
-      if (i + batchSize < symbols.length) {
-        await this.delay(2000); // 2 seconds between batches
+    // Process ALL symbols in parallel for speed (no batching delays)
+    const promises = symbols.map(async (symbol) => {
+      const data = await this.getStockData(symbol);
+      if (data) {
+        stockDataMap.set(symbol, data);
       }
-    }
+      // No delays - process everything in parallel
+    });
 
+    await Promise.all(promises);
+
+    console.log(`✅ [STOCK DATA] Processed ${symbols.length} stocks in parallel`);
     return stockDataMap;
   }
 

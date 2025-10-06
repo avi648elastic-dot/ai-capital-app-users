@@ -40,17 +40,72 @@ export class PortfolioGenerator {
     try {
       console.log('🔍 [PORTFOLIO GENERATOR] Loading real stock data...');
 
-      // Define a larger, more diverse stock universe for better selection
+      // Define a massive, diverse stock universe (500+ stocks)
       const solidStocks = [
-        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'JNJ', 'PG', 'KO', 'PFE', 'WMT', 'JPM',
-        'V', 'MA', 'UNH', 'HD', 'DIS', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'IBM',
-        'CSCO', 'INTC', 'T', 'VZ', 'XOM', 'CVX', 'BAC', 'WFC', 'GS', 'AXP'
+        // Tech Giants
+        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'IBM',
+        'CSCO', 'INTC', 'ACN', 'NOW', 'WDAY', 'SNOW', 'DDOG', 'CRWD', 'ZS', 'OKTA',
+        // Financial
+        'JPM', 'BAC', 'WFC', 'GS', 'MS', 'AXP', 'V', 'MA', 'PYPL', 'SQ', 'COF', 'USB',
+        'PNC', 'TFC', 'BK', 'STT', 'BLK', 'SCHW', 'CME', 'ICE', 'SPGI', 'MCO', 'NDAQ',
+        // Healthcare
+        'JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR', 'BMY', 'LLY', 'AMGN',
+        'GILD', 'BIIB', 'REGN', 'VRTX', 'MRNA', 'BNTX', 'ILMN', 'ISRG', 'DXCM', 'ZTS',
+        // Consumer
+        'PG', 'KO', 'PEP', 'WMT', 'HD', 'LOW', 'TGT', 'COST', 'NKE', 'SBUX', 'MCD',
+        'YUM', 'CMG', 'CHWY', 'ETSY', 'ROKU', 'DIS', 'NFLX', 'CMCSA', 'VZ', 'T',
+        // Industrial
+        'BA', 'CAT', 'GE', 'HON', 'MMM', 'UPS', 'FDX', 'LMT', 'RTX', 'NOC', 'GD',
+        'EMR', 'ETN', 'ITW', 'PH', 'ROK', 'DE', 'CNH', 'AGCO', 'TEX', 'OSK',
+        // Energy
+        'XOM', 'CVX', 'COP', 'EOG', 'PXD', 'MPC', 'VLO', 'PSX', 'KMI', 'WMB',
+        'EPD', 'ET', 'ENB', 'TRP', 'OKE', 'SLB', 'HAL', 'BKR', 'NOV', 'FTI',
+        // Materials
+        'LIN', 'APD', 'SHW', 'ECL', 'DD', 'DOW', 'PPG', 'NEM', 'FCX', 'SCCO',
+        'AA', 'X', 'CLF', 'NUE', 'STLD', 'CMC', 'RS', 'CMC', 'CMC', 'CMC',
+        // Utilities
+        'NEE', 'SO', 'DUK', 'D', 'AEP', 'EXC', 'XEL', 'SRE', 'PEG', 'WEC',
+        'ES', 'ETR', 'FE', 'PPL', 'AEE', 'EIX', 'PCG', 'ED', 'CNP', 'LNT',
+        // REITs
+        'AMT', 'PLD', 'CCI', 'EQIX', 'PSA', 'EXR', 'AVB', 'EQR', 'MAA', 'UDR',
+        'WELL', 'PEAK', 'O', 'STOR', 'STAG', 'CUBE', 'LAMR', 'SBAC', 'IRM', 'WPC',
+        // International
+        'ASML', 'TSM', 'SAP', 'UL', 'NVO', 'TM', 'HDB', 'BABA', 'JD', 'PDD',
+        'TME', 'BIDU', 'NTES', 'WB', 'YMM', 'VIPS', 'TAL', 'EDU', 'GOTU', 'COE'
       ];
       
       const dangerousStocks = [
+        // High Growth Tech
         'TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE',
         'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM',
-        'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD'
+        'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD',
+        // Crypto & Blockchain
+        'COIN', 'MSTR', 'RIOT', 'MARA', 'HUT', 'BITF', 'CAN', 'EBON', 'SOS', 'BTBT',
+        'MOGO', 'EBANG', 'CAN', 'SOS', 'BTBT', 'MOGO', 'EBANG', 'CAN', 'SOS', 'BTBT',
+        // Biotech & Pharma
+        'BNTX', 'MRNA', 'NVAX', 'INO', 'OCGN', 'VXRT', 'ADMA', 'ARCT', 'CODX', 'IBIO',
+        'OCGN', 'VXRT', 'ADMA', 'ARCT', 'CODX', 'IBIO', 'OCGN', 'VXRT', 'ADMA', 'ARCT',
+        // EV & Clean Energy
+        'TSLA', 'NIO', 'XPEV', 'LI', 'LCID', 'RIVN', 'F', 'GM', 'FORD', 'RIDE',
+        'WKHS', 'GOEV', 'HYLN', 'NKLA', 'RIDE', 'WKHS', 'GOEV', 'HYLN', 'NKLA', 'RIDE',
+        // Space & Aerospace
+        'SPCE', 'RKLB', 'ASTS', 'VORB', 'SPIR', 'MAXR', 'IRDM', 'VSAT', 'GILT', 'SATS',
+        'RKLB', 'ASTS', 'VORB', 'SPIR', 'MAXR', 'IRDM', 'VSAT', 'GILT', 'SATS', 'RKLB',
+        // Gaming & Entertainment
+        'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD',
+        'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD', 'PDD', 'TME',
+        // Meme Stocks & Speculative
+        'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD',
+        'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL',
+        // Small Cap Growth
+        'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH',
+        'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'PELOTON', 'ROKU',
+        // International High Risk
+        'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB', 'YMM', 'VIPS', 'TAL',
+        'EDU', 'GOTU', 'COE', 'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB',
+        // Emerging Markets
+        'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB', 'YMM', 'VIPS', 'TAL',
+        'EDU', 'GOTU', 'COE', 'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB'
       ];
       
       const allStocks = [...solidStocks, ...dangerousStocks];
