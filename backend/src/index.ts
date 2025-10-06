@@ -47,14 +47,7 @@ const allowedOrigins = [
 // ⚙️ CORS – כולל credentials כדי להעביר cookies
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn('❌ Blocked CORS from:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: true, // Allow all origins temporarily
     credentials: true, // חשוב מאוד — מאפשר שליחת cookies
   })
 );
