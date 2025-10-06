@@ -73,13 +73,13 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
   const getActionColor = (action: string) => {
     switch (action) {
       case 'BUY':
-        return 'text-success-400 bg-success-900';
+        return 'action-buy';
       case 'SELL':
-        return 'text-danger-400 bg-danger-900';
+        return 'action-sell';
       case 'HOLD':
-        return 'text-warning-400 bg-warning-900';
+        return 'action-hold';
       default:
-        return 'text-gray-400 bg-gray-700';
+        return 'text-slate-400 bg-slate-700';
     }
   };
 
@@ -190,11 +190,11 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                   </td>
                   <td className="px-6 py-4 min-w-64">
                     <div className="flex flex-col">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getActionColor(item.action)} w-fit`}>
+                      <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${getActionColor(item.action)} w-fit mb-2`}>
                         {item.action}
                       </span>
                       {item.reason && (
-                        <div className="text-xs text-gray-400 mt-1 max-w-60 break-words" title={item.reason}>
+                        <div className="text-xs text-slate-400 mt-1 max-w-60 break-words leading-relaxed" title={item.reason}>
                           {item.reason}
                         </div>
                       )}

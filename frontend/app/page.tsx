@@ -140,22 +140,46 @@ export default function Page() {
    * 🧠 טופס התחברות / הרשמה
    */
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full mx-4">
         <div className="card p-8">
-          <h1 className="text-3xl font-bold text-center text-white mb-2">AiCapital</h1>
-          <p className="text-center text-gray-400 mb-6">Professional Portfolio Management</p>
+          {/* AI-Capital Logo and Branding */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 flex items-center justify-center">
+                <svg
+                  viewBox="0 0 100 100"
+                  className="w-12 h-12 text-emerald-500"
+                  fill="currentColor"
+                >
+                  {/* Tree Logo SVG */}
+                  <path d="M45 70 L45 85 L55 85 L55 70 Z" />
+                  <path d="M50 70 Q30 50 20 30 Q35 40 50 50 Q65 40 80 30 Q70 50 50 70 Z" />
+                  <circle cx="35" cy="45" r="8" />
+                  <circle cx="65" cy="45" r="8" />
+                  <circle cx="50" cy="35" r="10" />
+                  <circle cx="40" cy="25" r="6" />
+                  <circle cx="60" cy="25" r="6" />
+                </svg>
+              </div>
+            </div>
+            <h1 className="logo-text text-3xl mb-2">AI-Capital</h1>
+            <p className="text-slate-400 text-sm">Professional Portfolio Management</p>
+            <p className="text-slate-500 text-xs mt-1">AI-Powered Trading Decisions</p>
+          </div>
           <div className="mb-4 p-2 bg-gray-800 rounded text-xs text-gray-300 text-center">
             API URL: {process.env.NEXT_PUBLIC_API_URL || 'NOT SET'}
           </div>
 
           {/* Tabs */}
-          <div className="flex mb-6 bg-gray-700 rounded-lg p-1">
+          <div className="flex mb-6 bg-slate-800/50 rounded-lg p-1">
             <button
               type="button"
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                isLogin ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`flex-1 py-3 px-4 rounded-md text-sm font-semibold transition-all duration-200 ${
+                isLogin 
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg' 
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Login
@@ -163,8 +187,10 @@ export default function Page() {
             <button
               type="button"
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                !isLogin ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`flex-1 py-3 px-4 rounded-md text-sm font-semibold transition-all duration-200 ${
+                !isLogin 
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg' 
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               Sign Up

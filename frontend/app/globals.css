@@ -2,70 +2,96 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
   }
   
   body {
-    @apply bg-gray-900 text-white;
+    @apply bg-slate-950 text-slate-100;
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
   }
 }
 
 @layer components {
+  /* Financial Theme Buttons */
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
   }
   
   .btn-secondary {
-    @apply bg-gray-700 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-3 px-6 rounded-lg transition-all duration-200 border border-slate-600 hover:border-slate-500;
   }
   
   .btn-success {
-    @apply bg-success-600 hover:bg-success-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
   }
   
   .btn-danger {
-    @apply bg-danger-600 hover:bg-danger-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
   }
   
   .btn-warning {
-    @apply bg-warning-600 hover:bg-warning-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
   }
   
+  /* Financial Input Fields */
   .input-field {
-    @apply w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+    @apply w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
   }
   
+  /* Professional Cards */
   .card {
-    @apply bg-gray-800 rounded-lg shadow-lg border border-gray-700;
+    @apply bg-slate-900/80 backdrop-blur-sm rounded-xl shadow-2xl border border-slate-800/50;
   }
   
+  /* Market Data Tables */
   .table-header {
-    @apply bg-gray-700 text-gray-200 font-medium;
+    @apply bg-slate-800/80 text-slate-200 font-semibold backdrop-blur-sm;
   }
   
-.table-row {
-  @apply border-b border-gray-700 hover:bg-gray-800;
-}
+  .table-row {
+    @apply border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors duration-200;
+  }
   
+  /* Trading Actions */
   .action-buy {
-    @apply text-success-400 font-semibold;
+    @apply text-emerald-400 font-bold bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-500/30;
   }
   
   .action-hold {
-    @apply text-warning-400 font-semibold;
+    @apply text-amber-400 font-bold bg-amber-900/20 px-3 py-1 rounded-full border border-amber-500/30;
   }
   
   .action-sell {
-    @apply text-danger-400 font-semibold;
+    @apply text-red-400 font-bold bg-red-900/20 px-3 py-1 rounded-full border border-red-500/30;
   }
   
+  /* P&L Styling */
   .positive-pnl {
-    @apply text-success-400;
+    @apply text-emerald-400 font-semibold;
   }
   
   .negative-pnl {
-    @apply text-danger-400;
+    @apply text-red-400 font-semibold;
+  }
+  
+  /* Logo and Branding */
+  .logo-text {
+    @apply text-2xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent;
+  }
+  
+  .financial-metric {
+    @apply bg-slate-900/60 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/60 transition-all duration-300;
+  }
+  
+  /* Market Data Styling */
+  .market-data {
+    @apply font-mono text-sm bg-slate-800/50 px-2 py-1 rounded border border-slate-700/50;
   }
 }

@@ -8,6 +8,7 @@ import PortfolioTable from '@/components/PortfolioTable';
 import PortfolioSummary from '@/components/PortfolioSummary';
 import StockForm from '@/components/StockForm';
 import Charts from '@/components/Charts';
+import Header from '@/components/Header';
 
 interface User {
   id: string;
@@ -195,43 +196,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-white">AiCapital</h1>
-              <span className="ml-2 px-2 py-1 bg-primary-600 text-xs rounded-full">
-                {user?.subscriptionActive ? 'PRO' : 'FREE'}
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-300">Welcome, {user?.name}</span>
-              {user?.email === 'admin@aicapital.com' && (
-                <button
-                  onClick={() => router.push('/admin')}
-                  className="text-danger-400 hover:text-danger-300 transition-colors"
-                >
-                  Admin
-                </button>
-              )}
-              <button
-                onClick={checkDebugInfo}
-                className="text-blue-400 hover:text-blue-300 transition-colors ml-4"
-              >
-                Debug Status
-              </button>
-              <button
-                onClick={handleLogout}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen">
+      {/* Professional Header */}
+      <Header userName={user?.name} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {debugInfo && (
