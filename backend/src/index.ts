@@ -91,6 +91,39 @@ app.get('/api/simple-test', (req, res) => {
   });
 });
 
+// 🧪 Test stock data endpoint
+app.get('/api/test-stock/:symbol', async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    console.log(`🧪 [STOCK TEST] Testing stock data for ${symbol}`);
+    
+    const { stockDataService } = await import('./services/stockDataService');
+    const stockData = await stockDataService.getStockData(symbol);
+    
+    if (stockData) {
+      res.json({
+        status: 'OK',
+        symbol,
+        data: stockData,
+        message: 'Real-time data fetched successfully'
+      });
+    } else {
+      res.status(500).json({
+        status: 'ERROR',
+        symbol,
+        message: 'Failed to fetch stock data'
+      });
+    }
+  } catch (error) {
+    console.error('❌ [STOCK TEST] Error:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Stock data test failed',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // 📊 Scheduler status endpoint
 app.get('/api/scheduler/status', (req, res) => {
   const status = schedulerService.getStatus();

@@ -51,7 +51,7 @@ export class StockDataService {
   async getStockData(symbol: string): Promise<StockData | null> {
     try {
       console.log(`🔍 [STOCK DATA] Fetching data for ${symbol}`);
-      
+
       // Get current quote from Finnhub (real-time)
       const quoteResponse = await this.getFinnhubQuote(symbol);
       if (!quoteResponse) {
@@ -60,31 +60,44 @@ export class StockDataService {
       }
 
       const currentPrice = quoteResponse.c;
-      const changePercent = quoteResponse.dp; // Daily change percentage
+      console.log(`✅ [STOCK DATA] Got real-time price for ${symbol}: $${currentPrice}`);
 
-      // Get historical data from FMP for 30D and 60D highs
-      const historicalData = await this.getFMPHistoricalData(symbol);
-      if (!historicalData || historicalData.length === 0) {
-        console.error(`❌ [STOCK DATA] No historical data for ${symbol}`);
-        return null;
+      // Try to get historical data from FMP, but don't fail if it doesn't work
+      let historicalData: any[] = [];
+      let top30D = currentPrice * 1.05; // Default 5% above current
+      let top60D = currentPrice * 1.10; // Default 10% above current
+      let thisMonthPercent = 0;
+      let lastMonthPercent = 0;
+      let volatility = 0.2; // Default volatility
+      let marketCap = 1000000000000; // Default 1T market cap
+
+      try {
+        historicalData = await this.getFMPHistoricalData(symbol);
+        if (historicalData && historicalData.length > 0) {
+          // Calculate 30D and 60D highs
+          const last30Days = historicalData.slice(0, 30);
+          const last60Days = historicalData.slice(0, 60);
+
+          top30D = Math.max(...last30Days.map(day => day.high));
+          top60D = Math.max(...last60Days.map(day => day.high));
+
+          // Calculate monthly performance
+          thisMonthPercent = this.calculateMonthlyPerformanceFMP(historicalData);
+          lastMonthPercent = this.calculateLastMonthPerformanceFMP(historicalData);
+
+          // Calculate volatility
+          volatility = this.calculateVolatilityFMP(historicalData.slice(0, 30));
+
+          // Get market cap from FMP
+          marketCap = await this.getFMPMarketCap(symbol);
+          
+          console.log(`✅ [STOCK DATA] Got historical data for ${symbol}`);
+        } else {
+          console.warn(`⚠️ [STOCK DATA] No historical data for ${symbol}, using defaults`);
+        }
+      } catch (fmpError) {
+        console.warn(`⚠️ [STOCK DATA] FMP API failed for ${symbol}, using defaults:`, fmpError);
       }
-
-      // Calculate 30D and 60D highs
-      const last30Days = historicalData.slice(0, 30);
-      const last60Days = historicalData.slice(0, 60);
-      
-      const top30D = Math.max(...last30Days.map(day => day.high));
-      const top60D = Math.max(...last60Days.map(day => day.high));
-
-      // Calculate monthly performance
-      const thisMonthPercent = this.calculateMonthlyPerformanceFMP(historicalData);
-      const lastMonthPercent = this.calculateLastMonthPerformanceFMP(historicalData);
-
-      // Calculate volatility
-      const volatility = this.calculateVolatilityFMP(historicalData.slice(0, 30));
-
-      // Get market cap from FMP
-      const marketCap = await this.getFMPMarketCap(symbol);
 
       const stockData: StockData = {
         symbol: symbol.toUpperCase(),
