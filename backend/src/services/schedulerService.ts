@@ -16,6 +16,7 @@ export class SchedulerService {
     // Update stock data every 15 minutes during market hours (9:30 AM - 4:00 PM EST)
     // This runs every 15 minutes from 9:30 AM to 4:00 PM EST (Monday-Friday)
     cron.schedule('*/15 9-16 * * 1-5', async () => {
+      console.log('🕐 [SCHEDULER] 15-minute stock data update triggered');
       await this.updateStockData();
     }, {
       timezone: 'America/New_York'
@@ -23,9 +24,28 @@ export class SchedulerService {
 
     // Update portfolio decisions every 5 minutes during market hours
     cron.schedule('*/5 9-16 * * 1-5', async () => {
+      console.log('🕐 [SCHEDULER] 5-minute portfolio decisions update triggered');
       await this.updatePortfolioDecisions();
     }, {
       timezone: 'America/New_York'
+    });
+
+    // For testing: Also run every 2 minutes regardless of market hours
+    cron.schedule('*/2 * * * *', async () => {
+      const now = new Date();
+      const est = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+      const hour = est.getHours();
+      const day = est.getDay();
+      
+      console.log(`🕐 [SCHEDULER] Test update - EST: ${est.toLocaleString()}, Market hours: ${day >= 1 && day <= 5 && hour >= 9 && hour < 16}`);
+      
+      if (day >= 1 && day <= 5 && hour >= 9 && hour < 16) {
+        console.log('🕐 [SCHEDULER] Market is open - running updates');
+        await this.updateStockData();
+        await this.updatePortfolioDecisions();
+      } else {
+        console.log('🕐 [SCHEDULER] Market is closed - skipping updates');
+      }
     });
 
     // Update stock data once at 9:30 AM EST (market open)

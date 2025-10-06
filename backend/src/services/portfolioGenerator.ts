@@ -39,25 +39,35 @@ export class PortfolioGenerator {
   private async initializeStockDatabase() {
     try {
       console.log('🔍 [PORTFOLIO GENERATOR] Loading real stock data...');
+
+      // Define a larger, more diverse stock universe for better selection
+      const solidStocks = [
+        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'JNJ', 'PG', 'KO', 'PFE', 'WMT', 'JPM',
+        'V', 'MA', 'UNH', 'HD', 'DIS', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'IBM',
+        'CSCO', 'INTC', 'T', 'VZ', 'XOM', 'CVX', 'BAC', 'WFC', 'GS', 'AXP'
+      ];
       
-      // Define our stock universe
-      const solidStocks = ['AAPL', 'MSFT', 'GOOGL', 'JNJ', 'PG', 'KO'];
-      const dangerousStocks = ['TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME'];
+      const dangerousStocks = [
+        'TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE',
+        'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM',
+        'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD'
+      ];
+      
       const allStocks = [...solidStocks, ...dangerousStocks];
-      
-      // Get real data from Alpha Vantage
+
+      // Get real data from APIs
       const realData = await stockDataService.getMultipleStockData(allStocks);
-      
+
       this.stockDatabase = Array.from(realData.values());
-      
+
       console.log(`✅ [PORTFOLIO GENERATOR] Loaded real data for ${this.stockDatabase.length} stocks`);
-      
+
       // If no real data, fall back to mock data
       if (this.stockDatabase.length === 0) {
         console.warn('⚠️ [PORTFOLIO GENERATOR] No real data available, using mock data');
         this.loadMockData();
       }
-      
+
     } catch (error) {
       console.error('❌ [PORTFOLIO GENERATOR] Error loading real data:', error);
       console.log('🔄 [PORTFOLIO GENERATOR] Falling back to mock data...');
@@ -128,17 +138,27 @@ export class PortfolioGenerator {
    * 🧠 בחירת מניות
    */
   private selectStocks(portfolioType: 'solid' | 'dangerous'): StockData[] {
+    let filteredStocks: StockData[];
+    
     if (portfolioType === 'solid') {
-      return this.stockDatabase
-        .filter((s) => s.volatility < 0.25 && s.marketCap > 100000000000)
-        .sort((a, b) => b.thisMonthPercent - a.thisMonthPercent)
-        .slice(0, 6);
+      filteredStocks = this.stockDatabase
+        .filter((s) => s.volatility < 0.25 && s.marketCap > 100000000000);
     } else {
-      return this.stockDatabase
-        .filter((s) => s.volatility > 0.30)
-        .sort((a, b) => b.thisMonthPercent - a.thisMonthPercent)
-        .slice(0, 6);
+      filteredStocks = this.stockDatabase
+        .filter((s) => s.volatility > 0.30);
     }
+
+    // Sort by performance and add some randomness
+    const sortedStocks = filteredStocks
+      .sort((a, b) => b.thisMonthPercent - a.thisMonthPercent);
+
+    // Add randomness: take top 10-15 stocks and randomly select 6
+    const topStocks = sortedStocks.slice(0, Math.min(15, sortedStocks.length));
+    
+    // Shuffle and take 6
+    const shuffled = topStocks.sort(() => Math.random() - 0.5);
+    
+    return shuffled.slice(0, 6);
   }
 
   /**

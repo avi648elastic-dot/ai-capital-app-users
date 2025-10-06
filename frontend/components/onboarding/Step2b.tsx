@@ -27,6 +27,8 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
     setLoading(true);
 
     try {
+      console.log('🔍 [STEP2B] Generating portfolio...', { portfolioType, totalCapital, riskTolerance });
+      
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/generate-portfolio`, {
         portfolioType,
         totalCapital: Number(totalCapital),
@@ -35,15 +37,18 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
 
+      console.log('✅ [STEP2B] Portfolio generated successfully:', response.data);
+
       onComplete({ 
         portfolioType,
         totalCapital: Number(totalCapital),
         riskTolerance: Number(riskTolerance),
-        generatedPortfolio: response.data.portfolio
+        generatedPortfolio: response.data.portfolio || []
       });
     } catch (error) {
-      console.error('Error generating portfolio:', error);
-      alert('Error generating portfolio. Please try again.');
+      console.error('❌ [STEP2B] Error generating portfolio:', error);
+      console.error('❌ [STEP2B] Error details:', error.response?.data);
+      alert(`Error generating portfolio: ${error.response?.data?.message || error.message}. Please try again.`);
     } finally {
       setLoading(false);
     }

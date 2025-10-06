@@ -112,6 +112,19 @@ app.post('/api/scheduler/update-portfolios', (req, res) => {
   res.json({ message: 'Portfolio update triggered' });
 });
 
+// 🔧 Test endpoint to trigger both updates
+app.post('/api/scheduler/test-update', async (req, res) => {
+  try {
+    console.log('🔧 [MANUAL] Triggering test update...');
+    await schedulerService.triggerStockDataUpdate();
+    await schedulerService.triggerPortfolioUpdate();
+    res.json({ message: 'Test update completed successfully' });
+  } catch (error) {
+    console.error('❌ [MANUAL] Test update failed:', error);
+    res.status(500).json({ message: 'Test update failed', error: error.message });
+  }
+});
+
 // 🌐 דף בית בסיסי
 app.get('/', (req, res) => {
   res.send('✅ AiCapital Backend is Running and Healthy! CORS: ALL_ORIGINS_ALLOWED - VERSION 2.0');

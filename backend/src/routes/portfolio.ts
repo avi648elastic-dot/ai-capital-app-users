@@ -30,6 +30,8 @@ router.get('/', authenticateToken, async (req, res) => {
       const realTimeStock = realTimeData.get(item.ticker);
       const currentPrice = realTimeStock?.current || item.currentPrice; // Fallback to stored price
       
+      console.log(`🔍 [PORTFOLIO] ${item.ticker}: Entry=${item.entryPrice}, Current=${currentPrice}, RealTime=${realTimeStock?.current || 'N/A'}`);
+      
       return {
         ...item.toObject(),
         currentPrice: currentPrice,
