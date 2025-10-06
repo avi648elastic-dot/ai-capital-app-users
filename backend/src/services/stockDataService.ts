@@ -273,6 +273,7 @@ export class StockDataService {
         
         for (let i = 0; i < c.length; i++) {
           historicalData.push({
+            symbol: symbol.toUpperCase(),
             date: new Date(t[i] * 1000).toISOString().split('T')[0],
             open: o[i],
             high: h[i],
@@ -281,7 +282,12 @@ export class StockDataService {
           });
         }
         
-        return historicalData.reverse(); // Most recent first
+        const reversedData = historicalData.reverse(); // Most recent first
+        console.log(`📊 [FINNHUB HIST] ${symbol} - Got ${reversedData.length} days of data`);
+        console.log(`📊 [FINNHUB HIST] ${symbol} - Date range: ${reversedData[reversedData.length - 1]?.date} to ${reversedData[0]?.date}`);
+        console.log(`📊 [FINNHUB HIST] ${symbol} - Price range: $${Math.min(...reversedData.map(d => d.close)).toFixed(2)} to $${Math.max(...reversedData.map(d => d.close)).toFixed(2)}`);
+        
+        return reversedData;
       }
       
       return [];
@@ -443,7 +449,13 @@ export class StockDataService {
       return dateObj.getMonth() === currentMonth && dateObj.getFullYear() === currentYear;
     });
 
-    if (thisMonthData.length < 2) return 0;
+    console.log(`🔍 [FINNHUB CALC] ${historicalData[0]?.symbol || 'UNKNOWN'} - This month data points:`, thisMonthData.length);
+    console.log(`🔍 [FINNHUB CALC] Current month: ${currentMonth + 1}/${currentYear}`);
+
+    if (thisMonthData.length < 2) {
+      console.warn(`⚠️ [FINNHUB CALC] Not enough data for this month (${thisMonthData.length} points)`);
+      return 0;
+    }
 
     const firstDay = thisMonthData[thisMonthData.length - 1]; // First day of month
     const lastDay = thisMonthData[0]; // Most recent day
@@ -451,7 +463,11 @@ export class StockDataService {
     const firstPrice = firstDay.close;
     const lastPrice = lastDay.close;
 
-    return ((lastPrice - firstPrice) / firstPrice) * 100;
+    const performance = ((lastPrice - firstPrice) / firstPrice) * 100;
+    
+    console.log(`📊 [FINNHUB CALC] ${historicalData[0]?.symbol || 'UNKNOWN'} - First day: $${firstPrice.toFixed(2)} (${firstDay.date}), Last day: $${lastPrice.toFixed(2)} (${lastDay.date}), Performance: ${performance.toFixed(2)}%`);
+
+    return performance;
   }
 
   /**
@@ -467,7 +483,13 @@ export class StockDataService {
       return dateObj.getMonth() === lastMonth && dateObj.getFullYear() === lastMonthYear;
     });
 
-    if (lastMonthData.length < 2) return 0;
+    console.log(`🔍 [FINNHUB CALC] ${historicalData[0]?.symbol || 'UNKNOWN'} - Last month data points:`, lastMonthData.length);
+    console.log(`🔍 [FINNHUB CALC] Last month: ${lastMonth + 1}/${lastMonthYear}`);
+
+    if (lastMonthData.length < 2) {
+      console.warn(`⚠️ [FINNHUB CALC] Not enough data for last month (${lastMonthData.length} points)`);
+      return 0;
+    }
 
     const firstDay = lastMonthData[lastMonthData.length - 1]; // First day of last month
     const lastDay = lastMonthData[0]; // Last day of last month
@@ -475,7 +497,11 @@ export class StockDataService {
     const firstPrice = firstDay.close;
     const lastPrice = lastDay.close;
 
-    return ((lastPrice - firstPrice) / firstPrice) * 100;
+    const performance = ((lastPrice - firstPrice) / firstPrice) * 100;
+    
+    console.log(`📊 [FINNHUB CALC] ${historicalData[0]?.symbol || 'UNKNOWN'} - Last month first day: $${firstPrice.toFixed(2)} (${firstDay.date}), Last day: $${lastPrice.toFixed(2)} (${lastDay.date}), Performance: ${performance.toFixed(2)}%`);
+
+    return performance;
   }
 
   /**
