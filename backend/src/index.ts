@@ -41,6 +41,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://ai-capital-app7-git-main-avi648elastic-dots-projects.vercel.app',
   'https://ai-capital-app7.vercel.app',
+  'https://ai-capital-app7-c08qh68ux-avi648elastic-dots-projects.vercel.app',
 ];
 
 // ⚙️ CORS – כולל credentials כדי להעביר cookies
