@@ -35,6 +35,17 @@ export default function Page() {
 
     (async () => {
       try {
+        console.log('🔍 [FRONTEND] Checking onboarding status for token:', token.substring(0, 10) + '...');
+        console.log('🔍 [FRONTEND] API URL:', process.env.NEXT_PUBLIC_API_URL);
+        
+        // Test backend connectivity first
+        try {
+          const testResponse = await axios.get(`https://ai-capital-app7.onrender.com/api/test`);
+          console.log('✅ [FRONTEND] Backend test successful:', testResponse.data);
+        } catch (testError) {
+          console.error('❌ [FRONTEND] Backend test failed:', testError);
+        }
+        
         const { data } = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`,
           {
@@ -42,9 +53,13 @@ export default function Page() {
           }
         );
 
+        console.log('📊 [FRONTEND] Onboarding status response:', data);
+
         if (data?.onboardingCompleted) {
+          console.log('✅ [FRONTEND] Onboarding completed, redirecting to dashboard');
           router.replace('/dashboard');
         } else {
+          console.log('🔄 [FRONTEND] Onboarding not completed, redirecting to onboarding');
           router.replace('/onboarding');
         }
       } catch (err) {
@@ -65,10 +80,10 @@ export default function Page() {
 
     try {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup';
-      const { data } = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
-        formData
-      );
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
+          formData
+        );
 
       const token: string | undefined = data?.token;
       if (!token) {
@@ -85,7 +100,7 @@ export default function Page() {
 
       // ✅ נבדוק שוב את הסטטוס
       const { data: status } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`,
+        `https://ai-capital-app7.onrender.com/api/onboarding/status`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -130,6 +145,9 @@ export default function Page() {
         <div className="card p-8">
           <h1 className="text-3xl font-bold text-center text-white mb-2">AiCapital</h1>
           <p className="text-center text-gray-400 mb-6">Professional Portfolio Management</p>
+          <div className="mb-4 p-2 bg-gray-800 rounded text-xs text-gray-300 text-center">
+            API URL: {process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com'}
+          </div>
 
           {/* Tabs */}
           <div className="flex mb-6 bg-gray-700 rounded-lg p-1">

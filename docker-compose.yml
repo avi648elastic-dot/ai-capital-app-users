@@ -18,7 +18,7 @@ services:
 
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
       target: runner
     container_name: aicapital-backend
@@ -28,10 +28,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5000
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017/aicapital?authSource=admin
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
-      GOOGLE_SHEETS_API_KEY: your-google-sheets-api-key
-      GOOGLE_SHEETS_SHEET_ID: your-google-sheet-id
+      MONGODB_URI: mongodb+srv://avi648elastic_db_user:5O5Wbs9ylneOOEVq@ai0.4erhngv.mongodb.net/aicapital?retryWrites=true&w=majority&appName=AI0
+      JWT_SECRET: AIcap2025superSecretKey984
+      GOOGLE_SHEETS_API_KEY: AIzaSyABPq2Hvbbdl_OZSudGynqNBSPy2B6i8lU
+      GOOGLE_SHEETS_SHEET_ID: 2PACX-1vQqGMWLbx3fF3y_g4Cf7AKitM0PP4LhxJg0h9_rnFnUNrJpDAdKicxkk-f53qoossKNBZJkNNACDxWm
     depends_on:
       - mongodb
     networks:
@@ -39,7 +39,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile
       target: runner
     container_name: aicapital-frontend
@@ -48,7 +48,7 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:5000
+      NEXT_PUBLIC_API_URL: http://backend:5000
     depends_on:
       - backend
     networks:

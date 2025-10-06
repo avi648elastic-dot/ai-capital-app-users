@@ -50,6 +50,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showStockForm, setShowStockForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'solid' | 'dangerous'>('solid');
+  const [debugInfo, setDebugInfo] = useState<any>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -64,7 +65,7 @@ export default function Dashboard() {
 
   const checkOnboardingStatus = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`, {
+      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/onboarding/status`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       
@@ -72,19 +73,20 @@ export default function Dashboard() {
         router.push('/onboarding');
         return;
       }
-      
-      fetchUserData();
-      fetchPortfolio();
     } catch (error) {
       console.error('Error checking onboarding status:', error);
-      fetchUserData();
-      fetchPortfolio();
+      router.push('/onboarding');
+      return;
     }
+    
+    // Only reach here if onboarding is completed
+    fetchUserData();
+    fetchPortfolio();
   };
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/auth/me`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setUser(response.data.user);
@@ -98,7 +100,7 @@ export default function Dashboard() {
   const fetchPortfolio = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
+      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/portfolio`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setPortfolio(response.data.portfolio);
@@ -112,7 +114,7 @@ export default function Dashboard() {
 
   const handleAddStock = async (stockData: any) => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/add`, stockData, {
+      await axios.post(`${https://ai-capital-app7.onrender.com}/api/portfolio/add`, stockData, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setShowStockForm(false);
@@ -124,7 +126,7 @@ export default function Dashboard() {
 
   const handleUpdateStock = async (id: string, stockData: any) => {
     try {
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/${id}`, stockData, {
+      await axios.put(`${https://ai-capital-app7.onrender.com}/api/portfolio/${id}`, stockData, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       fetchPortfolio();
@@ -135,7 +137,7 @@ export default function Dashboard() {
 
   const handleDeleteStock = async (id: string) => {
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/${id}`, {
+      await axios.delete(`${https://ai-capital-app7.onrender.com}/api/portfolio/${id}`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       fetchPortfolio();
@@ -146,7 +148,7 @@ export default function Dashboard() {
 
   const handleUpdateDecisions = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/decisions`, {
+      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/portfolio/decisions`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setPortfolio(response.data.portfolio);
@@ -158,6 +160,19 @@ export default function Dashboard() {
   const handleLogout = () => {
     Cookies.remove('token');
     router.push('/');
+  };
+
+  const checkDebugInfo = async () => {
+    try {
+      const response = await axios.get(`${https://ai-capital-app7.onrender.com}/api/onboarding/status`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      });
+      setDebugInfo(response.data);
+      console.log('🔍 [DEBUG] Onboarding status:', response.data);
+    } catch (error) {
+      console.error('❌ [DEBUG] Error checking status:', error);
+      setDebugInfo({ error: error.message });
+    }
   };
 
   const filteredPortfolio = portfolio.filter(item => {
@@ -202,6 +217,12 @@ export default function Dashboard() {
                 </button>
               )}
               <button
+                onClick={checkDebugInfo}
+                className="text-blue-400 hover:text-blue-300 transition-colors ml-4"
+              >
+                Debug Status
+              </button>
+              <button
                 onClick={handleLogout}
                 className="text-gray-400 hover:text-white transition-colors"
               >
@@ -213,6 +234,14 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {debugInfo && (
+          <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+            <h3 className="text-lg font-semibold text-white mb-2">Debug Info:</h3>
+            <pre className="text-sm text-gray-300 overflow-auto">
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          </div>
+        )}
         {/* Portfolio Summary */}
         <PortfolioSummary totals={totals} />
 
