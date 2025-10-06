@@ -123,6 +123,9 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
  */
 router.post('/generate-portfolio', authenticateToken, async (req, res) => {
   try {
+    console.log('🔍 [GENERATE PORTFOLIO] Request body:', req.body);
+    console.log('🔍 [GENERATE PORTFOLIO] User ID:', req.user?._id);
+    
     const { portfolioType, totalCapital, riskTolerance } = req.body;
 
     if (!portfolioType || !totalCapital) {
@@ -133,15 +136,24 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Portfolio type must be solid or dangerous' });
     }
 
+    if (!req.user?._id) {
+      console.error('❌ [GENERATE PORTFOLIO] No user ID found');
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     // הפעלת האלגוריתם ליצירת תיק
+    console.log('🔍 [GENERATE PORTFOLIO] Generating portfolio...');
     const generatedStocks = portfolioGenerator.generatePortfolio(
       portfolioType,
       Number(totalCapital),
       Number(riskTolerance) || 7
     );
+    console.log('✅ [GENERATE PORTFOLIO] Generated stocks:', generatedStocks.length);
 
     // שדרוג התיק ע"י Decision Engine
+    console.log('🔍 [GENERATE PORTFOLIO] Enhancing portfolio...');
     const enhancedStocks = await portfolioGenerator.validateAndEnhancePortfolio(generatedStocks);
+    console.log('✅ [GENERATE PORTFOLIO] Enhanced stocks:', enhancedStocks.length);
 
     // מחיקת תיק קודם (אם יש)
     await Portfolio.deleteMany({ userId: req.user!._id });
