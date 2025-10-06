@@ -92,7 +92,7 @@ app.get('/api/simple-test', (req, res) => {
 
 // 🌐 דף בית בסיסי
 app.get('/', (req, res) => {
-  res.send('✅ AiCapital Backend is Running and Healthy!');
+  res.send('✅ AiCapital Backend is Running and Healthy! CORS: ALL_ORIGINS_ALLOWED');
 });
 
 // ⚠️ טיפול בשגיאות כלליות
