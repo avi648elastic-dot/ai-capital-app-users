@@ -2,16 +2,46 @@ import express from 'express';
 import Portfolio from '../models/Portfolio';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { decisionEngine } from '../services/decisionEngine';
+import { stockDataService } from '../services/stockDataService';
 
 const router = express.Router();
 
-// Get user portfolio
+// Get user portfolio with real-time prices
 router.get('/', authenticateToken, async (req, res) => {
   try {
+    console.log('🔍 [PORTFOLIO] Fetching portfolio for user:', req.user!._id);
+    
     const portfolio = await Portfolio.find({ userId: req.user!._id }).sort({ createdAt: -1 });
     
-    // Calculate totals
-    const totals = portfolio.reduce((acc, item) => {
+    if (portfolio.length === 0) {
+      return res.json({ portfolio: [], totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 } });
+    }
+
+    // Get unique tickers
+    const tickers = [...new Set(portfolio.map(item => item.ticker))];
+    console.log('🔍 [PORTFOLIO] Updating prices for tickers:', tickers);
+
+    // Fetch real-time data for all tickers
+    const realTimeData = await stockDataService.getMultipleStockData(tickers);
+    console.log('✅ [PORTFOLIO] Fetched real-time data for', realTimeData.size, 'stocks');
+
+    // Update portfolio with real-time prices
+    const updatedPortfolio = portfolio.map(item => {
+      const realTimeStock = realTimeData.get(item.ticker);
+      const currentPrice = realTimeStock?.current || item.currentPrice; // Fallback to stored price
+      
+      return {
+        ...item.toObject(),
+        currentPrice: currentPrice,
+        // Update action and reason based on real-time data
+        action: item.action || 'HOLD',
+        reason: item.reason || 'Real-time data updated',
+        color: item.color || 'yellow'
+      };
+    });
+
+    // Calculate totals with real-time prices
+    const totals = updatedPortfolio.reduce((acc, item) => {
       const cost = item.entryPrice * item.shares;
       const value = item.currentPrice * item.shares;
       const pnl = value - cost;
@@ -25,9 +55,10 @@ router.get('/', authenticateToken, async (req, res) => {
       };
     }, { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
 
-    res.json({ portfolio, totals });
+    console.log('✅ [PORTFOLIO] Portfolio updated with real-time prices');
+    res.json({ portfolio: updatedPortfolio, totals });
   } catch (error) {
-    console.error('Get portfolio error:', error);
+    console.error('❌ [PORTFOLIO] Get portfolio error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -131,17 +162,38 @@ router.delete('/:id', authenticateToken, requireSubscription, async (req, res) =
   }
 });
 
-// Update all portfolio decisions
+// Update all portfolio decisions with real-time data
 router.get('/decisions', authenticateToken, requireSubscription, async (req, res) => {
   try {
+    console.log('🔍 [DECISIONS] Updating portfolio decisions for user:', req.user!._id);
+    
     const portfolio = await Portfolio.find({ userId: req.user!._id });
+    
+    if (portfolio.length === 0) {
+      return res.json({ message: 'No portfolio items found', portfolio: [] });
+    }
+
+    // Get unique tickers and fetch real-time data
+    const tickers = [...new Set(portfolio.map(item => item.ticker))];
+    console.log('🔍 [DECISIONS] Fetching real-time data for:', tickers);
+    
+    const realTimeData = await stockDataService.getMultipleStockData(tickers);
+    console.log('✅ [DECISIONS] Fetched real-time data for', realTimeData.size, 'stocks');
     
     const updatedPortfolio = await Promise.all(
       portfolio.map(async (item) => {
+        // Get real-time price
+        const realTimeStock = realTimeData.get(item.ticker);
+        const currentPrice = realTimeStock?.current || item.currentPrice;
+        
+        // Update current price in database
+        item.currentPrice = currentPrice;
+        
+        // Get decision based on real-time data
         const decision = decisionEngine.decideActionEnhanced({
           ticker: item.ticker,
           entryPrice: item.entryPrice,
-          currentPrice: item.currentPrice,
+          currentPrice: currentPrice,
           stopLoss: item.stopLoss,
           takeProfit: item.takeProfit,
         });
@@ -154,9 +206,10 @@ router.get('/decisions', authenticateToken, requireSubscription, async (req, res
       })
     );
 
-    res.json({ message: 'Portfolio decisions updated', portfolio: updatedPortfolio });
+    console.log('✅ [DECISIONS] Portfolio decisions updated with real-time data');
+    res.json({ message: 'Portfolio decisions updated with real-time data', portfolio: updatedPortfolio });
   } catch (error) {
-    console.error('Update decisions error:', error);
+    console.error('❌ [DECISIONS] Update decisions error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
