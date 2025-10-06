@@ -14,7 +14,7 @@ A full-stack portfolio management application with AI-powered trading decisions,
   - Price vs entry analysis
 - **AI Portfolio Generation**: Automatic stock selection and allocation based on risk preferences
 - **Portfolio Types**: Solid (conservative) and Dangerous (aggressive) portfolio options
-- **Real-time Data**: Integration with Google Sheets for market data
+- **Real-time Data**: Integration with Alpha Vantage API for live market data
 - **Professional UI**: Dark theme with TailwindCSS
 - **Charts & Analytics**: Portfolio visualization with Recharts
 - **Admin Dashboard**: Complete user and portfolio management system
@@ -37,7 +37,7 @@ A full-stack portfolio management application with AI-powered trading decisions,
 - TypeScript
 - MongoDB with Mongoose
 - JWT Authentication
-- Google Sheets API
+- Alpha Vantage API
 - Bcryptjs
 
 ## Quick Start
@@ -45,7 +45,27 @@ A full-stack portfolio management application with AI-powered trading decisions,
 ### Prerequisites
 - Node.js 18+
 - MongoDB
+- Alpha Vantage API Key (free at https://www.alphavantage.co/support/#api-key)
 - Docker (optional)
+
+### Environment Variables
+
+Create a `.env` file in the backend directory with the following variables:
+
+```env
+NODE_ENV=production
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+ALPHA_VANTAGE_API_KEY=your_alpha_vantage_api_key
+GOOGLE_SHEETS_API_KEY=your_google_sheets_api_key
+GOOGLE_SHEETS_SHEET_ID=your_google_sheet_id
+```
+
+**Important**: 
+- Get your free Alpha Vantage API key at https://www.alphavantage.co/support/#api-key
+- The system will work with mock data if no API key is provided
+- Free tier allows 5 API calls per minute
 
 ### Development Setup
 

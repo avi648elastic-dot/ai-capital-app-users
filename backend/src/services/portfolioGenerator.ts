@@ -1,6 +1,7 @@
 import { decisionEngine } from './decisionEngine';
-import User from '../models/User'; // ✅ נוספה הגדרה למודל המשתמש לעדכון מצב onboarding
-import Portfolio from '../models/Portfolio'; // ✅ נוספה תמיכה ליצירת תיק אמיתי בבסיס הנתונים
+import { stockDataService } from './stockDataService';
+import User from '../models/User';
+import Portfolio from '../models/Portfolio';
 
 interface StockData {
   symbol: string;
@@ -31,10 +32,40 @@ export class PortfolioGenerator {
   private stockDatabase: StockData[] = [];
 
   constructor() {
-    this.initializeStockDatabase();
+    // Initialize with empty database, will be populated when first used
+    this.stockDatabase = [];
   }
 
-  private initializeStockDatabase() {
+  private async initializeStockDatabase() {
+    try {
+      console.log('🔍 [PORTFOLIO GENERATOR] Loading real stock data...');
+      
+      // Define our stock universe
+      const solidStocks = ['AAPL', 'MSFT', 'GOOGL', 'JNJ', 'PG', 'KO'];
+      const dangerousStocks = ['TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME'];
+      const allStocks = [...solidStocks, ...dangerousStocks];
+      
+      // Get real data from Alpha Vantage
+      const realData = await stockDataService.getMultipleStockData(allStocks);
+      
+      this.stockDatabase = Array.from(realData.values());
+      
+      console.log(`✅ [PORTFOLIO GENERATOR] Loaded real data for ${this.stockDatabase.length} stocks`);
+      
+      // If no real data, fall back to mock data
+      if (this.stockDatabase.length === 0) {
+        console.warn('⚠️ [PORTFOLIO GENERATOR] No real data available, using mock data');
+        this.loadMockData();
+      }
+      
+    } catch (error) {
+      console.error('❌ [PORTFOLIO GENERATOR] Error loading real data:', error);
+      console.log('🔄 [PORTFOLIO GENERATOR] Falling back to mock data...');
+      this.loadMockData();
+    }
+  }
+
+  private loadMockData() {
     // Mock stock database with real-world data
     this.stockDatabase = [
       // Solid stocks (low volatility, stable growth)
@@ -64,7 +95,7 @@ export class PortfolioGenerator {
     totalCapital: number,
     riskTolerance: number = 7
   ): Promise<GeneratedStock[]> {
-    const generatedPortfolio = this.generatePortfolio(portfolioType, totalCapital, riskTolerance);
+    const generatedPortfolio = await this.generatePortfolio(portfolioType, totalCapital, riskTolerance);
     const enhanced = await this.validateAndEnhancePortfolio(generatedPortfolio);
 
     // מחיקת תיק ישן ושמירת חדש
@@ -128,7 +159,12 @@ export class PortfolioGenerator {
   /**
    * 📈 הפעלת החישוב עצמו
    */
-  generatePortfolio(portfolioType: 'solid' | 'dangerous', totalCapital: number, riskTolerance: number = 7): GeneratedStock[] {
+  async generatePortfolio(portfolioType: 'solid' | 'dangerous', totalCapital: number, riskTolerance: number = 7): Promise<GeneratedStock[]> {
+    // Initialize database if empty
+    if (this.stockDatabase.length === 0) {
+      await this.initializeStockDatabase();
+    }
+    
     const stocks = this.selectStocks(portfolioType);
     const allocations = this.calculateAllocations(stocks, portfolioType);
 

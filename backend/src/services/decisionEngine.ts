@@ -1,3 +1,5 @@
+import { stockDataService } from './stockDataService';
+
 interface StockData {
   symbol: string;
   current: number;
@@ -5,6 +7,8 @@ interface StockData {
   top60D: number;
   thisMonthPercent: number;
   lastMonthPercent: number;
+  volatility?: number;
+  marketCap?: number;
 }
 
 interface PortfolioItem {
@@ -27,23 +31,47 @@ export class DecisionEngine {
 
   async loadStockData(): Promise<void> {
     try {
-      // Mock data for now - in production, this would fetch from Google Sheets
-      const mockData: StockData[] = [
-        { symbol: 'AAPL', current: 150, top30D: 160, top60D: 155, thisMonthPercent: 5.2, lastMonthPercent: 3.1 },
-        { symbol: 'GOOGL', current: 2800, top30D: 2900, top60D: 2850, thisMonthPercent: 2.1, lastMonthPercent: -1.2 },
-        { symbol: 'MSFT', current: 420, top30D: 440, top60D: 430, thisMonthPercent: 8.5, lastMonthPercent: 4.2 },
-        { symbol: 'TSLA', current: 250, top30D: 280, top60D: 260, thisMonthPercent: -5.2, lastMonthPercent: 12.3 },
-        { symbol: 'AMZN', current: 3200, top30D: 3300, top60D: 3250, thisMonthPercent: 1.8, lastMonthPercent: -2.1 },
-      ];
-
+      console.log('🔍 [DECISION ENGINE] Loading real stock data...');
+      
+      // List of stocks we track
+      const symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'JNJ', 'PG', 'KO', 'AMD', 'PLTR', 'ARKK', 'GME'];
+      
+      // Get real data from Alpha Vantage
+      const realData = await stockDataService.getMultipleStockData(symbols);
+      
       this.stockData.clear();
-      mockData.forEach(stock => {
-        this.stockData.set(stock.symbol, stock);
+      realData.forEach((stock, symbol) => {
+        this.stockData.set(symbol, stock);
       });
+      
+      console.log(`✅ [DECISION ENGINE] Loaded real data for ${realData.size} stocks`);
+      
+      // If no real data available, fall back to mock data
+      if (realData.size === 0) {
+        console.warn('⚠️ [DECISION ENGINE] No real data available, using mock data');
+        await this.loadMockData();
+      }
+      
     } catch (error) {
-      console.error('Error loading stock data:', error);
-      // Continue with empty data
+      console.error('❌ [DECISION ENGINE] Error loading real stock data:', error);
+      console.log('🔄 [DECISION ENGINE] Falling back to mock data...');
+      await this.loadMockData();
     }
+  }
+
+  private async loadMockData(): Promise<void> {
+    const mockData: StockData[] = [
+      { symbol: 'AAPL', current: 150, top30D: 160, top60D: 155, thisMonthPercent: 5.2, lastMonthPercent: 3.1, volatility: 0.15, marketCap: 2500000000000 },
+      { symbol: 'GOOGL', current: 2800, top30D: 2900, top60D: 2850, thisMonthPercent: 2.1, lastMonthPercent: -1.2, volatility: 0.22, marketCap: 1800000000000 },
+      { symbol: 'MSFT', current: 420, top30D: 440, top60D: 430, thisMonthPercent: 8.5, lastMonthPercent: 4.2, volatility: 0.18, marketCap: 3100000000000 },
+      { symbol: 'TSLA', current: 250, top30D: 280, top60D: 260, thisMonthPercent: -5.2, lastMonthPercent: 12.3, volatility: 0.45, marketCap: 800000000000 },
+      { symbol: 'AMZN', current: 3200, top30D: 3300, top60D: 3250, thisMonthPercent: 1.8, lastMonthPercent: -2.1, volatility: 0.25, marketCap: 1700000000000 },
+    ];
+
+    this.stockData.clear();
+    mockData.forEach(stock => {
+      this.stockData.set(stock.symbol, stock);
+    });
   }
 
   decideActionEnhanced(item: PortfolioItem): DecisionResult {
