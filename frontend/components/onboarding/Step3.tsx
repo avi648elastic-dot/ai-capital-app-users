@@ -34,10 +34,10 @@ export default function Step3({ onboardingData, onComplete, onBack }: Step3Props
     try {
       console.log('🔍 [STEP3] Onboarding data:', onboardingData);
       
-      if (onboardingData.generatedPortfolio) {
+      if (onboardingData.generatedPortfolio && Array.isArray(onboardingData.generatedPortfolio)) {
         console.log('🔍 [STEP3] Using generated portfolio:', onboardingData.generatedPortfolio);
         setPortfolio(onboardingData.generatedPortfolio);
-      } else if (onboardingData.stocks) {
+      } else if (onboardingData.stocks && Array.isArray(onboardingData.stocks)) {
         console.log('🔍 [STEP3] Converting imported stocks');
         // Convert imported stocks to the same format
         const convertedStocks = onboardingData.stocks.map((stock: any) => ({
@@ -55,12 +55,16 @@ export default function Step3({ onboardingData, onComplete, onBack }: Step3Props
         }));
         setPortfolio(convertedStocks);
       } else {
-        console.warn('🔍 [STEP3] No portfolio data found');
-        setPortfolio([]);
+        console.warn('🔍 [STEP3] No portfolio data found, redirecting to dashboard');
+        // If no portfolio data, just complete onboarding
+        onComplete();
+        return;
       }
     } catch (error) {
       console.error('❌ [STEP3] Error processing portfolio data:', error);
-      setPortfolio([]);
+      // If there's an error, just complete onboarding
+      onComplete();
+      return;
     }
   }, [onboardingData]);
 
