@@ -157,44 +157,59 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
 
     // מחיקת תיק קודם (אם יש)
     console.log('🔍 [GENERATE PORTFOLIO] Deleting old portfolio...');
-    await Portfolio.deleteMany({ userId: req.user!._id });
-    console.log('✅ [GENERATE PORTFOLIO] Old portfolio deleted');
+    try {
+      await Portfolio.deleteMany({ userId: req.user!._id });
+      console.log('✅ [GENERATE PORTFOLIO] Old portfolio deleted');
+    } catch (deleteError) {
+      console.error('❌ [GENERATE PORTFOLIO] Error deleting old portfolio:', deleteError);
+      // Continue anyway
+    }
 
     // שמירת התיק החדש למסד הנתונים
     console.log('🔍 [GENERATE PORTFOLIO] Saving new portfolio...');
     const savedItems = [];
-    for (let i = 0; i < enhancedStocks.length; i++) {
-      const stock = enhancedStocks[i];
-      console.log(`🔍 [GENERATE PORTFOLIO] Saving stock ${i + 1}/${enhancedStocks.length}: ${stock.ticker}`);
-      
-      const newItem = new Portfolio({
-        userId: req.user!._id,
-        ticker: stock.ticker,
-        shares: stock.shares,
-        entryPrice: stock.entryPrice,
-        currentPrice: stock.currentPrice,
-        stopLoss: stock.stopLoss,
-        takeProfit: stock.takeProfit,
-        action: stock.action || 'HOLD',
-        reason: stock.reason || '',
-        color: stock.color || 'yellow',
-      });
-      await newItem.save();
-      savedItems.push(newItem);
-      console.log(`✅ [GENERATE PORTFOLIO] Saved stock: ${stock.ticker}`);
+    try {
+      for (let i = 0; i < enhancedStocks.length; i++) {
+        const stock = enhancedStocks[i];
+        console.log(`🔍 [GENERATE PORTFOLIO] Saving stock ${i + 1}/${enhancedStocks.length}: ${stock.ticker}`);
+        
+        const newItem = new Portfolio({
+          userId: req.user!._id,
+          ticker: stock.ticker,
+          shares: stock.shares,
+          entryPrice: stock.entryPrice,
+          currentPrice: stock.currentPrice,
+          stopLoss: stock.stopLoss,
+          takeProfit: stock.takeProfit,
+          action: stock.action || 'HOLD',
+          reason: stock.reason || '',
+          color: stock.color || 'yellow',
+        });
+        await newItem.save();
+        savedItems.push(newItem);
+        console.log(`✅ [GENERATE PORTFOLIO] Saved stock: ${stock.ticker}`);
+      }
+      console.log('✅ [GENERATE PORTFOLIO] All stocks saved');
+    } catch (saveError) {
+      console.error('❌ [GENERATE PORTFOLIO] Error saving portfolio:', saveError);
+      return res.status(500).json({ message: 'Error saving portfolio to database' });
     }
-    console.log('✅ [GENERATE PORTFOLIO] All stocks saved');
 
     // עדכון פרטי המשתמש וסימון סיום Onboarding
     console.log('🔍 [GENERATE PORTFOLIO] Updating user...');
-    await User.findByIdAndUpdate(req.user!._id, {
-      portfolioType,
-      portfolioSource: 'ai-generated',
-      totalCapital: Number(totalCapital),
-      riskTolerance: Number(riskTolerance) || 7,
-      onboardingCompleted: true,
-    });
-    console.log('✅ [GENERATE PORTFOLIO] User updated');
+    try {
+      await User.findByIdAndUpdate(req.user!._id, {
+        portfolioType,
+        portfolioSource: 'ai-generated',
+        totalCapital: Number(totalCapital),
+        riskTolerance: Number(riskTolerance) || 7,
+        onboardingCompleted: true,
+      });
+      console.log('✅ [GENERATE PORTFOLIO] User updated');
+    } catch (userError) {
+      console.error('❌ [GENERATE PORTFOLIO] Error updating user:', userError);
+      // Continue anyway - portfolio is saved
+    }
 
     console.log('✅ [GENERATE PORTFOLIO] Portfolio generation completed successfully');
     return res.json({
