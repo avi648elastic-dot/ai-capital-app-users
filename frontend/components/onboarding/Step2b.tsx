@@ -51,10 +51,19 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
       // Skip Step3 - go directly to dashboard
       console.log('✅ [STEP2B] Portfolio generated successfully, redirecting to dashboard...');
       
+      // Show success message and redirect
+      alert('Portfolio generated successfully! Redirecting to dashboard...');
+      
       // Small delay to show success message
       setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1000);
+        try {
+          window.location.href = '/dashboard';
+        } catch (error) {
+          console.error('❌ [STEP2B] Redirect error:', error);
+          // Fallback: try to call onComplete
+          onComplete(response.data);
+        }
+      }, 2000);
     } catch (error) {
       console.error('❌ [STEP2B] Error generating portfolio:', error);
       console.error('❌ [STEP2B] Error details:', error.response?.data);

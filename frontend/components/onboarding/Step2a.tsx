@@ -69,10 +69,19 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
       // Skip Step3 - go directly to dashboard
       console.log('✅ [STEP2A] Portfolio imported successfully, redirecting to dashboard...');
       
+      // Show success message and redirect
+      alert('Portfolio imported successfully! Redirecting to dashboard...');
+      
       // Small delay to show success message
       setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 1000);
+        try {
+          window.location.href = '/dashboard';
+        } catch (error) {
+          console.error('❌ [STEP2A] Redirect error:', error);
+          // Fallback: try to call onComplete
+          onComplete({ success: true });
+        }
+      }, 2000);
     } catch (error) {
       console.error('Error importing portfolio:', error);
       alert('Error importing portfolio. Please try again.');

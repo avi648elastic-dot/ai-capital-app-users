@@ -95,61 +95,62 @@ export class DecisionEngine {
       };
     }
 
-    // Rule 2: Scoring system
+    // Rule 2: Scoring system (more balanced)
     let score = 0;
     const reasons: string[] = [];
 
     if (stockData) {
-      // Current vs TOP30/TOP60 (30% weight)
+      // Current vs TOP30/TOP60 (30% weight) - more lenient thresholds
       const top60Ratio = currentPrice / stockData.top60D;
-      if (top60Ratio > 0.9) {
+      if (top60Ratio > 0.95) {
         score += 1;
         reasons.push('Strong vs TOP60');
-      } else if (top60Ratio < 0.7) {
+      } else if (top60Ratio < 0.5) { // Much more lenient - only sell if really weak
         score -= 1;
         reasons.push('Weak vs TOP60');
       }
 
-      // This Month % (20% weight)
-      if (stockData.thisMonthPercent > 10) {
+      // This Month % (20% weight) - more lenient thresholds
+      if (stockData.thisMonthPercent > 15) {
         score += 1;
         reasons.push('Strong monthly performance');
-      } else if (stockData.thisMonthPercent < -10) {
+      } else if (stockData.thisMonthPercent < -20) { // Much more lenient
         score -= 1;
         reasons.push('Poor monthly performance');
       }
 
-      // Last Month % (20% weight)
-      if (stockData.lastMonthPercent > 10) {
+      // Last Month % (20% weight) - more lenient thresholds
+      if (stockData.lastMonthPercent > 15) {
         score += 1;
         reasons.push('Strong previous month');
-      } else if (stockData.lastMonthPercent < -10) {
+      } else if (stockData.lastMonthPercent < -20) { // Much more lenient
         score -= 1;
         reasons.push('Poor previous month');
       }
     }
 
-    // Price vs Entry (30% weight)
-    if (currentPrice > entryPrice) {
+    // Price vs Entry (30% weight) - more lenient
+    const priceChange = ((currentPrice - entryPrice) / entryPrice) * 100;
+    if (priceChange > 5) {
       score += 1;
       reasons.push('Above entry price');
-    } else {
+    } else if (priceChange < -15) { // Only sell if down more than 15%
       score -= 1;
       reasons.push('Below entry price');
     }
 
-    // Decision based on score
+    // Decision based on score - more balanced thresholds
     let action: 'BUY' | 'HOLD' | 'SELL';
     let color: string;
 
-    if (score >= 2) {
+    if (score >= 3) { // Higher threshold for BUY
       action = 'BUY';
       color = 'green';
-    } else if (score <= -2) {
+    } else if (score <= -3) { // Much lower threshold for SELL
       action = 'SELL';
       color = 'red';
     } else {
-      action = 'HOLD';
+      action = 'HOLD'; // Default to HOLD for most cases
       color = 'yellow';
     }
 
