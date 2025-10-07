@@ -43,11 +43,10 @@ export default function Settings() {
     { code: 'he', name: 'עברית', flag: '🇮🇱' },
   ];
 
-  const themes = [
-    { id: 'dark', name: 'Dark', description: 'Default dark theme' },
-    { id: 'light', name: 'Light', description: 'Clean light theme' },
-    { id: 'auto', name: 'Auto', description: 'Follow system preference' },
-  ];
+       const themes = [
+         { id: 'dark', name: 'Dark', description: 'Default dark theme' },
+         { id: 'light', name: 'Light', description: 'Clean light theme' },
+       ];
 
   const handleSave = async () => {
     try {

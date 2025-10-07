@@ -4,14 +4,18 @@ import { useState } from 'react';
 import { ArrowRight, Globe, Palette } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Step0Props {
   onComplete: (data: any) => void;
 }
 
 export default function Step0({ onComplete }: Step0Props) {
+  const { setLanguage } = useLanguage();
+  const { setTheme } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState('en');
-  const [selectedTheme, setSelectedTheme] = useState<'dark' | 'light' | 'auto'>('dark');
+  const [selectedTheme, setSelectedTheme] = useState<'dark' | 'light'>('dark');
   const [loading, setLoading] = useState(false);
 
   const languages = [
@@ -19,6 +23,16 @@ export default function Step0({ onComplete }: Step0Props) {
     { code: 'ar', name: 'العربية', flag: '🇸🇦', native: 'Arabic' },
     { code: 'he', name: 'עברית', flag: '🇮🇱', native: 'Hebrew' },
   ];
+
+  const handleLanguageChange = (lang: string) => {
+    setSelectedLanguage(lang);
+    setLanguage(lang); // Force immediate change
+  };
+
+  const handleThemeChange = (theme: string) => {
+    setSelectedTheme(theme as 'dark' | 'light');
+    setTheme(theme); // Force immediate change
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -67,15 +81,15 @@ export default function Step0({ onComplete }: Step0Props) {
 
       <div className="max-w-md mx-auto space-y-3">
         {languages.map((lang) => (
-          <button
-            key={lang.code}
-            onClick={() => setSelectedLanguage(lang.code)}
-            className={`w-full p-4 rounded-lg border text-left transition-colors flex items-center space-x-4 ${
-              selectedLanguage === lang.code
-                ? 'border-primary-500 bg-primary-500/10'
-                : 'border-slate-700 hover:border-slate-600'
-            }`}
-          >
+               <button
+                 key={lang.code}
+                 onClick={() => handleLanguageChange(lang.code)}
+                 className={`w-full p-4 rounded-lg border text-left transition-colors flex items-center space-x-4 ${
+                   selectedLanguage === lang.code
+                     ? 'border-primary-500 bg-primary-500/10'
+                     : 'border-slate-700 hover:border-slate-600'
+                 }`}
+               >
             <span className="text-2xl">{lang.flag}</span>
             <div className="flex-1">
               <div className="text-white font-medium">{lang.name}</div>
@@ -98,11 +112,10 @@ export default function Step0({ onComplete }: Step0Props) {
           {[
             { id: 'dark', name: 'Dark', description: 'Default dark theme' },
             { id: 'light', name: 'Light', description: 'Clean light theme' },
-            { id: 'auto', name: 'Auto', description: 'Follow system preference' },
           ].map((theme) => (
             <button
               key={theme.id}
-              onClick={() => setSelectedTheme(theme.id as any)}
+              onClick={() => handleThemeChange(theme.id)}
               className={`p-4 rounded-lg border text-left transition-colors ${
                 selectedTheme === theme.id
                   ? 'border-primary-500 bg-primary-500/10'

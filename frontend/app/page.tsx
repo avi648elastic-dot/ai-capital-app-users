@@ -147,7 +147,7 @@ export default function Page() {
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-24 h-24 relative bg-slate-800 rounded-xl p-4">
+              <div className="w-24 h-24 relative">
                 <img 
                   src="/logo.png" 
                   alt="AiCapital Logo" 
