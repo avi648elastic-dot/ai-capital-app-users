@@ -65,20 +65,19 @@ export default function MarketOverview({ canCustomize = false }: { canCustomize?
             </div>
           );
         })}
-        <div className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60">
-          <div className="text-slate-300 text-sm font-medium mb-2">Featured Stocks</div>
-          <div className="grid grid-cols-4 gap-4">
-            {data!.featured.map((f) => (
-              <div key={f.symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">
-                <div className="flex items-center justify-between">
-                  <div className="text-slate-300 text-sm font-medium">{f.symbol}</div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(f.thisMonthPercent)}</span>
-                </div>
-                <div className="text-white text-xl font-bold mt-1">{fmt(f.price)}</div>
-              </div>
-            ))}
+      </div>
+
+      {/* Featured stocks: same tile style as indexes, 30% smaller, in a clean row */}
+      <div className="mt-3 grid grid-cols-4 gap-4">
+        {data!.featured.map((f) => (
+          <div key={f.symbol} className="rounded-xl p-3 border border-slate-700/50 bg-slate-900/60 shadow-inner scale-90 origin-top-left">
+            <div className="flex items-center justify-between">
+              <div className="text-slate-300 text-sm font-medium">{f.symbol}</div>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(f.thisMonthPercent)}</span>
+            </div>
+            <div className="text-white text-xl font-bold mt-1">{fmt(f.price)}</div>
           </div>
-        </div>
+        ))}
       </div>
       {editing && (
         <div className="mt-4 border-t border-slate-700 pt-4">
