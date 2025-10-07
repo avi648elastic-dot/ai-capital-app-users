@@ -344,68 +344,126 @@ export default function Analytics() {
               <Bot className="w-5 h-5 mr-2" />
               AI-Capital Analysis
             </h3>
-            <div className="h-64 flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-slate-700">
+            <div className="h-64 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-slate-700 p-6">
               {aiAnalysis ? (
-                <div className="text-center max-w-2xl px-6">
-                  {/* AI Character Icon */}
-                  <div className="mb-4">
-                    <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
-                      aiAnalysis.mood === 'excellent' ? 'bg-green-500/20' :
-                      aiAnalysis.mood === 'good' ? 'bg-green-400/20' :
-                      aiAnalysis.mood === 'poor' ? 'bg-red-500/20' :
-                      aiAnalysis.mood === 'warning' ? 'bg-yellow-500/20' :
-                      'bg-blue-500/20'
-                    }`}>
-                      <aiAnalysis.icon className={`w-8 h-8 ${aiAnalysis.color}`} />
+                <div className="flex h-full">
+                  {/* Left Side - AI Character */}
+                  <div className="flex-1 flex flex-col justify-center items-center text-center pr-4">
+                    {/* AI Character Icon */}
+                    <div className="mb-4">
+                      <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
+                        aiAnalysis.mood === 'excellent' ? 'bg-green-500/20' :
+                        aiAnalysis.mood === 'good' ? 'bg-green-400/20' :
+                        aiAnalysis.mood === 'poor' ? 'bg-red-500/20' :
+                        aiAnalysis.mood === 'warning' ? 'bg-yellow-500/20' :
+                        'bg-blue-500/20'
+                      }`}>
+                        <aiAnalysis.icon className={`w-8 h-8 ${aiAnalysis.color}`} />
+                      </div>
                     </div>
-                  </div>
-                  
-                  {/* AI Message */}
-                  <div className="mb-4">
-                    <p className={`text-lg font-semibold ${aiAnalysis.color} mb-2`}>
-                      {aiAnalysis.message}
-                    </p>
-                    <p className="text-slate-300 text-sm leading-relaxed">
-                      {aiAnalysis.recommendation}
-                    </p>
+                    
+                    {/* AI Message */}
+                    <div className="mb-4">
+                      <p className={`text-sm font-semibold ${aiAnalysis.color} mb-2`}>
+                        {aiAnalysis.message}
+                      </p>
+                      <p className="text-slate-300 text-xs leading-relaxed">
+                        {aiAnalysis.recommendation}
+                      </p>
+                    </div>
+
+                    {/* Portfolio Metrics */}
+                    {aiAnalysis.metrics && (
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="bg-slate-700/50 rounded-lg p-2">
+                          <div className="text-slate-400">P&L</div>
+                          <div className={`font-semibold ${
+                            parseFloat(aiAnalysis.metrics.totalPnLPercent) >= 0 ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {aiAnalysis.metrics.totalPnLPercent}%
+                          </div>
+                        </div>
+                        <div className="bg-slate-700/50 rounded-lg p-2">
+                          <div className="text-slate-400">Volatility</div>
+                          <div className="text-white font-semibold">
+                            {aiAnalysis.metrics.avgVolatility}%
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Portfolio Metrics */}
-                  {aiAnalysis.metrics && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                      <div className="bg-slate-700/50 rounded-lg p-2">
-                        <div className="text-slate-400">P&L</div>
-                        <div className={`font-semibold ${
-                          parseFloat(aiAnalysis.metrics.totalPnLPercent) >= 0 ? 'text-green-400' : 'text-red-400'
+                  {/* Right Side - Dummy Graph */}
+                  <div className="flex-1 flex flex-col justify-center">
+                    <div className="bg-slate-700/30 rounded-lg p-4 h-full">
+                      <div className="text-center mb-3">
+                        <h4 className="text-sm font-semibold text-white mb-1">Portfolio Performance</h4>
+                        <p className="text-xs text-slate-400">Last 30 Days</p>
+                      </div>
+                      
+                      {/* Simple Line Chart */}
+                      <div className="relative h-24 mb-3">
+                        <svg className="w-full h-full" viewBox="0 0 200 80">
+                          {/* Grid lines */}
+                          <defs>
+                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#374151" strokeWidth="0.5"/>
+                            </pattern>
+                          </defs>
+                          <rect width="100%" height="100%" fill="url(#grid)" />
+                          
+                          {/* Performance line */}
+                          <path
+                            d="M 10 60 Q 50 40 90 30 T 170 20"
+                            fill="none"
+                            stroke={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                          
+                          {/* Data points */}
+                          <circle cx="10" cy="60" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
+                          <circle cx="50" cy="40" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
+                          <circle cx="90" cy="30" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
+                          <circle cx="130" cy="25" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
+                          <circle cx="170" cy="20" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
+                        </svg>
+                      </div>
+                      
+                      {/* Performance indicators */}
+                      <div className="flex justify-between text-xs">
+                        <div className="text-slate-400">Week 1</div>
+                        <div className="text-slate-400">Week 2</div>
+                        <div className="text-slate-400">Week 3</div>
+                        <div className="text-slate-400">Week 4</div>
+                      </div>
+                      
+                      {/* Trend indicator */}
+                      <div className="mt-2 flex items-center justify-center space-x-2">
+                        <TrendingUp className={`w-4 h-4 ${
+                          aiAnalysis.mood === 'poor' ? 'text-red-400 rotate-180' : 
+                          aiAnalysis.mood === 'excellent' ? 'text-green-400' : 
+                          'text-blue-400'
+                        }`} />
+                        <span className={`text-xs font-semibold ${
+                          aiAnalysis.mood === 'poor' ? 'text-red-400' : 
+                          aiAnalysis.mood === 'excellent' ? 'text-green-400' : 
+                          'text-blue-400'
                         }`}>
-                          {aiAnalysis.metrics.totalPnLPercent}%
-                        </div>
-                      </div>
-                      <div className="bg-slate-700/50 rounded-lg p-2">
-                        <div className="text-slate-400">Volatility</div>
-                        <div className="text-white font-semibold">
-                          {aiAnalysis.metrics.avgVolatility}%
-                        </div>
-                      </div>
-                      <div className="bg-slate-700/50 rounded-lg p-2">
-                        <div className="text-slate-400">Winners</div>
-                        <div className="text-green-400 font-semibold">
-                          {aiAnalysis.metrics.positiveStocks}
-                        </div>
-                      </div>
-                      <div className="bg-slate-700/50 rounded-lg p-2">
-                        <div className="text-slate-400">Losers</div>
-                        <div className="text-red-400 font-semibold">
-                          {aiAnalysis.metrics.negativeStocks}
-                        </div>
+                          {aiAnalysis.mood === 'poor' ? 'Declining' : 
+                           aiAnalysis.mood === 'excellent' ? 'Strong Growth' : 
+                           'Steady Growth'}
+                        </span>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               ) : (
-                <div className="text-center">
-                  <Bot className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                  <p className="text-slate-400">Loading AI analysis...</p>
+                <div className="flex h-full items-center justify-center">
+                  <div className="text-center">
+                    <Bot className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+                    <p className="text-slate-400">Loading AI analysis...</p>
+                  </div>
                 </div>
               )}
             </div>
