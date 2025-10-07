@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: aicapital-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./out
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://ai-capital-app7.onrender.com
