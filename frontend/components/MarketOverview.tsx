@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 
 type IndexItem = { symbol: string; price: number | null; thisMonthPercent?: number };
 
-export default function MarketOverview() {
+export default function MarketOverview({ canCustomize = false }: { canCustomize?: boolean }) {
   const [data, setData] = useState<{ indexes: Record<string, IndexItem>; featured: IndexItem[]; updatedAt: string } | null>(null);
   const [editing, setEditing] = useState(false);
   const [tickers, setTickers] = useState<string[]>([]);
@@ -34,42 +34,47 @@ export default function MarketOverview() {
   const pct = (n?: number) => (n == null ? '' : `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`);
 
   return (
-    <div className="card p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">Markets Overview</h3>
+    <div className="card p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/80">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-xl font-bold text-white tracking-wide">Markets Overview</h3>
         <div className="flex items-center space-x-3">
           {data?.updatedAt && <span className="text-xs text-slate-400">Updated {new Date(data.updatedAt).toLocaleTimeString()}</span>}
-          {/* Customize button; actual gating done on backend */}
+          {canCustomize && (
           <button
             onClick={() => {
               setTickers((data?.featured || []).map((f) => f.symbol));
               setEditing(true);
             }}
-            className="text-xs px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200"
+            className="text-xs px-3 py-1.5 rounded bg-emerald-600/80 hover:bg-emerald-600 text-white shadow"
           >
             Customize
           </button>
+          )}
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {['SPY','QQQ','DIA'].map((k) => {
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        {['SPY','QQQ','DIA','NYA'].map((k) => {
           const item = data!.indexes[k];
           return (
-            <div key={k} className="bg-slate-800/60 rounded-lg p-4 border border-slate-700/50">
-              <div className="text-slate-300 text-sm mb-1">{k}</div>
-              <div className="text-white text-xl font-bold">{fmt(item?.price)}</div>
-              <div className={`text-xs ${item?.thisMonthPercent! >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{pct(item?.thisMonthPercent)}</div>
+            <div key={k} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">
+              <div className="flex items-center justify-between">
+                <div className="text-slate-300 text-sm font-medium">{k}</div>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${item?.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(item?.thisMonthPercent)}</span>
+              </div>
+              <div className="text-white text-2xl font-bold mt-1">{fmt(item?.price)}</div>
             </div>
           );
         })}
-        <div className="bg-slate-800/60 rounded-lg p-4 border border-slate-700/50">
-          <div className="text-slate-300 text-sm mb-2">Featured Stocks</div>
+        <div className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60">
+          <div className="text-slate-300 text-sm font-medium mb-2">Featured Stocks</div>
           <div className="grid grid-cols-2 gap-3">
             {data!.featured.map((f) => (
               <div key={f.symbol} className="bg-slate-900/60 rounded p-3">
-                <div className="text-slate-300 text-xs mb-1">{f.symbol}</div>
-                <div className="text-white font-semibold">{fmt(f.price)}</div>
-                <div className={`text-xs ${f.thisMonthPercent! >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{pct(f.thisMonthPercent)}</div>
+                <div className="flex items-center justify-between">
+                  <div className="text-slate-300 text-xs font-medium">{f.symbol}</div>
+                  <div className={`text-xs ${f.thisMonthPercent! >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{pct(f.thisMonthPercent)}</div>
+                </div>
+                <div className="text-white font-semibold mt-1">{fmt(f.price)}</div>
               </div>
             ))}
           </div>

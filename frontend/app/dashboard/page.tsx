@@ -383,17 +383,17 @@ export default function Dashboard() {
             </pre>
           </div>
         )}
+        {/* Markets Overview placed below subscription banner, above summary */}
+        <div className="mb-6">
+          <ErrorBoundary label="markets">
+            <MarketOverview canCustomize={user?.subscriptionTier === 'premium'} />
+          </ErrorBoundary>
+        </div>
+
         {/* Portfolio Summary */}
         <ErrorBoundary label="summary">
           <PortfolioSummary totals={totals} />
         </ErrorBoundary>
-
-        {/* Markets Overview */}
-        <div className="mt-6">
-          <ErrorBoundary label="markets">
-            <MarketOverview />
-          </ErrorBoundary>
-        </div>
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center mb-6">
