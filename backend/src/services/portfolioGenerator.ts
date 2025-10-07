@@ -192,7 +192,7 @@ export class PortfolioGenerator {
   /**
    * 🧠 בחירת מניות
    */
-  private selectStocks(portfolioType: 'solid' | 'dangerous'): StockData[] {
+  private selectStocks(portfolioType: 'solid' | 'risky'): StockData[] {
     let filteredStocks: StockData[];
     
     if (portfolioType === 'solid') {
@@ -240,7 +240,7 @@ export class PortfolioGenerator {
   /**
    * 💰 חישוב תיק לפי הקצאות
    */
-  private calculateAllocations(stocks: StockData[], portfolioType: 'solid' | 'dangerous'): number[] {
+  private calculateAllocations(stocks: StockData[], portfolioType: 'solid' | 'risky'): number[] {
     const numStocks = stocks.length;
     const baseAllocation = 100 / numStocks;
 
@@ -255,7 +255,7 @@ export class PortfolioGenerator {
   /**
    * 📈 הפעלת החישוב עצמו
    */
-  async generatePortfolio(portfolioType: 'solid' | 'dangerous', totalCapital: number, riskTolerance: number = 7): Promise<GeneratedStock[]> {
+  async generatePortfolio(portfolioType: 'solid' | 'risky', totalCapital: number, riskTolerance: number = 7): Promise<GeneratedStock[]> {
     // Initialize database if empty
     if (this.stockDatabase.length === 0) {
       await this.initializeStockDatabase();
