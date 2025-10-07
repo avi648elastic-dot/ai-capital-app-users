@@ -77,7 +77,7 @@ router.get('/', authenticateToken, async (req, res) => {
           );
           
           // Calculate volatility for this portfolio
-          const portfolioVolatility = await volatilityService.calculatePortfolioVolatility(portfolioStocks);
+          const portfolioVolatility = await volatilityService.calculatePortfolioVolatility(req.user!._id.toString(), portfolioId);
           
           return {
             ...item,

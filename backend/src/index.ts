@@ -191,10 +191,10 @@ app.get('/api/test-apis', async (req, res) => {
       } catch (error) {
         results[symbol] = {
           success: false,
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           source: 'Error'
         };
-        console.error(`❌ [API TEST] ${symbol}:`, error.message);
+        console.error(`❌ [API TEST] ${symbol}:`, error instanceof Error ? error.message : String(error));
       }
     }
     
@@ -212,7 +212,7 @@ app.get('/api/test-apis', async (req, res) => {
     console.error('❌ [API TEST] Test failed:', error);
     res.status(500).json({
       status: 'API Test Failed',
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
       timestamp: new Date().toISOString()
     });
   }
