@@ -19,6 +19,7 @@ interface Step2aProps {
   onBack: () => void;
 }
 
+// Version 2.1 - Auto-calculate total portfolio value
 export default function Step2a({ onComplete, onBack }: Step2aProps) {
   const [stocks, setStocks] = useState<Stock[]>([
     { ticker: '', shares: 0, entryPrice: 0, currentPrice: 0, notes: '' }
@@ -155,13 +156,13 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Total Portfolio Value ($)
+              Total Portfolio Value ($) - AUTO CALCULATED
             </label>
-            <div className="input-field bg-slate-700 text-green-400 font-semibold cursor-not-allowed">
+            <div className="input-field bg-slate-700 text-green-400 font-semibold cursor-not-allowed border-green-500">
               ${totalCapital.toFixed(2)}
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Automatically calculated from your stock holdings
+              ✅ Automatically calculated from your stock holdings (shares × current price)
             </p>
           </div>
           <div>
