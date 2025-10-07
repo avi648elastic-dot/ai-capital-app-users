@@ -36,9 +36,12 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
 
   const fetchPortfolios = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
+      // Add cache buster to force fresh data
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio?t=${Date.now()}`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
+      
+      console.log('📊 [MULTI-PORTFOLIO] Fetched stocks:', response.data.portfolio?.length || 0);
       
       // Group stocks by portfolioId to create portfolio objects
       const portfolioMap = new Map<string, Portfolio>();
@@ -53,7 +56,9 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
             portfolioType: stock.portfolioType,
             portfolioName: stock.portfolioName || `${stock.portfolioType.charAt(0).toUpperCase() + stock.portfolioType.slice(1)} Portfolio`,
             stocks: [],
-            totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 }
+            totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 },
+            volatility: stock.volatility,
+            lastVolatilityUpdate: stock.lastVolatilityUpdate
           });
         }
         
@@ -70,7 +75,13 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
         portfolio.totals = { initial, current, totalPnL, totalPnLPercent };
       });
       
-      setPortfolios(Array.from(portfolioMap.values()));
+      const portfolioArray = Array.from(portfolioMap.values());
+      console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
+      portfolioArray.forEach(p => {
+        console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
+      });
+      
+      setPortfolios(portfolioArray);
     } catch (error) {
       console.error('Error fetching portfolios:', error);
     } finally {
