@@ -261,4 +261,48 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
+// Quick admin setup endpoint (temporary - for initial setup only)
+router.post('/setup-admin', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password required' });
+    }
+
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify password
+    const bcrypt = require('bcryptjs');
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid password' });
+    }
+
+    // Make user admin
+    await User.findByIdAndUpdate(user._id, {
+      isAdmin: true,
+      subscriptionTier: 'premium',
+      subscriptionActive: true
+    });
+
+    console.log('✅ [ADMIN SETUP] User made admin:', email);
+    res.json({ 
+      message: 'Admin setup successful! You can now access /admin',
+      user: {
+        email: user.email,
+        isAdmin: true,
+        subscriptionTier: 'premium'
+      }
+    });
+  } catch (error) {
+    console.error('Admin setup error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 export default router;
