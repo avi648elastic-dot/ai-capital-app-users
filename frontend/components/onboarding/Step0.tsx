@@ -4,16 +4,16 @@ import { useState } from 'react';
 import { ArrowRight, Globe, Palette } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from '@/contexts/ThemeContext';
+// import { useLanguage } from '@/contexts/LanguageContext';
+// import { useTheme } from '@/contexts/ThemeContext';
 
 interface Step0Props {
   onComplete: (data: any) => void;
 }
 
 export default function Step0({ onComplete }: Step0Props) {
-  const { setLanguage } = useLanguage();
-  const { setTheme } = useTheme();
+  // const { setLanguage } = useLanguage();
+  // const { setTheme } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedTheme, setSelectedTheme] = useState<'dark' | 'light'>('dark');
   const [loading, setLoading] = useState(false);
@@ -26,12 +26,14 @@ export default function Step0({ onComplete }: Step0Props) {
 
   const handleLanguageChange = (lang: string) => {
     setSelectedLanguage(lang);
-    setLanguage(lang); // Force immediate change
+    // setLanguage(lang); // Force immediate change
+    localStorage.setItem('language', lang);
   };
 
   const handleThemeChange = (theme: string) => {
     setSelectedTheme(theme as 'dark' | 'light');
-    setTheme(theme); // Force immediate change
+    // setTheme(theme); // Force immediate change
+    localStorage.setItem('theme', theme);
   };
 
   const handleSubmit = async () => {

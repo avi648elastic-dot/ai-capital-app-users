@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { LanguageProvider } from '@/contexts/LanguageContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,13 +20,17 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <div className="min-h-screen bg-slate-950">
-          {children}
-          {/* Build/version footer for deployment verification */}
-          <div className="fixed bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-slate-800/80 text-slate-300 border border-slate-700">
-            v{process.env.npm_package_version || 'dev'} · API: {process.env.NEXT_PUBLIC_API_URL || 'unset'}
-          </div>
-        </div>
+        <ThemeProvider>
+          <LanguageProvider>
+            <div className="min-h-screen bg-slate-950">
+              {children}
+              {/* Build/version footer for deployment verification */}
+              <div className="fixed bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-slate-800/80 text-slate-300 border border-slate-700">
+                v{process.env.npm_package_version || 'dev'} · API: {process.env.NEXT_PUBLIC_API_URL || 'unset'}
+              </div>
+            </div>
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
