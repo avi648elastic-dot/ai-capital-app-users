@@ -32,23 +32,25 @@ export default function Charts({ portfolio }: ChartsProps) {
 
     // Prepare enhanced chart data with proper time series
     const sortedPortfolio = [...portfolio].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
-    // Calculate cumulative portfolio value over time
+
+    // Calculate cumulative portfolio value over time WITHOUT referencing an array
+    // that hasn't been created yet (prevents "Cannot access 'a' before initialization").
     let cumulativeValue = 0;
     let cumulativeCost = 0;
-    
-    const enhancedData = sortedPortfolio.map((item, index) => {
+    let previousTotal = 0; // used for pseudo-candlestick open value
+
+    const enhancedData = sortedPortfolio.map((item) => {
       const cost = item.entryPrice * item.shares;
       const value = item.currentPrice * item.shares;
       const pnl = value - cost;
       const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
-      
+
       cumulativeValue += value;
       cumulativeCost += cost;
       const totalPnL = cumulativeValue - cumulativeCost;
       const totalPnLPercent = cumulativeCost > 0 ? (totalPnL / cumulativeCost) * 100 : 0;
-      
-      return {
+
+      const current = {
         date: new Date(item.date).toLocaleDateString(),
         fullDate: new Date(item.date),
         value: cumulativeValue,
@@ -63,18 +65,21 @@ export default function Charts({ portfolio }: ChartsProps) {
         individualPnLPercent: pnlPercent,
         action: item.action,
         // For candlestick-style visualization
-        open: index === 0 ? value : enhancedData[index - 1]?.value || value,
-        high: Math.max(value, index === 0 ? value : enhancedData[index - 1]?.value || value),
-        low: Math.min(value, index === 0 ? value : enhancedData[index - 1]?.value || value),
-        close: value,
-        volume: item.shares
-      };
+        open: previousTotal || cumulativeValue,
+        high: Math.max(cumulativeValue, previousTotal || cumulativeValue),
+        low: Math.min(cumulativeValue, previousTotal || cumulativeValue),
+        close: cumulativeValue,
+        volume: item.shares,
+      } as any;
+
+      previousTotal = cumulativeValue;
+      return current;
     });
 
     setChartData(enhancedData);
 
     // Prepare candlestick-style data for individual stocks
-    const candlestickData = portfolio.map((item, index) => {
+    const candlestickData = portfolio.map((item) => {
       const cost = item.entryPrice * item.shares;
       const value = item.currentPrice * item.shares;
       const pnl = value - cost;
@@ -83,13 +88,13 @@ export default function Charts({ portfolio }: ChartsProps) {
       return {
         ticker: item.ticker,
         date: new Date(item.date).toLocaleDateString(),
-        open: cost,
-        high: Math.max(cost, value),
-        low: Math.min(cost, value),
-        close: value,
+        open: Number(cost.toFixed(2)),
+        high: Number(Math.max(cost, value).toFixed(2)),
+        low: Number(Math.min(cost, value).toFixed(2)),
+        close: Number(value.toFixed(2)),
         volume: item.shares,
-        pnl: pnl,
-        pnlPercent: pnlPercent,
+        pnl: Number(pnl.toFixed(2)),
+        pnlPercent: Number(pnlPercent.toFixed(2)),
         action: item.action,
         color: pnl >= 0 ? '#22c55e' : '#ef4444'
       };
