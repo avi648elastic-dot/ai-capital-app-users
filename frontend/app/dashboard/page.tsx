@@ -367,13 +367,14 @@ export default function Dashboard() {
             {user?.subscriptionTier === 'free' && (
               <div className="flex flex-col items-end space-y-2">
                 <button 
-                  onClick={handleUpgrade}
-                  className="btn-primary flex items-center space-x-2 px-6 py-3 text-sm font-bold"
+                  className="btn-primary flex items-center space-x-2 px-6 py-3 text-sm font-bold opacity-60 cursor-not-allowed"
+                  title="Upgrade requires payment checkout (disabled here)"
+                  disabled
                 >
                   <span>🚀</span>
                   <span>Upgrade to Premium</span>
                 </button>
-                <p className="text-xs text-slate-400">Unlock all features</p>
+                <p className="text-xs text-slate-400">Payments not configured in this environment</p>
               </div>
             )}
           </div>
