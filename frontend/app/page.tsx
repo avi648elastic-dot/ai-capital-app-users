@@ -147,31 +147,15 @@ export default function Page() {
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-20 h-20 flex items-center justify-center relative">
-                {/* Enhanced Tree Logo with better visibility */}
-                <svg
-                  viewBox="0 0 100 100"
-                  className="w-20 h-20 text-emerald-400"
-                  fill="currentColor"
-                  style={{ 
-                    filter: 'drop-shadow(0 0 12px rgba(16, 185, 129, 0.4))',
-                    animation: 'pulse 2s infinite'
-                  }}
-                >
-                  {/* Tree trunk */}
-                  <rect x="45" y="70" width="10" height="15" fill="currentColor" />
-                  {/* Main tree body */}
-                  <path d="M50 70 Q25 45 15 25 Q35 35 50 45 Q65 35 85 25 Q75 45 50 70 Z" fill="currentColor" />
-                  {/* Tree decorations - more visible */}
-                  <circle cx="30" cy="50" r="10" fill="currentColor" opacity="0.9" />
-                  <circle cx="70" cy="50" r="10" fill="currentColor" opacity="0.9" />
-                  <circle cx="50" cy="40" r="12" fill="currentColor" opacity="0.9" />
-                  <circle cx="40" cy="30" r="8" fill="currentColor" opacity="0.9" />
-                  <circle cx="60" cy="30" r="8" fill="currentColor" opacity="0.9" />
-                  <circle cx="50" cy="20" r="6" fill="currentColor" opacity="0.9" />
-                </svg>
-                {/* Glow effect */}
-                <div className="absolute inset-0 w-20 h-20 bg-emerald-400/20 rounded-full blur-lg animate-pulse" />
+              <div className="w-28 h-28 relative">
+                <img src="/brand/tree.png" alt="logo" className="w-full h-full object-contain" />
+                {/* Dollar rain from middle */}
+                {[...Array(14)].map((_, i) => (
+                  <span key={i} className="absolute text-emerald-300/80" style={{left:'50%', transform:'translateX(-50%)', top:'10px', animation:`fallLogin ${(2.5+Math.random()*2.5).toFixed(2)}s linear ${(Math.random()*1.5).toFixed(2)}s infinite`}}>$</span>
+                ))}
+                <style jsx>{`
+                  @keyframes fallLogin { from { transform: translate(-50%,0); opacity: .9 } to { transform: translate(-50%,34px); opacity: 0 } }
+                `}</style>
               </div>
             </div>
             <h1 className="logo-text text-4xl mb-3 font-bold">AI-Capital</h1>

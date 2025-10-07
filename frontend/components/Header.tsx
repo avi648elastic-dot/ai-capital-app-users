@@ -22,15 +22,14 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
   };
 
   const TreeLogo = () => {
-    const bills = useMemo(() => Array.from({ length: 12 }).map((_, i) => ({
-      left: Math.random() * 48 + 2,
-      duration: 2.5 + Math.random() * 2.5,
-      delay: Math.random() * 2,
+    const bills = useMemo(() => Array.from({ length: 14 }).map((_, i) => ({
+      duration: 2.8 + Math.random() * 2.8,
+      delay: Math.random() * 1.8,
     })), []);
 
     return (
       <div className="relative flex items-center space-x-3">
-        <div className="relative w-10 h-10">
+        <div className="relative w-14 h-14">
           {/* Brand image fallback-safe */}
           <Image src="/brand/tree.png" alt="logo" fill sizes="40px" className="object-contain" priority />
           {/* Dollar rain */}
@@ -38,13 +37,13 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
             <span
               key={idx}
               className="absolute text-emerald-300/80"
-              style={{ left: `${b.left}%`, top: '-4px', animation: `fall ${b.duration}s linear ${b.delay}s infinite` }}
+              style={{ left: '50%', transform: 'translateX(-50%)', top: '6px', animation: `fall ${b.duration}s linear ${b.delay}s infinite` }}
             >
               $
             </span>
           ))}
           <style jsx>{`
-            @keyframes fall { from { transform: translateY(0); opacity: .9 } to { transform: translateY(22px); opacity: 0 } }
+            @keyframes fall { from { transform: translate(-50%,0); opacity: .9 } to { transform: translate(-50%,28px); opacity: 0 } }
           `}</style>
         </div>
         <div>
