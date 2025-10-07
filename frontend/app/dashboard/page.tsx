@@ -107,6 +107,14 @@ export default function Dashboard() {
     }
   };
 
+  // Ensure the active tab always matches the user's portfolio type for free users
+  useEffect(() => {
+    if (user?.subscriptionTier === 'free' && (user as any)?.portfolioType) {
+      const pt = (user as any).portfolioType as 'solid' | 'dangerous';
+      if (activeTab !== pt) setActiveTab(pt);
+    }
+  }, [user]);
+
   const fetchPortfolio = async () => {
     try {
       setLoading(true);
