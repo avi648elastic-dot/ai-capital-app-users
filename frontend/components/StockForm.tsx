@@ -101,7 +101,7 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
 
     // IMMEDIATE fetch - no debounce
     fetchCurrentPrice();
-  }, [formData.ticker]);
+  }, [formData.ticker, autoCalculate, formData.entryPrice]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({

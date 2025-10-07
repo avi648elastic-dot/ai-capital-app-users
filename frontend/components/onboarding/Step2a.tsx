@@ -44,6 +44,21 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
     setStocks(updatedStocks);
   };
 
+  // Auto-fetch current price when ticker is entered
+  const fetchCurrentPrice = async (ticker: string, index: number) => {
+    if (ticker && ticker.length >= 2) {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/test-stock/${ticker.toUpperCase()}`);
+        if (response.data.status === 'OK' && response.data.data) {
+          const currentPrice = response.data.data.current;
+          updateStock(index, 'currentPrice', currentPrice);
+        }
+      } catch (error) {
+        console.error('Error fetching current price:', error);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -176,6 +191,7 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
                       type="text"
                       value={stock.ticker}
                       onChange={(e) => updateStock(index, 'ticker', e.target.value.toUpperCase())}
+                      onBlur={() => fetchCurrentPrice(stock.ticker, index)}
                       className="input-field"
                       placeholder="e.g., AAPL"
                       required
