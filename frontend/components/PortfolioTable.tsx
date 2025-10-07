@@ -50,7 +50,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
   const handleEdit = (item: PortfolioItem) => {
     setEditingId(item._id);
     setEditData({
-      currentPrice: item.currentPrice,
+      entryPrice: item.entryPrice,
       stopLoss: item.stopLoss,
       takeProfit: item.takeProfit,
       notes: item.notes,
@@ -132,20 +132,20 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                     <div className="text-sm text-gray-300">{item.shares.toLocaleString()}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{formatCurrency(item.entryPrice)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
                     {editingId === item._id ? (
                       <input
                         type="number"
                         step="0.01"
-                        value={editData.currentPrice || ''}
-                        onChange={(e) => setEditData({ ...editData, currentPrice: Number(e.target.value) })}
+                        value={editData.entryPrice ?? item.entryPrice}
+                        onChange={(e) => setEditData({ ...editData, entryPrice: Number(e.target.value) })}
                         className="input-field w-24"
                       />
                     ) : (
-                      <div className="text-sm text-gray-300">{formatCurrency(item.currentPrice)}</div>
+                      <div className="text-sm text-gray-300">{formatCurrency(item.entryPrice)}</div>
                     )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-300">{formatCurrency(item.currentPrice)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-300">{formatCurrency(cost)}</div>
