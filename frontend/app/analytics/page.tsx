@@ -3,11 +3,63 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { TrendingUp, BarChart3, PieChart, Activity } from 'lucide-react';
+import { TrendingUp, BarChart3, PieChart, Activity, Building2, TrendingDown } from 'lucide-react';
 
 export default function Analytics() {
   const [portfolio, setPortfolio] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Mock sector data - in real app, this would come from API
+  const sectorData = [
+    { 
+      sector: 'Technology', 
+      percentage: 35.2, 
+      value: 12500, 
+      performance90D: 12.4,
+      stocks: ['AAPL', 'MSFT', 'GOOGL'],
+      color: 'bg-blue-500'
+    },
+    { 
+      sector: 'Healthcare', 
+      percentage: 22.8, 
+      value: 8100, 
+      performance90D: 8.7,
+      stocks: ['JNJ', 'PFE'],
+      color: 'bg-green-500'
+    },
+    { 
+      sector: 'Financial Services', 
+      percentage: 18.5, 
+      value: 6600, 
+      performance90D: -2.1,
+      stocks: ['JPM', 'BAC'],
+      color: 'bg-yellow-500'
+    },
+    { 
+      sector: 'Consumer Discretionary', 
+      percentage: 12.3, 
+      value: 4400, 
+      performance90D: 15.8,
+      stocks: ['AMZN', 'TSLA'],
+      color: 'bg-purple-500'
+    },
+    { 
+      sector: 'Energy', 
+      percentage: 6.7, 
+      value: 2400, 
+      performance90D: -5.2,
+      stocks: ['XOM'],
+      color: 'bg-red-500'
+    },
+    { 
+      sector: 'Utilities', 
+      percentage: 4.5, 
+      value: 1600, 
+      performance90D: 3.1,
+      stocks: ['NEE'],
+      color: 'bg-cyan-500'
+    }
+  ];
 
   useEffect(() => {
     fetchPortfolio();
@@ -75,6 +127,50 @@ export default function Analytics() {
             </div>
           </div>
 
+          {/* Sector Segmentation */}
+          <div className="card p-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <Building2 className="w-5 h-5 mr-2" />
+              Sector Segmentation
+            </h3>
+            <div className="space-y-4">
+              {sectorData.map((sector, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
+                      <span className="text-white font-medium">{sector.sector}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-white font-semibold">{sector.percentage}%</div>
+                      <div className="text-sm text-slate-400">${sector.value.toLocaleString()}</div>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${sector.color}`}
+                      style={{ width: `${sector.percentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Stocks: {sector.stocks.join(', ')}</span>
+                    <div className={`flex items-center space-x-1 ${
+                      sector.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {sector.performance90D >= 0 ? (
+                        <TrendingUp className="w-3 h-3" />
+                      ) : (
+                        <TrendingDown className="w-3 h-3" />
+                      )}
+                      <span>{sector.performance90D >= 0 ? '+' : ''}{sector.performance90D}%</span>
+                      <span className="text-slate-500">90D</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Performance Metrics */}
           <div className="card p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
@@ -103,10 +199,41 @@ export default function Analytics() {
             </div>
           </div>
 
-          {/* Stock Performance Chart */}
+          {/* Sector Performance Summary */}
           <div className="lg:col-span-2 card p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <BarChart3 className="w-5 h-5 mr-2" />
+              Sector Performance Summary (90 Days)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sectorData.map((sector, index) => (
+                <div key={index} className="bg-slate-800 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
+                      <span className="text-white font-medium text-sm">{sector.sector}</span>
+                    </div>
+                    <div className={`text-sm font-semibold ${
+                      sector.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {sector.performance90D >= 0 ? '+' : ''}{sector.performance90D}%
+                    </div>
+                  </div>
+                  <div className="text-xs text-slate-400 mb-2">
+                    {sector.percentage}% of portfolio • ${sector.value.toLocaleString()}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Stocks: {sector.stocks.join(', ')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Stock Performance Chart */}
+          <div className="lg:col-span-2 card p-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <Activity className="w-5 h-5 mr-2" />
               Stock Performance (60 Days)
             </h3>
             <div className="h-64 flex items-center justify-center bg-slate-800 rounded-lg">
