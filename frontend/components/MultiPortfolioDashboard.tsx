@@ -24,9 +24,10 @@ interface MultiPortfolioDashboardProps {
   user: any;
   onAddStock: (portfolioId: string) => void;
   onViewPortfolio: (portfolioId: string) => void;
+  onPortfolioSelect?: (portfolio: Portfolio | null) => void;
 }
 
-export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfolio }: MultiPortfolioDashboardProps) {
+export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfolio, onPortfolioSelect }: MultiPortfolioDashboardProps) {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,16 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
   useEffect(() => {
     fetchPortfolios();
   }, []);
+
+  // Notify parent when selected portfolio changes
+  useEffect(() => {
+    if (selectedPortfolioId && portfolios.length > 0) {
+      const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
+      if (onPortfolioSelect) {
+        onPortfolioSelect(selectedPortfolio || null);
+      }
+    }
+  }, [selectedPortfolioId, portfolios, onPortfolioSelect]);
 
   const fetchPortfolios = async () => {
     try {
@@ -76,23 +87,23 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
         portfolio.totals = { initial, current, totalPnL, totalPnLPercent };
       });
       
-          const portfolioArray = Array.from(portfolioMap.values());
-          console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
-          portfolioArray.forEach(p => {
-            console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
-          });
-          
-          setPortfolios(portfolioArray);
-          
-          // Auto-select first portfolio if none selected
-          if (portfolioArray.length > 0 && !selectedPortfolioId) {
-            setSelectedPortfolioId(portfolioArray[0].portfolioId);
-          }
-    } catch (error) {
-      console.error('Error fetching portfolios:', error);
-    } finally {
-      setLoading(false);
-    }
+      const portfolioArray = Array.from(portfolioMap.values());
+      console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
+      portfolioArray.forEach(p => {
+        console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
+      });
+      
+       setPortfolios(portfolioArray);
+       
+       // Auto-select first portfolio if none selected
+       if (portfolioArray.length > 0 && !selectedPortfolioId) {
+         setSelectedPortfolioId(portfolioArray[0].portfolioId);
+       }
+     } catch (error) {
+       console.error('Error fetching portfolios:', error);
+     } finally {
+       setLoading(false);
+     }
   };
 
   const deletePortfolio = async (portfolioId: string) => {
@@ -177,14 +188,14 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
           
           return (
             <div key={portfolio.portfolioId}>
-              <div 
-                className={`card p-5 transition-all duration-200 border-2 cursor-pointer ${
-                  selectedPortfolioId === portfolio.portfolioId
-                    ? 'border-blue-500 bg-blue-500/10'
-                    : 'border-transparent hover:border-slate-600'
-                }`}
-                onClick={() => setSelectedPortfolioId(portfolio.portfolioId)}
-              >
+               <div 
+                 className={`card p-5 transition-all duration-200 border-2 cursor-pointer ${
+                   selectedPortfolioId === portfolio.portfolioId
+                     ? 'border-blue-500 bg-blue-500/10'
+                     : 'border-transparent hover:border-slate-600'
+                 }`}
+                 onClick={() => setSelectedPortfolioId(portfolio.portfolioId)}
+               >
                 {/* Header with Type Badge */}
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center space-x-2">
