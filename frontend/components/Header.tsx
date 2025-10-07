@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { LogOut, User, Settings, TrendingUp, BarChart3 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface HeaderProps {
   userName?: string;
@@ -20,34 +21,39 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
     router.push('/');
   };
 
-  const TreeLogo = () => (
-    <div className="flex items-center space-x-3">
-      {/* Tree Logo SVG */}
-      <div className="w-10 h-10 flex items-center justify-center">
-        <svg
-          viewBox="0 0 100 100"
-          className="w-8 h-8 text-emerald-400"
-          fill="currentColor"
-          style={{ filter: 'drop-shadow(0 0 4px rgba(16, 185, 129, 0.3))' }}
-        >
-          {/* Tree trunk */}
-          <path d="M45 70 L45 85 L55 85 L55 70 Z" stroke="currentColor" strokeWidth="2" fill="currentColor" />
-          {/* Tree branches and leaves */}
-          <path d="M50 70 Q30 50 20 30 Q35 40 50 50 Q65 40 80 30 Q70 50 50 70 Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" />
-          {/* Additional leaves for fullness */}
-          <circle cx="35" cy="45" r="8" fill="currentColor" />
-          <circle cx="65" cy="45" r="8" fill="currentColor" />
-          <circle cx="50" cy="35" r="10" fill="currentColor" />
-          <circle cx="40" cy="25" r="6" fill="currentColor" />
-          <circle cx="60" cy="25" r="6" fill="currentColor" />
-        </svg>
+  const TreeLogo = () => {
+    const bills = useMemo(() => Array.from({ length: 12 }).map((_, i) => ({
+      left: Math.random() * 48 + 2,
+      duration: 2.5 + Math.random() * 2.5,
+      delay: Math.random() * 2,
+    })), []);
+
+    return (
+      <div className="relative flex items-center space-x-3">
+        <div className="relative w-10 h-10">
+          {/* Brand image fallback-safe */}
+          <Image src="/brand/tree.png" alt="logo" fill sizes="40px" className="object-contain" priority />
+          {/* Dollar rain */}
+          {bills.map((b, idx) => (
+            <span
+              key={idx}
+              className="absolute text-emerald-300/80"
+              style={{ left: `${b.left}%`, top: '-4px', animation: `fall ${b.duration}s linear ${b.delay}s infinite` }}
+            >
+              $
+            </span>
+          ))}
+          <style jsx>{`
+            @keyframes fall { from { transform: translateY(0); opacity: .9 } to { transform: translateY(22px); opacity: 0 } }
+          `}</style>
+        </div>
+        <div>
+          <h1 className="logo-text text-xl">AI-Capital</h1>
+          <p className="text-xs text-slate-400 font-medium">Professional Portfolio Management</p>
+        </div>
       </div>
-      <div>
-        <h1 className="logo-text text-xl">AI-Capital</h1>
-        <p className="text-xs text-slate-400 font-medium">Professional Portfolio Management</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <header className="bg-slate-900/95 backdrop-blur-md border-b border-slate-800/50 sticky top-0 z-50">
