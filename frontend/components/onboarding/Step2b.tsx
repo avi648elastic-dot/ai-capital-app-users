@@ -37,7 +37,7 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
         riskTolerance: Number(riskTolerance),
       }, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
-        timeout: 30000 // 30 second timeout
+        timeout: 90000 // extend to 90s for cold starts
       });
 
       console.log('✅ [STEP2B] Portfolio generated successfully:', response.data);
