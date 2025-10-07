@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import Portfolio from '../models/Portfolio';
 import User from '../models/User';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
@@ -174,14 +174,14 @@ router.delete('/:portfolioId', authenticateToken, requireSubscription, async (re
 });
 
 // Update portfolio volatilities for a specific user
-router.post('/update-volatility', authenticateToken, requireSubscription, async (req: Request, res: Response) => {
+router.post('/update-volatility', authenticateToken, requireSubscription, async (req, res) => {
   try {
-    const userId = req.user!._id;
+    const userId = (req as any).user!._id;
     
     // Import volatility service
     const { volatilityService } = await import('../services/volatilityService');
     
-    await volatilityService.updateUserPortfolioVolatilities(userId);
+    await volatilityService.updateUserPortfolioVolatilities(userId.toString());
     
     res.json({ message: 'Portfolio volatilities updated successfully' });
   } catch (error) {

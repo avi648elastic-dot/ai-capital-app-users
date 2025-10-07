@@ -8,9 +8,9 @@ const router = Router();
 router.get('/portfolio/:portfolioId', authenticateToken, requireSubscription, async (req: Request, res: Response) => {
   try {
     const { portfolioId } = req.params;
-    const userId = req.user!._id;
+    const userId = (req as any).user!._id;
 
-    const portfolioRisk = await riskManagementService.analyzePortfolioRisk(userId, portfolioId);
+    const portfolioRisk = await riskManagementService.analyzePortfolioRisk(userId.toString(), portfolioId);
     
     res.json({
       success: true,
@@ -28,9 +28,9 @@ router.get('/portfolio/:portfolioId', authenticateToken, requireSubscription, as
 // Get all risk alerts for the authenticated user
 router.get('/alerts', authenticateToken, requireSubscription, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!._id;
+    const userId = (req as any).user!._id;
 
-    const alerts = await riskManagementService.getUserRiskAlerts(userId);
+    const alerts = await riskManagementService.getUserRiskAlerts(userId.toString());
     
     res.json({
       success: true,
@@ -48,9 +48,9 @@ router.get('/alerts', authenticateToken, requireSubscription, async (req: Reques
 // Update portfolio decisions based on risk analysis
 router.post('/update-decisions', authenticateToken, requireSubscription, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!._id;
+    const userId = (req as any).user!._id;
 
-    await riskManagementService.updatePortfolioDecisions(userId);
+    await riskManagementService.updatePortfolioDecisions(userId.toString());
     
     res.json({
       success: true,
@@ -68,16 +68,16 @@ router.post('/update-decisions', authenticateToken, requireSubscription, async (
 // Get risk summary for all user portfolios
 router.get('/summary', authenticateToken, requireSubscription, async (req: Request, res: Response) => {
   try {
-    const userId = req.user!._id;
+    const userId = (req as any).user!._id;
 
     // Get all unique portfolio IDs for the user
     const Portfolio = (await import('../models/Portfolio')).default;
-    const portfolios = await Portfolio.distinct('portfolioId', { userId });
+    const portfolios = await Portfolio.distinct('portfolioId', { userId: userId.toString() });
     
     const portfolioRisks = [];
     
     for (const portfolioId of portfolios) {
-      const portfolioRisk = await riskManagementService.analyzePortfolioRisk(userId, portfolioId);
+      const portfolioRisk = await riskManagementService.analyzePortfolioRisk(userId.toString(), portfolioId);
       portfolioRisks.push(portfolioRisk);
     }
 
