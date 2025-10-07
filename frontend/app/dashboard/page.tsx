@@ -372,7 +372,7 @@ export default function Dashboard() {
                 </div>
                 <p className="text-sm text-slate-300 mb-2">
                   {user?.subscriptionTier === 'premium' 
-                    ? 'Full access: Up to 3 portfolios of each type (Solid & Dangerous) with 20 stocks each' 
+                    ? 'Full access: Up to 3 portfolios of each type (Solid & Dangerous) with 20 stocks each. Plus real-time push notifications and advanced portfolio analytics with detailed market insights.' 
                     : 'Limited to 1 portfolio with 10 stocks. Upgrade to unlock 6 portfolios with 20 stocks each!'
                   }
                 </p>
