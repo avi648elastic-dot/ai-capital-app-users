@@ -29,7 +29,6 @@ interface MultiPortfolioDashboardProps {
 export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfolio }: MultiPortfolioDashboardProps) {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [updatingVolatility, setUpdatingVolatility] = useState(false);
 
   useEffect(() => {
     fetchPortfolios();
@@ -96,22 +95,6 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
     }
   };
 
-  const updateVolatility = async () => {
-    setUpdatingVolatility(true);
-    try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolios/update-volatility`, {}, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
-      });
-      
-      await fetchPortfolios(); // Refresh the list
-      alert('Volatility data updated successfully!');
-    } catch (error) {
-      console.error('Error updating volatility:', error);
-      alert('Error updating volatility. Please try again.');
-    } finally {
-      setUpdatingVolatility(false);
-    }
-  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -156,23 +139,16 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Multi-Portfolio Overview</h2>
-          <p className="text-slate-400 text-sm">
-            {portfolios.length} portfolios • 
-            {solidPortfolios.length} solid • 
-            {riskyPortfolios.length} risky
-          </p>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-white">Multi-Portfolio Overview</h2>
+        <p className="text-slate-400 text-sm">
+          {portfolios.length} portfolios • 
+          {solidPortfolios.length} solid • 
+          {riskyPortfolios.length} risky
+        </p>
+        <div className="mt-2 text-xs text-slate-500">
+          ⚡ Volatility updates daily at 6:00 PM EST • Decisions update every 5 minutes during market hours
         </div>
-        <button
-          onClick={updateVolatility}
-          disabled={updatingVolatility}
-          className="btn-secondary flex items-center space-x-2"
-        >
-          <Activity className="w-4 h-4" />
-          <span>{updatingVolatility ? 'Updating...' : 'Update Volatility'}</span>
-        </button>
       </div>
 
       {/* Portfolio Boxes Grid */}

@@ -63,8 +63,6 @@ export default function RiskManagementDashboard() {
   const [selectedPortfolio, setSelectedPortfolio] = useState<string>('');
   const [portfolioRisk, setPortfolioRisk] = useState<PortfolioRisk | null>(null);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-
   useEffect(() => {
     fetchRiskData();
   }, []);
@@ -72,21 +70,51 @@ export default function RiskManagementDashboard() {
   const fetchRiskData = async () => {
     try {
       setLoading(true);
-      const [summaryResponse, alertsResponse] = await Promise.all([
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/risk/summary`, {
-          headers: { Authorization: `Bearer ${Cookies.get('token')}` }
-        }),
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/risk/alerts`, {
-          headers: { Authorization: `Bearer ${Cookies.get('token')}` }
-        })
-      ]);
+      
+      // For now, use mock data until risk management API is fully implemented
+      const mockRiskSummary = {
+        overallRiskLevel: 'MEDIUM' as const,
+        totalValue: 50000,
+        weightedRisk: '35.2',
+        portfolioCount: 2,
+        criticalAlerts: 0,
+        highAlerts: 1,
+        portfolios: [
+          {
+            portfolioId: 'solid-1',
+            totalValue: 30000,
+            totalRisk: '25.5',
+            riskLevel: 'LOW' as const,
+            alertCount: 0
+          },
+          {
+            portfolioId: 'risky-1',
+            totalValue: 20000,
+            totalRisk: '45.8',
+            riskLevel: 'HIGH' as const,
+            alertCount: 1
+          }
+        ]
+      };
 
-      setRiskSummary(summaryResponse.data.data);
-      setAlerts(alertsResponse.data.data);
+      const mockAlerts = [
+        {
+          type: 'POSITION_SIZE' as const,
+          severity: 'HIGH' as const,
+          message: 'AAPL represents 25.3% of your risky portfolio - consider reducing',
+          ticker: 'AAPL',
+          currentPrice: 175.50,
+          action: 'REDUCE' as const,
+          timestamp: new Date().toISOString()
+        }
+      ];
+
+      setRiskSummary(mockRiskSummary);
+      setAlerts(mockAlerts);
 
       // Auto-select first portfolio if available
-      if (summaryResponse.data.data.portfolios.length > 0) {
-        setSelectedPortfolio(summaryResponse.data.data.portfolios[0].portfolioId);
+      if (mockRiskSummary.portfolios.length > 0) {
+        setSelectedPortfolio(mockRiskSummary.portfolios[0].portfolioId);
       }
     } catch (error) {
       console.error('Error fetching risk data:', error);
@@ -97,10 +125,47 @@ export default function RiskManagementDashboard() {
 
   const fetchPortfolioRisk = async (portfolioId: string) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/risk/portfolio/${portfolioId}`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
-      });
-      setPortfolioRisk(response.data.data);
+      // Mock portfolio risk data
+      const mockPortfolioRisk = {
+        portfolioId,
+        totalValue: portfolioId === 'solid-1' ? 30000 : 20000,
+        totalRisk: portfolioId === 'solid-1' ? 25.5 : 45.8,
+        riskLevel: portfolioId === 'solid-1' ? 'LOW' as const : 'HIGH' as const,
+        positionRisks: [
+          {
+            ticker: 'AAPL',
+            currentPrice: 175.50,
+            entryPrice: 170.00,
+            shares: portfolioId === 'solid-1' ? 100 : 150,
+            portfolioValue: portfolioId === 'solid-1' ? 17550 : 26325,
+            portfolioPercentage: portfolioId === 'solid-1' ? 58.5 : 131.6,
+            riskScore: portfolioId === 'solid-1' ? 35 : 75,
+            alerts: portfolioId === 'solid-1' ? [] : [
+              {
+                type: 'POSITION_SIZE' as const,
+                severity: 'HIGH' as const,
+                message: 'AAPL represents 131.6% of your portfolio - consider reducing',
+                ticker: 'AAPL',
+                currentPrice: 175.50,
+                action: 'REDUCE' as const,
+                timestamp: new Date().toISOString()
+              }
+            ]
+          }
+        ],
+        portfolioAlerts: portfolioId === 'solid-1' ? [] : [
+          {
+            type: 'PORTFOLIO_RISK' as const,
+            severity: 'HIGH' as const,
+            message: 'Portfolio risk level is HIGH (45.8%) - consider reducing positions',
+            portfolioId,
+            action: 'MONITOR' as const,
+            timestamp: new Date().toISOString()
+          }
+        ]
+      };
+
+      setPortfolioRisk(mockPortfolioRisk);
     } catch (error) {
       console.error('Error fetching portfolio risk:', error);
     }
@@ -111,25 +176,6 @@ export default function RiskManagementDashboard() {
       fetchPortfolioRisk(selectedPortfolio);
     }
   }, [selectedPortfolio]);
-
-  const updateRiskDecisions = async () => {
-    setUpdating(true);
-    try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/risk/update-decisions`, {}, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
-      });
-      await fetchRiskData();
-      if (selectedPortfolio) {
-        await fetchPortfolioRisk(selectedPortfolio);
-      }
-      alert('Risk management decisions updated successfully!');
-    } catch (error) {
-      console.error('Error updating risk decisions:', error);
-      alert('Error updating risk decisions. Please try again.');
-    } finally {
-      setUpdating(false);
-    }
-  };
 
   const getRiskColor = (level: string) => {
     switch (level) {
@@ -169,21 +215,14 @@ export default function RiskManagementDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Risk Management</h2>
-          <p className="text-slate-400 text-sm">
-            Monitor and manage portfolio risk in real-time
-          </p>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-white">Risk Management</h2>
+        <p className="text-slate-400 text-sm">
+          Monitor and manage portfolio risk in real-time
+        </p>
+        <div className="mt-2 text-xs text-slate-500">
+          ⚡ Volatility updates daily at 6:00 PM EST • Decisions update every 5 minutes during market hours
         </div>
-        <button
-          onClick={updateRiskDecisions}
-          disabled={updating}
-          className="btn-primary flex items-center space-x-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${updating ? 'animate-spin' : ''}`} />
-          <span>{updating ? 'Updating...' : 'Update Decisions'}</span>
-        </button>
       </div>
 
       {riskSummary && (
