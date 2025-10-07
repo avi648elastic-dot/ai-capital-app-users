@@ -8,9 +8,10 @@ import { useRouter } from 'next/navigation';
 interface HeaderProps {
   userName?: string;
   showNavigation?: boolean;
+  isAdmin?: boolean;
 }
 
-export default function Header({ userName, showNavigation = true }: HeaderProps) {
+export default function Header({ userName, showNavigation = true, isAdmin = false }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -106,6 +107,14 @@ export default function Header({ userName, showNavigation = true }: HeaderProps)
                 {/* Dropdown Menu */}
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-slate-800 rounded-lg shadow-xl border border-slate-700 py-1 z-50">
+                    {isAdmin && (
+                      <a
+                        href="/admin"
+                        className="flex items-center space-x-2 px-4 py-2 text-sm text-emerald-300 hover:bg-slate-700 hover:text-emerald-200 transition-colors duration-200"
+                      >
+                        <span>Admin Dashboard</span>
+                      </a>
+                    )}
                     <a
                       href="/profile"
                       className="flex items-center space-x-2 px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition-colors duration-200"

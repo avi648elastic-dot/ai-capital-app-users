@@ -17,6 +17,7 @@ interface User {
   email: string;
   name: string;
   subscriptionTier: 'free' | 'premium';
+  isAdmin?: boolean;
 }
 
 interface PortfolioItem {
@@ -299,8 +300,8 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Professional Header */}
-        <Header userName={user?.name} />
+      {/* Professional Header */}
+      <Header userName={user?.name} isAdmin={user?.isAdmin} />
 
         <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Enhanced Subscription Status Banner */}
