@@ -14,6 +14,7 @@ import MarketOverview from '@/components/MarketOverview';
 import Navigation from '@/components/Navigation';
 import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';
 import CreatePortfolioModal from '@/components/CreatePortfolioModal';
+import DeletePortfolioModal from '@/components/DeletePortfolioModal';
 
 interface User {
   id: string;
@@ -63,6 +64,7 @@ export default function Dashboard() {
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
   const [showMultiPortfolio, setShowMultiPortfolio] = useState(false);
   const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
+  const [showDeletePortfolio, setShowDeletePortfolio] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -448,15 +450,24 @@ export default function Dashboard() {
                 <span>{showMultiPortfolio ? 'Single View' : 'Multi-Portfolio'}</span>
               </button>
             )}
-            {/* Onboarding Button for Premium Users (visible only in multi view) */}
+            {/* Portfolio Management Buttons for Premium Users (visible only in multi view) */}
             {user?.subscriptionTier === 'premium' && showMultiPortfolio && (
-              <button
-                onClick={() => setShowCreatePortfolio(true)}
-                className="btn-primary flex items-center space-x-2"
-              >
-                <span>➕</span>
-                <span>Add Portfolio</span>
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setShowCreatePortfolio(true)}
+                  className="btn-primary flex items-center space-x-2"
+                >
+                  <span>➕</span>
+                  <span>Add Portfolio</span>
+                </button>
+                <button
+                  onClick={() => setShowDeletePortfolio(true)}
+                  className="btn-secondary flex items-center space-x-2 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                >
+                  <span>🗑️</span>
+                  <span>Delete Portfolio</span>
+                </button>
+              </div>
             )}
             {/* Stock Limit Indicator */}
             {user && (
@@ -598,6 +609,17 @@ export default function Dashboard() {
           onClose={() => setShowCreatePortfolio(false)}
           onSuccess={() => {
             setShowCreatePortfolio(false);
+            window.location.reload();
+          }}
+        />
+      )}
+
+      {/* Delete Portfolio Modal */}
+      {showDeletePortfolio && (
+        <DeletePortfolioModal 
+          onClose={() => setShowDeletePortfolio(false)}
+          onSuccess={() => {
+            setShowDeletePortfolio(false);
             window.location.reload();
           }}
         />
