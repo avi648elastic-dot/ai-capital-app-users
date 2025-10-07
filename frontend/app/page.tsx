@@ -147,8 +147,12 @@ export default function Page() {
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-24 h-24 relative">
-                <img src="/logo.png" alt="AiCapital Logo" className="w-full h-full object-contain" />
+              <div className="w-24 h-24 relative bg-slate-800 rounded-xl p-4">
+                <img 
+                  src="/logo.png" 
+                  alt="AiCapital Logo" 
+                  className="w-full h-full object-contain" 
+                />
               </div>
             </div>
             <h1 className="logo-text text-4xl mb-3 font-bold">AI-Capital</h1>
@@ -172,9 +176,6 @@ export default function Page() {
                 <span>Portfolio Management</span>
               </span>
             </div>
-          </div>
-          <div className="mb-4 p-2 bg-gray-800 rounded text-xs text-gray-300 text-center">
-            API URL: {process.env.NEXT_PUBLIC_API_URL || 'NOT SET'}
           </div>
 
           {/* Tabs */}

@@ -25,8 +25,15 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
     // Professional static logo - no animations
     return (
       <div className="flex items-center space-x-3">
-        <div className="relative w-12 h-12">
-          <Image src="/logo.png" alt="AiCapital Logo" fill sizes="48px" className="object-contain" priority />
+        <div className="relative w-12 h-12 bg-slate-800 rounded-lg p-2">
+          <Image 
+            src="/logo.png" 
+            alt="AiCapital Logo" 
+            fill 
+            sizes="48px" 
+            className="object-contain" 
+            priority 
+          />
         </div>
         <div>
           <h1 className="logo-text text-xl">AI-Capital</h1>
