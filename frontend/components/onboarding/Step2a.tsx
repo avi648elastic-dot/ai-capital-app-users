@@ -64,10 +64,14 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
     setLoading(true);
 
     try {
+      console.log('🔍 [STEP2A] Starting portfolio import...');
+      
       // Filter out empty stocks
       const validStocks = stocks.filter(stock => 
         stock.ticker && stock.shares > 0 && stock.entryPrice > 0 && stock.currentPrice > 0
       );
+
+      console.log('🔍 [STEP2A] Valid stocks:', validStocks);
 
       if (validStocks.length === 0) {
         alert('Please add at least one valid stock');
@@ -75,25 +79,40 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
         return;
       }
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/import-portfolio`, {
+      if (!totalCapital || Number(totalCapital) <= 0) {
+        alert('Please enter a valid total portfolio value');
+        setLoading(false);
+        return;
+      }
+
+      const payload = {
         stocks: validStocks,
         totalCapital: Number(totalCapital),
         riskTolerance: Number(riskTolerance),
-      }, {
+      };
+
+      console.log('🔍 [STEP2A] Sending payload:', payload);
+
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/import-portfolio`, payload, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
 
-      // Skip Step3 - go directly to dashboard
-      console.log('✅ [STEP2A] Portfolio imported successfully, redirecting to dashboard...');
+      console.log('✅ [STEP2A] Portfolio import response:', response.data);
       
       // Show success message
       alert('Portfolio imported successfully! Redirecting to dashboard...');
       
-      // Use onComplete callback instead of router
-      onComplete({ success: true });
+      // Use onComplete callback to trigger redirect
+      onComplete({ success: true, data: response.data });
     } catch (error) {
-      console.error('Error importing portfolio:', error);
-      alert('Error importing portfolio. Please try again.');
+      console.error('❌ [STEP2A] Error importing portfolio:', error);
+      
+      if (error.response) {
+        console.error('❌ [STEP2A] Error response:', error.response.data);
+        alert(`Error: ${error.response.data.message || 'Failed to import portfolio'}`);
+      } else {
+        alert('Error importing portfolio. Please check your connection and try again.');
+      }
     } finally {
       setLoading(false);
     }

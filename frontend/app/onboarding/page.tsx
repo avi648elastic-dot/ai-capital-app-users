@@ -56,13 +56,13 @@ export default function OnboardingPage() {
   const handleStep2aComplete = (data: any) => {
     // Portfolio imported - redirect to dashboard immediately
     console.log('✅ [ONBOARDING] Step2a completed, redirecting to dashboard');
-    window.location.href = '/dashboard';
+    router.push('/dashboard');
   };
 
   const handleStep2bComplete = (data: any) => {
     // Portfolio generated - redirect to dashboard immediately  
     console.log('✅ [ONBOARDING] Step2b completed, redirecting to dashboard');
-    window.location.href = '/dashboard';
+    router.push('/dashboard');
   };
 
 
