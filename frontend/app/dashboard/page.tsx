@@ -96,6 +96,10 @@ export default function Dashboard() {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setUser(response.data.user);
+      // Auto-select tab based on the user's portfolioType (free users)
+      const pt = response.data.user?.portfolioType as 'solid' | 'dangerous' | undefined;
+      const tier = response.data.user?.subscriptionTier as 'free' | 'premium' | undefined;
+      if (pt && tier === 'free') setActiveTab(pt);
     } catch (error) {
       console.error('Error fetching user data:', error);
       Cookies.remove('token');
@@ -482,6 +486,8 @@ export default function Dashboard() {
             <StockForm
               onSubmit={handleAddStock}
               onCancel={() => setShowStockForm(false)}
+              isPremium={user?.subscriptionTier === 'premium'}
+              defaultPortfolioType={user?.portfolioType as any || 'solid'}
             />
           </div>
         </div>

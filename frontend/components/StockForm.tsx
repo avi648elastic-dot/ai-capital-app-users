@@ -6,9 +6,11 @@ import axios from 'axios';
 interface StockFormProps {
   onSubmit: (data: any) => void;
   onCancel: () => void;
+  isPremium?: boolean;
+  defaultPortfolioType?: 'solid' | 'dangerous';
 }
 
-export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
+export default function StockForm({ onSubmit, onCancel, isPremium = false, defaultPortfolioType = 'solid' }: StockFormProps) {
   const [formData, setFormData] = useState({
     ticker: '',
     shares: '',
@@ -17,7 +19,7 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
     stopLoss: '',
     takeProfit: '',
     notes: '',
-    portfolioType: 'solid' as 'solid' | 'dangerous',
+    portfolioType: defaultPortfolioType as 'solid' | 'dangerous',
   });
 
   const [loading, setLoading] = useState(false);
@@ -198,36 +200,38 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
           </div>
         </div>
 
-        {/* Portfolio Type Selector */}
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            Portfolio Type
-          </label>
-          <div className="flex space-x-4">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="portfolioType"
-                value="solid"
-                checked={formData.portfolioType === 'solid'}
-                onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'dangerous' })}
-                className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <span className="ml-2 text-sm text-slate-300">Solid Portfolio</span>
+        {/* Portfolio Type Selector (Premium only) */}
+        {isPremium ? (
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Portfolio Type
             </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                name="portfolioType"
-                value="dangerous"
-                checked={formData.portfolioType === 'dangerous'}
-                onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'dangerous' })}
-                className="w-4 h-4 text-red-600 bg-slate-700 border-slate-600 rounded focus:ring-red-500 focus:ring-2"
-              />
-              <span className="ml-2 text-sm text-slate-300">Dangerous Portfolio</span>
-            </label>
+            <div className="flex space-x-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="portfolioType"
+                  value="solid"
+                  checked={formData.portfolioType === 'solid'}
+                  onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'dangerous' })}
+                  className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-slate-300">Solid Portfolio</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="portfolioType"
+                  value="dangerous"
+                  checked={formData.portfolioType === 'dangerous'}
+                  onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'dangerous' })}
+                  className="w-4 h-4 text-red-600 bg-slate-700 border-slate-600 rounded focus:ring-red-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-slate-300">Dangerous Portfolio</span>
+              </label>
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <div className="grid grid-cols-2 gap-4">
           <div>
