@@ -307,6 +307,69 @@ export default function Analytics() {
             </div>
           </div>
 
+          {/* AI Capital Character Analysis */}
+          <div className="card p-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <Bot className="w-5 h-5 mr-2" />
+              AI-Capital Analysis
+            </h3>
+            <div className="h-64 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-slate-700 p-4">
+              {aiAnalysis ? (
+                <div className="flex flex-col h-full justify-center items-center text-center">
+                  {/* AI Character Icon */}
+                  <div className="mb-4">
+                    <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
+                      aiAnalysis.mood === 'excellent' ? 'bg-green-500/20' :
+                      aiAnalysis.mood === 'good' ? 'bg-green-400/20' :
+                      aiAnalysis.mood === 'poor' ? 'bg-red-500/20' :
+                      aiAnalysis.mood === 'warning' ? 'bg-yellow-500/20' :
+                      'bg-blue-500/20'
+                    }`}>
+                      <aiAnalysis.icon className={`w-8 h-8 ${aiAnalysis.color}`} />
+                    </div>
+                  </div>
+                  
+                  {/* AI Message */}
+                  <div className="mb-4">
+                    <p className={`text-sm font-semibold ${aiAnalysis.color} mb-2`}>
+                      {aiAnalysis.message}
+                    </p>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      {aiAnalysis.recommendation}
+                    </p>
+                  </div>
+
+                  {/* Portfolio Metrics */}
+                  {aiAnalysis.metrics && (
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-slate-700/50 rounded-lg p-2">
+                        <div className="text-slate-400">P&L</div>
+                        <div className={`font-semibold ${
+                          parseFloat(aiAnalysis.metrics.totalPnLPercent) >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {aiAnalysis.metrics.totalPnLPercent}%
+                        </div>
+                      </div>
+                      <div className="bg-slate-700/50 rounded-lg p-2">
+                        <div className="text-slate-400">Volatility</div>
+                        <div className="text-white font-semibold">
+                          {aiAnalysis.metrics.avgVolatility}%
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <div className="text-center">
+                    <Bot className="w-12 h-12 text-slate-400 mx-auto mb-2" />
+                    <p className="text-slate-400">Loading AI analysis...</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Sector Performance Summary */}
           <div className="lg:col-span-2 card p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
@@ -338,134 +401,99 @@ export default function Analytics() {
             </div>
           </div>
 
-          {/* AI Capital Character Analysis */}
+          {/* Portfolio Performance Chart */}
           <div className="lg:col-span-2 card p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <Bot className="w-5 h-5 mr-2" />
-              AI-Capital Analysis
+              <BarChart3 className="w-5 h-5 mr-2" />
+              Portfolio Performance Chart
             </h3>
             <div className="h-64 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-slate-700 p-6">
-              {aiAnalysis ? (
-                <div className="flex h-full">
-                  {/* Left Side - AI Character */}
-                  <div className="flex-1 flex flex-col justify-center items-center text-center pr-4">
-                    {/* AI Character Icon */}
-                    <div className="mb-4">
-                      <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
-                        aiAnalysis.mood === 'excellent' ? 'bg-green-500/20' :
-                        aiAnalysis.mood === 'good' ? 'bg-green-400/20' :
-                        aiAnalysis.mood === 'poor' ? 'bg-red-500/20' :
-                        aiAnalysis.mood === 'warning' ? 'bg-yellow-500/20' :
-                        'bg-blue-500/20'
-                      }`}>
-                        <aiAnalysis.icon className={`w-8 h-8 ${aiAnalysis.color}`} />
-                      </div>
+              <div className="flex h-full">
+                {/* Chart Area */}
+                <div className="flex-1 flex flex-col justify-center">
+                  <div className="bg-slate-700/30 rounded-lg p-4 h-full">
+                    <div className="text-center mb-3">
+                      <h4 className="text-sm font-semibold text-white mb-1">Portfolio Value Over Time</h4>
+                      <p className="text-xs text-slate-400">Last 30 Days Performance</p>
                     </div>
                     
-                    {/* AI Message */}
-                    <div className="mb-4">
-                      <p className={`text-sm font-semibold ${aiAnalysis.color} mb-2`}>
-                        {aiAnalysis.message}
-                      </p>
-                      <p className="text-slate-300 text-xs leading-relaxed">
-                        {aiAnalysis.recommendation}
-                      </p>
+                    {/* Simple Line Chart */}
+                    <div className="relative h-32 mb-3">
+                      <svg className="w-full h-full" viewBox="0 0 300 120">
+                        {/* Grid lines */}
+                        <defs>
+                          <pattern id="chartGrid" width="30" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 30 0 L 0 0 0 20" fill="none" stroke="#374151" strokeWidth="0.5"/>
+                          </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#chartGrid)" />
+                        
+                        {/* Performance line */}
+                        <path
+                          d="M 20 100 Q 80 80 140 60 Q 200 40 260 30"
+                          fill="none"
+                          stroke="#3b82f6"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                        />
+                        
+                        {/* Data points */}
+                        <circle cx="20" cy="100" r="3" fill="#3b82f6" />
+                        <circle cx="80" cy="80" r="3" fill="#3b82f6" />
+                        <circle cx="140" cy="60" r="3" fill="#3b82f6" />
+                        <circle cx="200" cy="40" r="3" fill="#3b82f6" />
+                        <circle cx="260" cy="30" r="3" fill="#3b82f6" />
+                        
+                        {/* Y-axis labels */}
+                        <text x="5" y="25" fill="#6b7280" fontSize="10">$50k</text>
+                        <text x="5" y="50" fill="#6b7280" fontSize="10">$40k</text>
+                        <text x="5" y="75" fill="#6b7280" fontSize="10">$30k</text>
+                        <text x="5" y="100" fill="#6b7280" fontSize="10">$20k</text>
+                      </svg>
                     </div>
-
-                    {/* Portfolio Metrics */}
-                    {aiAnalysis.metrics && (
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-slate-700/50 rounded-lg p-2">
-                          <div className="text-slate-400">P&L</div>
-                          <div className={`font-semibold ${
-                            parseFloat(aiAnalysis.metrics.totalPnLPercent) >= 0 ? 'text-green-400' : 'text-red-400'
-                          }`}>
-                            {aiAnalysis.metrics.totalPnLPercent}%
-                          </div>
-                        </div>
-                        <div className="bg-slate-700/50 rounded-lg p-2">
-                          <div className="text-slate-400">Volatility</div>
-                          <div className="text-white font-semibold">
-                            {aiAnalysis.metrics.avgVolatility}%
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Right Side - Dummy Graph */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <div className="bg-slate-700/30 rounded-lg p-4 h-full">
-                      <div className="text-center mb-3">
-                        <h4 className="text-sm font-semibold text-white mb-1">Portfolio Performance</h4>
-                        <p className="text-xs text-slate-400">Last 30 Days</p>
-                      </div>
-                      
-                      {/* Simple Line Chart */}
-                      <div className="relative h-24 mb-3">
-                        <svg className="w-full h-full" viewBox="0 0 200 80">
-                          {/* Grid lines */}
-                          <defs>
-                            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#374151" strokeWidth="0.5"/>
-                            </pattern>
-                          </defs>
-                          <rect width="100%" height="100%" fill="url(#grid)" />
-                          
-                          {/* Performance line */}
-                          <path
-                            d="M 10 60 Q 50 40 90 30 T 170 20"
-                            fill="none"
-                            stroke={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'}
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                          
-                          {/* Data points */}
-                          <circle cx="10" cy="60" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
-                          <circle cx="50" cy="40" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
-                          <circle cx="90" cy="30" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
-                          <circle cx="130" cy="25" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
-                          <circle cx="170" cy="20" r="2" fill={aiAnalysis.mood === 'poor' ? '#ef4444' : aiAnalysis.mood === 'excellent' ? '#10b981' : '#3b82f6'} />
-                        </svg>
-                      </div>
-                      
-                      {/* Performance indicators */}
-                      <div className="flex justify-between text-xs">
-                        <div className="text-slate-400">Week 1</div>
-                        <div className="text-slate-400">Week 2</div>
-                        <div className="text-slate-400">Week 3</div>
-                        <div className="text-slate-400">Week 4</div>
-                      </div>
-                      
-                      {/* Trend indicator */}
-                      <div className="mt-2 flex items-center justify-center space-x-2">
-                        <TrendingUp className={`w-4 h-4 ${
-                          aiAnalysis.mood === 'poor' ? 'text-red-400 rotate-180' : 
-                          aiAnalysis.mood === 'excellent' ? 'text-green-400' : 
-                          'text-blue-400'
-                        }`} />
-                        <span className={`text-xs font-semibold ${
-                          aiAnalysis.mood === 'poor' ? 'text-red-400' : 
-                          aiAnalysis.mood === 'excellent' ? 'text-green-400' : 
-                          'text-blue-400'
-                        }`}>
-                          {aiAnalysis.mood === 'poor' ? 'Declining' : 
-                           aiAnalysis.mood === 'excellent' ? 'Strong Growth' : 
-                           'Steady Growth'}
-                        </span>
-                      </div>
+                    
+                    {/* Performance indicators */}
+                    <div className="flex justify-between text-xs">
+                      <div className="text-slate-400">Week 1</div>
+                      <div className="text-slate-400">Week 2</div>
+                      <div className="text-slate-400">Week 3</div>
+                      <div className="text-slate-400">Week 4</div>
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  <div className="text-center">
-                    <Bot className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                    <p className="text-slate-400">Loading AI analysis...</p>
+
+                {/* Chart Legend & Stats */}
+                <div className="w-48 ml-4 flex flex-col justify-center space-y-4">
+                  <div className="bg-slate-700/50 rounded-lg p-3">
+                    <h5 className="text-sm font-semibold text-white mb-2">Performance Summary</h5>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Best Day</span>
+                        <span className="text-green-400 font-semibold">+2.4%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Worst Day</span>
+                        <span className="text-red-400 font-semibold">-1.8%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Avg Daily</span>
+                        <span className="text-blue-400 font-semibold">+0.6%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-slate-700/50 rounded-lg p-3">
+                    <h5 className="text-sm font-semibold text-white mb-2">Trend Analysis</h5>
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="w-4 h-4 text-green-400" />
+                      <span className="text-xs text-green-400 font-semibold">Uptrend</span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Consistent growth pattern with low volatility
+                    </p>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
