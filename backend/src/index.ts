@@ -13,6 +13,7 @@ import onboardingRoutes from './routes/onboarding';
 import adminRoutes from './routes/admin';
 import marketsRoutes from './routes/markets';
 import portfoliosRoutes from './routes/portfolios';
+import riskManagementRoutes from './routes/riskManagement';
 import { schedulerService } from './services/schedulerService';
 
 // Load environment variables
@@ -67,6 +68,7 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/markets', marketsRoutes);
 app.use('/api/portfolios', portfoliosRoutes);
+app.use('/api/risk', riskManagementRoutes);
 
 // Import subscription routes
 import subscriptionRoutes from './routes/subscription';

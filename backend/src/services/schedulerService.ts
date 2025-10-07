@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { decisionEngine } from './decisionEngine';
 import { stockDataService } from './stockDataService';
 import { volatilityService } from './volatilityService';
+import { riskManagementService } from './riskManagementService';
 import Portfolio from '../models/Portfolio';
 
 export class SchedulerService {
@@ -75,10 +76,19 @@ export class SchedulerService {
       timezone: 'America/New_York'
     });
 
+    // Update risk management decisions every 2 minutes during market hours
+    cron.schedule('*/2 9-16 * * 1-5', async () => {
+      console.log('⚠️ [SCHEDULER] Risk management update triggered');
+      await this.updateRiskManagement();
+    }, {
+      timezone: 'America/New_York'
+    });
+
     console.log('✅ [SCHEDULER] Scheduled updates configured');
     console.log('📅 [SCHEDULER] Stock data updates: Every 15 minutes (9:30 AM - 4:00 PM EST)');
     console.log('📅 [SCHEDULER] Portfolio decisions: Every 5 minutes (9:30 AM - 4:00 PM EST)');
     console.log('📅 [SCHEDULER] Portfolio volatilities: Daily at 6:00 PM EST');
+    console.log('📅 [SCHEDULER] Risk management: Every 2 minutes (9:30 AM - 4:00 PM EST)');
   }
 
   private async updateStockData() {
@@ -200,6 +210,38 @@ export class SchedulerService {
   async triggerVolatilityUpdate() {
     console.log('🔧 [SCHEDULER] Manual volatility update triggered');
     await this.updatePortfolioVolatilities();
+  }
+
+  /**
+   * Update risk management for all users
+   */
+  private async updateRiskManagement() {
+    try {
+      console.log('🔄 [SCHEDULER] Updating risk management...');
+      
+      // Get all unique user IDs
+      const userIds = await Portfolio.distinct('userId');
+      
+      for (const userId of userIds) {
+        try {
+          await riskManagementService.updatePortfolioDecisions(userId);
+        } catch (error) {
+          console.error(`❌ [SCHEDULER] Error updating risk management for user ${userId}:`, error);
+        }
+      }
+      
+      console.log('✅ [SCHEDULER] Risk management updated for all users');
+    } catch (error) {
+      console.error('❌ [SCHEDULER] Error updating risk management:', error);
+    }
+  }
+
+  /**
+   * Manually trigger risk management update
+   */
+  async triggerRiskManagementUpdate() {
+    console.log('🔧 [SCHEDULER] Manual risk management update triggered');
+    await this.updateRiskManagement();
   }
 
   /**

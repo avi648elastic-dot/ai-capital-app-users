@@ -19,7 +19,8 @@ import {
   User,
   FileText,
   Bell,
-  CreditCard
+  CreditCard,
+  AlertTriangle
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -70,26 +71,33 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
         }
       ]
     },
-    {
-      id: 'analytics',
-      label: 'Analytics',
-      icon: PieChart,
-      children: [
-        {
-          id: 'performance',
-          label: 'Performance',
-          icon: BarChart3,
-          href: '/analytics/performance'
-        },
-        {
-          id: 'reports',
-          label: 'Reports',
-          icon: FileText,
-          href: '/analytics/reports',
-          premium: true
-        }
-      ]
-    },
+      {
+        id: 'analytics',
+        label: 'Analytics',
+        icon: PieChart,
+        children: [
+          {
+            id: 'performance',
+            label: 'Performance',
+            icon: BarChart3,
+            href: '/analytics/performance'
+          },
+          {
+            id: 'reports',
+            label: 'Reports',
+            icon: FileText,
+            href: '/analytics/reports',
+            premium: true
+          }
+        ]
+      },
+      {
+        id: 'risk-management',
+        label: 'Risk Management',
+        icon: AlertTriangle,
+        href: '/risk-management',
+        premium: true
+      },
     {
       id: 'trading',
       label: 'Trading Tools',
