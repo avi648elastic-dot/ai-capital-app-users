@@ -20,6 +20,10 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="min-h-screen bg-slate-950">
           {children}
+          {/* Build/version footer for deployment verification */}
+          <div className="fixed bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-slate-800/80 text-slate-300 border border-slate-700">
+            v{process.env.npm_package_version || 'dev'} · API: {process.env.NEXT_PUBLIC_API_URL || 'unset'}
+          </div>
         </div>
       </body>
     </html>
