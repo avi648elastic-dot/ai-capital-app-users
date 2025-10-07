@@ -313,24 +313,20 @@ export default function Analytics() {
               <Bot className="w-5 h-5 mr-2" />
               AI-Capital Analysis
             </h3>
-            <div className="h-64 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-slate-700 p-4">
+            <div className="space-y-4">
               {aiAnalysis ? (
-                <div className="flex flex-col h-full justify-center items-center text-center">
-                  {/* AI Character Icon */}
-                  <div className="mb-4">
-                    <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
+                <>
+                  {/* AI Character Icon and Message */}
+                  <div className="text-center p-4 bg-slate-800 rounded-lg">
+                    <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-3 ${
                       aiAnalysis.mood === 'excellent' ? 'bg-green-500/20' :
                       aiAnalysis.mood === 'good' ? 'bg-green-400/20' :
                       aiAnalysis.mood === 'poor' ? 'bg-red-500/20' :
                       aiAnalysis.mood === 'warning' ? 'bg-yellow-500/20' :
                       'bg-blue-500/20'
                     }`}>
-                      <aiAnalysis.icon className={`w-8 h-8 ${aiAnalysis.color}`} />
+                      <aiAnalysis.icon className={`w-6 h-6 ${aiAnalysis.color}`} />
                     </div>
-                  </div>
-                  
-                  {/* AI Message */}
-                  <div className="mb-4">
                     <p className={`text-sm font-semibold ${aiAnalysis.color} mb-2`}>
                       {aiAnalysis.message}
                     </p>
@@ -339,31 +335,43 @@ export default function Analytics() {
                     </p>
                   </div>
 
-                  {/* Portfolio Metrics */}
+                  {/* Portfolio Metrics Grid */}
                   {aiAnalysis.metrics && (
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-slate-700/50 rounded-lg p-2">
-                        <div className="text-slate-400">P&L</div>
-                        <div className={`font-semibold ${
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center p-3 bg-slate-800 rounded-lg">
+                        <div className="text-xs text-slate-400 mb-1">P&L</div>
+                        <div className={`text-lg font-bold ${
                           parseFloat(aiAnalysis.metrics.totalPnLPercent) >= 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
                           {aiAnalysis.metrics.totalPnLPercent}%
                         </div>
                       </div>
-                      <div className="bg-slate-700/50 rounded-lg p-2">
-                        <div className="text-slate-400">Volatility</div>
-                        <div className="text-white font-semibold">
+                      <div className="text-center p-3 bg-slate-800 rounded-lg">
+                        <div className="text-xs text-slate-400 mb-1">Volatility</div>
+                        <div className="text-lg font-bold text-white">
                           {aiAnalysis.metrics.avgVolatility}%
+                        </div>
+                      </div>
+                      <div className="text-center p-3 bg-slate-800 rounded-lg">
+                        <div className="text-xs text-slate-400 mb-1">Winners</div>
+                        <div className="text-lg font-bold text-green-400">
+                          {aiAnalysis.metrics.positiveStocks}
+                        </div>
+                      </div>
+                      <div className="text-center p-3 bg-slate-800 rounded-lg">
+                        <div className="text-xs text-slate-400 mb-1">Losers</div>
+                        <div className="text-lg font-bold text-red-400">
+                          {aiAnalysis.metrics.negativeStocks}
                         </div>
                       </div>
                     </div>
                   )}
-                </div>
+                </>
               ) : (
-                <div className="flex h-full items-center justify-center">
+                <div className="flex h-32 items-center justify-center">
                   <div className="text-center">
-                    <Bot className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                    <p className="text-slate-400">Loading AI analysis...</p>
+                    <Bot className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                    <p className="text-slate-400 text-sm">Loading AI analysis...</p>
                   </div>
                 </div>
               )}
