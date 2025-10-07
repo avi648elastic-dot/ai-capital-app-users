@@ -454,7 +454,10 @@ export default function Dashboard() {
             {user?.subscriptionTier === 'premium' && showMultiPortfolio && (
               <div className="flex space-x-2">
                 <button
-                  onClick={() => setShowCreatePortfolio(true)}
+                  onClick={() => {
+                    console.log('🔍 [DASHBOARD] Add Portfolio button clicked');
+                    setShowCreatePortfolio(true);
+                  }}
                   className="btn-primary flex items-center space-x-2"
                 >
                   <span>➕</span>

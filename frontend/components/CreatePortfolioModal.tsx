@@ -11,6 +11,7 @@ interface CreatePortfolioModalProps {
 }
 
 export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortfolioModalProps) {
+  console.log('🔍 [CREATE PORTFOLIO MODAL] Modal component rendered');
   const [portfolioType, setPortfolioType] = useState<'solid' | 'risky' | ''>('');
   const [portfolioName, setPortfolioName] = useState('');
   const [initialInvestment, setInitialInvestment] = useState('');
@@ -58,6 +59,15 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60">
+          <div className="bg-slate-800 rounded-lg p-8 text-center">
+            <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h3 className="text-xl font-bold text-white mb-2">Creating Portfolio...</h3>
+            <p className="text-slate-400">Please wait while we set up your new portfolio</p>
+          </div>
+        </div>
+      )}
       <div className="bg-slate-800 rounded-lg p-6 w-full max-w-lg mx-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
