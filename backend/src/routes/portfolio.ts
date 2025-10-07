@@ -77,7 +77,7 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
     console.log('🔍 [PORTFOLIO ADD] Adding stock for user:', req.user!._id);
     console.log('🔍 [PORTFOLIO ADD] Request body:', req.body);
 
-    const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes, portfolioType } = req.body;
+    const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes, portfolioType, portfolioId } = req.body;
 
     // Enhanced validation
     if (!ticker || !shares || !entryPrice || !currentPrice) {
@@ -100,10 +100,13 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Count existing stocks in the target portfolio type
+    // Determine portfolioId - use provided or default to first portfolio
+    const finalPortfolioId = portfolioId || `${finalPortfolioType}-1`;
+
+    // Count existing stocks in the target portfolio
     const existingStocksCount = await Portfolio.countDocuments({ 
       userId: req.user!._id,
-      portfolioType: finalPortfolioType
+      portfolioId: finalPortfolioId
     });
 
     console.log('🔍 [PORTFOLIO ADD] User tier:', user.subscriptionTier);
@@ -186,6 +189,7 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       takeProfit: numericTakeProfit || undefined,
       notes: notes || '',
       portfolioType: finalPortfolioType,
+      portfolioId: finalPortfolioId,
     });
 
     console.log('🔍 [PORTFOLIO ADD] Portfolio item created:', portfolioItem);

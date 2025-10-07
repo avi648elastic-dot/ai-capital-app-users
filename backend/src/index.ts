@@ -12,6 +12,7 @@ import shopifyRoutes from './routes/shopify';
 import onboardingRoutes from './routes/onboarding';
 import adminRoutes from './routes/admin';
 import marketsRoutes from './routes/markets';
+import portfoliosRoutes from './routes/portfolios';
 import { schedulerService } from './services/schedulerService';
 
 // Load environment variables
@@ -65,6 +66,7 @@ app.use('/api/shopify', shopifyRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/markets', marketsRoutes);
+app.use('/api/portfolios', portfoliosRoutes);
 
 // Import subscription routes
 import subscriptionRoutes from './routes/subscription';
