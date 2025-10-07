@@ -28,6 +28,7 @@ interface MultiPortfolioDashboardProps {
 
 export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfolio }: MultiPortfolioDashboardProps) {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+  const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,13 +76,18 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
         portfolio.totals = { initial, current, totalPnL, totalPnLPercent };
       });
       
-      const portfolioArray = Array.from(portfolioMap.values());
-      console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
-      portfolioArray.forEach(p => {
-        console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
-      });
-      
-      setPortfolios(portfolioArray);
+          const portfolioArray = Array.from(portfolioMap.values());
+          console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
+          portfolioArray.forEach(p => {
+            console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
+          });
+          
+          setPortfolios(portfolioArray);
+          
+          // Auto-select first portfolio if none selected
+          if (portfolioArray.length > 0 && !selectedPortfolioId) {
+            setSelectedPortfolioId(portfolioArray[0].portfolioId);
+          }
     } catch (error) {
       console.error('Error fetching portfolios:', error);
     } finally {
@@ -172,7 +178,12 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
           return (
             <div key={portfolio.portfolioId}>
               <div 
-                className="card p-5 transition-all duration-200 border-2 border-transparent hover:border-slate-600"
+                className={`card p-5 transition-all duration-200 border-2 cursor-pointer ${
+                  selectedPortfolioId === portfolio.portfolioId
+                    ? 'border-blue-500 bg-blue-500/10'
+                    : 'border-transparent hover:border-slate-600'
+                }`}
+                onClick={() => setSelectedPortfolioId(portfolio.portfolioId)}
               >
                 {/* Header with Type Badge */}
                 <div className="flex justify-between items-start mb-3">

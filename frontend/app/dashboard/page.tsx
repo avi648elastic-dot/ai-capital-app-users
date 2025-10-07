@@ -478,8 +478,16 @@ export default function Dashboard() {
               }`}>
                 <span className="opacity-70">Stocks: </span>
                 <span className="font-bold">
-                  {filteredPortfolio.length}/{user.subscriptionTier === 'free' ? '10' : '20'}
+                  {showMultiPortfolio && selectedMultiPortfolio 
+                    ? `${selectedMultiPortfolio.stocks.length}/${user.subscriptionTier === 'free' ? '10' : '20'}`
+                    : `${filteredPortfolio.length}/${user.subscriptionTier === 'free' ? '10' : '20'}`
+                  }
                 </span>
+                {showMultiPortfolio && selectedMultiPortfolio && (
+                  <span className="text-xs opacity-70 ml-2">
+                    ({selectedMultiPortfolio.portfolioName})
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -496,6 +504,9 @@ export default function Dashboard() {
             onViewPortfolio={(portfolioId) => {
               setSelectedPortfolioId(portfolioId);
               // You can implement a detailed portfolio view here
+            }}
+            onPortfolioSelect={(portfolio) => {
+              setSelectedMultiPortfolio(portfolio);
             }}
           />
         ) : (
