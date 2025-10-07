@@ -63,10 +63,10 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
           href: '/dashboard?tab=solid'
         },
         {
-          id: 'dangerous-portfolio',
-          label: 'Dangerous Portfolio',
+          id: 'risky-portfolio',
+          label: 'Risky Portfolio',
           icon: TrendingUp,
-          href: '/dashboard?tab=dangerous',
+          href: '/dashboard?tab=risky',
           premium: true
         }
       ]

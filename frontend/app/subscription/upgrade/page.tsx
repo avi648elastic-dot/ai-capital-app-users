@@ -70,7 +70,7 @@ export default function Upgrade() {
     {
       icon: <Users className="w-6 h-6" />,
       title: "Multiple Portfolios",
-      description: "Create up to 6 portfolios (3 Solid + 3 Dangerous)",
+      description: "Create up to 6 portfolios (3 Solid + 3 Risky)",
       free: "1 portfolio only",
       premium: "6 portfolios"
     },
@@ -84,7 +84,7 @@ export default function Upgrade() {
     {
       icon: <Shield className="w-6 h-6" />,
       title: "Both Portfolio Types",
-      description: "Access to both Solid and Dangerous portfolios",
+      description: "Access to both Solid and Risky portfolios",
       free: "1 portfolio type only",
       premium: "Both types"
     },

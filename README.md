@@ -13,7 +13,7 @@ A full-stack portfolio management application with AI-powered trading decisions,
   - Monthly performance trends
   - Price vs entry analysis
 - **AI Portfolio Generation**: Automatic stock selection and allocation based on risk preferences
-- **Portfolio Types**: Solid (conservative) and Dangerous (aggressive) portfolio options
+- **Portfolio Types**: Solid (conservative) and Risky (aggressive) portfolio options
 - **Real-time Data**: Integration with Finnhub and Financial Modeling Prep APIs for live market data
 - **Professional UI**: Dark theme with TailwindCSS
 - **Charts & Analytics**: Portfolio visualization with Recharts
@@ -182,7 +182,7 @@ The application features a comprehensive onboarding process for new users:
 - AI decisions are applied to imported stocks
 
 ### Step 2b: AI Portfolio Generation
-- Choose portfolio type: **Solid** (conservative) or **Dangerous** (aggressive)
+- Choose portfolio type: **Solid** (conservative) or **Risky** (aggressive)
 - Set investment amount and risk tolerance
 - AI selects and allocates stocks based on:
   - Market performance data
@@ -210,7 +210,7 @@ The application features a comprehensive onboarding process for new users:
 2. **Onboarding**: Guided setup process
    - Choose to import existing portfolio or create new AI portfolio
    - For imports: Enter stock details, set risk tolerance
-   - For AI generation: Select portfolio type (Solid/Dangerous), set investment amount
+   - For AI generation: Select portfolio type (Solid/Risky), set investment amount
 3. **Portfolio Review**: Confirm generated or imported portfolio
 4. **Dashboard Access**: Full portfolio management with AI decisions
 

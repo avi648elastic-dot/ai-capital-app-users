@@ -14,7 +14,7 @@ export interface IPortfolio extends Document {
   reason?: string;
   color?: string;
   portfolioType: 'solid' | 'risky'; // Portfolio type (solid/risky)
-  portfolioId: string; // Unique identifier for each portfolio (e.g., "solid-1", "dangerous-2")
+  portfolioId: string; // Unique identifier for each portfolio (e.g., "solid-1", "risky-2")
   portfolioName?: string; // Optional custom name for the portfolio
   volatility?: number; // Portfolio volatility (calculated daily)
   lastVolatilityUpdate?: Date; // When volatility was last calculated

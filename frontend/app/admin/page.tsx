@@ -37,7 +37,7 @@ interface SystemStats {
   portfolios: {
     total: number;
     solid: number;
-    dangerous: number;
+    risky: number;
   };
   actions: Array<{ _id: string; count: number }>;
   capital: {

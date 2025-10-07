@@ -12,7 +12,7 @@ interface Step2bProps {
 }
 
 export default function Step2b({ onComplete, onBack }: Step2bProps) {
-  const [portfolioType, setPortfolioType] = useState<'solid' | 'dangerous' | null>(null);
+  const [portfolioType, setPortfolioType] = useState<'solid' | 'risky' | null>(null);
   const [totalCapital, setTotalCapital] = useState('');
   const [riskTolerance, setRiskTolerance] = useState('7');
   const [loading, setLoading] = useState(false);
@@ -136,12 +136,12 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
               </div>
             </button>
 
-            {/* Dangerous Portfolio */}
+            {/* Risky Portfolio */}
             <button
               type="button"
-              onClick={() => setPortfolioType('dangerous')}
+              onClick={() => setPortfolioType('risky')}
               className={`card p-6 text-left transition-colors ${
-                portfolioType === 'dangerous'
+                portfolioType === 'risky'
                   ? 'ring-2 ring-danger-500 bg-danger-900/20'
                   : 'hover:bg-gray-750'
               }`}
@@ -150,7 +150,7 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
                 <div className="w-12 h-12 bg-danger-600 rounded-lg flex items-center justify-center mr-4">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="text-xl font-semibold text-white">Dangerous Portfolio</h4>
+                <h4 className="text-xl font-semibold text-white">Risky Portfolio</h4>
               </div>
               <p className="text-gray-400 mb-4">
                 Aggressive approach with high-growth, volatile stocks. Higher risk, higher potential returns.

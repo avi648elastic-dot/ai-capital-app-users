@@ -51,7 +51,7 @@ export const translations = {
     
     // Portfolio
     solidPortfolio: 'Solid Portfolio',
-    dangerousPortfolio: 'Dangerous Portfolio',
+    riskyPortfolio: 'Risky Portfolio',
     ticker: 'Ticker',
     shares: 'Shares',
     entry: 'Entry',
@@ -138,7 +138,7 @@ export const translations = {
     
     // Portfolio
     solidPortfolio: 'محفظة آمنة',
-    dangerousPortfolio: 'محفظة خطرة',
+    riskyPortfolio: 'محفظة خطرة',
     ticker: 'الرمز',
     shares: 'الأسهم',
     entry: 'السعر الأولي',
@@ -225,7 +225,7 @@ export const translations = {
     
     // Portfolio
     solidPortfolio: 'תיק בטוח',
-    dangerousPortfolio: 'תיק מסוכן',
+    riskyPortfolio: 'תיק מסוכן',
     ticker: 'סמל',
     shares: 'מניות',
     entry: 'מחיר כניסה',
