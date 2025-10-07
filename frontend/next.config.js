@@ -13,6 +13,9 @@ const nextConfig = {
     // Do not block builds on type errors in CI
     ignoreBuildErrors: true,
   },
+  // Improve diagnosability in production
+  productionBrowserSourceMaps: true,
+  swcMinify: false,
 }
 
 module.exports = nextConfig
