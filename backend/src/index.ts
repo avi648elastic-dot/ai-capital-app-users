@@ -92,6 +92,8 @@ app.get('/api/test', (req, res) => {
 // 📈 Markets overview (indexes + featured stocks)
 app.get('/api/markets/overview', async (req, res) => {
   try {
+    console.log('🔍 [MARKETS] Starting markets overview fetch...');
+    
     const user = (req as any).user; // may be undefined
     let featured: string[] | undefined;
     try {
@@ -101,14 +103,21 @@ app.get('/api/markets/overview', async (req, res) => {
         featured = u?.featuredTickers as string[] | undefined;
       }
     } catch {}
+    
     const tickers = ['SPY','QQQ','DIA','NYA', ...(featured && featured.length === 4 ? featured : ['AAPL','MSFT','AMZN','TSLA'])];
+    console.log('🔍 [MARKETS] Requesting tickers:', tickers);
+    
     const symbolMap: Record<string,string> = { 
       NYA: '^NYA',  // Try NYSE Composite first
       NYA_FALLBACK: 'NYA'  // Fallback symbol
     };
-    const { stockDataService } = await import('./services/stockDataService');
     const fetchSymbols = tickers.map(t => symbolMap[t] || t);
+    console.log('🔍 [MARKETS] Fetch symbols:', fetchSymbols);
+    
+    const { stockDataService } = await import('./services/stockDataService');
     const dataMap = await stockDataService.getMultipleStockData(fetchSymbols);
+    console.log('🔍 [MARKETS] Got dataMap size:', dataMap.size);
+    console.log('🔍 [MARKETS] DataMap keys:', Array.from(dataMap.keys()));
     const toObj = (t: string) => {
       let key = symbolMap[t] || t;
       let d = dataMap.get(key);
