@@ -13,8 +13,12 @@ export default function MarketOverview({ canCustomize = false }: { canCustomize?
   const [loading, setLoading] = useState(true);
   const load = async () => {
     try {
+      console.log('🔍 [MARKET OVERVIEW] Fetching markets data...');
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/markets/overview`);
+      console.log('🔍 [MARKET OVERVIEW] Received data:', res.data);
       setData(res.data);
+    } catch (error) {
+      console.error('❌ [MARKET OVERVIEW] Error fetching data:', error);
     } finally {
       setLoading(false);
     }

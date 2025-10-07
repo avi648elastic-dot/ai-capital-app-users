@@ -23,10 +23,14 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
   const [stocks, setStocks] = useState<Stock[]>([
     { ticker: '', shares: 0, entryPrice: 0, currentPrice: 0, notes: '' }
   ]);
-  const [totalCapital, setTotalCapital] = useState('');
   const [riskTolerance, setRiskTolerance] = useState('7');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Auto-calculate total capital from stocks
+  const totalCapital = stocks.reduce((total, stock) => {
+    return total + (stock.currentPrice * stock.shares);
+  }, 0);
 
   const addStock = () => {
     setStocks([...stocks, { ticker: '', shares: 0, entryPrice: 0, currentPrice: 0, notes: '' }]);
@@ -79,15 +83,15 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
         return;
       }
 
-      if (!totalCapital || Number(totalCapital) <= 0) {
-        alert('Please enter a valid total portfolio value');
+      if (totalCapital <= 0) {
+        alert('Please add stocks with valid prices to calculate total portfolio value');
         setLoading(false);
         return;
       }
 
       const payload = {
         stocks: validStocks,
-        totalCapital: Number(totalCapital),
+        totalCapital: totalCapital, // Now auto-calculated
         riskTolerance: Number(riskTolerance),
       };
 
@@ -142,14 +146,12 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Total Portfolio Value ($)
             </label>
-            <input
-              type="number"
-              value={totalCapital}
-              onChange={(e) => setTotalCapital(e.target.value)}
-              className="input-field"
-              placeholder="e.g., 10000"
-              required
-            />
+            <div className="input-field bg-slate-700 text-green-400 font-semibold">
+              ${totalCapital.toFixed(2)}
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Automatically calculated from your stock holdings
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
