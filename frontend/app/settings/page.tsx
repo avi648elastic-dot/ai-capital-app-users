@@ -1,15 +1,41 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 import { Palette, Globe, Bell, Shield, Database } from 'lucide-react';
 
 export default function Settings() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({
     theme: 'dark',
     language: 'en',
     notifications: true,
     autoRefresh: true,
   });
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const fetchUser = async () => {
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      });
+      setUser(response.data.user);
+      setSettings(prev => ({
+        ...prev,
+        theme: response.data.user.theme || 'dark',
+        language: response.data.user.language || 'en',
+      }));
+    } catch (error) {
+      console.error('Error fetching user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -23,10 +49,33 @@ export default function Settings() {
     { id: 'auto', name: 'Auto', description: 'Follow system preference' },
   ];
 
-  const handleSave = () => {
-    // TODO: implement settings save
-    alert('Settings saved!');
+  const handleSave = async () => {
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/update-profile`, {
+        language: settings.language,
+        theme: settings.theme,
+      }, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      });
+      
+      // Update localStorage for immediate effect
+      localStorage.setItem('language', settings.language);
+      localStorage.setItem('theme', settings.theme);
+      
+      alert('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Error saving settings. Please try again.');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-900">

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import Step0 from '@/components/onboarding/Step0';
 import Step1 from '@/components/onboarding/Step1';
 import Step2a from '@/components/onboarding/Step2a';
 import Step2b from '@/components/onboarding/Step2b';
@@ -15,7 +16,7 @@ interface OnboardingStatus {
 }
 
 export default function OnboardingPage() {
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0);
   const [onboardingData, setOnboardingData] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -40,6 +41,11 @@ export default function OnboardingPage() {
       console.error('Error checking onboarding status:', error);
       setLoading(false);
     }
+  };
+
+  const handleStep0Complete = (data: any) => {
+    setOnboardingData({ ...onboardingData, ...data });
+    setCurrentStep(1);
   };
 
   const handleStep1Complete = (data: any) => {
@@ -89,7 +95,7 @@ export default function OnboardingPage() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-4">
-            {[1, 2].map((step) => (
+            {[0, 1, 2].map((step) => (
               <div key={step} className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
@@ -98,7 +104,7 @@ export default function OnboardingPage() {
                       : 'bg-gray-700 text-gray-400'
                   }`}
                 >
-                  {step}
+                  {step + 1}
                 </div>
                 {step < 2 && (
                   <div
@@ -112,13 +118,17 @@ export default function OnboardingPage() {
           </div>
           <div className="text-center mt-2">
             <span className="text-sm text-gray-400">
-              Step {currentStep} of 2
+              Step {currentStep + 1} of 3
             </span>
           </div>
         </div>
 
         {/* Step Content */}
         <div className="card p-8">
+          {currentStep === 0 && (
+            <Step0 onComplete={handleStep0Complete} />
+          )}
+          
           {currentStep === 1 && (
             <Step1 onComplete={handleStep1Complete} />
           )}

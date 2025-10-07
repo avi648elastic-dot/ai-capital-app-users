@@ -14,6 +14,8 @@ export interface IUser extends Document {
   portfolioSource?: string;
   totalCapital?: number;
   riskTolerance?: number;
+  language?: string;
+  theme?: string;
   createdAt: Date;
 
   apiKey?: string;
@@ -35,6 +37,8 @@ const UserSchema: Schema<IUser> = new Schema(
     portfolioSource: { type: String },
     totalCapital: { type: Number, default: 0 },
     riskTolerance: { type: Number, default: 0 },
+    language: { type: String, default: 'en' },
+    theme: { type: String, default: 'dark' },
 
     apiKey: { type: String },
     apiSecret: { type: String },

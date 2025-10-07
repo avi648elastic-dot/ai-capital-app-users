@@ -181,4 +181,48 @@ router.get('/me', async (req: any, res: Response) => {
   }
 });
 
+/**
+ * 📌 UPDATE PROFILE - Update user profile information
+ */
+router.post('/update-profile', async (req: Request, res: Response) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+    const { language, theme } = req.body;
+
+    const updateData: any = {};
+    if (language) updateData.language = language;
+    if (theme) updateData.theme = theme;
+
+    const user = await User.findByIdAndUpdate(
+      decoded.id,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        language: user.language || 'en',
+        theme: user.theme || 'dark',
+      }
+    });
+  } catch (error) {
+    console.error('❌ [UPDATE PROFILE] Error:', error);
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
+});
+
 export default router;
