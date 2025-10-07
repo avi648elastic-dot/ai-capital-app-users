@@ -69,6 +69,18 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
 
   return (
     <div>
+      {/* Generating overlay */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-sm text-center shadow-xl">
+            <div className="flex items-center justify-center mb-4">
+              <div className="h-12 w-12 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin"></div>
+            </div>
+            <h3 className="text-white font-semibold mb-1">Generating your portfolio…</h3>
+            <p className="text-slate-400 text-sm">This can take up to a minute while we fetch real-time data.</p>
+          </div>
+        </div>
+      )}
       <div className="flex items-center mb-6">
         <button
           onClick={onBack}
