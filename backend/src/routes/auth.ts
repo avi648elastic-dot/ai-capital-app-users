@@ -55,7 +55,8 @@ router.post('/signup', async (req: Request, res: Response) => {
       name,
       email,
       password: hashedPassword,
-      subscriptionActive: true,
+      subscriptionActive: false, // Free users start with inactive subscription
+      subscriptionTier: 'free',  // Explicitly set to free
       onboardingCompleted: false,
     });
 

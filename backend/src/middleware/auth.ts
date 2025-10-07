@@ -38,8 +38,10 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 };
 
 export const requireSubscription = (req: AuthRequest, res: Response, next: NextFunction) => {
-  if (!req.user?.subscriptionActive) {
-    return res.status(403).json({ message: 'Active subscription required' });
+  // Allow access for all authenticated users (both free and premium)
+  // Premium features will be checked at the individual route level
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required' });
   }
   next();
 };
