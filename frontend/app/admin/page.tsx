@@ -11,6 +11,7 @@ interface User {
   name: string;
   email: string;
   subscriptionActive: boolean;
+  subscriptionTier: 'free' | 'premium';
   onboardingCompleted: boolean;
   portfolioType?: string;
   portfolioSource?: string;
@@ -82,9 +83,11 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'reset') => {
+  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'reset' | 'make-premium' | 'make-free') => {
     try {
       let endpoint = '';
+      let method: 'put' | 'delete' = 'put';
+      
       switch (action) {
         case 'activate':
           endpoint = `/api/admin/users/${userId}/activate`;
@@ -94,20 +97,28 @@ export default function AdminDashboard() {
           break;
         case 'reset':
           endpoint = `/api/admin/users/${userId}/portfolio`;
+          method = 'delete';
+          break;
+        case 'make-premium':
+          endpoint = `/api/admin/users/${userId}/make-premium`;
+          break;
+        case 'make-free':
+          endpoint = `/api/admin/users/${userId}/make-free`;
           break;
       }
 
-      await axios[action === 'reset' ? 'delete' : 'put'](
+      await axios[method](
         `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
         {},
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
       );
 
+      alert(`✅ User ${action} successful!`);
       fetchData(); // Refresh data
     } catch (error) {
       console.error(`Error ${action} user:`, error);
-      const err = error as any; // ✅ תיקון טיפוס
-      alert(`Error ${action}ing user: ${err?.response?.data?.message || 'Unknown error'}`);
+      const err = error as any;
+      alert(`❌ Error ${action}ing user: ${err?.response?.data?.message || 'Unknown error'}`);
     }
   };
 
@@ -231,11 +242,12 @@ export default function AdminDashboard() {
               <thead className="table-header">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">User</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Subscription</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Portfolio</th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">P&L</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Admin</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">View</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Admin Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
@@ -246,6 +258,15 @@ export default function AdminDashboard() {
                         <div className="text-sm font-medium text-white">{user.name}</div>
                         <div className="text-sm text-gray-400">{user.email}</div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
+                        user.subscriptionTier === 'premium' 
+                          ? 'text-emerald-300 bg-emerald-900/50 border border-emerald-500/30' 
+                          : 'text-amber-300 bg-amber-900/50 border border-amber-500/30'
+                      }`}>
+                        {user.subscriptionTier === 'premium' ? '⭐ PREMIUM' : '🔒 FREE'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col space-y-1">
@@ -284,27 +305,45 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         onClick={() => viewUserPortfolio(user.id)}
-                        className="text-primary-400 hover:text-primary-300 mr-3"
+                        className="text-primary-400 hover:text-primary-300"
+                        title="View Portfolio"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-5 h-5" />
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex space-x-2">
+                      <div className="flex flex-col space-y-2">
+                        {/* Premium/Free Toggle */}
                         <button
-                          onClick={() => handleUserAction(user.id, user.subscriptionActive ? 'deactivate' : 'activate')}
-                          className={`${
-                            user.subscriptionActive ? 'text-danger-400 hover:text-danger-300' : 'text-success-400 hover:text-success-300'
+                          onClick={() => handleUserAction(user.id, user.subscriptionTier === 'premium' ? 'make-free' : 'make-premium')}
+                          className={`px-3 py-1 text-xs font-semibold rounded ${
+                            user.subscriptionTier === 'premium' 
+                              ? 'bg-amber-600 hover:bg-amber-700 text-white' 
+                              : 'bg-emerald-600 hover:bg-emerald-700 text-white'
                           }`}
+                          title={user.subscriptionTier === 'premium' ? 'Downgrade to Free' : 'Upgrade to Premium'}
                         >
-                          <Power className="w-4 h-4" />
+                          {user.subscriptionTier === 'premium' ? '⬇️ Make Free' : '⬆️ Make Premium'}
                         </button>
-                        <button
-                          onClick={() => handleUserAction(user.id, 'reset')}
-                          className="text-warning-400 hover:text-warning-300"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                        </button>
+                        {/* Other Actions */}
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleUserAction(user.id, user.subscriptionActive ? 'deactivate' : 'activate')}
+                            className={`${
+                              user.subscriptionActive ? 'text-danger-400 hover:text-danger-300' : 'text-success-400 hover:text-success-300'
+                            }`}
+                            title={user.subscriptionActive ? 'Deactivate' : 'Activate'}
+                          >
+                            <Power className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleUserAction(user.id, 'reset')}
+                            className="text-warning-400 hover:text-warning-300"
+                            title="Reset Portfolio"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>

@@ -51,6 +51,7 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
           name: user.name,
           email: user.email,
           subscriptionActive: user.subscriptionActive,
+          subscriptionTier: user.subscriptionTier || 'free',
           onboardingCompleted: user.onboardingCompleted,
           portfolioType: user.portfolioType,
           portfolioSource: user.portfolioSource,
@@ -132,6 +133,58 @@ router.put('/users/:userId/activate', authenticateToken, requireAdmin, async (re
     res.json({ message: 'User activated successfully', user });
   } catch (error) {
     console.error('Activate user error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Make user premium
+router.put('/users/:userId/make-premium', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { 
+        subscriptionActive: true,
+        subscriptionTier: 'premium'
+      },
+      { new: true }
+    ).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log('✅ [ADMIN] User upgraded to premium:', user.email);
+    res.json({ message: 'User upgraded to premium successfully', user });
+  } catch (error) {
+    console.error('Make premium error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Make user free
+router.put('/users/:userId/make-free', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { 
+        subscriptionActive: false,
+        subscriptionTier: 'free'
+      },
+      { new: true }
+    ).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log('✅ [ADMIN] User downgraded to free:', user.email);
+    res.json({ message: 'User downgraded to free successfully', user });
+  } catch (error) {
+    console.error('Make free error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
