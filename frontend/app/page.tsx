@@ -147,15 +147,14 @@ export default function Page() {
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-24 h-24 relative">
+              <div className="w-24 h-24 relative bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg p-2">
                 <img 
                   src="/logo.png" 
                   alt="AiCapital Logo" 
                   className="w-full h-full object-contain" 
                   style={{
-                    filter: 'drop-shadow(0 0 0 transparent)',
-                    background: 'transparent',
-                    mixBlendMode: 'normal'
+                    filter: 'brightness(0) invert(1)',
+                    mixBlendMode: 'multiply'
                   }}
                 />
               </div>

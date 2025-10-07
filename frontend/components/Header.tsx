@@ -25,7 +25,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
     // Professional static logo - no animations
     return (
       <div className="flex items-center space-x-3">
-        <div className="relative w-12 h-12">
+        <div className="relative w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg p-1">
           <Image 
             src="/logo.png" 
             alt="AiCapital Logo" 
@@ -34,9 +34,8 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
             className="object-contain" 
             priority 
             style={{
-              filter: 'drop-shadow(0 0 0 transparent)',
-              background: 'transparent',
-              mixBlendMode: 'normal'
+              filter: 'brightness(0) invert(1)',
+              mixBlendMode: 'multiply'
             }}
           />
         </div>
