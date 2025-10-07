@@ -22,6 +22,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
   };
 
   const Logo = () => {
+    // Professional static logo - no animations
     return (
       <div className="flex items-center space-x-3">
         <div className="relative w-12 h-12">
