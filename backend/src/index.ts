@@ -83,6 +83,16 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is reachable from frontend', timestamp: new Date().toISOString() });
 });
 
+// 🏥 Health check endpoint for Render
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    mongoState: mongoose.connection.readyState,
+  });
+});
+
 // 🧪 Simple test endpoint (no DB required)
 app.get('/api/simple-test', (req, res) => {
   console.log('🧪 [SIMPLE TEST] Basic server test');
@@ -239,6 +249,18 @@ const connectDB = async () => {
 // 🚀 הפעלת השרת
 const startServer = async () => {
   try {
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (error) => {
+      console.error('❌ Uncaught Exception:', error);
+      // Don't exit the process, just log the error
+    });
+
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+      // Don't exit the process, just log the error
+    });
+
     // Start the server immediately so platform health checks can succeed
     const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
@@ -257,19 +279,13 @@ const startServer = async () => {
     connectDB();
   } catch (error) {
     console.error('❌ Failed to start server:', error);
-    process.exit(1);
+    // Don't exit the process in production
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   }
 };
 
-// 🧯 טיפול בחריגות בלתי צפויות
-process.on('unhandledRejection', (err: any) => {
-  console.error('Unhandled Promise Rejection:', err);
-  process.exit(1);
-});
-
-process.on('uncaughtException', (err: any) => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
-});
+// 🧯 Additional error handling for production stability
 
 startServer();

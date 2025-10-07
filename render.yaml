@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: aicapital-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        fromDatabase:
+          name: aicapital-mongodb
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FINNHUB_API_KEY
+        value: d3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g
+      - key: FMP_API_KEY
+        value: DPQXLdd8vdBNFA1tl5HWXt8Fd7D0Lw6G
+
+  - type: web
+    name: aicapital-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/out
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://ai-capital-app7.onrender.com
