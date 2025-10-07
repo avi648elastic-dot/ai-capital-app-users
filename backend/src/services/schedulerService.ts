@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import { decisionEngine } from './decisionEngine';
 import { stockDataService } from './stockDataService';
+import { volatilityService } from './volatilityService';
 import Portfolio from '../models/Portfolio';
 
 export class SchedulerService {
@@ -66,9 +67,18 @@ export class SchedulerService {
       timezone: 'America/New_York'
     });
 
+    // Update portfolio volatilities daily at 6:00 PM EST (after market close)
+    cron.schedule('0 18 * * 1-5', async () => {
+      console.log('📊 [SCHEDULER] Daily volatility update triggered');
+      await this.updatePortfolioVolatilities();
+    }, {
+      timezone: 'America/New_York'
+    });
+
     console.log('✅ [SCHEDULER] Scheduled updates configured');
     console.log('📅 [SCHEDULER] Stock data updates: Every 15 minutes (9:30 AM - 4:00 PM EST)');
     console.log('📅 [SCHEDULER] Portfolio decisions: Every 5 minutes (9:30 AM - 4:00 PM EST)');
+    console.log('📅 [SCHEDULER] Portfolio volatilities: Daily at 6:00 PM EST');
   }
 
   private async updateStockData() {
@@ -169,6 +179,27 @@ export class SchedulerService {
   async triggerPortfolioUpdate() {
     console.log('🔧 [SCHEDULER] Manual portfolio update triggered');
     await this.updatePortfolioDecisions();
+  }
+
+  /**
+   * Update portfolio volatilities
+   */
+  private async updatePortfolioVolatilities() {
+    try {
+      console.log('🔄 [SCHEDULER] Updating portfolio volatilities...');
+      await volatilityService.updateAllPortfolioVolatilities();
+      console.log('✅ [SCHEDULER] Portfolio volatilities updated');
+    } catch (error) {
+      console.error('❌ [SCHEDULER] Error updating portfolio volatilities:', error);
+    }
+  }
+
+  /**
+   * Manually trigger volatility update
+   */
+  async triggerVolatilityUpdate() {
+    console.log('🔧 [SCHEDULER] Manual volatility update triggered');
+    await this.updatePortfolioVolatilities();
   }
 
   /**

@@ -13,9 +13,11 @@ export interface IPortfolio extends Document {
   action: 'BUY' | 'HOLD' | 'SELL';
   reason?: string;
   color?: string;
-  portfolioType: 'solid' | 'risky'; // Portfolio type (solid/dangerous)
+  portfolioType: 'solid' | 'risky'; // Portfolio type (solid/risky)
   portfolioId: string; // Unique identifier for each portfolio (e.g., "solid-1", "dangerous-2")
   portfolioName?: string; // Optional custom name for the portfolio
+  volatility?: number; // Portfolio volatility (calculated daily)
+  lastVolatilityUpdate?: Date; // When volatility was last calculated
 }
 
 const PortfolioSchema = new Schema<IPortfolio>(
@@ -35,6 +37,8 @@ const PortfolioSchema = new Schema<IPortfolio>(
     portfolioType: { type: String, enum: ['solid', 'risky'], required: true, default: 'solid' },
     portfolioId: { type: String, required: true, default: 'solid-1' }, // Default for existing portfolios
     portfolioName: String, // Optional custom name
+    volatility: { type: Number, default: 0 }, // Portfolio volatility
+    lastVolatilityUpdate: { type: Date, default: null }, // Last volatility calculation
   },
   { timestamps: true }
 );

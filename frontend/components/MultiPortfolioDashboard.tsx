@@ -16,6 +16,8 @@ interface Portfolio {
     totalPnL: number;
     totalPnLPercent: number;
   };
+  volatility?: number;
+  lastVolatilityUpdate?: string;
 }
 
 interface MultiPortfolioDashboardProps {
@@ -27,6 +29,7 @@ interface MultiPortfolioDashboardProps {
 export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfolio }: MultiPortfolioDashboardProps) {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingVolatility, setUpdatingVolatility] = useState(false);
 
   useEffect(() => {
     fetchPortfolios();
@@ -93,6 +96,23 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
     }
   };
 
+  const updateVolatility = async () => {
+    setUpdatingVolatility(true);
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolios/update-volatility`, {}, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      });
+      
+      await fetchPortfolios(); // Refresh the list
+      alert('Volatility data updated successfully!');
+    } catch (error) {
+      console.error('Error updating volatility:', error);
+      alert('Error updating volatility. Please try again.');
+    } finally {
+      setUpdatingVolatility(false);
+    }
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -104,12 +124,21 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
     return `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
   };
 
-  const calculateVolatility = (portfolio: Portfolio) => {
-    // Mock volatility calculation - in real app, calculate from historical data
+  const getVolatility = (portfolio: Portfolio) => {
+    // Use real volatility data from backend if available
+    if (portfolio.volatility !== undefined && portfolio.volatility > 0) {
+      return portfolio.volatility.toFixed(1);
+    }
+    
+    // Fallback to estimated volatility based on portfolio type
     const baseVolatility = portfolio.portfolioType === 'risky' ? 25 : 12;
-    const stockCount = portfolio.stocks.length;
-    const volatility = baseVolatility + (Math.random() * 5 - 2.5); // Add some variance
-    return volatility.toFixed(1);
+    return baseVolatility.toFixed(1);
+  };
+
+  const getVolatilityStatus = (volatility: number) => {
+    if (volatility >= 30) return { color: 'text-red-400', level: 'High' };
+    if (volatility >= 20) return { color: 'text-orange-400', level: 'Medium' };
+    return { color: 'text-yellow-400', level: 'Low' };
   };
 
 
@@ -136,13 +165,22 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
             {riskyPortfolios.length} risky
           </p>
         </div>
+        <button
+          onClick={updateVolatility}
+          disabled={updatingVolatility}
+          className="btn-secondary flex items-center space-x-2"
+        >
+          <Activity className="w-4 h-4" />
+          <span>{updatingVolatility ? 'Updating...' : 'Update Volatility'}</span>
+        </button>
       </div>
 
       {/* Portfolio Boxes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {portfolios.map((portfolio) => {
-          const volatility = calculateVolatility(portfolio);
-          const isHighVolatility = parseFloat(volatility) > 20;
+          const volatility = parseFloat(getVolatility(portfolio));
+          const volatilityStatus = getVolatilityStatus(volatility);
+          const isHighVolatility = volatility >= 20;
           
           return (
             <div key={portfolio.portfolioId}>
@@ -186,16 +224,26 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                   </div>
                 </div>
 
-                {/* Volatility Indicator */}
-                <div className="mb-3 flex items-center justify-between bg-slate-700/50 rounded-lg p-2">
-                  <div className="flex items-center space-x-2">
-                    <Activity className={`w-4 h-4 ${isHighVolatility ? 'text-red-400' : 'text-yellow-400'}`} />
-                    <span className="text-xs text-slate-300">Volatility</span>
-                  </div>
-                  <span className={`text-sm font-bold ${isHighVolatility ? 'text-red-400' : 'text-yellow-400'}`}>
-                    {volatility}%
-                  </span>
-                </div>
+                    {/* Volatility Indicator */}
+                    <div className="mb-3 flex items-center justify-between bg-slate-700/50 rounded-lg p-2">
+                      <div className="flex items-center space-x-2">
+                        <Activity className={`w-4 h-4 ${volatilityStatus.color}`} />
+                        <span className="text-xs text-slate-300">Volatility</span>
+                        {portfolio.lastVolatilityUpdate && (
+                          <span className="text-xs text-slate-500">
+                            ({new Date(portfolio.lastVolatilityUpdate).toLocaleDateString()})
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-sm font-bold ${volatilityStatus.color}`}>
+                          {volatility.toFixed(1)}%
+                        </span>
+                        <div className="text-xs text-slate-400">
+                          {volatilityStatus.level}
+                        </div>
+                      </div>
+                    </div>
 
                 {/* Quick Stats */}
                 <div className="space-y-2">

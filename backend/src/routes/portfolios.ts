@@ -19,7 +19,9 @@ router.get('/', authenticateToken, requireSubscription, async (req, res) => {
           portfolioType: item.portfolioType,
           portfolioName: item.portfolioName || `${item.portfolioType} Portfolio ${item.portfolioId.split('-')[1]}`,
           stocks: [],
-          totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 }
+          totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 },
+          volatility: item.volatility || 0,
+          lastVolatilityUpdate: item.lastVolatilityUpdate
         };
       }
       
@@ -167,6 +169,23 @@ router.delete('/:portfolioId', authenticateToken, requireSubscription, async (re
     res.json({ message: 'Portfolio deleted successfully' });
   } catch (error) {
     console.error('Delete portfolio error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Update portfolio volatilities for a specific user
+router.post('/update-volatility', authenticateToken, requireSubscription, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!._id;
+    
+    // Import volatility service
+    const { volatilityService } = await import('../services/volatilityService');
+    
+    await volatilityService.updateUserPortfolioVolatilities(userId);
+    
+    res.json({ message: 'Portfolio volatilities updated successfully' });
+  } catch (error) {
+    console.error('❌ [PORTFOLIOS] Error updating volatilities:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
