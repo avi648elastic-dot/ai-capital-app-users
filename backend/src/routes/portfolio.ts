@@ -74,43 +74,125 @@ router.get('/', authenticateToken, async (req, res) => {
 // Add stock to portfolio
 router.post('/add', authenticateToken, requireSubscription, async (req, res) => {
   try {
+    console.log('🔍 [PORTFOLIO ADD] Adding stock for user:', req.user!._id);
+    console.log('🔍 [PORTFOLIO ADD] Request body:', req.body);
+
     const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes, portfolioType } = req.body;
 
+    // Enhanced validation
     if (!ticker || !shares || !entryPrice || !currentPrice) {
-      return res.status(400).json({ message: 'Ticker, shares, entry price, and current price are required' });
+      console.error('❌ [PORTFOLIO ADD] Missing required fields');
+      return res.status(400).json({ 
+        message: 'Ticker, shares, entry price, and current price are required',
+        received: { ticker, shares, entryPrice, currentPrice }
+      });
     }
+
+    // Validate numeric values
+    const numericShares = Number(shares);
+    const numericEntryPrice = Number(entryPrice);
+    const numericCurrentPrice = Number(currentPrice);
+
+    if (isNaN(numericShares) || numericShares <= 0) {
+      return res.status(400).json({ message: 'Shares must be a positive number' });
+    }
+
+    if (isNaN(numericEntryPrice) || numericEntryPrice <= 0) {
+      return res.status(400).json({ message: 'Entry price must be a positive number' });
+    }
+
+    if (isNaN(numericCurrentPrice) || numericCurrentPrice <= 0) {
+      return res.status(400).json({ message: 'Current price must be a positive number' });
+    }
+
+    // Validate optional fields
+    let numericStopLoss, numericTakeProfit;
+    if (stopLoss) {
+      numericStopLoss = Number(stopLoss);
+      if (isNaN(numericStopLoss) || numericStopLoss <= 0) {
+        return res.status(400).json({ message: 'Stop loss must be a positive number' });
+      }
+    }
+
+    if (takeProfit) {
+      numericTakeProfit = Number(takeProfit);
+      if (isNaN(numericTakeProfit) || numericTakeProfit <= 0) {
+        return res.status(400).json({ message: 'Take profit must be a positive number' });
+      }
+    }
+
+    // Validate portfolio type
+    const validPortfolioTypes = ['solid', 'dangerous'];
+    const finalPortfolioType = portfolioType && validPortfolioTypes.includes(portfolioType) ? portfolioType : 'solid';
+
+    console.log('🔍 [PORTFOLIO ADD] Creating portfolio item with validated data');
 
     const portfolioItem = new Portfolio({
       userId: req.user!._id,
-      ticker: ticker.toUpperCase(),
-      shares: Number(shares),
-      entryPrice: Number(entryPrice),
-      currentPrice: Number(currentPrice),
-      stopLoss: stopLoss ? Number(stopLoss) : undefined,
-      takeProfit: takeProfit ? Number(takeProfit) : undefined,
-      notes,
-      portfolioType: portfolioType || 'solid', // Use provided portfolio type or default to solid
+      ticker: ticker.toUpperCase().trim(),
+      shares: numericShares,
+      entryPrice: numericEntryPrice,
+      currentPrice: numericCurrentPrice,
+      stopLoss: numericStopLoss || undefined,
+      takeProfit: numericTakeProfit || undefined,
+      notes: notes || '',
+      portfolioType: finalPortfolioType,
     });
 
-    // Get decision for this stock
-    const decision = decisionEngine.decideActionEnhanced({
-      ticker: portfolioItem.ticker,
-      entryPrice: portfolioItem.entryPrice,
-      currentPrice: portfolioItem.currentPrice,
-      stopLoss: portfolioItem.stopLoss,
-      takeProfit: portfolioItem.takeProfit,
-    });
+    console.log('🔍 [PORTFOLIO ADD] Portfolio item created:', portfolioItem);
 
-    portfolioItem.action = decision.action;
-    portfolioItem.reason = decision.reason;
-    portfolioItem.color = decision.color;
+    // Get decision for this stock with error handling
+    try {
+      const decision = decisionEngine.decideActionEnhanced({
+        ticker: portfolioItem.ticker,
+        entryPrice: portfolioItem.entryPrice,
+        currentPrice: portfolioItem.currentPrice,
+        stopLoss: portfolioItem.stopLoss,
+        takeProfit: portfolioItem.takeProfit,
+      });
 
+      portfolioItem.action = decision.action;
+      portfolioItem.reason = decision.reason;
+      portfolioItem.color = decision.color;
+
+      console.log('🔍 [PORTFOLIO ADD] Decision made:', decision);
+    } catch (decisionError) {
+      console.warn('⚠️ [PORTFOLIO ADD] Decision engine error, using defaults:', decisionError);
+      portfolioItem.action = 'HOLD';
+      portfolioItem.reason = 'Added to portfolio';
+      portfolioItem.color = 'yellow';
+    }
+
+    console.log('🔍 [PORTFOLIO ADD] Saving portfolio item...');
     await portfolioItem.save();
+    console.log('✅ [PORTFOLIO ADD] Portfolio item saved successfully');
 
-    res.status(201).json({ message: 'Stock added successfully', portfolioItem });
-  } catch (error) {
-    console.error('Add stock error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(201).json({ 
+      message: 'Stock added successfully', 
+      portfolioItem: portfolioItem.toObject() 
+    });
+  } catch (error: any) {
+    console.error('❌ [PORTFOLIO ADD] Error adding stock:', error);
+    
+    // Handle specific MongoDB errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map((err: any) => err.message);
+      return res.status(400).json({ 
+        message: 'Validation error', 
+        errors: validationErrors 
+      });
+    }
+    
+    if (error.code === 11000) {
+      return res.status(400).json({ 
+        message: 'Duplicate entry. This stock may already exist in your portfolio.' 
+      });
+    }
+
+    res.status(500).json({ 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
   }
 });
 

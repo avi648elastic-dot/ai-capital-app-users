@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { Crown } from 'lucide-react';
 
 // ✅ כל הבקשות ישלחו קובצי cookie גם לדומיין אחר (cross-site)
 axios.defaults.withCredentials = true;
@@ -145,28 +146,55 @@ export default function Page() {
         <div className="card p-8">
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 flex items-center justify-center">
+            <div className="flex items-center justify-center mb-6">
+              <div className="w-20 h-20 flex items-center justify-center relative">
+                {/* Enhanced Tree Logo with better visibility */}
                 <svg
                   viewBox="0 0 100 100"
-                  className="w-16 h-16 text-emerald-400"
+                  className="w-20 h-20 text-emerald-400"
                   fill="currentColor"
-                  style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.3))' }}
+                  style={{ 
+                    filter: 'drop-shadow(0 0 12px rgba(16, 185, 129, 0.4))',
+                    animation: 'pulse 2s infinite'
+                  }}
                 >
-                  {/* Tree Logo SVG - More Visible */}
-                  <path d="M45 70 L45 85 L55 85 L55 70 Z" stroke="currentColor" strokeWidth="2" fill="currentColor" />
-                  <path d="M50 70 Q30 50 20 30 Q35 40 50 50 Q65 40 80 30 Q70 50 50 70 Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" />
-                  <circle cx="35" cy="45" r="8" fill="currentColor" />
-                  <circle cx="65" cy="45" r="8" fill="currentColor" />
-                  <circle cx="50" cy="35" r="10" fill="currentColor" />
-                  <circle cx="40" cy="25" r="6" fill="currentColor" />
-                  <circle cx="60" cy="25" r="6" fill="currentColor" />
+                  {/* Tree trunk */}
+                  <rect x="45" y="70" width="10" height="15" fill="currentColor" />
+                  {/* Main tree body */}
+                  <path d="M50 70 Q25 45 15 25 Q35 35 50 45 Q65 35 85 25 Q75 45 50 70 Z" fill="currentColor" />
+                  {/* Tree decorations - more visible */}
+                  <circle cx="30" cy="50" r="10" fill="currentColor" opacity="0.9" />
+                  <circle cx="70" cy="50" r="10" fill="currentColor" opacity="0.9" />
+                  <circle cx="50" cy="40" r="12" fill="currentColor" opacity="0.9" />
+                  <circle cx="40" cy="30" r="8" fill="currentColor" opacity="0.9" />
+                  <circle cx="60" cy="30" r="8" fill="currentColor" opacity="0.9" />
+                  <circle cx="50" cy="20" r="6" fill="currentColor" opacity="0.9" />
                 </svg>
+                {/* Glow effect */}
+                <div className="absolute inset-0 w-20 h-20 bg-emerald-400/20 rounded-full blur-lg animate-pulse" />
               </div>
             </div>
-            <h1 className="logo-text text-3xl mb-2">AI-Capital</h1>
-            <p className="text-slate-400 text-sm">Professional Portfolio Management</p>
-            <p className="text-slate-500 text-xs mt-1">AI-Powered Trading Decisions</p>
+            <h1 className="logo-text text-4xl mb-3 font-bold">AI-Capital</h1>
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <Crown className="w-5 h-5 text-yellow-400" />
+              <p className="text-slate-300 text-lg font-semibold">Professional Portfolio Management</p>
+              <Crown className="w-5 h-5 text-yellow-400" />
+            </div>
+            <p className="text-slate-400 text-sm">AI-Powered Trading Decisions & Real-Time Analytics</p>
+            <div className="mt-4 flex items-center justify-center space-x-4 text-xs text-slate-500">
+              <span className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span>Real-time Data</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span>AI Analytics</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span>Portfolio Management</span>
+              </span>
+            </div>
           </div>
           <div className="mb-4 p-2 bg-gray-800 rounded text-xs text-gray-300 text-center">
             API URL: {process.env.NEXT_PUBLIC_API_URL || 'NOT SET'}

@@ -9,6 +9,7 @@ import PortfolioSummary from '@/components/PortfolioSummary';
 import StockForm from '@/components/StockForm';
 import Charts from '@/components/Charts';
 import Header from '@/components/Header';
+import Navigation from '@/components/Navigation';
 
 interface User {
   id: string;
@@ -102,13 +103,47 @@ export default function Dashboard() {
   const fetchPortfolio = async () => {
     try {
       setLoading(true);
+      console.log('🔍 [DASHBOARD] Fetching portfolio...');
+      
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        timeout: 15000 // 15 second timeout
       });
-      setPortfolio(response.data.portfolio);
-      setTotals(response.data.totals);
-    } catch (error) {
-      console.error('Error fetching portfolio:', error);
+      
+      console.log('✅ [DASHBOARD] Portfolio fetched successfully:', response.data);
+      
+      if (response.data && response.data.portfolio) {
+        setPortfolio(response.data.portfolio);
+        setTotals(response.data.totals || { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
+      } else {
+        console.warn('⚠️ [DASHBOARD] Invalid portfolio data received');
+        setPortfolio([]);
+        setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
+      }
+    } catch (error: any) {
+      console.error('❌ [DASHBOARD] Error fetching portfolio:', error);
+      
+      // Handle different types of errors
+      if (error.response?.status === 401) {
+        console.error('❌ [DASHBOARD] Unauthorized - redirecting to login');
+        Cookies.remove('token');
+        router.push('/');
+        return;
+      } else if (error.response?.status === 403) {
+        console.error('❌ [DASHBOARD] Forbidden - subscription required');
+        alert('Subscription required to access portfolio features');
+        return;
+      } else if (error.code === 'ECONNABORTED') {
+        console.error('❌ [DASHBOARD] Request timeout');
+        alert('Request timed out. Please check your connection and try again.');
+      } else {
+        console.error('❌ [DASHBOARD] Unknown error:', error);
+        alert('Failed to load portfolio. Please refresh the page and try again.');
+      }
+      
+      // Set empty state on error
+      setPortfolio([]);
+      setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
     } finally {
       setLoading(false);
     }
@@ -116,13 +151,54 @@ export default function Dashboard() {
 
   const handleAddStock = async (stockData: any) => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/add`, stockData, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      console.log('🔍 [DASHBOARD] Adding stock:', stockData);
+      
+      // Validate required fields
+      if (!stockData.ticker || !stockData.shares || !stockData.entryPrice || !stockData.currentPrice) {
+        throw new Error('All required fields must be filled');
+      }
+
+      // Ensure numeric values
+      const validatedData = {
+        ...stockData,
+        shares: Number(stockData.shares),
+        entryPrice: Number(stockData.entryPrice),
+        currentPrice: Number(stockData.currentPrice),
+        stopLoss: stockData.stopLoss ? Number(stockData.stopLoss) : undefined,
+        takeProfit: stockData.takeProfit ? Number(stockData.takeProfit) : undefined,
+      };
+
+      console.log('🔍 [DASHBOARD] Validated data:', validatedData);
+
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/add`, validatedData, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        timeout: 15000 // 15 second timeout
       });
+
+      console.log('✅ [DASHBOARD] Stock added successfully:', response.data);
+      
+      // Show success message
+      alert(`✅ Successfully added ${validatedData.ticker} to your portfolio!`);
+      
       setShowStockForm(false);
-      fetchPortfolio();
-    } catch (error) {
-      console.error('Error adding stock:', error);
+      await fetchPortfolio(); // Wait for portfolio to refresh
+      
+    } catch (error: any) {
+      console.error('❌ [DASHBOARD] Error adding stock:', error);
+      
+      let errorMessage = 'Failed to add stock. Please try again.';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = 'Request timed out. Please check your connection and try again.';
+      } else if (error.code === 'NETWORK_ERROR') {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      }
+      
+      alert(`❌ Error: ${errorMessage}`);
     }
   };
 
@@ -215,43 +291,86 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Professional Header */}
-      <Header userName={user?.name} />
+    <div className="min-h-screen flex">
+      {/* Navigation Sidebar */}
+      <Navigation 
+        userName={user?.name} 
+        subscriptionTier={user?.subscriptionTier}
+        onLogout={handleLogout}
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Subscription Status Banner */}
-        <div className={`mb-6 p-4 rounded-lg border ${
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Professional Header */}
+        <Header userName={user?.name} />
+
+        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        {/* Enhanced Subscription Status Banner */}
+        <div className={`mb-6 p-6 rounded-xl border-2 ${
           user?.subscriptionTier === 'premium' 
-            ? 'bg-gradient-to-r from-emerald-900/20 to-blue-900/20 border-emerald-500/30' 
-            : 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-500/30'
+            ? 'bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border-emerald-500/50 shadow-lg shadow-emerald-500/10' 
+            : 'bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/50 shadow-lg shadow-amber-500/10'
         }`}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className={`w-3 h-3 rounded-full ${
+            <div className="flex items-center space-x-4">
+              <div className={`w-4 h-4 rounded-full ${
                 user?.subscriptionTier === 'premium' ? 'bg-emerald-400' : 'bg-amber-400'
-              }`}></div>
+              } animate-pulse`}></div>
               <div>
-                <h3 className={`text-lg font-semibold ${
-                  user?.subscriptionTier === 'premium' ? 'text-emerald-300' : 'text-amber-300'
-                }`}>
-                  {user?.subscriptionTier === 'premium' ? 'Premium Account' : 'Free Account'}
-                </h3>
-                <p className="text-sm text-slate-400">
+                <div className="flex items-center space-x-2 mb-1">
+                  <h3 className={`text-xl font-bold ${
+                    user?.subscriptionTier === 'premium' ? 'text-emerald-300' : 'text-amber-300'
+                  }`}>
+                    {user?.subscriptionTier === 'premium' ? '✨ Premium Account' : '🔒 Free Account'}
+                  </h3>
+                  {user?.subscriptionTier === 'premium' && (
+                    <span className="px-2 py-1 bg-emerald-600 text-white text-xs rounded-full font-semibold">
+                      ACTIVE
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-300 mb-2">
                   {user?.subscriptionTier === 'premium' 
-                    ? 'Full access to all features and unlimited portfolios' 
-                    : 'Limited to 1 portfolio. Upgrade to Premium for unlimited portfolios and advanced features'
+                    ? 'Full access to all features, unlimited portfolios, and advanced analytics' 
+                    : 'Limited to 1 portfolio. Upgrade to unlock unlimited portfolios and premium features'
                   }
                 </p>
+                <div className="flex items-center space-x-4 text-xs">
+                  <span className={`px-2 py-1 rounded-full ${
+                    user?.subscriptionTier === 'premium' 
+                      ? 'bg-emerald-600/20 text-emerald-300' 
+                      : 'bg-amber-600/20 text-amber-300'
+                  }`}>
+                    {user?.subscriptionTier === 'premium' ? 'Unlimited Portfolios' : '1 Portfolio Limit'}
+                  </span>
+                  <span className={`px-2 py-1 rounded-full ${
+                    user?.subscriptionTier === 'premium' 
+                      ? 'bg-blue-600/20 text-blue-300' 
+                      : 'bg-slate-600/20 text-slate-400'
+                  }`}>
+                    {user?.subscriptionTier === 'premium' ? 'Advanced Analytics' : 'Basic Analytics'}
+                  </span>
+                  <span className={`px-2 py-1 rounded-full ${
+                    user?.subscriptionTier === 'premium' 
+                      ? 'bg-purple-600/20 text-purple-300' 
+                      : 'bg-slate-600/20 text-slate-400'
+                  }`}>
+                    {user?.subscriptionTier === 'premium' ? 'Real-time Alerts' : 'No Alerts'}
+                  </span>
+                </div>
               </div>
             </div>
             {user?.subscriptionTier === 'free' && (
-              <button 
-                onClick={handleUpgrade}
-                className="btn-primary"
-              >
-                Upgrade to Premium
-              </button>
+              <div className="flex flex-col items-end space-y-2">
+                <button 
+                  onClick={handleUpgrade}
+                  className="btn-primary flex items-center space-x-2 px-6 py-3 text-sm font-bold"
+                >
+                  <span>🚀</span>
+                  <span>Upgrade to Premium</span>
+                </button>
+                <p className="text-xs text-slate-400">Unlock all features</p>
+              </div>
             )}
           </div>
         </div>
@@ -285,32 +404,47 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex mb-6 bg-gray-800 rounded-lg p-1">
+        {/* Enhanced Portfolio Tabs */}
+        <div className="flex mb-6 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
           <button
             onClick={() => setActiveTab('solid')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'solid'
-                ? 'bg-primary-600 text-white'
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
           >
-            Solid Portfolio ({portfolio.filter(p => p.portfolioType === 'solid').length})
+            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+            <span>Solid Portfolio</span>
+            <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
+              {portfolio.filter(p => p.portfolioType === 'solid').length}
+            </span>
           </button>
           <button
             onClick={() => setActiveTab('dangerous')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'dangerous'
-                ? 'bg-danger-600 text-white'
+                ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
                 : user?.subscriptionTier === 'free' 
-                  ? 'text-gray-500 cursor-not-allowed opacity-50'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'text-slate-500 cursor-not-allowed opacity-50'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
             disabled={user?.subscriptionTier === 'free'}
             title={user?.subscriptionTier === 'free' ? 'Upgrade to Premium to access Dangerous Portfolio' : ''}
           >
-            Dangerous Portfolio ({portfolio.filter(p => p.portfolioType === 'dangerous').length})
-            {user?.subscriptionTier === 'free' && ' 🔒'}
+            <div className={`w-2 h-2 rounded-full ${
+              user?.subscriptionTier === 'free' ? 'bg-slate-500' : 'bg-red-400'
+            }`}></div>
+            <span>Dangerous Portfolio</span>
+            <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
+              {portfolio.filter(p => p.portfolioType === 'dangerous').length}
+            </span>
+            {user?.subscriptionTier === 'free' && (
+              <span className="text-yellow-400">🔒</span>
+            )}
+            {user?.subscriptionTier === 'premium' && (
+              <span className="text-yellow-400">✨</span>
+            )}
           </button>
         </div>
 
@@ -324,6 +458,7 @@ export default function Dashboard() {
         {/* Charts */}
         <div className="mt-8">
           <Charts portfolio={portfolio} />
+        </div>
         </div>
       </div>
 

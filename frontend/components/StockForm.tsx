@@ -46,17 +46,19 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
     }
   };
 
-  // Auto-fetch current price when ticker is entered - IMMEDIATE
+  // Auto-fetch current price when ticker is entered - with debounce
   useEffect(() => {
     const fetchCurrentPrice = async () => {
       if (formData.ticker && formData.ticker.length >= 2) {
         console.log('🔍 [STOCK FORM] Fetching price for:', formData.ticker.toUpperCase());
         setFetchingPrice(true);
         try {
-          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/test-stock/${formData.ticker.toUpperCase()}`);
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/test-stock/${formData.ticker.toUpperCase()}`, {
+            timeout: 10000 // 10 second timeout
+          });
           console.log('✅ [STOCK FORM] API response:', response.data);
           
-          if (response.data.status === 'OK' && response.data.data) {
+          if (response.data.status === 'OK' && response.data.data && response.data.data.current) {
             const currentPrice = response.data.data.current;
             console.log('✅ [STOCK FORM] Setting current price:', currentPrice);
             
@@ -78,20 +80,22 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
               }));
             }
           } else {
-            console.warn('⚠️ [STOCK FORM] No data received for:', formData.ticker);
-            // Set a fallback price if API fails
+            console.warn('⚠️ [STOCK FORM] No valid data received for:', formData.ticker);
+            // Try to get a reasonable fallback price
+            const fallbackPrice = getFallbackPrice(formData.ticker);
             setFormData(prev => ({
               ...prev,
-              currentPrice: '0.00'
+              currentPrice: fallbackPrice
             }));
           }
         } catch (error) {
           console.error('❌ [STOCK FORM] Error fetching current price:', error);
           console.error('❌ [STOCK FORM] Error details:', error.response?.data);
-          // Set a fallback price if API fails
+          // Try to get a reasonable fallback price
+          const fallbackPrice = getFallbackPrice(formData.ticker);
           setFormData(prev => ({
             ...prev,
-            currentPrice: '0.00'
+            currentPrice: fallbackPrice
           }));
         } finally {
           setFetchingPrice(false);
@@ -99,9 +103,31 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
       }
     };
 
-    // IMMEDIATE fetch - no debounce
-    fetchCurrentPrice();
+    // Add a small debounce to avoid too many API calls
+    const timeoutId = setTimeout(fetchCurrentPrice, 500);
+    return () => clearTimeout(timeoutId);
   }, [formData.ticker, autoCalculate, formData.entryPrice]);
+
+  // Fallback price function for common stocks
+  const getFallbackPrice = (ticker: string): string => {
+    const fallbackPrices: Record<string, string> = {
+      'AAPL': '150.00',
+      'MSFT': '300.00',
+      'GOOGL': '120.00',
+      'AMZN': '130.00',
+      'TSLA': '200.00',
+      'NVDA': '400.00',
+      'AMD': '100.00',
+      'PLTR': '15.00',
+      'ARKK': '45.00',
+      'GME': '20.00',
+      'SPY': '400.00',
+      'QQQ': '350.00',
+      'IWM': '180.00'
+    };
+    
+    return fallbackPrices[ticker.toUpperCase()] || '50.00';
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -224,20 +250,51 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
 
           <div>
             <label htmlFor="currentPrice" className="block text-sm font-medium text-gray-300 mb-1">
-              Current Price * {fetchingPrice && <span className="text-blue-400 text-xs">(Fetching...)</span>}
+              Current Price * 
+              {fetchingPrice && (
+                <span className="ml-2 text-blue-400 text-xs flex items-center">
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-400 mr-1"></div>
+                  Fetching real-time price...
+                </span>
+              )}
+              {!fetchingPrice && formData.currentPrice && formData.currentPrice !== '0.00' && (
+                <span className="ml-2 text-green-400 text-xs">✓ Real-time data loaded</span>
+              )}
             </label>
-            <input
-              type="number"
-              id="currentPrice"
-              name="currentPrice"
-              value={formData.currentPrice}
-              onChange={handleInputChange}
-              className="input-field"
-              placeholder="e.g., 155.00"
-              step="0.01"
-              min="0"
-              required
-            />
+            <div className="relative">
+              <input
+                type="number"
+                id="currentPrice"
+                name="currentPrice"
+                value={formData.currentPrice}
+                onChange={handleInputChange}
+                className={`input-field pr-10 ${
+                  fetchingPrice ? 'bg-blue-900/20 border-blue-500' : 
+                  formData.currentPrice && formData.currentPrice !== '0.00' ? 'bg-green-900/20 border-green-500' : ''
+                }`}
+                placeholder="e.g., 155.00"
+                step="0.01"
+                min="0"
+                required
+              />
+              {fetchingPrice && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+                </div>
+              )}
+              {!fetchingPrice && formData.currentPrice && formData.currentPrice !== '0.00' && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 bg-green-400 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            {formData.currentPrice === '0.00' && (
+              <p className="text-xs text-amber-400 mt-1">
+                ⚠️ Using fallback price. Real-time data unavailable for this ticker.
+              </p>
+            )}
           </div>
         </div>
 

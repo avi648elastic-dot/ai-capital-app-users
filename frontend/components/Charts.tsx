@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Bar, Area, AreaChart } from 'recharts';
 
 interface PortfolioItem {
   _id: string;
@@ -25,25 +25,77 @@ interface ChartsProps {
 export default function Charts({ portfolio }: ChartsProps) {
   const [chartData, setChartData] = useState<any[]>([]);
   const [pieData, setPieData] = useState<any[]>([]);
+  const [candlestickData, setCandlestickData] = useState<any[]>([]);
 
   useEffect(() => {
     if (portfolio.length === 0) return;
 
-    // Prepare line chart data (portfolio value over time)
+    // Prepare enhanced chart data with proper time series
     const sortedPortfolio = [...portfolio].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
+    // Calculate cumulative portfolio value over time
     let cumulativeValue = 0;
-    const lineData = sortedPortfolio.map((item, index) => {
+    let cumulativeCost = 0;
+    
+    const enhancedData = sortedPortfolio.map((item, index) => {
+      const cost = item.entryPrice * item.shares;
       const value = item.currentPrice * item.shares;
+      const pnl = value - cost;
+      const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+      
       cumulativeValue += value;
+      cumulativeCost += cost;
+      const totalPnL = cumulativeValue - cumulativeCost;
+      const totalPnLPercent = cumulativeCost > 0 ? (totalPnL / cumulativeCost) * 100 : 0;
+      
       return {
         date: new Date(item.date).toLocaleDateString(),
+        fullDate: new Date(item.date),
         value: cumulativeValue,
+        cost: cumulativeCost,
+        pnl: totalPnL,
+        pnlPercent: totalPnLPercent,
         ticker: item.ticker,
+        shares: item.shares,
+        entryPrice: item.entryPrice,
+        currentPrice: item.currentPrice,
+        individualPnL: pnl,
+        individualPnLPercent: pnlPercent,
+        action: item.action,
+        // For candlestick-style visualization
+        open: index === 0 ? value : enhancedData[index - 1]?.value || value,
+        high: Math.max(value, index === 0 ? value : enhancedData[index - 1]?.value || value),
+        low: Math.min(value, index === 0 ? value : enhancedData[index - 1]?.value || value),
+        close: value,
+        volume: item.shares
       };
     });
 
-    setChartData(lineData);
+    setChartData(enhancedData);
+
+    // Prepare candlestick-style data for individual stocks
+    const candlestickData = portfolio.map((item, index) => {
+      const cost = item.entryPrice * item.shares;
+      const value = item.currentPrice * item.shares;
+      const pnl = value - cost;
+      const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+      
+      return {
+        ticker: item.ticker,
+        date: new Date(item.date).toLocaleDateString(),
+        open: cost,
+        high: Math.max(cost, value),
+        low: Math.min(cost, value),
+        close: value,
+        volume: item.shares,
+        pnl: pnl,
+        pnlPercent: pnlPercent,
+        action: item.action,
+        color: pnl >= 0 ? '#22c55e' : '#ef4444'
+      };
+    });
+
+    setCandlestickData(candlestickData);
 
     // Prepare pie chart data (portfolio allocation by ticker)
     const pieChartData = portfolio.map(item => {
@@ -66,13 +118,42 @@ export default function Charts({ portfolio }: ChartsProps) {
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
       return (
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-3">
-          <p className="text-white font-medium">{`Date: ${label}`}</p>
-          <p className="text-success-400">{`Value: $${payload[0].value.toLocaleString()}`}</p>
-          {payload[0].payload.ticker && (
-            <p className="text-gray-300">{`Ticker: ${payload[0].payload.ticker}`}</p>
-          )}
+        <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 shadow-xl">
+          <p className="text-white font-semibold mb-2">{`Date: ${label}`}</p>
+          <div className="space-y-1">
+            <p className="text-emerald-400 font-medium">{`Portfolio Value: $${data.value?.toLocaleString() || '0'}`}</p>
+            <p className="text-blue-400">{`Total Cost: $${data.cost?.toLocaleString() || '0'}`}</p>
+            <p className={`font-semibold ${data.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {`P&L: ${data.pnl >= 0 ? '+' : ''}$${data.pnl?.toLocaleString() || '0'} (${data.pnlPercent >= 0 ? '+' : ''}${data.pnlPercent?.toFixed(2) || '0'}%)`}
+            </p>
+            {data.ticker && (
+              <p className="text-slate-300 text-sm">{`Latest: ${data.ticker}`}</p>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CandlestickTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 shadow-xl">
+          <p className="text-white font-semibold mb-2">{`${data.ticker} - ${label}`}</p>
+          <div className="space-y-1">
+            <p className="text-blue-400">{`Entry: $${data.open?.toLocaleString() || '0'}`}</p>
+            <p className="text-emerald-400">{`Current: $${data.close?.toLocaleString() || '0'}`}</p>
+            <p className="text-purple-400">{`High: $${data.high?.toLocaleString() || '0'}`}</p>
+            <p className="text-orange-400">{`Low: $${data.low?.toLocaleString() || '0'}`}</p>
+            <p className={`font-semibold ${data.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {`P&L: ${data.pnl >= 0 ? '+' : ''}$${data.pnl?.toLocaleString() || '0'} (${data.pnlPercent >= 0 ? '+' : ''}${data.pnlPercent?.toFixed(2) || '0'}%)`}
+            </p>
+            <p className="text-slate-300 text-sm">{`Shares: ${data.volume}`}</p>
+          </div>
         </div>
       );
     }
@@ -95,33 +176,116 @@ export default function Charts({ portfolio }: ChartsProps) {
 
   return (
     <div className="space-y-8">
-      {/* Portfolio Value Over Time */}
+      {/* Enhanced Portfolio Value Over Time */}
       <div className="card p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Portfolio Value Over Time</h3>
-        <div className="h-80">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-white">Portfolio Performance Over Time</h3>
+          <div className="flex items-center space-x-4 text-sm">
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
+              <span className="text-slate-300">Portfolio Value</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+              <span className="text-slate-300">Total Cost</span>
+            </div>
+          </div>
+        </div>
+        <div className="h-96">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
+            <ComposedChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="date" 
                 stroke="#9ca3af"
                 fontSize={12}
+                tick={{ fill: '#9ca3af' }}
               />
               <YAxis 
                 stroke="#9ca3af"
                 fontSize={12}
-                tickFormatter={(value) => `$${value.toLocaleString()}`}
+                tick={{ fill: '#9ca3af' }}
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
               />
               <Tooltip content={<CustomTooltip />} />
+              {/* Portfolio value line */}
               <Line 
                 type="monotone" 
                 dataKey="value" 
-                stroke="#0ea5e9" 
-                strokeWidth={2}
-                dot={{ fill: '#0ea5e9', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#0ea5e9', strokeWidth: 2 }}
+                stroke="#10b981" 
+                strokeWidth={3}
+                dot={{ fill: '#10b981', strokeWidth: 2, r: 5 }}
+                activeDot={{ r: 8, stroke: '#10b981', strokeWidth: 3 }}
               />
-            </LineChart>
+              {/* Total cost line */}
+              <Line 
+                type="monotone" 
+                dataKey="cost" 
+                stroke="#3b82f6" 
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+              />
+              {/* P&L area */}
+              <Area
+                type="monotone"
+                dataKey="pnl"
+                stroke="#8b5cf6"
+                fill="#8b5cf6"
+                fillOpacity={0.1}
+                strokeWidth={1}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Individual Stock Performance (Candlestick-style) */}
+      <div className="card p-6">
+        <h3 className="text-xl font-bold text-white mb-6">Individual Stock Performance</h3>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={candlestickData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <XAxis 
+                dataKey="ticker" 
+                stroke="#9ca3af"
+                fontSize={12}
+                tick={{ fill: '#9ca3af' }}
+              />
+              <YAxis 
+                stroke="#9ca3af"
+                fontSize={12}
+                tick={{ fill: '#9ca3af' }}
+                tickFormatter={(value) => `$${value.toLocaleString()}`}
+              />
+              <Tooltip content={<CandlestickTooltip />} />
+              {/* Entry price bars */}
+              <Bar 
+                dataKey="open" 
+                fill="#3b82f6" 
+                opacity={0.7}
+                name="Entry Price"
+              />
+              {/* Current price bars */}
+              <Bar 
+                dataKey="close" 
+                fill="#10b981" 
+                opacity={0.8}
+                name="Current Price"
+              />
+              {/* P&L line */}
+              <Line 
+                type="monotone" 
+                dataKey="pnl" 
+                stroke="#8b5cf6" 
+                strokeWidth={2}
+                dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2 }}
+                name="P&L"
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </div>
