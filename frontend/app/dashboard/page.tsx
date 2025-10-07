@@ -76,9 +76,17 @@ export default function Dashboard() {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       
+      console.log('🔍 [DASHBOARD] Onboarding status:', response.data);
+      
       if (!response.data.onboardingCompleted) {
         router.push('/onboarding');
         return;
+      }
+
+      // Set initial active tab based on portfolio type from onboarding status
+      if (response.data.portfolioType) {
+        console.log('🔍 [DASHBOARD] Setting initial active tab to:', response.data.portfolioType);
+        setActiveTab(response.data.portfolioType as 'solid' | 'dangerous');
       }
     } catch (error) {
       console.error('Error checking onboarding status:', error);
@@ -116,16 +124,17 @@ export default function Dashboard() {
   };
 
   // Ensure the active tab always matches the user's portfolio type for free users
+  // Only runs when user data first loads
   useEffect(() => {
-    if (user?.subscriptionTier === 'free' && user?.portfolioType) {
+    if (user && user.subscriptionTier === 'free' && user.portfolioType) {
       const pt = user.portfolioType as 'solid' | 'dangerous';
-      console.log('🔍 [DASHBOARD] useEffect - Portfolio type:', pt, 'Current active tab:', activeTab);
+      console.log('🔍 [DASHBOARD] useEffect - User portfolio type:', pt, 'Current active tab:', activeTab);
       if (activeTab !== pt) {
-        console.log('🔍 [DASHBOARD] Changing active tab from', activeTab, 'to', pt);
+        console.log('🔍 [DASHBOARD] Syncing active tab to user portfolio type:', pt);
         setActiveTab(pt);
       }
     }
-  }, [user, activeTab]);
+  }, [user]); // Only depend on user, not activeTab to avoid infinite loops
 
   const fetchPortfolio = async () => {
     try {
@@ -454,7 +463,14 @@ export default function Dashboard() {
         {/* Enhanced Portfolio Tabs */}
         <div className="flex mb-6 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
           <button
-            onClick={() => setActiveTab('solid')}
+            onClick={() => {
+              // Prevent switching tabs for free users
+              if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid') {
+                alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Dangerous portfolios!');
+                return;
+              }
+              setActiveTab('solid');
+            }}
             className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'solid'
                 ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
@@ -477,7 +493,14 @@ export default function Dashboard() {
             )}
           </button>
           <button
-            onClick={() => setActiveTab('dangerous')}
+            onClick={() => {
+              // Prevent switching tabs for free users
+              if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous') {
+                alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Dangerous portfolios!');
+                return;
+              }
+              setActiveTab('dangerous');
+            }}
             className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'dangerous'
                 ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
