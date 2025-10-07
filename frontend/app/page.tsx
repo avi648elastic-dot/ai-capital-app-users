@@ -150,8 +150,11 @@ export default function Page() {
               <div className="w-28 h-28 relative">
                 <img src="/brand/tree.png" alt="logo" className="w-full h-full object-contain" />
                 {/* Dollar rain from middle */}
-                {[...Array(14)].map((_, i) => (
-                  <span key={i} className="absolute text-emerald-300/80" style={{left:'50%', transform:'translateX(-50%)', top:'10px', animation:`fallLogin ${(2.5+Math.random()*2.5).toFixed(2)}s linear ${(Math.random()*1.5).toFixed(2)}s infinite`}}>$</span>
+                {[...Array(6)].map((_, i) => (
+                  <svg key={i} width="16" height="9" className="absolute" style={{left:'50%', transform:'translateX(-50%)', top:'12px', animation:`fallLogin ${(2.8+Math.random()*2.2).toFixed(2)}s linear ${(Math.random()*1.2).toFixed(2)}s infinite`}} viewBox="0 0 16 9">
+                    <rect x="0.6" y="0.6" width="14.8" height="7.8" rx="1.8" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.85)"/>
+                    <text x="8" y="6" textAnchor="middle" fontSize="4.5" fill="rgba(16,185,129,0.95)">$</text>
+                  </svg>
                 ))}
                 <style jsx>{`
                   @keyframes fallLogin { from { transform: translate(-50%,0); opacity: .9 } to { transform: translate(-50%,34px); opacity: 0 } }

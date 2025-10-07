@@ -22,9 +22,9 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
   };
 
   const TreeLogo = () => {
-    const bills = useMemo(() => Array.from({ length: 14 }).map((_, i) => ({
-      duration: 2.8 + Math.random() * 2.8,
-      delay: Math.random() * 1.8,
+    const bills = useMemo(() => Array.from({ length: 6 }).map((_, i) => ({
+      duration: 3 + Math.random() * 2.2,
+      delay: Math.random() * 1.2,
     })), []);
 
     return (
@@ -34,13 +34,16 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
           <Image src="/brand/tree.png" alt="logo" fill sizes="40px" className="object-contain" priority />
           {/* Dollar rain */}
           {bills.map((b, idx) => (
-            <span
+            <svg
               key={idx}
-              className="absolute text-emerald-300/80"
-              style={{ left: '50%', transform: 'translateX(-50%)', top: '6px', animation: `fall ${b.duration}s linear ${b.delay}s infinite` }}
+              width="14" height="8"
+              className="absolute"
+              style={{ left: '50%', transform: 'translateX(-50%)', top: '8px', animation: `fall ${b.duration}s linear ${b.delay}s infinite` }}
+              viewBox="0 0 14 8"
             >
-              $
-            </span>
+              <rect x="0.5" y="0.5" width="13" height="7" rx="1.5" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.8)" />
+              <text x="7" y="5.3" textAnchor="middle" fontSize="4" fill="rgba(16,185,129,0.9)">$</text>
+            </svg>
           ))}
           <style jsx>{`
             @keyframes fall { from { transform: translate(-50%,0); opacity: .9 } to { transform: translate(-50%,28px); opacity: 0 } }
