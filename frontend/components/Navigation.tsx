@@ -15,7 +15,11 @@ import {
   TrendingUp,
   PieChart,
   Users,
-  DollarSign
+  DollarSign,
+  User,
+  FileText,
+  Bell,
+  CreditCard
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -80,7 +84,7 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
         {
           id: 'reports',
           label: 'Reports',
-          icon: BarChart3,
+          icon: FileText,
           href: '/analytics/reports',
           premium: true
         }
