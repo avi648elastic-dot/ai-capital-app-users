@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowRight, Globe } from 'lucide-react';
+import { ArrowRight, Globe, Palette } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -11,6 +11,7 @@ interface Step0Props {
 
 export default function Step0({ onComplete }: Step0Props) {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const [selectedTheme, setSelectedTheme] = useState<'dark' | 'light' | 'auto'>('dark');
   const [loading, setLoading] = useState(false);
 
   const languages = [
@@ -29,24 +30,26 @@ export default function Step0({ onComplete }: Step0Props) {
         return;
       }
 
-      // Save language preference to user profile
+      // Save language and theme to user profile
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/update-profile`,
-        { language: selectedLanguage },
+        { language: selectedLanguage, theme: selectedTheme },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Store language in localStorage for immediate use
+      // Store preferences locally for immediate use
       localStorage.setItem('language', selectedLanguage);
+      localStorage.setItem('theme', selectedTheme);
       
-      onComplete({ language: selectedLanguage });
+      onComplete({ language: selectedLanguage, theme: selectedTheme });
 
     } catch (error: unknown) {
       console.error('Error saving language preference:', error);
       
-      // Even if API fails, continue with selected language
+      // Even if API fails, continue with selected preferences
       localStorage.setItem('language', selectedLanguage);
-      onComplete({ language: selectedLanguage });
+      localStorage.setItem('theme', selectedTheme);
+      onComplete({ language: selectedLanguage, theme: selectedTheme });
     } finally {
       setLoading(false);
     }
@@ -87,6 +90,34 @@ export default function Step0({ onComplete }: Step0Props) {
             )}
           </button>
         ))}
+      </div>
+
+      {/* Theme selection */}
+      <div className="mt-10">
+        <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Palette className="w-6 h-6 text-white" />
+        </div>
+        <h3 className="text-lg font-semibold text-white mb-4">Choose Theme</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+          {[
+            { id: 'dark', name: 'Dark', description: 'Default dark theme' },
+            { id: 'light', name: 'Light', description: 'Clean light theme' },
+            { id: 'auto', name: 'Auto', description: 'Follow system preference' },
+          ].map((theme) => (
+            <button
+              key={theme.id}
+              onClick={() => setSelectedTheme(theme.id as any)}
+              className={`p-4 rounded-lg border text-left transition-colors ${
+                selectedTheme === theme.id
+                  ? 'border-primary-500 bg-primary-500/10'
+                  : 'border-slate-700 hover:border-slate-600'
+              }`}
+            >
+              <div className="text-white font-medium">{theme.name}</div>
+              <div className="text-sm text-slate-400">{theme.description}</div>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-8">
