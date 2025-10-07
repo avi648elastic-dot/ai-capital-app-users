@@ -108,8 +108,7 @@ app.get('/api/markets/overview', async (req, res) => {
     console.log('🔍 [MARKETS] Requesting tickers:', tickers);
     
     const symbolMap: Record<string,string> = { 
-      NYA: '^NYA',  // Try NYSE Composite first
-      NYA_FALLBACK: 'NYA'  // Fallback symbol
+      NYA: '^NYA'  // Use NYSE Composite
     };
     const fetchSymbols = tickers.map(t => symbolMap[t] || t);
     console.log('🔍 [MARKETS] Fetch symbols:', fetchSymbols);
@@ -122,26 +121,7 @@ app.get('/api/markets/overview', async (req, res) => {
       let key = symbolMap[t] || t;
       let d = dataMap.get(key);
       
-      // Special handling for NYA - try fallback if main symbol fails
-      if (t === 'NYA' && !d) {
-        console.log(`⚠️ [MARKETS] NYA (^NYA) not found, trying fallback...`);
-        key = 'NYA';  // Try without the ^ prefix
-        d = dataMap.get(key);
-        
-        // If still no data, try using a proxy like SPY as NYSE representation
-        if (!d) {
-          console.log(`⚠️ [MARKETS] NYA fallback failed, using SPY as NYSE proxy...`);
-          d = dataMap.get('SPY');
-          if (d) {
-            // Use SPY data but scale it to represent NYSE
-            return {
-              symbol: t,
-              price: Math.round(d.current * 1.02), // Slightly different from SPY
-              thisMonthPercent: (d.thisMonthPercent || 0) * 0.95 // Slightly different performance
-            };
-          }
-        }
-      }
+      // No special handling - let NYA use real data or fail gracefully
       
       if (d) {
         return { 
@@ -172,6 +152,35 @@ app.get('/api/markets/overview', async (req, res) => {
   } catch (error) {
     console.error('❌ Markets overview error:', error);
     res.status(500).json({ message: 'Failed to fetch markets overview' });
+  }
+});
+
+// 🔧 Database cleanup endpoint to fix portfolio types
+app.post('/api/fix-portfolio-types', async (req, res) => {
+  try {
+    const { default: Portfolio } = await import('./models/Portfolio');
+    
+    console.log('🔧 [CLEANUP] Fixing portfolio types from dangerous to risky...');
+    
+    const result = await Portfolio.updateMany(
+      { portfolioType: 'dangerous' },
+      { $set: { portfolioType: 'risky' } }
+    );
+    
+    console.log(`✅ [CLEANUP] Updated ${result.modifiedCount} portfolios from dangerous to risky`);
+    
+    res.json({
+      success: true,
+      message: `Updated ${result.modifiedCount} portfolios from dangerous to risky`,
+      modifiedCount: result.modifiedCount
+    });
+  } catch (error) {
+    console.error('❌ [CLEANUP] Error fixing portfolio types:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fix portfolio types',
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 });
 
