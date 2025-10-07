@@ -12,11 +12,23 @@ export const translations = {
     email: 'Email',
     password: 'Password',
     name: 'Name',
+    fullName: 'Full Name',
     save: 'Save',
     cancel: 'Cancel',
     loading: 'Loading...',
     error: 'Error',
     success: 'Success',
+    processing: 'Processing…',
+    createAccount: 'Create Account',
+    dontHaveAccount: "Don't have an account? ",
+    alreadyHaveAccount: 'Already have an account? ',
+    
+    // Branding
+    professionalPortfolioManagement: 'Professional Portfolio Management',
+    aiPoweredTrading: 'AI-Powered Trading Decisions & Real-Time Analytics',
+    realTimeData: 'Real-time Data',
+    aiAnalytics: 'AI Analytics',
+    portfolioManagement: 'Portfolio Management',
     
     // Dashboard
     welcome: 'Welcome',
@@ -80,11 +92,23 @@ export const translations = {
     email: 'البريد الإلكتروني',
     password: 'كلمة المرور',
     name: 'الاسم',
+    fullName: 'الاسم الكامل',
     save: 'حفظ',
     cancel: 'إلغاء',
     loading: 'جاري التحميل...',
     error: 'خطأ',
     success: 'نجح',
+    processing: 'جاري المعالجة...',
+    createAccount: 'إنشاء حساب',
+    dontHaveAccount: 'ليس لديك حساب؟ ',
+    alreadyHaveAccount: 'لديك حساب بالفعل؟ ',
+    
+    // Branding
+    professionalPortfolioManagement: 'إدارة المحافظ المهنية',
+    aiPoweredTrading: 'قرارات التداول المدعومة بالذكاء الاصطناعي والتحليلات في الوقت الفعلي',
+    realTimeData: 'البيانات في الوقت الفعلي',
+    aiAnalytics: 'التحليلات بالذكاء الاصطناعي',
+    portfolioManagement: 'إدارة المحافظ',
     
     // Dashboard
     welcome: 'مرحباً',
@@ -148,11 +172,23 @@ export const translations = {
     email: 'אימייל',
     password: 'סיסמה',
     name: 'שם',
+    fullName: 'שם מלא',
     save: 'שמור',
     cancel: 'ביטול',
     loading: 'טוען...',
     error: 'שגיאה',
     success: 'הצלחה',
+    processing: 'מעבד...',
+    createAccount: 'צור חשבון',
+    dontHaveAccount: 'אין לך חשבון? ',
+    alreadyHaveAccount: 'יש לך כבר חשבון? ',
+    
+    // Branding
+    professionalPortfolioManagement: 'ניהול תיקי השקעות מקצועי',
+    aiPoweredTrading: 'החלטות מסחר מונעות בינה מלאכותית וניתוחים בזמן אמת',
+    realTimeData: 'נתונים בזמן אמת',
+    aiAnalytics: 'ניתוחי בינה מלאכותית',
+    portfolioManagement: 'ניהול תיקי השקעות',
     
     // Dashboard
     welcome: 'ברוכים הבאים',

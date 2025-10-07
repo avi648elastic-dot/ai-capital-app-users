@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Crown } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // ✅ כל הבקשות ישלחו קובצי cookie גם לדומיין אחר (cross-site)
 axios.defaults.withCredentials = true;
@@ -17,6 +18,7 @@ type MeUser = {
 };
 
 export default function Page() {
+  const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -162,22 +164,22 @@ export default function Page() {
             <h1 className="logo-text text-4xl mb-3 font-bold">AI-Capital</h1>
             <div className="flex items-center justify-center space-x-2 mb-2">
               <Crown className="w-5 h-5 text-yellow-400" />
-              <p className="text-slate-300 text-lg font-semibold">Professional Portfolio Management</p>
+              <p className="text-slate-300 text-lg font-semibold">{t('professionalPortfolioManagement')}</p>
               <Crown className="w-5 h-5 text-yellow-400" />
             </div>
-            <p className="text-slate-400 text-sm">AI-Powered Trading Decisions & Real-Time Analytics</p>
+            <p className="text-slate-400 text-sm">{t('aiPoweredTrading')}</p>
             <div className="mt-4 flex items-center justify-center space-x-4 text-xs text-slate-500">
               <span className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Real-time Data</span>
+                <span>{t('realTimeData')}</span>
               </span>
               <span className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span>AI Analytics</span>
+                <span>{t('aiAnalytics')}</span>
               </span>
               <span className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                <span>Portfolio Management</span>
+                <span>{t('portfolioManagement')}</span>
               </span>
             </div>
           </div>
@@ -193,7 +195,7 @@ export default function Page() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Login
+              {t('login')}
             </button>
             <button
               type="button"
@@ -204,7 +206,7 @@ export default function Page() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Sign Up
+              {t('signup')}
             </button>
           </div>
 
@@ -212,7 +214,7 @@ export default function Page() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
-                <label className="block text-sm text-gray-300 mb-1">Full Name</label>
+                <label className="block text-sm text-gray-300 mb-1">{t('fullName')}</label>
                 <input
                   name="name"
                   value={formData.name}
@@ -224,7 +226,7 @@ export default function Page() {
             )}
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">Email</label>
+              <label className="block text-sm text-gray-300 mb-1">{t('email')}</label>
               <input
                 name="email"
                 type="email"
@@ -236,7 +238,7 @@ export default function Page() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">Password</label>
+              <label className="block text-sm text-gray-300 mb-1">{t('password')}</label>
               <input
                 name="password"
                 type="password"
@@ -257,19 +259,19 @@ export default function Page() {
               disabled={loading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing…' : isLogin ? 'Login' : 'Create Account'}
+              {loading ? t('processing') : isLogin ? t('login') : t('createAccount')}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-400">
-              {isLogin ? "Don't have an account? " : 'Already have an account? '}
+              {isLogin ? t('dontHaveAccount') : t('alreadyHaveAccount')}
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-primary-400 hover:text-primary-300 font-medium"
               >
-                {isLogin ? 'Sign up' : 'Login'}
+                {isLogin ? t('signup') : t('login')}
               </button>
             </p>
           </div>
