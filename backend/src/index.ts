@@ -166,6 +166,58 @@ app.get('/api/markets/overview', async (req, res) => {
   }
 });
 
+// 🧪 API Test endpoint to check if our APIs are working
+app.get('/api/test-apis', async (req, res) => {
+  try {
+    const { stockDataService } = await import('./services/stockDataService');
+    
+    console.log('🧪 [API TEST] Testing stock data APIs...');
+    
+    // Test with common symbols
+    const testSymbols = ['AAPL', 'SPY', 'QQQ', 'DIA'];
+    const results: any = {};
+    
+    for (const symbol of testSymbols) {
+      try {
+        console.log(`🧪 [API TEST] Testing ${symbol}...`);
+        const data = await stockDataService.getStockData(symbol);
+        results[symbol] = {
+          success: !!data,
+          current: data?.current || null,
+          volatility: data?.volatility || null,
+          source: data ? 'API' : 'Failed'
+        };
+        console.log(`✅ [API TEST] ${symbol}: $${data?.current || 'Failed'}`);
+      } catch (error) {
+        results[symbol] = {
+          success: false,
+          error: error.message,
+          source: 'Error'
+        };
+        console.error(`❌ [API TEST] ${symbol}:`, error.message);
+      }
+    }
+    
+    res.json({
+      status: 'API Test Complete',
+      timestamp: new Date().toISOString(),
+      results,
+      summary: {
+        total: testSymbols.length,
+        successful: Object.values(results).filter((r: any) => r.success).length,
+        failed: Object.values(results).filter((r: any) => !r.success).length
+      }
+    });
+  } catch (error) {
+    console.error('❌ [API TEST] Test failed:', error);
+    res.status(500).json({
+      status: 'API Test Failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // 🏥 Health check endpoint for Render
 app.get('/health', (req, res) => {
   res.status(200).json({
