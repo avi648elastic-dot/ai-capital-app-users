@@ -173,13 +173,29 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
       for (let i = 0; i < enhancedStocks.length; i++) {
         const stock = enhancedStocks[i];
         console.log(`🔍 [GENERATE PORTFOLIO] Saving stock ${i + 1}/${enhancedStocks.length}: ${stock.ticker}`);
-        
+        // Ensure we have a realistic current price; if missing, attempt a realtime fetch
+        let currentPrice = Number(stock.currentPrice);
+        if (!currentPrice || currentPrice <= 0) {
+          try {
+            const { stockDataService } = await import('../services/stockDataService');
+            const rt = await stockDataService.getStockData(stock.ticker);
+            if (rt?.current) currentPrice = Number(rt.current.toFixed(2));
+          } catch (rtErr) {
+            console.warn('⚠️ [GENERATE PORTFOLIO] Realtime price fetch failed for', stock.ticker, rtErr);
+          }
+        }
+        if (!currentPrice || currentPrice <= 0) {
+          // Final fallback to entry price so we never store 0
+          currentPrice = Number(stock.entryPrice);
+        }
+
         const newItem = new Portfolio({
           userId: req.user!._id,
           ticker: stock.ticker,
           shares: stock.shares,
-          entryPrice: stock.entryPrice,
-          currentPrice: stock.currentPrice,
+          // Align entry with current at time of portfolio creation so P&L starts at 0
+          entryPrice: currentPrice,
+          currentPrice,
           stopLoss: stock.stopLoss,
           takeProfit: stock.takeProfit,
           action: stock.action || 'HOLD',
