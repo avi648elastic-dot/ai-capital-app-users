@@ -12,6 +12,7 @@ import Charts from '@/components/Charts';
 import Header from '@/components/Header';
 import MarketOverview from '@/components/MarketOverview';
 import Navigation from '@/components/Navigation';
+import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';
 
 interface User {
   id: string;
@@ -58,6 +59,8 @@ export default function Dashboard() {
   const [showStockForm, setShowStockForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'solid' | 'dangerous'>('solid');
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
+  const [showMultiPortfolio, setShowMultiPortfolio] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -194,7 +197,7 @@ export default function Dashboard() {
         throw new Error('All required fields must be filled');
       }
 
-      // Ensure numeric values
+      // Ensure numeric values and handle portfolio ID
       const validatedData = {
         ...stockData,
         shares: Number(stockData.shares),
@@ -202,6 +205,7 @@ export default function Dashboard() {
         currentPrice: Number(stockData.currentPrice),
         stopLoss: stockData.stopLoss ? Number(stockData.stopLoss) : undefined,
         takeProfit: stockData.takeProfit ? Number(stockData.takeProfit) : undefined,
+        portfolioId: selectedPortfolioId || stockData.portfolioId || `${stockData.portfolioType}-1`,
       };
 
       console.log('🔍 [DASHBOARD] Validated data:', validatedData);
@@ -217,6 +221,7 @@ export default function Dashboard() {
       alert(`✅ Successfully added ${validatedData.ticker} to your portfolio!`);
       
       setShowStockForm(false);
+      setSelectedPortfolioId(''); // Reset selected portfolio
       await fetchPortfolio(); // Wait for portfolio to refresh
       
     } catch (error: any) {
@@ -444,6 +449,26 @@ export default function Dashboard() {
             >
               Update Decisions
             </button>
+            {/* Premium Multi-Portfolio Toggle */}
+            {user?.subscriptionTier === 'premium' && (
+              <button
+                onClick={() => setShowMultiPortfolio(!showMultiPortfolio)}
+                className="btn-secondary flex items-center space-x-2"
+              >
+                <span>{showMultiPortfolio ? '📊' : '📈'}</span>
+                <span>{showMultiPortfolio ? 'Single View' : 'Multi-Portfolio'}</span>
+              </button>
+            )}
+            {/* Onboarding Button for Premium Users */}
+            {user?.subscriptionTier === 'premium' && (
+              <button
+                onClick={() => router.push('/onboarding')}
+                className="btn-primary flex items-center space-x-2"
+              >
+                <span>➕</span>
+                <span>Add Portfolio</span>
+              </button>
+            )}
             {/* Stock Limit Indicator */}
             {user && (
               <div className={`px-4 py-2 rounded-lg text-sm font-semibold ${
@@ -460,72 +485,89 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Enhanced Portfolio Tabs */}
-        <div className="flex mb-6 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
-          <button
-            onClick={() => {
-              // Prevent switching tabs for free users
-              if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid') {
-                alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Dangerous portfolios!');
-                return;
-              }
-              setActiveTab('solid');
+        {/* Portfolio Display - Multi-Portfolio for Premium, Single for Free */}
+        {user?.subscriptionTier === 'premium' && showMultiPortfolio ? (
+          <MultiPortfolioDashboard
+            user={user}
+            onAddStock={(portfolioId) => {
+              setSelectedPortfolioId(portfolioId);
+              setShowStockForm(true);
             }}
-            className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
-              activeTab === 'solid'
-                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                : user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid'
-                  ? 'text-slate-500 cursor-not-allowed opacity-50'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-            }`}
-            disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid'}
-            title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' ? 'This portfolio type is locked for free users' : ''}
-          >
-            <div className={`w-2 h-2 rounded-full ${
-              user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' ? 'bg-slate-500' : 'bg-green-400'
-            }`}></div>
-            <span>Solid Portfolio</span>
-            <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
-              {portfolio.filter(p => p.portfolioType === 'solid').length}
-            </span>
-            {user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && (
-              <span className="text-yellow-400">🔒</span>
-            )}
-          </button>
-          <button
-            onClick={() => {
-              // Prevent switching tabs for free users
-              if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous') {
-                alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Dangerous portfolios!');
-                return;
-              }
-              setActiveTab('dangerous');
+            onViewPortfolio={(portfolioId) => {
+              setSelectedPortfolioId(portfolioId);
+              // You can implement a detailed portfolio view here
             }}
-            className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
-              activeTab === 'dangerous'
-                ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
-                : user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous'
-                  ? 'text-slate-500 cursor-not-allowed opacity-50'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-            }`}
-            disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous'}
-            title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' ? 'This portfolio type is locked for free users' : ''}
-          >
-            <div className={`w-2 h-2 rounded-full ${
-              user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' ? 'bg-slate-500' : 'bg-red-400'
-            }`}></div>
-            <span>Dangerous Portfolio</span>
-            <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
-              {portfolio.filter(p => p.portfolioType === 'dangerous').length}
-            </span>
-            {user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' && (
-              <span className="text-yellow-400">🔒</span>
-            )}
-            {user?.subscriptionTier === 'premium' && (
-              <span className="text-yellow-400">✨</span>
-            )}
-          </button>
-        </div>
+          />
+        ) : (
+          <>
+            {/* Enhanced Portfolio Tabs */}
+            <div className="flex mb-6 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
+              <button
+                onClick={() => {
+                  // Prevent switching tabs for free users
+                  if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid') {
+                    alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Dangerous portfolios!');
+                    return;
+                  }
+                  setActiveTab('solid');
+                }}
+                className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
+                  activeTab === 'solid'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                    : user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid'
+                      ? 'text-slate-500 cursor-not-allowed opacity-50'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                }`}
+                disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid'}
+                title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' ? 'This portfolio type is locked for free users' : ''}
+              >
+                <div className={`w-2 h-2 rounded-full ${
+                  user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' ? 'bg-slate-500' : 'bg-green-400'
+                }`}></div>
+                <span>Solid Portfolio</span>
+                <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
+                  {portfolio.filter(p => p.portfolioType === 'solid').length}
+                </span>
+                {user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && (
+                  <span className="text-yellow-400">🔒</span>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  // Prevent switching tabs for free users
+                  if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous') {
+                    alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Dangerous portfolios!');
+                    return;
+                  }
+                  setActiveTab('dangerous');
+                }}
+                className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
+                  activeTab === 'dangerous'
+                    ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
+                    : user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous'
+                      ? 'text-slate-500 cursor-not-allowed opacity-50'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                }`}
+                disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous'}
+                title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' ? 'This portfolio type is locked for free users' : ''}
+              >
+                <div className={`w-2 h-2 rounded-full ${
+                  user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' ? 'bg-slate-500' : 'bg-red-400'
+                }`}></div>
+                <span>Dangerous Portfolio</span>
+                <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
+                  {portfolio.filter(p => p.portfolioType === 'dangerous').length}
+                </span>
+                {user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' && (
+                  <span className="text-yellow-400">🔒</span>
+                )}
+                {user?.subscriptionTier === 'premium' && (
+                  <span className="text-yellow-400">✨</span>
+                )}
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Portfolio Table */}
         <ErrorBoundary label="table">
@@ -549,13 +591,14 @@ export default function Dashboard() {
       {showStockForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-            <StockForm
-              onSubmit={handleAddStock}
-              onCancel={() => setShowStockForm(false)}
-              isPremium={user?.subscriptionTier === 'premium'}
-              defaultPortfolioType={user?.portfolioType as any || 'solid'}
-              activeTab={activeTab}
-            />
+        <StockForm
+          onSubmit={handleAddStock}
+          onCancel={() => setShowStockForm(false)}
+          isPremium={user?.subscriptionTier === 'premium'}
+          defaultPortfolioType={user?.portfolioType as any || 'solid'}
+          activeTab={activeTab}
+          selectedPortfolioId={selectedPortfolioId}
+        />
           </div>
         </div>
       )}

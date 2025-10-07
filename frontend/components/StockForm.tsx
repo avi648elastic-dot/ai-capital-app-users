@@ -9,9 +9,10 @@ interface StockFormProps {
   isPremium?: boolean;
   defaultPortfolioType?: 'solid' | 'dangerous';
   activeTab?: 'solid' | 'dangerous';
+  selectedPortfolioId?: string;
 }
 
-export default function StockForm({ onSubmit, onCancel, isPremium = false, defaultPortfolioType = 'solid', activeTab }: StockFormProps) {
+export default function StockForm({ onSubmit, onCancel, isPremium = false, defaultPortfolioType = 'solid', activeTab, selectedPortfolioId }: StockFormProps) {
   const [formData, setFormData] = useState({
     ticker: '',
     shares: '',
@@ -21,28 +22,38 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
     takeProfit: '',
     notes: '',
     portfolioType: defaultPortfolioType as 'solid' | 'dangerous',
+    portfolioId: selectedPortfolioId || `${defaultPortfolioType}-1`,
   });
 
   const [loading, setLoading] = useState(false);
   const [fetchingPrice, setFetchingPrice] = useState(false);
   const [autoCalculate, setAutoCalculate] = useState(false);
 
-  // Update portfolio type when props change
+  // Update portfolio type and ID when props change
   useEffect(() => {
     if (!isPremium && defaultPortfolioType && formData.portfolioType !== defaultPortfolioType) {
       console.log(`🔍 [StockForm] Updating portfolioType for free user from ${formData.portfolioType} to ${defaultPortfolioType}`);
       setFormData(prev => ({
         ...prev,
         portfolioType: defaultPortfolioType,
+        portfolioId: `${defaultPortfolioType}-1`,
       }));
     } else if (isPremium && activeTab && formData.portfolioType !== activeTab) {
       console.log(`🔍 [StockForm] Updating portfolioType for premium user from ${formData.portfolioType} to ${activeTab}`);
       setFormData(prev => ({
         ...prev,
         portfolioType: activeTab,
+        portfolioId: selectedPortfolioId || `${activeTab}-1`,
+      }));
+    } else if (selectedPortfolioId && formData.portfolioId !== selectedPortfolioId) {
+      console.log(`🔍 [StockForm] Updating portfolioId to ${selectedPortfolioId}`);
+      setFormData(prev => ({
+        ...prev,
+        portfolioId: selectedPortfolioId,
+        portfolioType: selectedPortfolioId.split('-')[0] as 'solid' | 'dangerous',
       }));
     }
-  }, [defaultPortfolioType, isPremium, activeTab, formData.portfolioType]);
+  }, [defaultPortfolioType, isPremium, activeTab, selectedPortfolioId, formData.portfolioType, formData.portfolioId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
