@@ -311,8 +311,11 @@ export default function Dashboard() {
     }
   };
 
-  // Filter portfolio based on portfolio type (robust against missing field)
+  // Filter portfolio based on selected portfolio or tab/type
   const filteredPortfolio = portfolio.filter(item => {
+    if (selectedPortfolioId) {
+      return (item as any)?.portfolioId === selectedPortfolioId;
+    }
     const type = (item as any)?.portfolioType || 'solid';
     return activeTab === 'solid' ? type === 'solid' : type === 'dangerous';
   });
@@ -459,8 +462,8 @@ export default function Dashboard() {
                 <span>{showMultiPortfolio ? 'Single View' : 'Multi-Portfolio'}</span>
               </button>
             )}
-            {/* Onboarding Button for Premium Users */}
-            {user?.subscriptionTier === 'premium' && (
+            {/* Onboarding Button for Premium Users (visible only in multi view) */}
+            {user?.subscriptionTier === 'premium' && showMultiPortfolio && (
               <button
                 onClick={() => router.push('/onboarding')}
                 className="btn-primary flex items-center space-x-2"
