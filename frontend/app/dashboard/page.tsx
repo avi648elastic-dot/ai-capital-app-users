@@ -61,6 +61,7 @@ export default function Dashboard() {
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
   const [showMultiPortfolio, setShowMultiPortfolio] = useState(false);
+  const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -449,7 +450,7 @@ export default function Dashboard() {
             {/* Onboarding Button for Premium Users (visible only in multi view) */}
             {user?.subscriptionTier === 'premium' && showMultiPortfolio && (
               <button
-                onClick={() => router.push('/onboarding')}
+                onClick={() => setShowCreatePortfolio(true)}
                 className="btn-primary flex items-center space-x-2"
               >
                 <span>➕</span>
@@ -586,6 +587,87 @@ export default function Dashboard() {
           activeTab={activeTab}
           selectedPortfolioId={selectedPortfolioId}
         />
+          </div>
+        </div>
+      )}
+
+      {/* Create Portfolio Modal */}
+      {showCreatePortfolio && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-xl font-bold text-white mb-4">Create New Portfolio</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Portfolio Type
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await axios.post(
+                          `${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/create`,
+                          { portfolioType: 'solid' },
+                          { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
+                        );
+                        
+                        if (response.data.success) {
+                          setShowCreatePortfolio(false);
+                          // Refresh portfolios
+                          window.location.reload();
+                        }
+                      } catch (error) {
+                        console.error('Error creating portfolio:', error);
+                        alert('Failed to create portfolio');
+                      }
+                    }}
+                    className="p-3 rounded-lg border border-blue-500 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 transition-colors"
+                  >
+                    <div className="text-center">
+                      <div className="text-lg font-semibold">Solid</div>
+                      <div className="text-xs text-blue-400">Low Risk</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await axios.post(
+                          `${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/create`,
+                          { portfolioType: 'risky' },
+                          { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
+                        );
+                        
+                        if (response.data.success) {
+                          setShowCreatePortfolio(false);
+                          // Refresh portfolios
+                          window.location.reload();
+                        }
+                      } catch (error) {
+                        console.error('Error creating portfolio:', error);
+                        alert('Failed to create portfolio');
+                      }
+                    }}
+                    className="p-3 rounded-lg border border-orange-500 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 transition-colors"
+                  >
+                    <div className="text-center">
+                      <div className="text-lg font-semibold">Risky</div>
+                      <div className="text-xs text-orange-400">High Risk</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={() => setShowCreatePortfolio(false)}
+                  className="flex-1 btn-secondary"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
