@@ -8,6 +8,8 @@ export interface IUser extends Document {
   subscriptionActive: boolean;
   subscriptionTier: 'free' | 'premium'; // New field for subscription tier
   onboardingCompleted: boolean;
+  isAdmin?: boolean;
+  featuredTickers?: string[];
   portfolioType?: string;
   portfolioSource?: string;
   totalCapital?: number;
@@ -27,6 +29,8 @@ const UserSchema: Schema<IUser> = new Schema(
     subscriptionActive: { type: Boolean, default: false },
     subscriptionTier: { type: String, enum: ['free', 'premium'], default: 'free' },
     onboardingCompleted: { type: Boolean, default: false },
+    isAdmin: { type: Boolean, default: false },
+    featuredTickers: { type: [String], default: undefined },
     portfolioType: { type: String },
     portfolioSource: { type: String },
     totalCapital: { type: Number, default: 0 },

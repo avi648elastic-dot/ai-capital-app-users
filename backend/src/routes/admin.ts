@@ -5,11 +5,11 @@ import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
-// Admin middleware - check if user is admin
+// Admin middleware - role based
 const requireAdmin = async (req: any, res: any, next: any) => {
   try {
     const user = await User.findById(req.user!._id);
-    if (!user || user.email !== 'admin@aicapital.com') {
+    if (!user || user.isAdmin !== true) {
       return res.status(403).json({ message: 'Admin access required' });
     }
     next();

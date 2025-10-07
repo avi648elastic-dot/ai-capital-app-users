@@ -74,6 +74,8 @@ router.post('/signup', async (req: Request, res: Response) => {
         email: user.email,
         onboardingCompleted: user.onboardingCompleted,
         subscriptionActive: user.subscriptionActive,
+        subscriptionTier: user.subscriptionTier,
+        isAdmin: user.isAdmin,
       },
     });
   } catch (error: any) {
@@ -117,6 +119,8 @@ router.post('/login', async (req: Request, res: Response) => {
         email: user.email,
         onboardingCompleted: user.onboardingCompleted,
         subscriptionActive: user.subscriptionActive,
+        subscriptionTier: user.subscriptionTier,
+        isAdmin: user.isAdmin,
       },
     });
   } catch (error: any) {
@@ -164,6 +168,8 @@ router.get('/me', async (req: any, res: Response) => {
         email: user.email,
         onboardingCompleted: user.onboardingCompleted,
         subscriptionActive: user.subscriptionActive,
+        subscriptionTier: user.subscriptionTier,
+        isAdmin: user.isAdmin,
       },
     });
   } catch (error: any) {

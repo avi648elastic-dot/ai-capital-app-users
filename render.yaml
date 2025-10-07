@@ -23,9 +23,12 @@ services:
 
   - type: web
     name: aicapital-frontend
-    env: static
+    env: node
+    plan: free
     buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/out
+    startCommand: cd frontend && npm start
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: NEXT_PUBLIC_API_URL
         value: https://ai-capital-app7.onrender.com

@@ -11,6 +11,7 @@ import portfolioRoutes from './routes/portfolio';
 import shopifyRoutes from './routes/shopify';
 import onboardingRoutes from './routes/onboarding';
 import adminRoutes from './routes/admin';
+import marketsRoutes from './routes/markets';
 import { schedulerService } from './services/schedulerService';
 
 // Load environment variables
@@ -63,6 +64,7 @@ app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/shopify', shopifyRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/markets', marketsRoutes);
 
 // Import subscription routes
 import subscriptionRoutes from './routes/subscription';
@@ -81,6 +83,40 @@ app.get('/api/health', (req, res) => {
 app.get('/api/test', (req, res) => {
   console.log('🧪 [TEST] Frontend reached backend successfully');
   res.json({ message: 'Backend is reachable from frontend', timestamp: new Date().toISOString() });
+});
+
+// 📈 Markets overview (indexes + featured stocks)
+app.get('/api/markets/overview', async (req, res) => {
+  try {
+    const user = (req as any).user; // may be undefined
+    let featured: string[] | undefined;
+    try {
+      if (user) {
+        const { default: User } = await import('./models/User');
+        const u = await User.findById(user._id);
+        featured = u?.featuredTickers as string[] | undefined;
+      }
+    } catch {}
+    const tickers = ['SPY','QQQ','DIA', ...(featured && featured.length === 4 ? featured : ['AAPL','MSFT','AMZN','TSLA'])];
+    const { stockDataService } = await import('./services/stockDataService');
+    const dataMap = await stockDataService.getMultipleStockData(tickers);
+    const toObj = (t: string) => {
+      const d = dataMap.get(t);
+      return d ? { symbol: t, price: d.current, thisMonthPercent: d.thisMonthPercent } : { symbol: t, price: null };
+    };
+    res.json({
+      indexes: {
+        SPY: toObj('SPY'),
+        QQQ: toObj('QQQ'),
+        DIA: toObj('DIA'),
+      },
+      featured: [toObj('AAPL'), toObj('MSFT'), toObj('AMZN'), toObj('TSLA')],
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('❌ Markets overview error:', error);
+    res.status(500).json({ message: 'Failed to fetch markets overview' });
+  }
 });
 
 // 🏥 Health check endpoint for Render

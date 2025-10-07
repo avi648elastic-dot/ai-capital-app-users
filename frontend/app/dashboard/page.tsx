@@ -10,6 +10,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import StockForm from '@/components/StockForm';
 import Charts from '@/components/Charts';
 import Header from '@/components/Header';
+import MarketOverview from '@/components/MarketOverview';
 import Navigation from '@/components/Navigation';
 
 interface User {
@@ -386,6 +387,13 @@ export default function Dashboard() {
         <ErrorBoundary label="summary">
           <PortfolioSummary totals={totals} />
         </ErrorBoundary>
+
+        {/* Markets Overview */}
+        <div className="mt-6">
+          <ErrorBoundary label="markets">
+            <MarketOverview />
+          </ErrorBoundary>
+        </div>
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center mb-6">

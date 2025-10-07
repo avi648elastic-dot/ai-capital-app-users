@@ -201,6 +201,10 @@ router.put('/:id', authenticateToken, requireSubscription, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+    // Do not allow updating currentPrice directly via this endpoint to keep data integrity
+    if (Object.prototype.hasOwnProperty.call(updates, 'currentPrice')) {
+      delete updates.currentPrice;
+    }
 
     const portfolioItem = await Portfolio.findOne({ _id: id, userId: req.user!._id });
     if (!portfolioItem) {
