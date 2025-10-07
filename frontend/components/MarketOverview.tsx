@@ -67,14 +67,14 @@ export default function MarketOverview({ canCustomize = false }: { canCustomize?
         })}
         <div className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60">
           <div className="text-slate-300 text-sm font-medium mb-2">Featured Stocks</div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {data!.featured.map((f) => (
               <div key={f.symbol} className="bg-slate-900/60 rounded p-3">
                 <div className="flex items-center justify-between">
                   <div className="text-slate-300 text-xs font-medium">{f.symbol}</div>
                   <div className={`text-xs ${f.thisMonthPercent! >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{pct(f.thisMonthPercent)}</div>
                 </div>
-                <div className="text-white font-semibold mt-1">{fmt(f.price)}</div>
+                <div className="text-white font-semibold mt-1 text-sm">{fmt(f.price)}</div>
               </div>
             ))}
           </div>

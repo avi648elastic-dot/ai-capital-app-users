@@ -97,11 +97,14 @@ app.get('/api/markets/overview', async (req, res) => {
         featured = u?.featuredTickers as string[] | undefined;
       }
     } catch {}
-    const tickers = ['SPY','QQQ','DIA', ...(featured && featured.length === 4 ? featured : ['AAPL','MSFT','AMZN','TSLA'])];
+    const tickers = ['SPY','QQQ','DIA','NYA', ...(featured && featured.length === 4 ? featured : ['AAPL','MSFT','AMZN','TSLA'])];
+    const symbolMap: Record<string,string> = { NYA: '^NYA' };
     const { stockDataService } = await import('./services/stockDataService');
-    const dataMap = await stockDataService.getMultipleStockData(tickers);
+    const fetchSymbols = tickers.map(t => symbolMap[t] || t);
+    const dataMap = await stockDataService.getMultipleStockData(fetchSymbols);
     const toObj = (t: string) => {
-      const d = dataMap.get(t);
+      const key = symbolMap[t] || t;
+      const d = dataMap.get(key);
       return d ? { symbol: t, price: d.current, thisMonthPercent: d.thisMonthPercent } : { symbol: t, price: null };
     };
     res.json({
@@ -109,6 +112,7 @@ app.get('/api/markets/overview', async (req, res) => {
         SPY: toObj('SPY'),
         QQQ: toObj('QQQ'),
         DIA: toObj('DIA'),
+        NYA: toObj('NYA'),
       },
       featured: [toObj('AAPL'), toObj('MSFT'), toObj('AMZN'), toObj('TSLA')],
       updatedAt: new Date().toISOString(),
