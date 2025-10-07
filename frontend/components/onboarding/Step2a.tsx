@@ -32,6 +32,12 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
     return total + (stock.currentPrice * stock.shares);
   }, 0);
 
+  // Debug logging to track calculation
+  useEffect(() => {
+    console.log('📊 [STEP2A] Total capital recalculated:', totalCapital);
+    console.log('📊 [STEP2A] Current stocks:', stocks);
+  }, [totalCapital, stocks]);
+
   const addStock = () => {
     setStocks([...stocks, { ticker: '', shares: 0, entryPrice: 0, currentPrice: 0, notes: '' }]);
   };
@@ -46,6 +52,11 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
     const updatedStocks = [...stocks];
     updatedStocks[index] = { ...updatedStocks[index], [field]: value };
     setStocks(updatedStocks);
+    
+    // Force re-render to update total calculation
+    console.log('📊 [STEP2A] Stock updated, new total:', updatedStocks.reduce((total, stock) => {
+      return total + (stock.currentPrice * stock.shares);
+    }, 0));
   };
 
   // Auto-fetch current price when ticker is entered
@@ -146,7 +157,7 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Total Portfolio Value ($)
             </label>
-            <div className="input-field bg-slate-700 text-green-400 font-semibold">
+            <div className="input-field bg-slate-700 text-green-400 font-semibold cursor-not-allowed">
               ${totalCapital.toFixed(2)}
             </div>
             <p className="text-xs text-slate-400 mt-1">
