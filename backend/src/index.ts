@@ -107,7 +107,20 @@ app.get('/api/markets/overview', async (req, res) => {
     const toObj = (t: string) => {
       const key = symbolMap[t] || t;
       const d = dataMap.get(key);
-      return d ? { symbol: t, price: d.current, thisMonthPercent: d.thisMonthPercent } : { symbol: t, price: null };
+      if (d) {
+        return { 
+          symbol: t, 
+          price: d.current, 
+          thisMonthPercent: d.thisMonthPercent || 0 
+        };
+      } else {
+        // Return default values instead of null
+        return { 
+          symbol: t, 
+          price: 0, 
+          thisMonthPercent: 0 
+        };
+      }
     };
     res.json({
       indexes: {

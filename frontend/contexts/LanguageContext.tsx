@@ -44,6 +44,9 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     } else {
       document.documentElement.dir = 'ltr';
     }
+    
+    // Force page reload to apply language changes immediately
+    window.location.reload();
   };
 
   const t = (key: string) => {

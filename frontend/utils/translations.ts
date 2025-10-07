@@ -30,6 +30,13 @@ export const translations = {
     aiAnalytics: 'AI Analytics',
     portfolioManagement: 'Portfolio Management',
     
+    // Onboarding
+    chooseLanguage: 'Choose Your Language',
+    selectLanguageExperience: 'Select your preferred language for the best experience',
+    chooseTheme: 'Choose Theme',
+    continue: 'Continue',
+    savingPreferences: 'Saving preferences...',
+    
     // Dashboard
     welcome: 'Welcome',
     portfolioManager: 'Portfolio Manager',
@@ -110,6 +117,13 @@ export const translations = {
     aiAnalytics: 'التحليلات بالذكاء الاصطناعي',
     portfolioManagement: 'إدارة المحافظ',
     
+    // Onboarding
+    chooseLanguage: 'اختر لغتك',
+    selectLanguageExperience: 'اختر لغتك المفضلة للحصول على أفضل تجربة',
+    chooseTheme: 'اختر المظهر',
+    continue: 'متابعة',
+    savingPreferences: 'جاري حفظ التفضيلات...',
+    
     // Dashboard
     welcome: 'مرحباً',
     portfolioManager: 'مدير المحفظة',
@@ -189,6 +203,13 @@ export const translations = {
     realTimeData: 'נתונים בזמן אמת',
     aiAnalytics: 'ניתוחי בינה מלאכותית',
     portfolioManagement: 'ניהול תיקי השקעות',
+    
+    // Onboarding
+    chooseLanguage: 'בחר את השפה שלך',
+    selectLanguageExperience: 'בחר את השפה המועדפת עליך לחוויה הטובה ביותר',
+    chooseTheme: 'בחר ערכת נושא',
+    continue: 'המשך',
+    savingPreferences: 'שומר העדפות...',
     
     // Dashboard
     welcome: 'ברוכים הבאים',

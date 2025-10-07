@@ -4,16 +4,16 @@ import { useState } from 'react';
 import { ArrowRight, Globe, Palette } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-// import { useLanguage } from '@/contexts/LanguageContext';
-// import { useTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Step0Props {
   onComplete: (data: any) => void;
 }
 
 export default function Step0({ onComplete }: Step0Props) {
-  // const { setLanguage } = useLanguage();
-  // const { setTheme } = useTheme();
+  const { setLanguage, t } = useLanguage();
+  const { setTheme } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedTheme, setSelectedTheme] = useState<'dark' | 'light'>('dark');
   const [loading, setLoading] = useState(false);
@@ -26,14 +26,12 @@ export default function Step0({ onComplete }: Step0Props) {
 
   const handleLanguageChange = (lang: string) => {
     setSelectedLanguage(lang);
-    // setLanguage(lang); // Force immediate change
-    localStorage.setItem('language', lang);
+    setLanguage(lang); // Force immediate change
   };
 
   const handleThemeChange = (theme: string) => {
     setSelectedTheme(theme as 'dark' | 'light');
-    // setTheme(theme); // Force immediate change
-    localStorage.setItem('theme', theme);
+    setTheme(theme); // Force immediate change
   };
 
   const handleSubmit = async () => {
@@ -77,8 +75,8 @@ export default function Step0({ onComplete }: Step0Props) {
         <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
           <Globe className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Choose Your Language</h2>
-        <p className="text-gray-400 mb-6">Select your preferred language for the best experience</p>
+        <h2 className="text-2xl font-bold text-white mb-2">{t('chooseLanguage')}</h2>
+        <p className="text-gray-400 mb-6">{t('selectLanguageExperience')}</p>
       </div>
 
       <div className="max-w-md mx-auto space-y-3">
@@ -109,7 +107,7 @@ export default function Step0({ onComplete }: Step0Props) {
         <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
           <Palette className="w-6 h-6 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Choose Theme</h3>
+        <h3 className="text-lg font-semibold text-white mb-2">{t('chooseTheme')}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
           {[
             { id: 'dark', name: 'Dark', description: 'Default dark theme' },
@@ -137,7 +135,7 @@ export default function Step0({ onComplete }: Step0Props) {
           disabled={loading}
           className="btn-primary flex items-center space-x-2 mx-auto"
         >
-          <span>Continue</span>
+          <span>{t('continue')}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
@@ -145,7 +143,7 @@ export default function Step0({ onComplete }: Step0Props) {
       {loading && (
         <div className="mt-4">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500 mx-auto"></div>
-          <p className="text-gray-400 mt-2 text-sm">Saving preferences...</p>
+          <p className="text-gray-400 mt-2 text-sm">{t('savingPreferences')}</p>
         </div>
       )}
     </div>
