@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Crown } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+// import { useLanguage } from '@/contexts/LanguageContext';
 
 // ✅ כל הבקשות ישלחו קובצי cookie גם לדומיין אחר (cross-site)
 axios.defaults.withCredentials = true;
@@ -18,7 +18,7 @@ type MeUser = {
 };
 
 export default function Page() {
-  const { t } = useLanguage();
+  // const { t } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -149,37 +149,33 @@ export default function Page() {
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-24 h-24 relative bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg p-2">
+              <div className="w-24 h-24 relative">
                 <img 
                   src="/logo.png" 
                   alt="AiCapital Logo" 
                   className="w-full h-full object-contain" 
-                  style={{
-                    filter: 'brightness(0) invert(1)',
-                    mixBlendMode: 'multiply'
-                  }}
                 />
               </div>
             </div>
             <h1 className="logo-text text-4xl mb-3 font-bold">AI-Capital</h1>
             <div className="flex items-center justify-center space-x-2 mb-2">
               <Crown className="w-5 h-5 text-yellow-400" />
-              <p className="text-slate-300 text-lg font-semibold">{t('professionalPortfolioManagement')}</p>
+              <p className="text-slate-300 text-lg font-semibold">Professional Portfolio Management</p>
               <Crown className="w-5 h-5 text-yellow-400" />
             </div>
-            <p className="text-slate-400 text-sm">{t('aiPoweredTrading')}</p>
+            <p className="text-slate-400 text-sm">AI-Powered Trading Decisions & Real-Time Analytics</p>
             <div className="mt-4 flex items-center justify-center space-x-4 text-xs text-slate-500">
               <span className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>{t('realTimeData')}</span>
+                <span>Real-time Data</span>
               </span>
               <span className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span>{t('aiAnalytics')}</span>
+                <span>AI Analytics</span>
               </span>
               <span className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                <span>{t('portfolioManagement')}</span>
+                <span>Portfolio Management</span>
               </span>
             </div>
           </div>
@@ -195,7 +191,7 @@ export default function Page() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              {t('login')}
+              Login
             </button>
             <button
               type="button"
@@ -206,7 +202,7 @@ export default function Page() {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              {t('signup')}
+              Sign Up
             </button>
           </div>
 
@@ -214,7 +210,7 @@ export default function Page() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div>
-                <label className="block text-sm text-gray-300 mb-1">{t('fullName')}</label>
+                <label className="block text-sm text-gray-300 mb-1">Full Name</label>
                 <input
                   name="name"
                   value={formData.name}
@@ -226,7 +222,7 @@ export default function Page() {
             )}
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">{t('email')}</label>
+              <label className="block text-sm text-gray-300 mb-1">Email</label>
               <input
                 name="email"
                 type="email"
@@ -238,7 +234,7 @@ export default function Page() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-300 mb-1">{t('password')}</label>
+              <label className="block text-sm text-gray-300 mb-1">Password</label>
               <input
                 name="password"
                 type="password"
@@ -259,19 +255,19 @@ export default function Page() {
               disabled={loading}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? t('processing') : isLogin ? t('login') : t('createAccount')}
+              {loading ? 'Processing…' : isLogin ? 'Login' : 'Create Account'}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-400">
-              {isLogin ? t('dontHaveAccount') : t('alreadyHaveAccount')}
+              {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-primary-400 hover:text-primary-300 font-medium"
               >
-                {isLogin ? t('signup') : t('login')}
+                {isLogin ? 'Sign up' : 'Login'}
               </button>
             </p>
           </div>
