@@ -8,9 +8,10 @@ interface StockFormProps {
   onCancel: () => void;
   isPremium?: boolean;
   defaultPortfolioType?: 'solid' | 'dangerous';
+  activeTab?: 'solid' | 'dangerous';
 }
 
-export default function StockForm({ onSubmit, onCancel, isPremium = false, defaultPortfolioType = 'solid' }: StockFormProps) {
+export default function StockForm({ onSubmit, onCancel, isPremium = false, defaultPortfolioType = 'solid', activeTab }: StockFormProps) {
   const [formData, setFormData] = useState({
     ticker: '',
     shares: '',
@@ -25,6 +26,23 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
   const [loading, setLoading] = useState(false);
   const [fetchingPrice, setFetchingPrice] = useState(false);
   const [autoCalculate, setAutoCalculate] = useState(false);
+
+  // Update portfolio type when props change
+  useEffect(() => {
+    if (!isPremium && defaultPortfolioType && formData.portfolioType !== defaultPortfolioType) {
+      console.log(`🔍 [StockForm] Updating portfolioType for free user from ${formData.portfolioType} to ${defaultPortfolioType}`);
+      setFormData(prev => ({
+        ...prev,
+        portfolioType: defaultPortfolioType,
+      }));
+    } else if (isPremium && activeTab && formData.portfolioType !== activeTab) {
+      console.log(`🔍 [StockForm] Updating portfolioType for premium user from ${formData.portfolioType} to ${activeTab}`);
+      setFormData(prev => ({
+        ...prev,
+        portfolioType: activeTab,
+      }));
+    }
+  }, [defaultPortfolioType, isPremium, activeTab, formData.portfolioType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,7 +219,7 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
           </div>
         </div>
 
-        {/* Portfolio Type Selector (Premium only) */}
+        {/* Portfolio Type Selector (Premium only) or Display (Free users) */}
         {isPremium ? (
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -232,7 +250,21 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
               </label>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-slate-300">Adding to:</span>
+              <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                formData.portfolioType === 'dangerous' 
+                  ? 'text-red-300 bg-red-900/50 border border-red-500/30' 
+                  : 'text-blue-300 bg-blue-900/50 border border-blue-500/30'
+              }`}>
+                {formData.portfolioType === 'dangerous' ? '🔥 Dangerous Portfolio' : '🛡️ Solid Portfolio'}
+              </span>
+              <span className="text-xs text-slate-400">(Free users can only add to their chosen portfolio type)</span>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>

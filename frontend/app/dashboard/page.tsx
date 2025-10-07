@@ -553,7 +553,7 @@ export default function Dashboard() {
               onSubmit={handleAddStock}
               onCancel={() => setShowStockForm(false)}
               isPremium={user?.subscriptionTier === 'premium'}
-              userPortfolioType={user?.portfolioType as any || 'solid'}
+              defaultPortfolioType={user?.portfolioType as any || 'solid'}
               activeTab={activeTab}
             />
           </div>
