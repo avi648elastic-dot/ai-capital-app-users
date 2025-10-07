@@ -64,6 +64,10 @@ app.use('/api/shopify', shopifyRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Import subscription routes
+import subscriptionRoutes from './routes/subscription';
+app.use('/api/subscription', subscriptionRoutes);
+
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {
   res.json({

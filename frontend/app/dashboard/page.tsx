@@ -14,7 +14,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  subscriptionActive: boolean;
+  subscriptionTier: 'free' | 'premium';
 }
 
 interface PortfolioItem {
@@ -148,6 +148,23 @@ export default function Dashboard() {
     }
   };
 
+  const handleUpgrade = async () => {
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/upgrade`, {}, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      });
+      
+      if (response.data.isPremium) {
+        alert('🎉 Successfully upgraded to Premium! You now have access to all features.');
+        // Refresh user data
+        fetchUserData();
+      }
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+      alert('Error upgrading subscription. Please try again.');
+    }
+  };
+
   const handleUpdateDecisions = async () => {
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/decisions`, {
@@ -203,6 +220,42 @@ export default function Dashboard() {
       <Header userName={user?.name} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Subscription Status Banner */}
+        <div className={`mb-6 p-4 rounded-lg border ${
+          user?.subscriptionTier === 'premium' 
+            ? 'bg-gradient-to-r from-emerald-900/20 to-blue-900/20 border-emerald-500/30' 
+            : 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-500/30'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className={`w-3 h-3 rounded-full ${
+                user?.subscriptionTier === 'premium' ? 'bg-emerald-400' : 'bg-amber-400'
+              }`}></div>
+              <div>
+                <h3 className={`text-lg font-semibold ${
+                  user?.subscriptionTier === 'premium' ? 'text-emerald-300' : 'text-amber-300'
+                }`}>
+                  {user?.subscriptionTier === 'premium' ? 'Premium Account' : 'Free Account'}
+                </h3>
+                <p className="text-sm text-slate-400">
+                  {user?.subscriptionTier === 'premium' 
+                    ? 'Full access to all features and unlimited portfolios' 
+                    : 'Limited to 1 portfolio. Upgrade to Premium for unlimited portfolios and advanced features'
+                  }
+                </p>
+              </div>
+            </div>
+            {user?.subscriptionTier === 'free' && (
+              <button 
+                onClick={handleUpgrade}
+                className="btn-primary"
+              >
+                Upgrade to Premium
+              </button>
+            )}
+          </div>
+        </div>
+
         {debugInfo && (
           <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
             <h3 className="text-lg font-semibold text-white mb-2">Debug Info:</h3>
@@ -249,10 +302,15 @@ export default function Dashboard() {
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
               activeTab === 'dangerous'
                 ? 'bg-danger-600 text-white'
-                : 'text-gray-400 hover:text-white'
+                : user?.subscriptionTier === 'free' 
+                  ? 'text-gray-500 cursor-not-allowed opacity-50'
+                  : 'text-gray-400 hover:text-white'
             }`}
+            disabled={user?.subscriptionTier === 'free'}
+            title={user?.subscriptionTier === 'free' ? 'Upgrade to Premium to access Dangerous Portfolio' : ''}
           >
             Dangerous Portfolio ({portfolio.filter(p => p.portfolioType === 'dangerous').length})
+            {user?.subscriptionTier === 'free' && ' 🔒'}
           </button>
         </div>
 
