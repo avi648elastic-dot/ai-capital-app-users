@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { LogOut, User, Settings, TrendingUp, BarChart3 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
@@ -21,33 +21,11 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
     router.push('/');
   };
 
-  const TreeLogo = () => {
-    const bills = useMemo(() => Array.from({ length: 6 }).map((_, i) => ({
-      duration: 3 + Math.random() * 2.2,
-      delay: Math.random() * 1.2,
-    })), []);
-
+  const Logo = () => {
     return (
-      <div className="relative flex items-center space-x-3">
-        <div className="relative w-14 h-14">
-          {/* Brand image fallback-safe */}
-          <Image src="/brand/tree.png" alt="logo" fill sizes="40px" className="object-contain" priority />
-          {/* Dollar rain */}
-          {bills.map((b, idx) => (
-            <svg
-              key={idx}
-              width="14" height="8"
-              className="absolute"
-              style={{ left: '50%', transform: 'translateX(-50%)', top: '8px', animation: `fall ${b.duration}s linear ${b.delay}s infinite` }}
-              viewBox="0 0 14 8"
-            >
-              <rect x="0.5" y="0.5" width="13" height="7" rx="1.5" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.8)" />
-              <text x="7" y="5.3" textAnchor="middle" fontSize="4" fill="rgba(16,185,129,0.9)">$</text>
-            </svg>
-          ))}
-          <style jsx>{`
-            @keyframes fall { from { transform: translate(-50%,0); opacity: .9 } to { transform: translate(-50%,28px); opacity: 0 } }
-          `}</style>
+      <div className="flex items-center space-x-3">
+        <div className="relative w-12 h-12">
+          <Image src="/logo.png" alt="AiCapital Logo" fill sizes="48px" className="object-contain" priority />
         </div>
         <div>
           <h1 className="logo-text text-xl">AI-Capital</h1>
@@ -63,7 +41,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
         <div className="flex justify-between items-center h-16">
           {/* Logo and Branding */}
           <div className="flex items-center">
-            <TreeLogo />
+            <Logo />
           </div>
 
           {/* Navigation */}

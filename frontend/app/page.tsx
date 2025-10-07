@@ -147,18 +147,8 @@ export default function Page() {
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
-              <div className="w-28 h-28 relative">
-                <img src="/brand/tree.png" alt="logo" className="w-full h-full object-contain" />
-                {/* Dollar rain from middle */}
-                {[...Array(6)].map((_, i) => (
-                  <svg key={i} width="16" height="9" className="absolute" style={{left:'50%', transform:'translateX(-50%)', top:'12px', animation:`fallLogin ${(2.8+Math.random()*2.2).toFixed(2)}s linear ${(Math.random()*1.2).toFixed(2)}s infinite`}} viewBox="0 0 16 9">
-                    <rect x="0.6" y="0.6" width="14.8" height="7.8" rx="1.8" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.85)"/>
-                    <text x="8" y="6" textAnchor="middle" fontSize="4.5" fill="rgba(16,185,129,0.95)">$</text>
-                  </svg>
-                ))}
-                <style jsx>{`
-                  @keyframes fallLogin { from { transform: translate(-50%,0); opacity: .9 } to { transform: translate(-50%,34px); opacity: 0 } }
-                `}</style>
+              <div className="w-24 h-24 relative">
+                <img src="/logo.png" alt="AiCapital Logo" className="w-full h-full object-contain" />
               </div>
             </div>
             <h1 className="logo-text text-4xl mb-3 font-bold">AI-Capital</h1>
