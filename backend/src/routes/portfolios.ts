@@ -55,10 +55,26 @@ router.get('/', authenticateToken, requireSubscription, async (req, res) => {
 // Create a new portfolio
 router.post('/create', authenticateToken, requireSubscription, async (req, res) => {
   try {
-    const { portfolioType, portfolioName } = req.body;
+    const { 
+      portfolioType, 
+      portfolioName, 
+      initialInvestment, 
+      riskTolerance,
+      investmentGoal 
+    } = req.body;
     
     if (!['solid', 'risky'].includes(portfolioType)) {
       return res.status(400).json({ message: 'Invalid portfolio type' });
+    }
+
+    // Validate initial investment
+    if (initialInvestment && (isNaN(initialInvestment) || initialInvestment <= 0)) {
+      return res.status(400).json({ message: 'Initial investment must be a positive number' });
+    }
+
+    // Validate risk tolerance (1-10 scale)
+    if (riskTolerance && (isNaN(riskTolerance) || riskTolerance < 1 || riskTolerance > 10)) {
+      return res.status(400).json({ message: 'Risk tolerance must be between 1 and 10' });
     }
 
     // Check if user is premium
@@ -88,13 +104,22 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
       portfolioId,
       portfolioType,
       portfolioName: portfolioName || `${portfolioType} Portfolio ${nextNumber}`,
+      initialInvestment: initialInvestment || 0,
+      riskTolerance: riskTolerance || 7,
+      investmentGoal: investmentGoal || 'Growth',
       stocks: [],
-      totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 }
+      totals: { 
+        initial: initialInvestment || 0, 
+        current: initialInvestment || 0, 
+        totalPnL: 0, 
+        totalPnLPercent: 0 
+      }
     };
 
     res.json({ 
       message: 'Portfolio created successfully', 
-      portfolio 
+      portfolio,
+      success: true
     });
   } catch (error) {
     console.error('Create portfolio error:', error);
