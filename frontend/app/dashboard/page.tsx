@@ -19,6 +19,7 @@ interface User {
   name: string;
   subscriptionTier: 'free' | 'premium';
   isAdmin?: boolean;
+  portfolioType?: 'solid' | 'dangerous';
 }
 
 interface PortfolioItem {
@@ -96,10 +97,17 @@ export default function Dashboard() {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setUser(response.data.user);
+      console.log('🔍 [DASHBOARD] User data fetched:', response.data.user);
+      
       // Auto-select tab based on the user's portfolioType (free users)
       const pt = response.data.user?.portfolioType as 'solid' | 'dangerous' | undefined;
       const tier = response.data.user?.subscriptionTier as 'free' | 'premium' | undefined;
-      if (pt && tier === 'free') setActiveTab(pt);
+      console.log('🔍 [DASHBOARD] Portfolio type:', pt, 'Tier:', tier);
+      
+      if (pt && tier === 'free') {
+        console.log('🔍 [DASHBOARD] Setting active tab to:', pt);
+        setActiveTab(pt);
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
       Cookies.remove('token');
@@ -109,11 +117,15 @@ export default function Dashboard() {
 
   // Ensure the active tab always matches the user's portfolio type for free users
   useEffect(() => {
-    if (user?.subscriptionTier === 'free' && (user as any)?.portfolioType) {
-      const pt = (user as any).portfolioType as 'solid' | 'dangerous';
-      if (activeTab !== pt) setActiveTab(pt);
+    if (user?.subscriptionTier === 'free' && user?.portfolioType) {
+      const pt = user.portfolioType as 'solid' | 'dangerous';
+      console.log('🔍 [DASHBOARD] useEffect - Portfolio type:', pt, 'Current active tab:', activeTab);
+      if (activeTab !== pt) {
+        console.log('🔍 [DASHBOARD] Changing active tab from', activeTab, 'to', pt);
+        setActiveTab(pt);
+      }
     }
-  }, [user]);
+  }, [user, activeTab]);
 
   const fetchPortfolio = async () => {
     try {
@@ -433,35 +445,44 @@ export default function Dashboard() {
             className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'solid'
                 ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                : user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid'
+                  ? 'text-slate-500 cursor-not-allowed opacity-50'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
+            disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid'}
+            title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' ? 'This portfolio type is locked for free users' : ''}
           >
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+            <div className={`w-2 h-2 rounded-full ${
+              user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' ? 'bg-slate-500' : 'bg-green-400'
+            }`}></div>
             <span>Solid Portfolio</span>
             <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
               {portfolio.filter(p => p.portfolioType === 'solid').length}
             </span>
+            {user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && (
+              <span className="text-yellow-400">🔒</span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('dangerous')}
             className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
               activeTab === 'dangerous'
                 ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg'
-                : user?.subscriptionTier === 'free' 
+                : user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous'
                   ? 'text-slate-500 cursor-not-allowed opacity-50'
                   : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
             }`}
-            disabled={user?.subscriptionTier === 'free'}
-            title={user?.subscriptionTier === 'free' ? 'Upgrade to Premium to access Dangerous Portfolio' : ''}
+            disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous'}
+            title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' ? 'This portfolio type is locked for free users' : ''}
           >
             <div className={`w-2 h-2 rounded-full ${
-              user?.subscriptionTier === 'free' ? 'bg-slate-500' : 'bg-red-400'
+              user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' ? 'bg-slate-500' : 'bg-red-400'
             }`}></div>
             <span>Dangerous Portfolio</span>
             <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
               {portfolio.filter(p => p.portfolioType === 'dangerous').length}
             </span>
-            {user?.subscriptionTier === 'free' && (
+            {user?.subscriptionTier === 'free' && user?.portfolioType !== 'dangerous' && (
               <span className="text-yellow-400">🔒</span>
             )}
             {user?.subscriptionTier === 'premium' && (
@@ -496,7 +517,8 @@ export default function Dashboard() {
               onSubmit={handleAddStock}
               onCancel={() => setShowStockForm(false)}
               isPremium={user?.subscriptionTier === 'premium'}
-              defaultPortfolioType={user?.portfolioType as any || 'solid'}
+              userPortfolioType={user?.portfolioType as any || 'solid'}
+              activeTab={activeTab}
             />
           </div>
         </div>
