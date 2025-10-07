@@ -152,6 +152,11 @@ export default function Page() {
                   src="/logo.png" 
                   alt="AiCapital Logo" 
                   className="w-full h-full object-contain" 
+                  style={{
+                    filter: 'drop-shadow(0 0 0 transparent)',
+                    background: 'transparent',
+                    mixBlendMode: 'normal'
+                  }}
                 />
               </div>
             </div>

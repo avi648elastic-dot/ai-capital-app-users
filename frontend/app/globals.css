@@ -18,6 +18,15 @@
       radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
       radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
   }
+  
+  /* Perfect logo transparency */
+  img[alt*="Logo"], img[alt*="logo"] {
+    background: transparent !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
 }
 
 @layer components {

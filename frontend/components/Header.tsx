@@ -33,6 +33,11 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
             sizes="48px" 
             className="object-contain" 
             priority 
+            style={{
+              filter: 'drop-shadow(0 0 0 transparent)',
+              background: 'transparent',
+              mixBlendMode: 'normal'
+            }}
           />
         </div>
         <div>
