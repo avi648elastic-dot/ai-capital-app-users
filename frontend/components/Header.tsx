@@ -25,19 +25,20 @@ export default function Header({ userName, showNavigation = true }: HeaderProps)
       <div className="w-10 h-10 flex items-center justify-center">
         <svg
           viewBox="0 0 100 100"
-          className="w-8 h-8 text-emerald-500"
+          className="w-8 h-8 text-emerald-400"
           fill="currentColor"
+          style={{ filter: 'drop-shadow(0 0 4px rgba(16, 185, 129, 0.3))' }}
         >
           {/* Tree trunk */}
-          <path d="M45 70 L45 85 L55 85 L55 70 Z" />
+          <path d="M45 70 L45 85 L55 85 L55 70 Z" stroke="currentColor" strokeWidth="2" fill="currentColor" />
           {/* Tree branches and leaves */}
-          <path d="M50 70 Q30 50 20 30 Q35 40 50 50 Q65 40 80 30 Q70 50 50 70 Z" />
+          <path d="M50 70 Q30 50 20 30 Q35 40 50 50 Q65 40 80 30 Q70 50 50 70 Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" />
           {/* Additional leaves for fullness */}
-          <circle cx="35" cy="45" r="8" />
-          <circle cx="65" cy="45" r="8" />
-          <circle cx="50" cy="35" r="10" />
-          <circle cx="40" cy="25" r="6" />
-          <circle cx="60" cy="25" r="6" />
+          <circle cx="35" cy="45" r="8" fill="currentColor" />
+          <circle cx="65" cy="45" r="8" fill="currentColor" />
+          <circle cx="50" cy="35" r="10" fill="currentColor" />
+          <circle cx="40" cy="25" r="6" fill="currentColor" />
+          <circle cx="60" cy="25" r="6" fill="currentColor" />
         </svg>
       </div>
       <div>

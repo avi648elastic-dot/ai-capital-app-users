@@ -46,7 +46,7 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
     }
   };
 
-  // Auto-fetch current price when ticker is entered
+  // Auto-fetch current price when ticker is entered - IMMEDIATE
   useEffect(() => {
     const fetchCurrentPrice = async () => {
       if (formData.ticker && formData.ticker.length >= 2) {
@@ -79,20 +79,29 @@ export default function StockForm({ onSubmit, onCancel }: StockFormProps) {
             }
           } else {
             console.warn('⚠️ [STOCK FORM] No data received for:', formData.ticker);
+            // Set a fallback price if API fails
+            setFormData(prev => ({
+              ...prev,
+              currentPrice: '0.00'
+            }));
           }
         } catch (error) {
           console.error('❌ [STOCK FORM] Error fetching current price:', error);
           console.error('❌ [STOCK FORM] Error details:', error.response?.data);
+          // Set a fallback price if API fails
+          setFormData(prev => ({
+            ...prev,
+            currentPrice: '0.00'
+          }));
         } finally {
           setFetchingPrice(false);
         }
       }
     };
 
-    // Debounce the API call
-    const timeoutId = setTimeout(fetchCurrentPrice, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [formData.ticker, formData.entryPrice, autoCalculate]);
+    // IMMEDIATE fetch - no debounce
+    fetchCurrentPrice();
+  }, [formData.ticker]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({

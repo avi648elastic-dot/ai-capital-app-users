@@ -53,19 +53,11 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
       // Skip Step3 - go directly to dashboard
       console.log('✅ [STEP2B] Portfolio generated successfully, redirecting to dashboard...');
       
-      // Show success message and redirect
+      // Show success message
       alert('Portfolio generated successfully! Redirecting to dashboard...');
       
-      // Use Next.js router for navigation
-      setTimeout(() => {
-        try {
-          router.push('/dashboard');
-        } catch (error) {
-          console.error('❌ [STEP2B] Router error:', error);
-          // Fallback: try to call onComplete
-          onComplete(response.data);
-        }
-      }, 1500);
+      // Use onComplete callback instead of router
+      onComplete(response.data);
     } catch (error) {
       console.error('❌ [STEP2B] Error generating portfolio:', error);
       console.error('❌ [STEP2B] Error details:', error.response?.data);

@@ -71,19 +71,11 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
       // Skip Step3 - go directly to dashboard
       console.log('✅ [STEP2A] Portfolio imported successfully, redirecting to dashboard...');
       
-      // Show success message and redirect
+      // Show success message
       alert('Portfolio imported successfully! Redirecting to dashboard...');
       
-      // Use Next.js router for navigation
-      setTimeout(() => {
-        try {
-          router.push('/dashboard');
-        } catch (error) {
-          console.error('❌ [STEP2A] Router error:', error);
-          // Fallback: try to call onComplete
-          onComplete({ success: true });
-        }
-      }, 1500);
+      // Use onComplete callback instead of router
+      onComplete({ success: true });
     } catch (error) {
       console.error('Error importing portfolio:', error);
       alert('Error importing portfolio. Please try again.');
