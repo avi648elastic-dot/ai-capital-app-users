@@ -3,6 +3,7 @@ import Portfolio from '../models/Portfolio';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { decisionEngine } from '../services/decisionEngine';
 import { stockDataService } from '../services/stockDataService';
+import { volatilityService } from '../services/volatilityService';
 
 const router = express.Router();
 
@@ -63,8 +64,36 @@ router.get('/', authenticateToken, async (req, res) => {
       };
     }, { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
 
-    console.log('✅ [PORTFOLIO] Portfolio updated with real-time prices');
-    res.json({ portfolio: updatedPortfolio, totals });
+    // Calculate and add volatility data to each portfolio item
+    try {
+      const portfolioWithVolatility = await Promise.all(
+        updatedPortfolio.map(async (item) => {
+          // Get the portfolio this stock belongs to
+          const portfolioId = item.portfolioId || `${item.portfolioType}-1`;
+          
+          // Get all stocks in this portfolio
+          const portfolioStocks = updatedPortfolio.filter(
+            stock => (stock.portfolioId || `${stock.portfolioType}-1`) === portfolioId
+          );
+          
+          // Calculate volatility for this portfolio
+          const portfolioVolatility = await volatilityService.calculatePortfolioVolatility(portfolioStocks);
+          
+          return {
+            ...item,
+            volatility: portfolioVolatility,
+            lastVolatilityUpdate: new Date().toISOString()
+          };
+        })
+      );
+
+      console.log('✅ [PORTFOLIO] Portfolio updated with real-time prices and volatility');
+      res.json({ portfolio: portfolioWithVolatility, totals });
+    } catch (volatilityError) {
+      console.warn('⚠️ [PORTFOLIO] Volatility calculation failed, using portfolio without volatility:', volatilityError);
+      console.log('✅ [PORTFOLIO] Portfolio updated with real-time prices (no volatility)');
+      res.json({ portfolio: updatedPortfolio, totals });
+    }
   } catch (error) {
     console.error('❌ [PORTFOLIO] Get portfolio error:', error);
     res.status(500).json({ message: 'Internal server error' });

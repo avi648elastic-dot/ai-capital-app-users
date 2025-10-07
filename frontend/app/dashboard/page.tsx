@@ -282,16 +282,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleUpdateDecisions = async () => {
-    try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/decisions`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
-      });
-      setPortfolio(response.data.portfolio);
-    } catch (error) {
-      console.error('Error updating decisions:', error);
-    }
-  };
 
   const handleLogout = () => {
     Cookies.remove('token');
@@ -445,12 +435,6 @@ export default function Dashboard() {
               className="btn-primary"
             >
               Add Stock
-            </button>
-            <button
-              onClick={handleUpdateDecisions}
-              className="btn-secondary"
-            >
-              Update Decisions
             </button>
             {/* Premium Multi-Portfolio Toggle */}
             {user?.subscriptionTier === 'premium' && (
