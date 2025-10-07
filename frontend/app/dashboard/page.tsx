@@ -6,6 +6,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import PortfolioTable from '@/components/PortfolioTable';
 import PortfolioSummary from '@/components/PortfolioSummary';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import StockForm from '@/components/StockForm';
 import Charts from '@/components/Charts';
 import Header from '@/components/Header';
@@ -270,13 +271,10 @@ export default function Dashboard() {
     }
   };
 
-  // Filter portfolio based on portfolio type
+  // Filter portfolio based on portfolio type (robust against missing field)
   const filteredPortfolio = portfolio.filter(item => {
-    if (activeTab === 'solid') {
-      return item.portfolioType === 'solid';
-    } else {
-      return item.portfolioType === 'dangerous';
-    }
+    const type = (item as any)?.portfolioType || 'solid';
+    return activeTab === 'solid' ? type === 'solid' : type === 'dangerous';
   });
 
   if (loading) {
@@ -384,7 +382,9 @@ export default function Dashboard() {
           </div>
         )}
         {/* Portfolio Summary */}
-        <PortfolioSummary totals={totals} />
+        <ErrorBoundary label="summary">
+          <PortfolioSummary totals={totals} />
+        </ErrorBoundary>
 
         {/* Action Buttons */}
         <div className="flex justify-between items-center mb-6">
@@ -449,15 +449,19 @@ export default function Dashboard() {
         </div>
 
         {/* Portfolio Table */}
-        <PortfolioTable
-          portfolio={filteredPortfolio}
-          onUpdate={handleUpdateStock}
-          onDelete={handleDeleteStock}
-        />
+        <ErrorBoundary label="table">
+          <PortfolioTable
+            portfolio={filteredPortfolio}
+            onUpdate={handleUpdateStock}
+            onDelete={handleDeleteStock}
+          />
+        </ErrorBoundary>
 
         {/* Charts */}
         <div className="mt-8">
-          <Charts portfolio={portfolio} />
+          <ErrorBoundary label="charts">
+            <Charts portfolio={portfolio} />
+          </ErrorBoundary>
         </div>
         </div>
       </div>
