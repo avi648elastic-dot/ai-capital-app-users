@@ -218,7 +218,7 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
     
     const totalPortfolios = await Portfolio.countDocuments();
     const solidPortfolios = await User.countDocuments({ portfolioType: 'solid' });
-    const dangerousPortfolios = await User.countDocuments({ portfolioType: 'dangerous' });
+    const riskyPortfolios = await User.countDocuments({ portfolioType: 'risky' });
     
     // Action distribution
     const actionStats = await Portfolio.aggregate([
@@ -250,7 +250,7 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
       portfolios: {
         total: totalPortfolios,
         solid: solidPortfolios,
-        dangerous: dangerousPortfolios,
+        risky: riskyPortfolios,
       },
       actions: actionStats,
       capital: capitalStats[0] || { totalCapital: 0, avgCapital: 0 },

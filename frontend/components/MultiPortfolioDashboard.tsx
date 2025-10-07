@@ -7,7 +7,7 @@ import { Plus, Trash2, TrendingUp, Activity, Shield, AlertTriangle } from 'lucid
 
 interface Portfolio {
   portfolioId: string;
-  portfolioType: 'solid' | 'dangerous';
+  portfolioType: 'solid' | 'risky';
   portfolioName: string;
   stocks: any[];
   totals: {
@@ -106,7 +106,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
 
   const calculateVolatility = (portfolio: Portfolio) => {
     // Mock volatility calculation - in real app, calculate from historical data
-    const baseVolatility = portfolio.portfolioType === 'dangerous' ? 25 : 12;
+    const baseVolatility = portfolio.portfolioType === 'risky' ? 25 : 12;
     const stockCount = portfolio.stocks.length;
     const volatility = baseVolatility + (Math.random() * 5 - 2.5); // Add some variance
     return volatility.toFixed(1);
@@ -122,7 +122,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
   }
 
   const solidPortfolios = portfolios.filter(p => p.portfolioType === 'solid');
-  const dangerousPortfolios = portfolios.filter(p => p.portfolioType === 'dangerous');
+  const riskyPortfolios = portfolios.filter(p => p.portfolioType === 'risky');
 
   return (
     <div className="space-y-6">
@@ -133,7 +133,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
           <p className="text-slate-400 text-sm">
             {portfolios.length} portfolios • 
             {solidPortfolios.length} solid • 
-            {dangerousPortfolios.length} dangerous
+            {riskyPortfolios.length} risky
           </p>
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                     {portfolio.portfolioType === 'solid' ? (
                       <Shield className="w-5 h-5 text-blue-400" />
                     ) : (
-                      <AlertTriangle className="w-5 h-5 text-red-400" />
+                      <AlertTriangle className="w-5 h-5 text-orange-400" />
                     )}
                     <div>
                       <h4 className="text-lg font-semibold text-white">
@@ -164,7 +164,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                       <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
                         portfolio.portfolioType === 'solid'
                           ? 'bg-blue-900/30 text-blue-300'
-                          : 'bg-red-900/30 text-red-300'
+                          : 'bg-orange-900/30 text-orange-300'
                       }`}>
                         {portfolio.portfolioType.toUpperCase()}
                       </span>

@@ -89,7 +89,7 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
     }
 
     // Validate portfolio type
-    const validPortfolioTypes = ['solid', 'dangerous'];
+    const validPortfolioTypes = ['solid', 'risky'];
     const finalPortfolioType = portfolioType && validPortfolioTypes.includes(portfolioType) ? portfolioType : 'solid';
 
     // Check stock limits based on subscription tier

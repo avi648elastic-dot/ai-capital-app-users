@@ -55,7 +55,7 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
   try {
     const { portfolioType, portfolioName } = req.body;
     
-    if (!['solid', 'dangerous'].includes(portfolioType)) {
+    if (!['solid', 'risky'].includes(portfolioType)) {
       return res.status(400).json({ message: 'Invalid portfolio type' });
     }
 

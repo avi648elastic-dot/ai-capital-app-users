@@ -74,7 +74,7 @@ export class PortfolioGenerator {
         'TME', 'BIDU', 'NTES', 'WB', 'YMM', 'VIPS', 'TAL', 'EDU', 'GOTU', 'COE'
       ];
       
-      const dangerousStocks = [
+      const riskyStocks = [
         // High Growth Tech
         'TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE',
         'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM',
@@ -108,7 +108,7 @@ export class PortfolioGenerator {
         'EDU', 'GOTU', 'COE', 'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB'
       ];
       
-      const allStocks = [...solidStocks, ...dangerousStocks];
+      const allStocks = [...solidStocks, ...riskyStocks];
 
       // Get real data from APIs
       const realData = await stockDataService.getMultipleStockData(allStocks);
@@ -141,7 +141,7 @@ export class PortfolioGenerator {
       { symbol: 'PG', current: 155, top30D: 158, top60D: 156, thisMonthPercent: 0.8, lastMonthPercent: 1.5, volatility: 0.10, marketCap: 380000000000 },
       { symbol: 'KO', current: 60, top30D: 62, top60D: 61, thisMonthPercent: 1.2, lastMonthPercent: 0.8, volatility: 0.08, marketCap: 260000000000 },
 
-      // Dangerous stocks (high volatility, growth potential)
+      // Risky stocks (high volatility, growth potential)
       { symbol: 'TSLA', current: 250, top30D: 280, top60D: 260, thisMonthPercent: -5.2, lastMonthPercent: 12.3, volatility: 0.45, marketCap: 800000000000 },
       { symbol: 'NVDA', current: 450, top30D: 480, top60D: 460, thisMonthPercent: 15.2, lastMonthPercent: 8.7, volatility: 0.38, marketCap: 1100000000000 },
       { symbol: 'AMD', current: 120, top30D: 135, top60D: 125, thisMonthPercent: 8.9, lastMonthPercent: -2.1, volatility: 0.42, marketCap: 190000000000 },
@@ -156,7 +156,7 @@ export class PortfolioGenerator {
    */
   async generateAndSavePortfolio(
     userId: string,
-    portfolioType: 'solid' | 'dangerous',
+    portfolioType: 'solid' | 'risky',
     totalCapital: number,
     riskTolerance: number = 7
   ): Promise<GeneratedStock[]> {
@@ -209,11 +209,11 @@ export class PortfolioGenerator {
         filteredStocks = this.stockDatabase.filter((s) => s.volatility < 0.25 && s.marketCap > 100000000000);
       }
     } else {
-      // For dangerous portfolio, use predefined risky stocks or filter by criteria
-      const dangerousStockSymbols = ['TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD'];
+      // For risky portfolio, use predefined risky stocks or filter by criteria
+      const riskyStockSymbols = ['TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD'];
       
       filteredStocks = this.stockDatabase.filter((s) => 
-        dangerousStockSymbols.includes(s.symbol)
+        riskyStockSymbols.includes(s.symbol)
       );
       
       // If no predefined stocks found, fall back to volatility filter

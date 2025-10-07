@@ -7,8 +7,8 @@ interface StockFormProps {
   onSubmit: (data: any) => void;
   onCancel: () => void;
   isPremium?: boolean;
-  defaultPortfolioType?: 'solid' | 'dangerous';
-  activeTab?: 'solid' | 'dangerous';
+  defaultPortfolioType?: 'solid' | 'risky';
+  activeTab?: 'solid' | 'risky';
   selectedPortfolioId?: string;
 }
 
@@ -21,7 +21,7 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
     stopLoss: '',
     takeProfit: '',
     notes: '',
-    portfolioType: defaultPortfolioType as 'solid' | 'dangerous',
+    portfolioType: defaultPortfolioType as 'solid' | 'risky',
     portfolioId: selectedPortfolioId || `${defaultPortfolioType}-1`,
   });
 
@@ -50,7 +50,7 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
       setFormData(prev => ({
         ...prev,
         portfolioId: selectedPortfolioId,
-        portfolioType: selectedPortfolioId.split('-')[0] as 'solid' | 'dangerous',
+        portfolioType: selectedPortfolioId.split('-')[0] as 'solid' | 'risky',
       }));
     }
   }, [defaultPortfolioType, isPremium, activeTab, selectedPortfolioId, formData.portfolioType, formData.portfolioId]);
@@ -243,7 +243,7 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
                   name="portfolioType"
                   value="solid"
                   checked={formData.portfolioType === 'solid'}
-                  onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'dangerous' })}
+                  onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'risky' })}
                   className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded focus:ring-blue-500 focus:ring-2"
                 />
                 <span className="ml-2 text-sm text-slate-300">Solid Portfolio</span>
@@ -252,12 +252,12 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
                 <input
                   type="radio"
                   name="portfolioType"
-                  value="dangerous"
-                  checked={formData.portfolioType === 'dangerous'}
-                  onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'dangerous' })}
+                  value="risky"
+                  checked={formData.portfolioType === 'risky'}
+                  onChange={(e) => setFormData({ ...formData, portfolioType: e.target.value as 'solid' | 'risky' })}
                   className="w-4 h-4 text-red-600 bg-slate-700 border-slate-600 rounded focus:ring-red-500 focus:ring-2"
                 />
-                <span className="ml-2 text-sm text-slate-300">Dangerous Portfolio</span>
+                <span className="ml-2 text-sm text-slate-300">Risky Portfolio</span>
               </label>
             </div>
           </div>
@@ -266,11 +266,11 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-slate-300">Adding to:</span>
               <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                formData.portfolioType === 'dangerous' 
-                  ? 'text-red-300 bg-red-900/50 border border-red-500/30' 
+                formData.portfolioType === 'risky' 
+                  ? 'text-orange-300 bg-orange-900/50 border border-orange-500/30' 
                   : 'text-blue-300 bg-blue-900/50 border border-blue-500/30'
               }`}>
-                {formData.portfolioType === 'dangerous' ? '🔥 Dangerous Portfolio' : '🛡️ Solid Portfolio'}
+                {formData.portfolioType === 'risky' ? '⚡ Risky Portfolio' : '🛡️ Solid Portfolio'}
               </span>
               <span className="text-xs text-slate-400">(Free users can only add to their chosen portfolio type)</span>
             </div>

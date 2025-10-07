@@ -13,7 +13,7 @@ export interface IPortfolio extends Document {
   action: 'BUY' | 'HOLD' | 'SELL';
   reason?: string;
   color?: string;
-  portfolioType: 'solid' | 'dangerous'; // Portfolio type (solid/dangerous)
+  portfolioType: 'solid' | 'risky'; // Portfolio type (solid/dangerous)
   portfolioId: string; // Unique identifier for each portfolio (e.g., "solid-1", "dangerous-2")
   portfolioName?: string; // Optional custom name for the portfolio
 }
@@ -32,7 +32,7 @@ const PortfolioSchema = new Schema<IPortfolio>(
     action: { type: String, enum: ['BUY', 'HOLD', 'SELL'], required: true },
     reason: String,
     color: String,
-    portfolioType: { type: String, enum: ['solid', 'dangerous'], required: true, default: 'solid' },
+    portfolioType: { type: String, enum: ['solid', 'risky'], required: true, default: 'solid' },
     portfolioId: { type: String, required: true, default: 'solid-1' }, // Default for existing portfolios
     portfolioName: String, // Optional custom name
   },

@@ -133,8 +133,8 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Portfolio type and total capital are required' });
     }
 
-    if (!['solid', 'dangerous'].includes(portfolioType)) {
-      return res.status(400).json({ message: 'Portfolio type must be solid or dangerous' });
+    if (!['solid', 'risky'].includes(portfolioType)) {
+      return res.status(400).json({ message: 'Portfolio type must be solid or risky' });
     }
 
     if (!req.user?._id) {
