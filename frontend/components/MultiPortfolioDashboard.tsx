@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Plus, Trash2, ChevronDown, ChevronUp, TrendingUp, Activity, Shield, AlertTriangle } from 'lucide-react';
-import PortfolioTable from './PortfolioTable';
+import { Plus, Trash2, TrendingUp, Activity, Shield, AlertTriangle } from 'lucide-react';
 
 interface Portfolio {
   portfolioId: string;
@@ -28,7 +27,6 @@ interface MultiPortfolioDashboardProps {
 export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfolio }: MultiPortfolioDashboardProps) {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedPortfolioId, setExpandedPortfolioId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPortfolios();
@@ -114,9 +112,6 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
     return volatility.toFixed(1);
   };
 
-  const toggleExpanded = (portfolioId: string) => {
-    setExpandedPortfolioId(expandedPortfolioId === portfolioId ? null : portfolioId);
-  };
 
   if (loading) {
     return (
@@ -146,19 +141,13 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
       {/* Portfolio Boxes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {portfolios.map((portfolio) => {
-          const isExpanded = expandedPortfolioId === portfolio.portfolioId;
           const volatility = calculateVolatility(portfolio);
           const isHighVolatility = parseFloat(volatility) > 20;
           
           return (
             <div key={portfolio.portfolioId}>
               <div 
-                className={`card p-5 cursor-pointer transition-all duration-200 border-2 ${
-                  isExpanded 
-                    ? 'border-primary-500 bg-slate-800' 
-                    : 'border-transparent hover:border-slate-600'
-                }`}
-                onClick={() => toggleExpanded(portfolio.portfolioId)}
+                className="card p-5 transition-all duration-200 border-2 border-transparent hover:border-slate-600"
               >
                 {/* Header with Type Badge */}
                 <div className="flex justify-between items-start mb-3">
@@ -193,11 +182,6 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                    )}
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-slate-400" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-slate-400" />
                     )}
                   </div>
                 </div>
@@ -248,57 +232,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                 </button>
               </div>
 
-              {/* Expanded Details */}
-              {isExpanded && (
-                <div className="mt-4 card p-6 border-2 border-primary-500/30">
-                  <h4 className="text-lg font-semibold text-white mb-4">Portfolio Details</h4>
-                  
-                  {/* Detailed Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-slate-800 rounded-lg p-3">
-                      <div className="text-xs text-slate-400 mb-1">Initial Investment</div>
-                      <div className="text-lg font-semibold text-white">
-                        {formatCurrency(portfolio.totals.initial)}
-                      </div>
-                    </div>
-                    <div className="bg-slate-800 rounded-lg p-3">
-                      <div className="text-xs text-slate-400 mb-1">Current Value</div>
-                      <div className="text-lg font-semibold text-white">
-                        {formatCurrency(portfolio.totals.current)}
-                      </div>
-                    </div>
-                    <div className="bg-slate-800 rounded-lg p-3">
-                      <div className="text-xs text-slate-400 mb-1">Total P&L</div>
-                      <div className={`text-lg font-semibold ${
-                        portfolio.totals.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {formatCurrency(portfolio.totals.totalPnL)}
-                      </div>
-                    </div>
-                    <div className="bg-slate-800 rounded-lg p-3">
-                      <div className="text-xs text-slate-400 mb-1">P&L %</div>
-                      <div className={`text-lg font-semibold ${
-                        portfolio.totals.totalPnLPercent >= 0 ? 'text-green-400' : 'text-red-400'
-                      }`}>
-                        {formatPercent(portfolio.totals.totalPnLPercent)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stocks Table */}
-                  <div className="mt-4">
-                    <h5 className="text-sm font-semibold text-white mb-3">Stocks ({portfolio.stocks.length})</h5>
-                    <PortfolioTable 
-                      portfolio={portfolio.stocks}
-                      onDeleteStock={async (ticker) => {
-                        // Handle stock deletion
-                        console.log('Delete stock:', ticker);
-                        await fetchPortfolios();
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
+              {/* No expanded details in multi-portfolio view - only portfolio boxes */}
             </div>
           );
         })}
