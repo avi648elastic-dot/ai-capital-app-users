@@ -31,13 +31,14 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
     setLoading(true);
 
     try {
+      const round2 = (v: string) => Number(parseFloat(v || '0').toFixed(2));
       const data = {
         ...formData,
         shares: Number(formData.shares),
-        entryPrice: Number(formData.entryPrice),
-        currentPrice: Number(formData.currentPrice),
-        stopLoss: formData.stopLoss ? Number(formData.stopLoss) : undefined,
-        takeProfit: formData.takeProfit ? Number(formData.takeProfit) : undefined,
+        entryPrice: round2(formData.entryPrice),
+        currentPrice: round2(formData.currentPrice),
+        stopLoss: formData.stopLoss ? round2(formData.stopLoss) : undefined,
+        takeProfit: formData.takeProfit ? round2(formData.takeProfit) : undefined,
       };
 
       await onSubmit(data);
@@ -246,8 +247,9 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
               onChange={handleInputChange}
               className="input-field"
               placeholder="e.g., 150.00"
-              step="0.01"
+              step="any"
               min="0"
+              onBlur={(e) => setFormData({ ...formData, entryPrice: e.currentTarget.value ? parseFloat(e.currentTarget.value).toFixed(2) : '' })}
               required
             />
           </div>
@@ -277,8 +279,9 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
                   formData.currentPrice && formData.currentPrice !== '0.00' ? 'bg-green-900/20 border-green-500' : ''
                 }`}
                 placeholder="e.g., 155.00"
-                step="0.01"
+                step="any"
                 min="0"
+                onBlur={(e) => setFormData({ ...formData, currentPrice: e.currentTarget.value ? parseFloat(e.currentTarget.value).toFixed(2) : '' })}
                 required
               />
               {fetchingPrice && (
