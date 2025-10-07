@@ -61,12 +61,8 @@ export default function Step0({ onComplete }: Step0Props) {
         <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
           <Globe className="w-8 h-8 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-4">
-          Choose Your Language
-        </h2>
-        <p className="text-gray-400 mb-8">
-          Select your preferred language for the best experience
-        </p>
+        <h2 className="text-2xl font-bold text-white mb-2">Choose Your Language</h2>
+        <p className="text-gray-400 mb-6">Select your preferred language for the best experience</p>
       </div>
 
       <div className="max-w-md mx-auto space-y-3">
@@ -93,11 +89,11 @@ export default function Step0({ onComplete }: Step0Props) {
       </div>
 
       {/* Theme selection */}
-      <div className="mt-10">
-        <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="mt-8">
+        <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
           <Palette className="w-6 h-6 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-white mb-4">Choose Theme</h3>
+        <h3 className="text-lg font-semibold text-white mb-2">Choose Theme</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
           {[
             { id: 'dark', name: 'Dark', description: 'Default dark theme' },

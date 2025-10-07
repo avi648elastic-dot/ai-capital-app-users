@@ -97,15 +97,20 @@ export default function OnboardingPage() {
           <div className="flex items-center justify-center space-x-4">
             {[0, 1, 2].map((step) => (
               <div key={step} className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (step < currentStep) setCurrentStep(step);
+                  }}
+                  title={step < currentStep ? 'Go back to this step' : ''}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                     step <= currentStep
                       ? 'bg-primary-600 text-white'
                       : 'bg-gray-700 text-gray-400'
-                  }`}
+                  } ${step < currentStep ? 'hover:bg-primary-500 cursor-pointer' : 'cursor-default'}`}
                 >
                   {step + 1}
-                </div>
+                </button>
                 {step < 2 && (
                   <div
                     className={`w-16 h-1 mx-2 ${
