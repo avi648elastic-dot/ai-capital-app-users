@@ -355,8 +355,8 @@ export default function Dashboard() {
                 </div>
                 <p className="text-sm text-slate-300 mb-2">
                   {user?.subscriptionTier === 'premium' 
-                    ? 'Full access to all features, unlimited portfolios, and advanced analytics' 
-                    : 'Limited to 1 portfolio. Upgrade to unlock unlimited portfolios and premium features'
+                    ? 'Full access: Up to 3 portfolios of each type (Solid & Dangerous) with 20 stocks each' 
+                    : 'Limited to 1 portfolio with 10 stocks. Upgrade to unlock 6 portfolios with 20 stocks each!'
                   }
                 </p>
                 <div className="flex items-center space-x-4 text-xs">
@@ -365,21 +365,21 @@ export default function Dashboard() {
                       ? 'bg-emerald-600/20 text-emerald-300' 
                       : 'bg-amber-600/20 text-amber-300'
                   }`}>
-                    {user?.subscriptionTier === 'premium' ? 'Unlimited Portfolios' : '1 Portfolio Limit'}
+                    {user?.subscriptionTier === 'premium' ? '6 Portfolios (3 Solid + 3 Dangerous)' : '1 Portfolio Only'}
                   </span>
                   <span className={`px-2 py-1 rounded-full ${
                     user?.subscriptionTier === 'premium' 
                       ? 'bg-blue-600/20 text-blue-300' 
-                      : 'bg-slate-600/20 text-slate-400'
+                      : 'bg-amber-600/20 text-amber-300'
                   }`}>
-                    {user?.subscriptionTier === 'premium' ? 'Advanced Analytics' : 'Basic Analytics'}
+                    {user?.subscriptionTier === 'premium' ? '20 Stocks Per Portfolio' : '10 Stocks Per Portfolio'}
                   </span>
                   <span className={`px-2 py-1 rounded-full ${
                     user?.subscriptionTier === 'premium' 
                       ? 'bg-purple-600/20 text-purple-300' 
                       : 'bg-slate-600/20 text-slate-400'
                   }`}>
-                    {user?.subscriptionTier === 'premium' ? 'Real-time Alerts' : 'No Alerts'}
+                    {user?.subscriptionTier === 'premium' ? 'Both Portfolio Types' : '1 Portfolio Type Only'}
                   </span>
                 </div>
               </div>
@@ -420,9 +420,9 @@ export default function Dashboard() {
           <PortfolioSummary totals={totals} />
         </ErrorBoundary>
 
-        {/* Action Buttons */}
+        {/* Action Buttons with Stock Limit Indicator */}
         <div className="flex justify-between items-center mb-6">
-          <div className="flex space-x-4">
+          <div className="flex space-x-4 items-center">
             <button
               onClick={() => setShowStockForm(true)}
               className="btn-primary"
@@ -435,6 +435,19 @@ export default function Dashboard() {
             >
               Update Decisions
             </button>
+            {/* Stock Limit Indicator */}
+            {user && (
+              <div className={`px-4 py-2 rounded-lg text-sm font-semibold ${
+                user.subscriptionTier === 'free' 
+                  ? 'bg-amber-900/30 text-amber-300 border border-amber-500/30' 
+                  : 'bg-emerald-900/30 text-emerald-300 border border-emerald-500/30'
+              }`}>
+                <span className="opacity-70">Stocks: </span>
+                <span className="font-bold">
+                  {filteredPortfolio.length}/{user.subscriptionTier === 'free' ? '10' : '20'}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -76,6 +76,7 @@ router.post('/signup', async (req: Request, res: Response) => {
         subscriptionActive: user.subscriptionActive,
         subscriptionTier: user.subscriptionTier,
         isAdmin: user.isAdmin,
+        portfolioType: user.portfolioType,
       },
     });
   } catch (error: any) {
@@ -121,6 +122,7 @@ router.post('/login', async (req: Request, res: Response) => {
         subscriptionActive: user.subscriptionActive,
         subscriptionTier: user.subscriptionTier,
         isAdmin: user.isAdmin,
+        portfolioType: user.portfolioType,
       },
     });
   } catch (error: any) {
@@ -170,6 +172,7 @@ router.get('/me', async (req: any, res: Response) => {
         subscriptionActive: user.subscriptionActive,
         subscriptionTier: user.subscriptionTier,
         isAdmin: user.isAdmin,
+        portfolioType: user.portfolioType,
       },
     });
   } catch (error: any) {

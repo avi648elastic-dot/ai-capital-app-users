@@ -88,6 +88,59 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       });
     }
 
+    // Validate portfolio type
+    const validPortfolioTypes = ['solid', 'dangerous'];
+    const finalPortfolioType = portfolioType && validPortfolioTypes.includes(portfolioType) ? portfolioType : 'solid';
+
+    // Check stock limits based on subscription tier
+    const User = (await import('../models/User')).default;
+    const user = await User.findById(req.user!._id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Count existing stocks in the target portfolio type
+    const existingStocksCount = await Portfolio.countDocuments({ 
+      userId: req.user!._id,
+      portfolioType: finalPortfolioType
+    });
+
+    console.log('🔍 [PORTFOLIO ADD] User tier:', user.subscriptionTier);
+    console.log('🔍 [PORTFOLIO ADD] Existing stocks in', finalPortfolioType, ':', existingStocksCount);
+
+    // Enforce limits
+    if (user.subscriptionTier === 'free') {
+      // Free users: max 10 stocks per portfolio
+      if (existingStocksCount >= 10) {
+        return res.status(403).json({ 
+          message: '🔒 Free users are limited to 10 stocks per portfolio. Upgrade to Premium to add up to 20 stocks per portfolio and manage up to 3 portfolios of each type!',
+          limit: 10,
+          current: existingStocksCount,
+          tier: 'free'
+        });
+      }
+
+      // Enforce portfolio type for free users
+      if (user.portfolioType !== finalPortfolioType) {
+        return res.status(403).json({ 
+          message: `🔒 Free users can only add stocks to their ${user.portfolioType} portfolio. Upgrade to Premium to unlock both portfolio types!`,
+          allowedType: user.portfolioType,
+          requestedType: finalPortfolioType
+        });
+      }
+    } else if (user.subscriptionTier === 'premium') {
+      // Premium users: max 20 stocks per portfolio
+      if (existingStocksCount >= 20) {
+        return res.status(403).json({ 
+          message: '⭐ Premium users are limited to 20 stocks per portfolio. You\'ve reached the maximum for this portfolio.',
+          limit: 20,
+          current: existingStocksCount,
+          tier: 'premium'
+        });
+      }
+    }
+
     // Validate numeric values
     const numericShares = Number(shares);
     const numericEntryPrice = Number(entryPrice);
@@ -120,10 +173,6 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
         return res.status(400).json({ message: 'Take profit must be a positive number' });
       }
     }
-
-    // Validate portfolio type
-    const validPortfolioTypes = ['solid', 'dangerous'];
-    const finalPortfolioType = portfolioType && validPortfolioTypes.includes(portfolioType) ? portfolioType : 'solid';
 
     console.log('🔍 [PORTFOLIO ADD] Creating portfolio item with validated data');
 
