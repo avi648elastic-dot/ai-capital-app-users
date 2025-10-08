@@ -265,9 +265,15 @@ export default function Analytics() {
   const fetchAnalyticsData = async () => {
     try {
       console.log('🔍 [ANALYTICS] Fetching comprehensive analytics data...');
+      const token = Cookies.get('token');
+      console.log('🔍 [ANALYTICS] Token exists:', !!token);
+      console.log('🔍 [ANALYTICS] API URL:', process.env.NEXT_PUBLIC_API_URL);
+      
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/portfolio-analysis`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('✅ [ANALYTICS] API Response:', response.data);
       
       // Set all the real data from the comprehensive API
       setSectorData(response.data.sectorAllocation || []);
@@ -283,6 +289,11 @@ export default function Analytics() {
       });
     } catch (error) {
       console.error('❌ [ANALYTICS] Error fetching analytics data:', error);
+      console.error('❌ [ANALYTICS] Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
     }
   };
 
