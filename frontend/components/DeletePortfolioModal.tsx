@@ -214,6 +214,9 @@ export default function DeletePortfolioModal({ onClose, onSuccess }: DeletePortf
                 <Trash2 className="w-5 h-5 text-red-400" />
                 <span className="text-red-400 font-semibold">Final Confirmation</span>
               </div>
+              <div className="mb-3 p-2 bg-slate-800 rounded text-xs text-green-400">
+                🔧 DEBUG: selectedPortfolio: {selectedPortfolio ? 'YES' : 'NO'} | confirmDelete: {confirmDelete ? 'YES' : 'NO'} | deleting: {deleting ? 'YES' : 'NO'}
+              </div>
               <div className="space-y-3">
                 <div className="bg-slate-800 rounded-lg p-3">
                   <div className="flex items-center justify-between">
@@ -265,10 +268,15 @@ export default function DeletePortfolioModal({ onClose, onSuccess }: DeletePortf
                 console.log('🔍 [DELETE PORTFOLIO] selectedPortfolio:', selectedPortfolio);
                 console.log('🔍 [DELETE PORTFOLIO] confirmDelete:', confirmDelete);
                 console.log('🔍 [DELETE PORTFOLIO] deleting:', deleting);
+                console.log('🔍 [DELETE PORTFOLIO] Button disabled?', !selectedPortfolio || !confirmDelete || deleting);
                 handleDelete();
               }}
               disabled={!selectedPortfolio || !confirmDelete || deleting}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`flex-1 px-4 py-2 rounded-lg transition-colors flex items-center justify-center ${
+                !selectedPortfolio || !confirmDelete || deleting
+                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+              }`}
             >
               {deleting ? (
                 <>
