@@ -172,24 +172,33 @@ router.get('/:portfolioId', authenticateToken, requireSubscription, async (req, 
 router.delete('/:portfolioId', authenticateToken, requireSubscription, async (req, res) => {
   try {
     const { portfolioId } = req.params;
+    console.log('🗑️ [DELETE PORTFOLIO] Attempting to delete portfolio:', portfolioId);
+    console.log('🗑️ [DELETE PORTFOLIO] User ID:', (req as any).user!._id);
     
     // Check if user is premium
-    const user = await User.findById(req.user!._id);
+    const user = await User.findById((req as any).user!._id);
+    console.log('🗑️ [DELETE PORTFOLIO] User found:', user?.email, 'Tier:', user?.subscriptionTier);
+    
     if (user?.subscriptionTier !== 'premium') {
+      console.log('🗑️ [DELETE PORTFOLIO] User is not premium, denying deletion');
       return res.status(403).json({ message: 'Premium subscription required to manage multiple portfolios' });
     }
 
     // Don't allow deleting the first portfolio of each type
     if (portfolioId.endsWith('-1')) {
+      console.log('🗑️ [DELETE PORTFOLIO] Cannot delete primary portfolio:', portfolioId);
       return res.status(403).json({ 
         message: 'Cannot delete the primary portfolio. You can only delete additional portfolios (2-5).' 
       });
     }
 
-    await Portfolio.deleteMany({ 
-      userId: req.user!._id, 
+    console.log('🗑️ [DELETE PORTFOLIO] Proceeding with deletion...');
+    const result = await Portfolio.deleteMany({ 
+      userId: (req as any).user!._id, 
       portfolioId 
     });
+    
+    console.log('🗑️ [DELETE PORTFOLIO] Deletion result:', result);
 
     res.json({ message: 'Portfolio deleted successfully' });
   } catch (error) {
