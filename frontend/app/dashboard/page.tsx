@@ -521,25 +521,50 @@ export default function Dashboard() {
 
         {/* Portfolio Display - Multi-Portfolio for Premium, Single for Free */}
         {user?.subscriptionTier === 'premium' && showMultiPortfolio ? (
-          <MultiPortfolioDashboard
-            user={user}
-            onAddStock={(portfolioId) => {
-              setSelectedPortfolioId(portfolioId);
-              setShowStockForm(true);
-            }}
-            onViewPortfolio={(portfolioId) => {
-              setSelectedPortfolioId(portfolioId);
-              // You can implement a detailed portfolio view here
-            }}
-            onPortfolioSelect={(portfolio) => {
-              try {
-                console.log('🔍 [DASHBOARD] Portfolio selected:', portfolio);
-                setSelectedMultiPortfolio(portfolio);
-              } catch (error) {
-                console.error('❌ [DASHBOARD] Error handling portfolio selection:', error);
-              }
-            }}
-          />
+          <>
+            <MultiPortfolioDashboard
+              user={user}
+              onAddStock={(portfolioId) => {
+                setSelectedPortfolioId(portfolioId);
+                setShowStockForm(true);
+              }}
+              onViewPortfolio={(portfolioId) => {
+                setSelectedPortfolioId(portfolioId);
+                // You can implement a detailed portfolio view here
+              }}
+              onPortfolioSelect={(portfolio) => {
+                try {
+                  console.log('🔍 [DASHBOARD] Portfolio selected:', portfolio);
+                  setSelectedMultiPortfolio(portfolio);
+                } catch (error) {
+                  console.error('❌ [DASHBOARD] Error handling portfolio selection:', error);
+                }
+              }}
+            />
+            
+            {/* Show portfolio details only when a portfolio is selected */}
+            {selectedMultiPortfolio && (
+              <>
+                {/* Portfolio Table for Selected Portfolio */}
+                <div className="mt-8">
+                  <ErrorBoundary label="table">
+                    <PortfolioTable
+                      portfolio={selectedMultiPortfolio.stocks || []}
+                      onUpdate={handleUpdateStock}
+                      onDelete={handleDeleteStock}
+                    />
+                  </ErrorBoundary>
+                </div>
+
+                {/* Charts for Selected Portfolio */}
+                <div className="mt-8">
+                  <ErrorBoundary label="charts">
+                    <Charts portfolio={selectedMultiPortfolio.stocks || []} />
+                  </ErrorBoundary>
+                </div>
+              </>
+            )}
+          </>
         ) : (
           <>
             {/* Enhanced Portfolio Tabs */}
@@ -611,21 +636,26 @@ export default function Dashboard() {
           </>
         )}
 
-        {/* Portfolio Table */}
-        <ErrorBoundary label="table">
-          <PortfolioTable
-            portfolio={filteredPortfolio}
-            onUpdate={handleUpdateStock}
-            onDelete={handleDeleteStock}
-          />
-        </ErrorBoundary>
+        {/* Portfolio Table and Charts - Only show in single view */}
+        {!(user?.subscriptionTier === 'premium' && showMultiPortfolio) && (
+          <>
+            {/* Portfolio Table */}
+            <ErrorBoundary label="table">
+              <PortfolioTable
+                portfolio={filteredPortfolio}
+                onUpdate={handleUpdateStock}
+                onDelete={handleDeleteStock}
+              />
+            </ErrorBoundary>
 
-        {/* Charts */}
-        <div className="mt-8">
-          <ErrorBoundary label="charts">
-            <Charts portfolio={portfolio} />
-          </ErrorBoundary>
-        </div>
+            {/* Charts */}
+            <div className="mt-8">
+              <ErrorBoundary label="charts">
+                <Charts portfolio={portfolio} />
+              </ErrorBoundary>
+            </div>
+          </>
+        )}
         </div>
       </div>
 
@@ -649,11 +679,11 @@ export default function Dashboard() {
       {showCreatePortfolio && (
         <CreatePortfolioModal 
           onClose={() => setShowCreatePortfolio(false)}
-          onSuccess={() => {
-            setShowCreatePortfolio(false);
-            // Refresh the page to show the new portfolio
-            window.location.reload();
-          }}
+               onSuccess={() => {
+                 setShowCreatePortfolio(false);
+                 // Refresh portfolios without full page reload
+                 fetchPortfolio(Cookies.get('token') || '');
+               }}
         />
       )}
 
@@ -661,10 +691,11 @@ export default function Dashboard() {
       {showDeletePortfolio && (
         <DeletePortfolioModal 
           onClose={() => setShowDeletePortfolio(false)}
-          onSuccess={() => {
-            setShowDeletePortfolio(false);
-            window.location.reload();
-          }}
+               onSuccess={() => {
+                 setShowDeletePortfolio(false);
+                 // Refresh portfolios without full page reload
+                 fetchPortfolio(Cookies.get('token') || '');
+               }}
         />
       )}
     </div>

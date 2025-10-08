@@ -40,7 +40,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
   useEffect(() => {
     try {
       if (selectedPortfolioId && portfolios.length > 0) {
-        const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
+           const selectedPortfolio = portfolios.find((p: Portfolio) => p.portfolioId === selectedPortfolioId);
         console.log('🔍 [MULTI-PORTFOLIO] Selected portfolio changed:', selectedPortfolioId, selectedPortfolio);
         if (onPortfolioSelect) {
           onPortfolioSelect(selectedPortfolio || null);
@@ -54,64 +54,34 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
   const fetchPortfolios = async () => {
     try {
       // Add cache buster to force fresh data
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio?t=${Date.now()}`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolios?t=${Date.now()}`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       
-      console.log('📊 [MULTI-PORTFOLIO] Fetched stocks:', response.data.portfolio?.length || 0);
+      console.log('📊 [MULTI-PORTFOLIO] Fetched portfolios:', response.data.portfolios?.length || 0);
       
-      // Group stocks by portfolioId to create portfolio objects
-      const portfolioMap = new Map<string, Portfolio>();
-      const stocks = response.data.portfolio || [];
+      // Use the pre-grouped portfolios from the API
+      const portfolioArray = response.data.portfolios || [];
       
-      stocks.forEach((stock: any) => {
-        const portfolioId = stock.portfolioId || `${stock.portfolioType}-1`;
-        
-        if (!portfolioMap.has(portfolioId)) {
-          portfolioMap.set(portfolioId, {
-            portfolioId,
-            portfolioType: stock.portfolioType,
-            portfolioName: stock.portfolioName || `${stock.portfolioType.charAt(0).toUpperCase() + stock.portfolioType.slice(1)} Portfolio`,
-            stocks: [],
-            totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 },
-            volatility: stock.volatility,
-            lastVolatilityUpdate: stock.lastVolatilityUpdate
-          });
-        }
-        
-        portfolioMap.get(portfolioId)!.stocks.push(stock);
+      console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
+      portfolioArray.forEach((p: Portfolio) => {
+        console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
       });
       
-      // Calculate totals for each portfolio
-      portfolioMap.forEach((portfolio) => {
-        const initial = portfolio.stocks.reduce((sum, s) => sum + (s.entryPrice * s.shares), 0);
-        const current = portfolio.stocks.reduce((sum, s) => sum + (s.currentPrice * s.shares), 0);
-        const totalPnL = current - initial;
-        const totalPnLPercent = initial > 0 ? (totalPnL / initial) * 100 : 0;
-        
-        portfolio.totals = { initial, current, totalPnL, totalPnLPercent };
-      });
+      console.log('🔍 [MULTI-PORTFOLIO] Auto-selecting first portfolio:', portfolioArray[0]?.portfolioId);
       
-      const portfolioArray = Array.from(portfolioMap.values());
-  console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
-          portfolioArray.forEach(p => {
-            console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
-          });
-          
-          console.log('🔍 [MULTI-PORTFOLIO] Auto-selecting first portfolio:', portfolioArray[0]?.portfolioId);
+      setPortfolios(portfolioArray);
       
-       setPortfolios(portfolioArray);
-       
-       // Auto-select first portfolio if none selected
-       if (portfolioArray.length > 0 && !selectedPortfolioId) {
-         console.log('🔍 [MULTI-PORTFOLIO] Auto-selecting first portfolio:', portfolioArray[0].portfolioId);
-         setSelectedPortfolioId(portfolioArray[0].portfolioId);
-       }
-     } catch (error) {
-       console.error('Error fetching portfolios:', error);
-     } finally {
-       setLoading(false);
-     }
+      // Auto-select first portfolio if none selected
+      if (portfolioArray.length > 0 && !selectedPortfolioId) {
+        console.log('🔍 [MULTI-PORTFOLIO] Auto-selecting first portfolio:', portfolioArray[0].portfolioId);
+        setSelectedPortfolioId(portfolioArray[0].portfolioId);
+      }
+    } catch (error) {
+      console.error('Error fetching portfolios:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deletePortfolio = async (portfolioId: string) => {
@@ -290,17 +260,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                   </div>
                 </div>
 
-                {/* Quick Action Button */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddStock(portfolio.portfolioId);
-                  }}
-                  className="w-full mt-3 btn-primary text-xs py-2 flex items-center justify-center space-x-1"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>Add Stock</span>
-                </button>
+                     {/* Portfolio selection only - Add Stock handled by main button */}
               </div>
 
               {/* No expanded details in multi-portfolio view - only portfolio boxes */}
