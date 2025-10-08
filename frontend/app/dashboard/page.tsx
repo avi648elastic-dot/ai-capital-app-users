@@ -65,6 +65,7 @@ export default function Dashboard() {
   const [showMultiPortfolio, setShowMultiPortfolio] = useState(false);
   const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
   const [showDeletePortfolio, setShowDeletePortfolio] = useState(false);
+  const [selectedMultiPortfolio, setSelectedMultiPortfolio] = useState<any>(null);
   const router = useRouter();
 
   useEffect(() => {
