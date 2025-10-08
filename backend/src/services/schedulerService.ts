@@ -3,6 +3,7 @@ import { decisionEngine } from './decisionEngine';
 import { stockDataService } from './stockDataService';
 import { volatilityService } from './volatilityService';
 import { riskManagementService } from './riskManagementService';
+import { historicalDataService } from './historicalDataService';
 import Portfolio from '../models/Portfolio';
 
 export class SchedulerService {
@@ -72,6 +73,14 @@ export class SchedulerService {
     cron.schedule('0 18 * * 1-5', async () => {
       console.log('📊 [SCHEDULER] Daily volatility update triggered');
       await this.updatePortfolioVolatilities();
+    }, {
+      timezone: 'America/New_York'
+    });
+
+    // Update historical data daily at 6:30 PM EST (after market close)
+    cron.schedule('30 18 * * 1-5', async () => {
+      console.log('📈 [SCHEDULER] Daily historical data update triggered');
+      await this.updateHistoricalData();
     }, {
       timezone: 'America/New_York'
     });
@@ -210,6 +219,46 @@ export class SchedulerService {
   async triggerVolatilityUpdate() {
     console.log('🔧 [SCHEDULER] Manual volatility update triggered');
     await this.updatePortfolioVolatilities();
+  }
+
+  /**
+   * Update historical data for analytics
+   */
+  private async updateHistoricalData() {
+    try {
+      console.log('🔄 [SCHEDULER] Updating historical data for analytics...');
+      
+      // Get all unique tickers from all portfolios
+      const portfolios = await Portfolio.find({});
+      const uniqueTickers = [...new Set(portfolios.map(p => p.ticker))];
+      
+      console.log(`📊 [SCHEDULER] Updating historical data for ${uniqueTickers.length} tickers`);
+      
+      // Update historical data for each ticker
+      for (const ticker of uniqueTickers) {
+        try {
+          // Get 90 days of historical data
+          const historicalData = await historicalDataService.getHistoricalData(ticker, 90);
+          if (historicalData.length > 0) {
+            console.log(`✅ [SCHEDULER] Updated ${historicalData.length} days of data for ${ticker}`);
+          }
+        } catch (error) {
+          console.error(`❌ [SCHEDULER] Error updating historical data for ${ticker}:`, error);
+        }
+      }
+      
+      console.log('✅ [SCHEDULER] Historical data update completed');
+    } catch (error) {
+      console.error('❌ [SCHEDULER] Error updating historical data:', error);
+    }
+  }
+
+  /**
+   * Manually trigger historical data update
+   */
+  async triggerHistoricalDataUpdate() {
+    console.log('🔧 [SCHEDULER] Manual historical data update triggered');
+    await this.updateHistoricalData();
   }
 
   /**
