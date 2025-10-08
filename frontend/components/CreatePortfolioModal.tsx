@@ -19,16 +19,24 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
+    console.log('🔍 [CREATE PORTFOLIO] handleCreate called');
+    console.log('🔍 [CREATE PORTFOLIO] portfolioType:', portfolioType);
+    console.log('🔍 [CREATE PORTFOLIO] initialInvestment:', initialInvestment);
+    console.log('🔍 [CREATE PORTFOLIO] riskTolerance:', riskTolerance);
+    
     if (!portfolioType) {
+      console.log('❌ [CREATE PORTFOLIO] No portfolio type selected');
       alert('Please select a portfolio type');
       return;
     }
 
     if (!initialInvestment || isNaN(Number(initialInvestment)) || Number(initialInvestment) <= 0) {
+      console.log('❌ [CREATE PORTFOLIO] Invalid initial investment:', initialInvestment);
       alert('Please enter a valid initial investment amount');
       return;
     }
 
+    console.log('🔍 [CREATE PORTFOLIO] Starting portfolio creation...');
     setLoading(true);
     try {
       const response = await axios.post(
@@ -221,7 +229,11 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
               Cancel
             </button>
             <button
-              onClick={handleCreate}
+              onClick={() => {
+                console.log('🔍 [CREATE PORTFOLIO] Button clicked');
+                console.log('🔍 [CREATE PORTFOLIO] Button disabled?', !portfolioType || !initialInvestment || loading);
+                handleCreate();
+              }}
               disabled={!portfolioType || !initialInvestment || loading}
               className="flex-1 btn-primary flex items-center justify-center"
             >
