@@ -85,7 +85,7 @@ export default function DeletePortfolioModal({ onClose, onSuccess }: DeletePortf
     setDeleting(true);
     try {
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/${selectedPortfolioId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/portfolios/${selectedPortfolioId}`,
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
       );
       
