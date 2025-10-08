@@ -196,7 +196,10 @@ export default function DeletePortfolioModal({ onClose, onSuccess }: DeletePortf
                 You are about to delete <strong>{selectedPortfolio.portfolioName}</strong> with {selectedPortfolio.stocks.length} stocks worth ${selectedPortfolio.totals.current.toLocaleString()}. This action cannot be undone.
               </p>
               <button
-                onClick={() => setConfirmDelete(true)}
+                onClick={() => {
+                  console.log('🔍 [DELETE PORTFOLIO] Confirmation button clicked');
+                  setConfirmDelete(true);
+                }}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 Yes, I want to delete this portfolio
@@ -257,7 +260,13 @@ export default function DeletePortfolioModal({ onClose, onSuccess }: DeletePortf
               Cancel
             </button>
             <button
-              onClick={handleDelete}
+              onClick={() => {
+                console.log('🔍 [DELETE PORTFOLIO] Delete button clicked');
+                console.log('🔍 [DELETE PORTFOLIO] selectedPortfolio:', selectedPortfolio);
+                console.log('🔍 [DELETE PORTFOLIO] confirmDelete:', confirmDelete);
+                console.log('🔍 [DELETE PORTFOLIO] deleting:', deleting);
+                handleDelete();
+              }}
               disabled={!selectedPortfolio || !confirmDelete || deleting}
               className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
