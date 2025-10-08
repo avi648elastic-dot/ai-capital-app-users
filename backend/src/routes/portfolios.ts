@@ -55,6 +55,10 @@ router.get('/', authenticateToken, requireSubscription, async (req, res) => {
 // Create a new portfolio
 router.post('/create', authenticateToken, requireSubscription, async (req, res) => {
   try {
+    console.log('🔍 [CREATE PORTFOLIO] Starting portfolio creation...');
+    console.log('🔍 [CREATE PORTFOLIO] Request body:', req.body);
+    console.log('🔍 [CREATE PORTFOLIO] User ID:', (req as any).user!._id);
+    
     const { 
       portfolioType, 
       portfolioName, 
@@ -77,14 +81,14 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
     }
 
     // Check if user is premium
-    const user = await User.findById(req.user!._id);
+    const user = await User.findById((req as any).user!._id);
     if (user?.subscriptionTier !== 'premium') {
       return res.status(403).json({ message: 'Premium subscription required to create multiple portfolios' });
     }
 
     // Count existing portfolios of this type
     const existingCount = await Portfolio.distinct('portfolioId', { 
-      userId: req.user!._id, 
+      userId: (req as any).user!._id, 
       portfolioType 
     });
 
@@ -117,6 +121,9 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
     };
 
     // Save portfolio to database
+    console.log('🔍 [CREATE PORTFOLIO] Attempting to save portfolio to database...');
+    console.log('🔍 [CREATE PORTFOLIO] Portfolio data:', portfolioData);
+    
     const savedPortfolio = await Portfolio.create(portfolioData);
     console.log('✅ [CREATE PORTFOLIO] Portfolio saved to database:', savedPortfolio.portfolioId);
 
