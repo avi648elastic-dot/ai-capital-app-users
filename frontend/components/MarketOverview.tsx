@@ -56,8 +56,8 @@ export default function MarketOverview({ canCustomize = false }: { canCustomize?
           )}
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {['SPY','QQQ','DIA','NYA'].map((k) => {
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {['SPY','QQQ','DIA'].map((k) => {
           const item = data!.indexes[k];
           return (
             <div key={k} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">

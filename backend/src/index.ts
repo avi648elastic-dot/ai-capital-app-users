@@ -104,12 +104,10 @@ app.get('/api/markets/overview', async (req, res) => {
       }
     } catch {}
     
-    const tickers = ['SPY','QQQ','DIA','NYA', ...(featured && featured.length === 4 ? featured : ['AAPL','MSFT','AMZN','TSLA'])];
+    const tickers = ['SPY','QQQ','DIA', ...(featured && featured.length === 4 ? featured : ['AAPL','MSFT','AMZN','TSLA'])];
     console.log('🔍 [MARKETS] Requesting tickers:', tickers);
     
-    const symbolMap: Record<string,string> = { 
-      NYA: '^NYA'  // Use NYSE Composite
-    };
+    const symbolMap: Record<string,string> = { };
     const fetchSymbols = tickers.map(t => symbolMap[t] || t);
     console.log('🔍 [MARKETS] Fetch symbols:', fetchSymbols);
     
@@ -121,7 +119,7 @@ app.get('/api/markets/overview', async (req, res) => {
       let key = symbolMap[t] || t;
       let d = dataMap.get(key);
       
-      // No special handling - let NYA use real data or fail gracefully
+      // No special handling
       
       if (d) {
         return { 
@@ -144,7 +142,6 @@ app.get('/api/markets/overview', async (req, res) => {
         SPY: toObj('SPY'),
         QQQ: toObj('QQQ'),
         DIA: toObj('DIA'),
-        NYA: toObj('NYA'),
       },
       featured: [toObj('AAPL'), toObj('MSFT'), toObj('AMZN'), toObj('TSLA')],
       updatedAt: new Date().toISOString(),
