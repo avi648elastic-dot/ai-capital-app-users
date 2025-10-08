@@ -102,22 +102,23 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
     const nextNumber = existingCount.length + 1;
     const portfolioId = `${portfolioType}-${nextNumber}`;
 
-    // Create the portfolio (empty for now)
+    // Create a placeholder stock entry for the portfolio
+    // This represents the portfolio metadata and allows it to be grouped
     const portfolioData = {
       userId: (req as any).user!._id,
-      portfolioId,
+      ticker: 'PORTFOLIO', // Placeholder ticker for portfolio metadata
+      shares: 1, // Placeholder shares
+      entryPrice: initialInvestment || 0, // Initial investment as entry price
+      currentPrice: initialInvestment || 0, // Current value starts as initial investment
+      date: new Date(),
+      action: 'HOLD' as const,
+      reason: 'Portfolio created',
+      color: 'blue',
       portfolioType,
+      portfolioId,
       portfolioName: portfolioName || `${portfolioType} Portfolio ${nextNumber}`,
-      initialInvestment: initialInvestment || 0,
-      riskTolerance: riskTolerance || 7,
-      investmentGoal: portfolioType === 'solid' ? 'Growth' : 'Aggressive',
-      stocks: [],
-      totals: { 
-        initial: initialInvestment || 0, 
-        current: initialInvestment || 0, 
-        totalPnL: 0, 
-        totalPnLPercent: 0 
-      }
+      volatility: 0,
+      lastVolatilityUpdate: new Date()
     };
 
     // Save portfolio to database
