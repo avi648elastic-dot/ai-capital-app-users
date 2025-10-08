@@ -85,9 +85,24 @@ export default function Dashboard() {
       
       console.log('🔍 [DASHBOARD] Onboarding status:', response.data);
       
-      if (!response.data.onboardingCompleted) {
+      // Only redirect to onboarding if user has no portfolios AND onboarding not completed
+      if (!response.data.onboardingCompleted && (!response.data.portfolio || response.data.portfolio.length === 0)) {
+        console.log('🔍 [DASHBOARD] No portfolios found and onboarding not completed, redirecting to onboarding');
         router.push('/onboarding');
         return;
+      }
+      
+      // If user has portfolios but onboarding not completed, mark it as completed
+      if (!response.data.onboardingCompleted && response.data.portfolio && response.data.portfolio.length > 0) {
+        console.log('🔍 [DASHBOARD] User has portfolios but onboarding not marked complete, updating status');
+        // Update user onboarding status
+        try {
+          await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/complete`, {}, {
+            headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+          });
+        } catch (updateError) {
+          console.warn('Failed to update onboarding status:', updateError);
+        }
       }
 
       // Set initial active tab based on portfolio type from onboarding status
@@ -442,13 +457,20 @@ export default function Dashboard() {
             </button>
             {/* Premium Multi-Portfolio Toggle */}
             {user?.subscriptionTier === 'premium' && (
-              <button
-                onClick={() => setShowMultiPortfolio(!showMultiPortfolio)}
-                className="btn-secondary flex items-center space-x-2"
-              >
-                <span>{showMultiPortfolio ? '📊' : '📈'}</span>
-                <span>{showMultiPortfolio ? 'Single View' : 'Multi-Portfolio'}</span>
-              </button>
+                <button
+                  onClick={() => {
+                    try {
+                      console.log('🔍 [DASHBOARD] Toggling multi-portfolio view:', !showMultiPortfolio);
+                      setShowMultiPortfolio(!showMultiPortfolio);
+                    } catch (error) {
+                      console.error('❌ [DASHBOARD] Error toggling multi-portfolio view:', error);
+                    }
+                  }}
+                  className="btn-secondary flex items-center space-x-2"
+                >
+                  <span>{showMultiPortfolio ? '📊' : '📈'}</span>
+                  <span>{showMultiPortfolio ? 'Single View' : 'Multi-Portfolio'}</span>
+                </button>
             )}
             {/* Portfolio Management Buttons for Premium Users (visible only in multi view) */}
             {user?.subscriptionTier === 'premium' && showMultiPortfolio && (
@@ -509,8 +531,12 @@ export default function Dashboard() {
               // You can implement a detailed portfolio view here
             }}
             onPortfolioSelect={(portfolio) => {
-              console.log('🔍 [DASHBOARD] Portfolio selected:', portfolio);
-              setSelectedMultiPortfolio(portfolio);
+              try {
+                console.log('🔍 [DASHBOARD] Portfolio selected:', portfolio);
+                setSelectedMultiPortfolio(portfolio);
+              } catch (error) {
+                console.error('❌ [DASHBOARD] Error handling portfolio selection:', error);
+              }
             }}
           />
         ) : (

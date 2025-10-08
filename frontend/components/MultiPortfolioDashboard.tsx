@@ -38,12 +38,16 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
 
   // Notify parent when selected portfolio changes
   useEffect(() => {
-    if (selectedPortfolioId && portfolios.length > 0) {
-      const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
-      console.log('🔍 [MULTI-PORTFOLIO] Selected portfolio changed:', selectedPortfolioId, selectedPortfolio);
-      if (onPortfolioSelect) {
-        onPortfolioSelect(selectedPortfolio || null);
+    try {
+      if (selectedPortfolioId && portfolios.length > 0) {
+        const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
+        console.log('🔍 [MULTI-PORTFOLIO] Selected portfolio changed:', selectedPortfolioId, selectedPortfolio);
+        if (onPortfolioSelect) {
+          onPortfolioSelect(selectedPortfolio || null);
+        }
       }
+    } catch (error) {
+      console.error('❌ [MULTI-PORTFOLIO] Error in portfolio selection effect:', error);
     }
   }, [selectedPortfolioId, portfolios, onPortfolioSelect]);
 
