@@ -1,3 +1,5 @@
+import { dynamicSectorService } from './dynamicSectorService';
+
 // Sector classification service for portfolio analytics
 export interface SectorData {
   sector: string;
@@ -203,8 +205,24 @@ class SectorService {
     'Communication Services': 'bg-teal-500'
   };
 
-  // Get sector for a stock ticker
-  getSector(ticker: string): string {
+  // Get sector for a stock ticker (now uses dynamic service)
+  async getSector(ticker: string): Promise<string> {
+    try {
+      // Try dynamic classification first
+      const dynamicSector = await dynamicSectorService.getSector(ticker);
+      if (dynamicSector && dynamicSector !== 'Other') {
+        return dynamicSector;
+      }
+    } catch (error) {
+      console.warn(`Dynamic sector classification failed for ${ticker}:`, error.message);
+    }
+
+    // Fallback to hardcoded mapping
+    return this.sectorMap[ticker.toUpperCase()] || 'Other';
+  }
+
+  // Synchronous version for backward compatibility
+  getSectorSync(ticker: string): string {
     return this.sectorMap[ticker.toUpperCase()] || 'Other';
   }
 
@@ -219,9 +237,9 @@ class SectorService {
     let totalValue = 0;
     let totalEntryValue = 0;
 
-    // Group stocks by sector
-    portfolio.forEach(stock => {
-      const sector = this.getSector(stock.ticker);
+    // Group stocks by sector (now async)
+    for (const stock of portfolio) {
+      const sector = await this.getSector(stock.ticker);
       const currentValue = stock.currentPrice * stock.shares;
       const entryValue = stock.entryPrice * stock.shares;
       
@@ -236,7 +254,7 @@ class SectorService {
       
       totalValue += currentValue;
       totalEntryValue += entryValue;
-    });
+    }
 
     // Calculate sector allocation
     const sectorAllocation: SectorData[] = Array.from(sectorMap.entries()).map(([sector, data]) => {

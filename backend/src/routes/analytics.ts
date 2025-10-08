@@ -56,16 +56,9 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       );
       console.log('✅ [ANALYTICS] Historical portfolio data fetched:', portfolioPerformance.length, 'days');
     } catch (error) {
-      console.warn('⚠️ [ANALYTICS] Historical data service failed, using fallback:', error.message);
-      // Fallback: create performance data from current portfolio
-      portfolioPerformance = portfolio.map((stock, index) => ({
-        date: new Date(Date.now() - (30 - index) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        totalValue: stock.currentPrice * stock.shares,
-        totalPnL: (stock.currentPrice - stock.entryPrice) * stock.shares,
-        totalPnLPercent: ((stock.currentPrice - stock.entryPrice) / stock.entryPrice) * 100,
-        dailyChange: index > 0 ? (Math.random() - 0.5) * 1000 : 0,
-        dailyChangePercent: index > 0 ? (Math.random() - 0.5) * 5 : 0
-      }));
+      console.error('❌ [ANALYTICS] Historical data service failed:', error.message);
+      // No fake data - return empty array with error info
+      portfolioPerformance = [];
     }
 
     try {
@@ -77,17 +70,27 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       );
       console.log('✅ [ANALYTICS] Historical sector data fetched:', sectorPerformance.length, 'sectors');
     } catch (error) {
-      console.warn('⚠️ [ANALYTICS] Sector performance service failed, using fallback:', error.message);
-      // Fallback: use sector analysis data
-      sectorPerformance = sectorAnalysis.sectorAllocation.map(sector => ({
-        ...sector,
-        performance90D: sector.performance90D || 0,
-        historicalData: []
-      }));
+      console.error('❌ [ANALYTICS] Sector performance service failed:', error.message);
+      // No fake data - return empty array with error info
+      sectorPerformance = [];
     }
 
     // Calculate risk assessment
     const riskAssessment = calculateRiskAssessment(portfolio, sectorAnalysis);
+
+    // Determine what data is available and what failed
+    const dataStatus = {
+      portfolioPerformance: portfolioPerformance.length > 0 ? 'available' : 'unavailable',
+      sectorPerformance: sectorPerformance.length > 0 ? 'available' : 'unavailable',
+      issues: []
+    };
+
+    if (portfolioPerformance.length === 0) {
+      dataStatus.issues.push('Portfolio performance data unavailable - historical APIs not responding');
+    }
+    if (sectorPerformance.length === 0) {
+      dataStatus.issues.push('Sector performance data unavailable - historical APIs not responding');
+    }
 
     const comprehensiveAnalysis = {
       sectorAllocation: sectorAnalysis.sectorAllocation,
@@ -101,8 +104,22 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       diversificationScore: sectorAnalysis.riskMetrics.diversification,
       portfolioPerformance,
       sectorPerformance,
-      riskAssessment
+      riskAssessment,
+      dataStatus
     };
+
+    // Log data status for admin monitoring
+    console.log('📊 [ANALYTICS] Data Status Report:', {
+      portfolioPerformance: dataStatus.portfolioPerformance,
+      sectorPerformance: dataStatus.sectorPerformance,
+      issues: dataStatus.issues,
+      portfolioStocks: portfolio.length,
+      sectorsFound: sectorAnalysis.sectorAllocation.length
+    });
+
+    if (dataStatus.issues.length > 0) {
+      console.warn('⚠️ [ANALYTICS] Service Issues Detected:', dataStatus.issues);
+    }
 
     console.log('✅ [ANALYTICS] Comprehensive analytics generated successfully.');
     res.json(comprehensiveAnalysis);
