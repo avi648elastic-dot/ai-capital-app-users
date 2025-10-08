@@ -50,10 +50,11 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
       );
       
-      if (response.data.success) {
-        alert(`Portfolio created successfully! Initial investment: $${Number(initialInvestment).toLocaleString()}`);
-        onSuccess();
-      }
+          if (response.data.success) {
+            const stocksCount = response.data.stocksCount || 0;
+            alert(`Portfolio created successfully! Generated ${stocksCount} AI-selected stocks with $${Number(initialInvestment).toLocaleString()} investment.`);
+            onSuccess();
+          }
     } catch (error: any) {
       console.error('Error creating portfolio:', error);
       const errorMessage = error.response?.data?.message || 'Failed to create portfolio';

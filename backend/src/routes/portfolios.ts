@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import Portfolio from '../models/Portfolio';
 import User from '../models/User';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
+import { portfolioGenerator } from '../services/portfolioGenerator';
 
 const router = express.Router();
 
@@ -102,36 +103,60 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
     const nextNumber = existingCount.length + 1;
     const portfolioId = `${portfolioType}-${nextNumber}`;
 
-    // Create a placeholder stock entry for the portfolio
-    // This represents the portfolio metadata and allows it to be grouped
-    const portfolioData = {
-      userId: (req as any).user!._id,
-      ticker: 'PORTFOLIO', // Placeholder ticker for portfolio metadata
-      shares: 1, // Placeholder shares
-      entryPrice: initialInvestment || 0, // Initial investment as entry price
-      currentPrice: initialInvestment || 0, // Current value starts as initial investment
-      date: new Date(),
-      action: 'HOLD' as const,
-      reason: 'Portfolio created',
-      color: 'blue',
-      portfolioType,
-      portfolioId,
-      portfolioName: portfolioName || `${portfolioType} Portfolio ${nextNumber}`,
-      volatility: 0,
-      lastVolatilityUpdate: new Date()
-    };
-
-    // Save portfolio to database
-    console.log('🔍 [CREATE PORTFOLIO] Attempting to save portfolio to database...');
-    console.log('🔍 [CREATE PORTFOLIO] Portfolio data:', portfolioData);
+    console.log('🔍 [CREATE PORTFOLIO] Generating stocks like onboarding...');
     
-    const savedPortfolio = await Portfolio.create(portfolioData);
-    console.log('✅ [CREATE PORTFOLIO] Portfolio saved to database:', savedPortfolio.portfolioId);
+    // Generate actual stocks using the same logic as onboarding
+    const generatedStocks = await portfolioGenerator.generatePortfolio(
+      portfolioType,
+      Number(initialInvestment),
+      Number(riskTolerance) || 7
+    );
+    console.log('✅ [CREATE PORTFOLIO] Generated stocks:', generatedStocks.length);
+
+    // Enhance portfolio with decision engine
+    console.log('🔍 [CREATE PORTFOLIO] Enhancing portfolio...');
+    const enhancedStocks = await portfolioGenerator.validateAndEnhancePortfolio(generatedStocks);
+    console.log('✅ [CREATE PORTFOLIO] Enhanced stocks:', enhancedStocks.length);
+
+    // Save all stocks to database with the new portfolio ID
+    console.log('🔍 [CREATE PORTFOLIO] Saving stocks to database...');
+    const savedItems = [];
+    try {
+      for (let i = 0; i < enhancedStocks.length; i++) {
+        const stock = enhancedStocks[i];
+        const portfolioData = {
+          userId: (req as any).user!._id,
+          ticker: stock.ticker,
+          shares: stock.shares,
+          entryPrice: stock.entryPrice,
+          currentPrice: stock.currentPrice,
+          date: new Date(),
+          action: stock.action || 'HOLD',
+          reason: stock.reason || 'AI Generated',
+          color: stock.color || 'blue',
+          portfolioType,
+          portfolioId,
+          portfolioName: portfolioName || `${portfolioType} Portfolio ${nextNumber}`,
+          volatility: 0,
+          lastVolatilityUpdate: new Date()
+        };
+
+        const savedItem = await Portfolio.create(portfolioData);
+        savedItems.push(savedItem);
+        console.log(`✅ [CREATE PORTFOLIO] Saved stock ${i + 1}/${enhancedStocks.length}: ${stock.ticker}`);
+      }
+    } catch (saveError) {
+      console.error('❌ [CREATE PORTFOLIO] Error saving stocks:', saveError);
+      throw saveError;
+    }
+
+    console.log('✅ [CREATE PORTFOLIO] Portfolio created successfully with', savedItems.length, 'stocks');
 
     res.json({ 
-      message: 'Portfolio created successfully', 
-      portfolio: savedPortfolio,
-      success: true
+      message: 'Portfolio created successfully with AI-generated stocks', 
+      portfolio: savedItems,
+      success: true,
+      stocksCount: savedItems.length
     });
   } catch (error) {
     console.error('Create portfolio error:', error);
