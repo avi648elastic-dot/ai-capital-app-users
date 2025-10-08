@@ -99,7 +99,8 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
     const portfolioId = `${portfolioType}-${nextNumber}`;
 
     // Create the portfolio (empty for now)
-    const portfolio = {
+    const portfolioData = {
+      userId: (req as any).user!._id,
       portfolioId,
       portfolioType,
       portfolioName: portfolioName || `${portfolioType} Portfolio ${nextNumber}`,
@@ -115,9 +116,13 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
       }
     };
 
+    // Save portfolio to database
+    const savedPortfolio = await Portfolio.create(portfolioData);
+    console.log('✅ [CREATE PORTFOLIO] Portfolio saved to database:', savedPortfolio.portfolioId);
+
     res.json({ 
       message: 'Portfolio created successfully', 
-      portfolio,
+      portfolio: savedPortfolio,
       success: true
     });
   } catch (error) {
