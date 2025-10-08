@@ -40,6 +40,7 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
   useEffect(() => {
     if (selectedPortfolioId && portfolios.length > 0) {
       const selectedPortfolio = portfolios.find(p => p.portfolioId === selectedPortfolioId);
+      console.log('🔍 [MULTI-PORTFOLIO] Selected portfolio changed:', selectedPortfolioId, selectedPortfolio);
       if (onPortfolioSelect) {
         onPortfolioSelect(selectedPortfolio || null);
       }
@@ -88,15 +89,18 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
       });
       
       const portfolioArray = Array.from(portfolioMap.values());
-      console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
-      portfolioArray.forEach(p => {
-        console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
-      });
+  console.log('📊 [MULTI-PORTFOLIO] Grouped portfolios:', portfolioArray.length);
+          portfolioArray.forEach(p => {
+            console.log(`  - ${p.portfolioId}: ${p.stocks.length} stocks, $${p.totals.current.toFixed(2)}`);
+          });
+          
+          console.log('🔍 [MULTI-PORTFOLIO] Auto-selecting first portfolio:', portfolioArray[0]?.portfolioId);
       
        setPortfolios(portfolioArray);
        
        // Auto-select first portfolio if none selected
        if (portfolioArray.length > 0 && !selectedPortfolioId) {
+         console.log('🔍 [MULTI-PORTFOLIO] Auto-selecting first portfolio:', portfolioArray[0].portfolioId);
          setSelectedPortfolioId(portfolioArray[0].portfolioId);
        }
      } catch (error) {
@@ -177,6 +181,9 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
         <div className="mt-2 text-xs text-slate-500">
           ⚡ Volatility updates daily at 6:00 PM EST • Decisions update every 5 minutes during market hours
         </div>
+        <div className="mt-2 text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded">
+          🔧 DEBUG: Selected Portfolio: {selectedPortfolioId || 'None'}
+        </div>
       </div>
 
       {/* Portfolio Boxes Grid */}
@@ -194,7 +201,10 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                      ? 'border-blue-500 bg-blue-500/10'
                      : 'border-transparent hover:border-slate-600'
                  }`}
-                 onClick={() => setSelectedPortfolioId(portfolio.portfolioId)}
+                 onClick={() => {
+                   console.log('🔍 [MULTI-PORTFOLIO] Portfolio box clicked:', portfolio.portfolioId);
+                   setSelectedPortfolioId(portfolio.portfolioId);
+                 }}
                >
                 {/* Header with Type Badge */}
                 <div className="flex justify-between items-start mb-3">

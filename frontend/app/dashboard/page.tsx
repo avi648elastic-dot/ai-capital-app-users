@@ -509,6 +509,7 @@ export default function Dashboard() {
               // You can implement a detailed portfolio view here
             }}
             onPortfolioSelect={(portfolio) => {
+              console.log('🔍 [DASHBOARD] Portfolio selected:', portfolio);
               setSelectedMultiPortfolio(portfolio);
             }}
           />
