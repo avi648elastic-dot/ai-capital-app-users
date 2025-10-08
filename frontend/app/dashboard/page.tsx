@@ -651,6 +651,7 @@ export default function Dashboard() {
           onClose={() => setShowCreatePortfolio(false)}
           onSuccess={() => {
             setShowCreatePortfolio(false);
+            // Refresh the page to show the new portfolio
             window.location.reload();
           }}
         />

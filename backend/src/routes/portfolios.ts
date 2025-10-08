@@ -59,8 +59,7 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
       portfolioType, 
       portfolioName, 
       initialInvestment, 
-      riskTolerance,
-      investmentGoal 
+      riskTolerance
     } = req.body;
     
     if (!['solid', 'risky'].includes(portfolioType)) {
@@ -106,7 +105,7 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
       portfolioName: portfolioName || `${portfolioType} Portfolio ${nextNumber}`,
       initialInvestment: initialInvestment || 0,
       riskTolerance: riskTolerance || 7,
-      investmentGoal: investmentGoal || 'Growth',
+      investmentGoal: portfolioType === 'solid' ? 'Growth' : 'Aggressive',
       stocks: [],
       totals: { 
         initial: initialInvestment || 0, 

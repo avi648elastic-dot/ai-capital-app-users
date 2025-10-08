@@ -16,7 +16,6 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
   const [portfolioName, setPortfolioName] = useState('');
   const [initialInvestment, setInitialInvestment] = useState('');
   const [riskTolerance, setRiskTolerance] = useState('7');
-  const [investmentGoal, setInvestmentGoal] = useState('growth');
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
@@ -38,8 +37,7 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
           portfolioType,
           portfolioName: portfolioName.trim() || undefined,
           initialInvestment: Number(initialInvestment),
-          riskTolerance: Number(riskTolerance),
-          investmentGoal
+          riskTolerance: Number(riskTolerance)
         },
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
       );
@@ -199,23 +197,6 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
             </p>
           </div>
 
-          {/* Investment Goal */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Investment Goal
-            </label>
-            <select
-              value={investmentGoal}
-              onChange={(e) => setInvestmentGoal(e.target.value)}
-              className="w-full input-field"
-            >
-              <option value="growth">Growth - Long-term capital appreciation</option>
-              <option value="income">Income - Regular dividend payments</option>
-              <option value="balanced">Balanced - Growth with some income</option>
-              <option value="conservative">Conservative - Capital preservation</option>
-              <option value="aggressive">Aggressive - Maximum returns</option>
-            </select>
-          </div>
 
           {/* Premium Limits Info */}
           <div className="bg-slate-700/30 rounded-lg p-3">
