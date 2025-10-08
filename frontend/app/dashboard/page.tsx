@@ -66,6 +66,7 @@ export default function Dashboard() {
   const [showCreatePortfolio, setShowCreatePortfolio] = useState(false);
   const [showDeletePortfolio, setShowDeletePortfolio] = useState(false);
   const [selectedMultiPortfolio, setSelectedMultiPortfolio] = useState<any>(null);
+  const [portfolioMeta, setPortfolioMeta] = useState({ total: 0, solid: 0, risky: 0 });
   const router = useRouter();
 
   useEffect(() => {
@@ -447,7 +448,7 @@ export default function Dashboard() {
           <PortfolioSummary totals={totals} />
         </ErrorBoundary>
 
-        {/* Action Buttons with Stock Limit Indicator */}
+      {/* Action Buttons with Stock/Portfolio Counters */}
         <div className="flex justify-between items-center mb-6">
              <div className="flex space-x-4 items-center">
                <button
@@ -508,15 +509,15 @@ export default function Dashboard() {
                 </button>
               </div>
             )}
-            {/* Stock Limit Indicator */}
+        {/* Stock/Portfolio Counters */}
             {user && (
-              <div className={`px-4 py-2 rounded-lg text-sm font-semibold ${
+          <div className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-3 ${
                 user.subscriptionTier === 'free' 
-                  ? 'bg-amber-900/30 text-amber-300 border border-amber-500/30' 
-                  : 'bg-emerald-900/30 text-emerald-300 border border-emerald-500/30'
+              ? 'bg-amber-900/30 text-amber-300 border border-amber-500/30'
+              : 'bg-emerald-900/30 text-emerald-300 border border-emerald-500/30'
               }`}>
-                <span className="opacity-70">Stocks: </span>
-                <span className="font-bold">
+            <span className="opacity-70">Stocks:</span>
+            <span className="font-bold">
                   {showMultiPortfolio && selectedMultiPortfolio 
                     ? `${selectedMultiPortfolio.stocks.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
                     : `${filteredPortfolio.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
@@ -527,6 +528,11 @@ export default function Dashboard() {
                     ({selectedMultiPortfolio.portfolioName})
                   </span>
                 )}
+            {user.subscriptionTier === 'premium' && (
+              <span className="ml-3 text-xs opacity-80">
+                Portfolios: {portfolioMeta.total}/6 ({portfolioMeta.solid} solid · {portfolioMeta.risky} risky)
+              </span>
+            )}
               </div>
             )}
           </div>
@@ -553,6 +559,7 @@ export default function Dashboard() {
                   console.error('❌ [DASHBOARD] Error handling portfolio selection:', error);
                 }
               }}
+              onMetaUpdate={(meta) => setPortfolioMeta(meta)}
             />
             
             {/* Show portfolio details - always visible in multi-view */}

@@ -25,9 +25,10 @@ interface MultiPortfolioDashboardProps {
   onAddStock: (portfolioId: string) => void;
   onViewPortfolio: (portfolioId: string) => void;
   onPortfolioSelect?: (portfolio: Portfolio | null) => void;
+  onMetaUpdate?: (meta: { total: number; solid: number; risky: number }) => void;
 }
 
-export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfolio, onPortfolioSelect }: MultiPortfolioDashboardProps) {
+export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfolio, onPortfolioSelect, onMetaUpdate }: MultiPortfolioDashboardProps) {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -71,6 +72,13 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
       console.log('🔍 [MULTI-PORTFOLIO] Auto-selecting first portfolio:', portfolioArray[0]?.portfolioId);
       
       setPortfolios(portfolioArray);
+
+      // Report counts to parent
+      if (onMetaUpdate) {
+        const solid = portfolioArray.filter((p: Portfolio) => p.portfolioType === 'solid').length;
+        const risky = portfolioArray.filter((p: Portfolio) => p.portfolioType === 'risky').length;
+        onMetaUpdate({ total: portfolioArray.length, solid, risky });
+      }
       
       // Auto-select first portfolio if none selected
       if (portfolioArray.length > 0 && !selectedPortfolioId) {
@@ -202,17 +210,25 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('🗑️ [TRASH] Deleting portfolio:', portfolio.portfolioId);
-                        deletePortfolio(portfolio.portfolioId);
-                      }}
-                      className="text-red-400 hover:text-red-300 p-1 transition-colors"
-                      title={`Delete ${portfolio.portfolioName}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {(() => {
+                      const primaryId = user?.portfolioType ? `${user.portfolioType}-1` : '';
+                      const isPrimary = portfolio.portfolioId === primaryId;
+                      return (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isPrimary) return;
+                            console.log('🗑️ [TRASH] Deleting portfolio:', portfolio.portfolioId);
+                            deletePortfolio(portfolio.portfolioId);
+                          }}
+                          className={`${isPrimary ? 'text-slate-600 cursor-not-allowed' : 'text-red-400 hover:text-red-300'} p-1 transition-colors`}
+                          title={isPrimary ? 'Primary portfolio cannot be deleted' : `Delete ${portfolio.portfolioName}`}
+                          disabled={isPrimary}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
 
