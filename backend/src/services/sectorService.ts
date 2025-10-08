@@ -89,6 +89,7 @@ class SectorService {
     'TFC': 'Financial Services',
     'BK': 'Financial Services',
     'STT': 'Financial Services',
+    'AEG': 'Financial Services', // Aegon NV
     
     // Consumer Discretionary
     'HD': 'Consumer Discretionary',
@@ -113,6 +114,7 @@ class SectorService {
     'KMI': 'Energy',
     'WMB': 'Energy',
     'PSX': 'Energy',
+    'UEC': 'Energy', // Uranium Energy Corp
     
     // Industrial
     'BA': 'Industrial',
@@ -161,6 +163,7 @@ class SectorService {
     'WELL': 'Real Estate',
     'EXR': 'Real Estate',
     'AVB': 'Real Estate',
+    'HST': 'Real Estate', // Host Hotels & Resorts
     
     // Materials
     'LIN': 'Materials',

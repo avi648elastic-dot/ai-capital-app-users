@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { TrendingUp, BarChart3, PieChart, Activity, Building2, TrendingDown, Bot, Smile, Frown, AlertCircle } from 'lucide-react';
+import { TrendingUp, BarChart3, PieChart, Activity, Building2, TrendingDown, Bot, Smile, Frown, AlertCircle, RefreshCw } from 'lucide-react';
 
 // Real Portfolio Chart Component
 const RealPortfolioChart = ({ data }: { data: any[] }) => {
@@ -136,6 +136,7 @@ export default function Analytics() {
   const [portfolioPerformance, setPortfolioPerformance] = useState<any[]>([]);
   const [sectorPerformance, setSectorPerformance] = useState<any[]>([]);
   const [riskAssessment, setRiskAssessment] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   // AI Character Analysis
   const generateAiAnalysis = () => {
@@ -262,8 +263,12 @@ export default function Analytics() {
     }
   };
 
-  const fetchAnalyticsData = async () => {
+  const fetchAnalyticsData = async (isRefresh = false) => {
     try {
+      if (isRefresh) {
+        setRefreshing(true);
+      }
+      
       console.log('🔍 [ANALYTICS] Fetching comprehensive analytics data...');
       const token = Cookies.get('token');
       console.log('🔍 [ANALYTICS] Token exists:', !!token);
@@ -294,7 +299,15 @@ export default function Analytics() {
         status: error.response?.status,
         data: error.response?.data
       });
+    } finally {
+      if (isRefresh) {
+        setRefreshing(false);
+      }
     }
+  };
+
+  const handleRefresh = () => {
+    fetchAnalyticsData(true);
   };
 
   if (loading) {
@@ -309,8 +322,20 @@ export default function Analytics() {
     <div className="min-h-screen bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Analytics</h1>
-          <p className="text-slate-400">Detailed analysis of your portfolio performance</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Analytics</h1>
+              <p className="text-slate-400">Detailed analysis of your portfolio performance</p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white rounded-lg transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
