@@ -184,11 +184,18 @@ router.delete('/:portfolioId', authenticateToken, requireSubscription, async (re
       return res.status(403).json({ message: 'Premium subscription required to manage multiple portfolios' });
     }
 
-    // Don't allow deleting the first portfolio of each type
-    if (portfolioId.endsWith('-1')) {
-      console.log('🗑️ [DELETE PORTFOLIO] Cannot delete primary portfolio:', portfolioId);
+    // Check if this is the user's primary portfolio from onboarding
+    const onboardingData = await User.findById((req as any).user!._id).select('onboardingCompleted portfolioType');
+    console.log('🗑️ [DELETE PORTFOLIO] User onboarding data:', onboardingData);
+    
+    // Get the primary portfolio ID based on onboarding
+    const primaryPortfolioId = onboardingData?.portfolioType ? `${onboardingData.portfolioType}-1` : null;
+    console.log('🗑️ [DELETE PORTFOLIO] Primary portfolio ID from onboarding:', primaryPortfolioId);
+    
+    if (portfolioId === primaryPortfolioId) {
+      console.log('🗑️ [DELETE PORTFOLIO] Cannot delete primary portfolio from onboarding:', portfolioId);
       return res.status(403).json({ 
-        message: 'Cannot delete the primary portfolio. You can only delete additional portfolios (2-5).' 
+        message: 'Cannot delete your primary portfolio from onboarding. You can only delete additional portfolios created later.' 
       });
     }
 
