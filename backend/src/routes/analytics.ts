@@ -41,7 +41,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     }
 
     // Get basic sector analysis
-    const sectorAnalysis = await sectorService.getPortfolioAnalysis(userId.toString(), portfolio);
+    const sectorAnalysis = await sectorService.analyzePortfolio(portfolio);
     
     // Get historical performance data
     const portfolioPerformance = await historicalDataService.calculatePortfolioPerformance(
@@ -61,7 +61,15 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     const riskAssessment = calculateRiskAssessment(portfolio, sectorAnalysis);
 
     const comprehensiveAnalysis = {
-      ...sectorAnalysis,
+      sectorAllocation: sectorAnalysis.sectorAllocation,
+      totalPortfolioValue: sectorAnalysis.totalValue,
+      totalInitialInvestment: 0, // Will be calculated from performance data
+      totalPnL: 0, // Will be calculated from performance data
+      totalPnLPercent: sectorAnalysis.performance90D,
+      performance90D: sectorAnalysis.performance90D,
+      riskScore: riskAssessment.riskScore,
+      concentrationRisk: sectorAnalysis.riskMetrics.concentration,
+      diversificationScore: sectorAnalysis.riskMetrics.diversification,
       portfolioPerformance,
       sectorPerformance,
       riskAssessment

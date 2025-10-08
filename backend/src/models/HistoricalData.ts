@@ -25,16 +25,12 @@ const HistoricalDataSchema = new Schema<IHistoricalData>(
     userId: { type: String, index: true }
   },
   { 
-    timestamps: true,
-    // Compound index for efficient queries
-    indexes: [
-      { ticker: 1, date: -1 },
-      { ticker: 1, date: 1 }
-    ]
+    timestamps: true
   }
 );
 
-// Ensure unique combination of ticker and date
+// Create compound indexes for efficient queries
+HistoricalDataSchema.index({ ticker: 1, date: -1 });
 HistoricalDataSchema.index({ ticker: 1, date: 1 }, { unique: true });
 
 export default mongoose.models.HistoricalData || mongoose.model<IHistoricalData>('HistoricalData', HistoricalDataSchema);
