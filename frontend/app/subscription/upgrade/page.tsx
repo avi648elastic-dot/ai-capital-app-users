@@ -77,9 +77,9 @@ export default function Upgrade() {
     {
       icon: <Zap className="w-6 h-6" />,
       title: "More Stocks",
-      description: "Add up to 20 stocks per portfolio",
+      description: "Add up to 15 stocks per portfolio",
       free: "10 stocks per portfolio",
-      premium: "20 stocks per portfolio"
+      premium: "15 stocks per portfolio"
     },
     {
       icon: <Shield className="w-6 h-6" />,

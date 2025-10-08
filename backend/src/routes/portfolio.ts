@@ -146,7 +146,7 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       // Free users: max 10 stocks per portfolio
       if (existingStocksCount >= 10) {
         return res.status(403).json({ 
-          message: '🔒 Free users are limited to 10 stocks per portfolio. Upgrade to Premium to add up to 20 stocks per portfolio and manage up to 3 portfolios of each type!',
+          message: '🔒 Free users are limited to 10 stocks per portfolio. Upgrade to Premium to add up to 15 stocks per portfolio and manage up to 3 portfolios of each type!',
           limit: 10,
           current: existingStocksCount,
           tier: 'free'
@@ -162,11 +162,11 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
         });
       }
     } else if (user.subscriptionTier === 'premium') {
-      // Premium users: max 20 stocks per portfolio
-      if (existingStocksCount >= 20) {
+      // Premium users: max 15 stocks per portfolio
+      if (existingStocksCount >= 15) {
         return res.status(403).json({ 
-          message: '⭐ Premium users are limited to 20 stocks per portfolio. You\'ve reached the maximum for this portfolio.',
-          limit: 20,
+          message: '⭐ Premium users are limited to 15 stocks per portfolio. Upgrade to Premium+ for up to 20 stocks per portfolio and 5 portfolios of each type!',
+          limit: 15,
           current: existingStocksCount,
           tier: 'premium'
         });

@@ -88,9 +88,9 @@ router.post('/create', authenticateToken, requireSubscription, async (req, res) 
       portfolioType 
     });
 
-    if (existingCount.length >= 5) {
+    if (existingCount.length >= 3) {
       return res.status(403).json({ 
-        message: `Maximum 5 ${portfolioType} portfolios allowed for premium users` 
+        message: `Maximum 3 ${portfolioType} portfolios allowed for premium users. Upgrade to Premium+ for up to 5 portfolios.` 
       });
     }
 

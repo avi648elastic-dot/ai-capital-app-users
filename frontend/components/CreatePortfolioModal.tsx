@@ -211,10 +211,18 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
             <div className="text-sm text-slate-300">
               <div className="font-semibold text-blue-400 mb-1">Premium Portfolio Limits:</div>
               <div className="text-xs space-y-1">
-                <div>• Up to 5 Solid portfolios</div>
-                <div>• Up to 5 Risky portfolios</div>
-                <div>• 20 stocks per portfolio</div>
+                <div>• Up to 3 Solid portfolios</div>
+                <div>• Up to 3 Risky portfolios</div>
+                <div>• 15 stocks per portfolio</div>
                 <div>• Real-time market data & AI analysis</div>
+              </div>
+              <div className="mt-2 pt-2 border-t border-slate-600">
+                <div className="font-semibold text-purple-400 mb-1">Premium+ (Coming Soon):</div>
+                <div className="text-xs space-y-1 text-slate-400">
+                  <div>• Up to 5 Solid portfolios</div>
+                  <div>• Up to 5 Risky portfolios</div>
+                  <div>• 20 stocks per portfolio</div>
+                </div>
               </div>
             </div>
           </div>

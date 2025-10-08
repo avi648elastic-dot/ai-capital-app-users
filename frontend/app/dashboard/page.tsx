@@ -382,8 +382,8 @@ export default function Dashboard() {
                 </div>
                 <p className="text-sm text-slate-300 mb-2">
                   {user?.subscriptionTier === 'premium' 
-                    ? 'Full access: Up to 3 portfolios of each type (Solid & Risky) with 20 stocks each. Plus real-time push notifications and advanced portfolio analytics with detailed market insights.' 
-                    : 'Limited to 1 portfolio with 10 stocks. Upgrade to unlock 6 portfolios with 20 stocks each!'
+                    ? 'Full access: Up to 3 portfolios of each type (Solid & Risky) with 15 stocks each. Plus real-time push notifications and advanced portfolio analytics with detailed market insights.' 
+                    : 'Limited to 1 portfolio with 10 stocks. Upgrade to unlock 6 portfolios with 15 stocks each!'
                   }
                 </p>
                 <div className="flex items-center space-x-4 text-xs">
@@ -505,8 +505,8 @@ export default function Dashboard() {
                 <span className="opacity-70">Stocks: </span>
                 <span className="font-bold">
                   {showMultiPortfolio && selectedMultiPortfolio 
-                    ? `${selectedMultiPortfolio.stocks.length}/${user.subscriptionTier === 'free' ? '10' : '20'}`
-                    : `${filteredPortfolio.length}/${user.subscriptionTier === 'free' ? '10' : '20'}`
+                    ? `${selectedMultiPortfolio.stocks.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
+                    : `${filteredPortfolio.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
                   }
                 </span>
                 {showMultiPortfolio && selectedMultiPortfolio && (
