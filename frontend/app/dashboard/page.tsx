@@ -555,31 +555,41 @@ export default function Dashboard() {
               }}
             />
             
-            {/* Show portfolio details only when a portfolio is selected */}
-            {selectedMultiPortfolio && (
-              <>
-                {/* Portfolio Table for Selected Portfolio */}
-                <div className="mt-8">
-                  <ErrorBoundary label="table">
-                    <PortfolioTable
-                      portfolio={selectedMultiPortfolio.stocks || []}
-                      onUpdate={handleUpdateStock}
-                      onDelete={handleDeleteStock}
-                    />
-                  </ErrorBoundary>
-                </div>
+            {/* Show portfolio details - always visible in multi-view */}
+            <div className="mt-8">
+              {selectedMultiPortfolio ? (
+                <>
+                  {/* Portfolio Table for Selected Portfolio */}
+                  <div className="mb-8">
+                    <h3 className="text-xl font-bold text-white mb-4">
+                      {selectedMultiPortfolio.portfolioName} - Stock Details
+                    </h3>
+                    <ErrorBoundary label="table">
+                      <PortfolioTable
+                        portfolio={selectedMultiPortfolio.stocks || []}
+                        onUpdate={handleUpdateStock}
+                        onDelete={handleDeleteStock}
+                      />
+                    </ErrorBoundary>
+                  </div>
 
-                {/* Charts for Selected Portfolio */}
-                <div className="mt-8 bg-slate-800 rounded-lg p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">
-                    {selectedMultiPortfolio.portfolioName} - Performance
-                  </h3>
-                  <ErrorBoundary label="charts">
-                    <Charts portfolio={selectedMultiPortfolio.stocks || []} />
-                  </ErrorBoundary>
+                  {/* Charts for Selected Portfolio */}
+                  <div className="bg-slate-800 rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-white mb-4">
+                      {selectedMultiPortfolio.portfolioName} - Performance Analysis
+                    </h3>
+                    <ErrorBoundary label="charts">
+                      <Charts portfolio={selectedMultiPortfolio.stocks || []} />
+                    </ErrorBoundary>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-12 bg-slate-800 rounded-lg">
+                  <h3 className="text-xl font-bold text-white mb-4">Select a Portfolio</h3>
+                  <p className="text-slate-400">Click on any portfolio card above to view its details and performance charts</p>
                 </div>
-              </>
-            )}
+              )}
+            </div>
           </>
         ) : (
           <>

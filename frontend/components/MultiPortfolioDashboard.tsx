@@ -205,10 +205,11 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log('🗑️ [TRASH] Deleting portfolio:', portfolio.portfolioId);
                         deletePortfolio(portfolio.portfolioId);
                       }}
-                      className="text-red-400 hover:text-red-300 p-1"
-                      title="Delete Portfolio"
+                      className="text-red-400 hover:text-red-300 p-1 transition-colors"
+                      title={`Delete ${portfolio.portfolioName}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
