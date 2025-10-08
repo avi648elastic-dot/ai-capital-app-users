@@ -14,6 +14,7 @@ import adminRoutes from './routes/admin';
 import marketsRoutes from './routes/markets';
 import portfoliosRoutes from './routes/portfolios';
 import riskManagementRoutes from './routes/riskManagement';
+import analyticsRoutes from './routes/analytics';
 import { schedulerService } from './services/schedulerService';
 
 // Load environment variables
@@ -69,6 +70,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/markets', marketsRoutes);
 app.use('/api/portfolios', portfoliosRoutes);
 app.use('/api/risk', riskManagementRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Import subscription routes
 import subscriptionRoutes from './routes/subscription';

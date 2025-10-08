@@ -9,58 +9,8 @@ export default function Analytics() {
   const [portfolio, setPortfolio] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiAnalysis, setAiAnalysis] = useState<any>(null);
-
-  // Mock sector data - in real app, this would come from API
-  const sectorData = [
-    { 
-      sector: 'Technology', 
-      percentage: 35.2, 
-      value: 12500, 
-      performance90D: 12.4,
-      stocks: ['AAPL', 'MSFT', 'GOOGL'],
-      color: 'bg-blue-500'
-    },
-    { 
-      sector: 'Healthcare', 
-      percentage: 22.8, 
-      value: 8100, 
-      performance90D: 8.7,
-      stocks: ['JNJ', 'PFE'],
-      color: 'bg-green-500'
-    },
-    { 
-      sector: 'Financial Services', 
-      percentage: 18.5, 
-      value: 6600, 
-      performance90D: -2.1,
-      stocks: ['JPM', 'BAC'],
-      color: 'bg-yellow-500'
-    },
-    { 
-      sector: 'Consumer Discretionary', 
-      percentage: 12.3, 
-      value: 4400, 
-      performance90D: 15.8,
-      stocks: ['AMZN', 'TSLA'],
-      color: 'bg-purple-500'
-    },
-    { 
-      sector: 'Energy', 
-      percentage: 6.7, 
-      value: 2400, 
-      performance90D: -5.2,
-      stocks: ['XOM'],
-      color: 'bg-red-500'
-    },
-    { 
-      sector: 'Utilities', 
-      percentage: 4.5, 
-      value: 1600, 
-      performance90D: 3.1,
-      stocks: ['NEE'],
-      color: 'bg-cyan-500'
-    }
-  ];
+  const [sectorData, setSectorData] = useState<any[]>([]);
+  const [portfolioAnalysis, setPortfolioAnalysis] = useState<any>(null);
 
   // AI Character Analysis
   const generateAiAnalysis = () => {
@@ -165,6 +115,7 @@ export default function Analytics() {
 
   useEffect(() => {
     fetchPortfolio();
+    fetchAnalyticsData();
   }, []);
 
   useEffect(() => {
@@ -183,6 +134,21 @@ export default function Analytics() {
       console.error('Error fetching portfolio:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnalyticsData = async () => {
+    try {
+      console.log('🔍 [ANALYTICS] Fetching analytics data...');
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/portfolio-analysis`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      });
+      
+      console.log('✅ [ANALYTICS] Received analytics data:', response.data);
+      setSectorData(response.data.sectorAllocation || []);
+      setPortfolioAnalysis(response.data);
+    } catch (error) {
+      console.error('❌ [ANALYTICS] Error fetching analytics data:', error);
     }
   };
 
