@@ -31,7 +31,6 @@ class SectorService {
     'TSLA': 'Technology',
     'NVDA': 'Technology',
     'META': 'Technology',
-    'NFLX': 'Technology',
     'ADBE': 'Technology',
     'CRM': 'Technology',
     'ORCL': 'Technology',
@@ -184,8 +183,7 @@ class SectorService {
     'CHTR': 'Communication Services',
     'TMUS': 'Communication Services',
     'DISH': 'Communication Services',
-    'LUMN': 'Communication Services',
-    'VZ': 'Communication Services'
+    'LUMN': 'Communication Services'
   };
 
   private sectorColors: Record<string, string> = {
