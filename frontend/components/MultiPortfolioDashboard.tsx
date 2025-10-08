@@ -202,18 +202,16 @@ export default function MultiPortfolioDashboard({ user, onAddStock, onViewPortfo
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {!portfolio.portfolioId.endsWith('-1') && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deletePortfolio(portfolio.portfolioId);
-                        }}
-                        className="text-red-400 hover:text-red-300 p-1"
-                        title="Delete Portfolio"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deletePortfolio(portfolio.portfolioId);
+                      }}
+                      className="text-red-400 hover:text-red-300 p-1"
+                      title="Delete Portfolio"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
 

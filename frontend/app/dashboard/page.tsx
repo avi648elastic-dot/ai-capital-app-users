@@ -449,13 +449,26 @@ export default function Dashboard() {
 
         {/* Action Buttons with Stock Limit Indicator */}
         <div className="flex justify-between items-center mb-6">
-          <div className="flex space-x-4 items-center">
-            <button
-              onClick={() => setShowStockForm(true)}
-              className="btn-primary"
-            >
-              Add Stock
-            </button>
+             <div className="flex space-x-4 items-center">
+               <button
+                 onClick={() => {
+                   if (user?.subscriptionTier === 'premium' && showMultiPortfolio) {
+                     // In multi-view, add to selected portfolio
+                     if (selectedMultiPortfolio) {
+                       setSelectedPortfolioId(selectedMultiPortfolio.portfolioId);
+                       setShowStockForm(true);
+                     } else {
+                       alert('Please select a portfolio first');
+                     }
+                   } else {
+                     // In single view, add to current portfolio
+                     setShowStockForm(true);
+                   }
+                 }}
+                 className="btn-primary"
+               >
+                 Add Stock
+               </button>
             {/* Premium Multi-Portfolio Toggle */}
             {user?.subscriptionTier === 'premium' && (
                 <button
@@ -557,7 +570,10 @@ export default function Dashboard() {
                 </div>
 
                 {/* Charts for Selected Portfolio */}
-                <div className="mt-8">
+                <div className="mt-8 bg-slate-800 rounded-lg p-6">
+                  <h3 className="text-xl font-bold text-white mb-4">
+                    {selectedMultiPortfolio.portfolioName} - Performance
+                  </h3>
                   <ErrorBoundary label="charts">
                     <Charts portfolio={selectedMultiPortfolio.stocks || []} />
                   </ErrorBoundary>
