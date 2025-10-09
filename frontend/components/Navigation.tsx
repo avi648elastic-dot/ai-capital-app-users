@@ -57,17 +57,17 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
       icon: PieChart,
       children: [
         {
+          id: 'performance',
+          label: 'Performance',
+          icon: BarChart3,
+          href: '/analytics/performance'
+        },
+        {
           id: 'portfolio-analysis',
           label: 'Portfolio Analysis',
           icon: PieChart,
           href: '/analytics',
           premium: true
-        },
-        {
-          id: 'performance',
-          label: 'Performance',
-          icon: BarChart3,
-          href: '/analytics/performance'
         },
         {
           id: 'reports',
@@ -82,14 +82,7 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
           icon: AlertTriangle,
           href: '/risk-management',
           premium: true
-        }
-      ]
-    },
-    {
-      id: 'trading',
-      label: 'Trading Tools',
-      icon: Plus,
-      children: [
+        },
         {
           id: 'watchlist',
           label: 'Watchlist',

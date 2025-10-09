@@ -45,17 +45,17 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
       icon: PieChart,
       children: [
         {
+          id: 'performance',
+          label: 'Performance',
+          icon: BarChart3,
+          href: '/analytics/performance'
+        },
+        {
           id: 'portfolio-analysis',
           label: 'Portfolio Analysis',
           icon: PieChart,
           href: '/analytics',
           premium: true
-        },
-        {
-          id: 'performance',
-          label: 'Performance',
-          icon: BarChart3,
-          href: '/analytics/performance'
         },
         {
           id: 'reports',
@@ -70,15 +70,15 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
           icon: AlertTriangle,
           href: '/risk-management',
           premium: true
+        },
+        {
+          id: 'watchlist',
+          label: 'Watchlist',
+          icon: BarChart3,
+          href: '/watchlist',
+          premium: true
         }
       ]
-    },
-    {
-      id: 'watchlist',
-      label: 'Watchlist',
-      icon: BarChart3,
-      href: '/watchlist',
-      premium: true
     },
     {
       id: 'upgrade',
