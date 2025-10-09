@@ -132,8 +132,8 @@ router.get('/:symbol/price', authenticateToken, async (req, res) => {
     const response = {
       symbol,
       currentPrice: stockData.current,
-      change: stockData.change,
-      changePercent: stockData.changePercent,
+      change: stockData.thisMonthPercent, // Use thisMonthPercent as change
+      changePercent: stockData.thisMonthPercent, // Use thisMonthPercent as changePercent
       timestamp: new Date().toISOString()
     };
     
@@ -177,8 +177,8 @@ router.post('/prices', authenticateToken, async (req, res) => {
     const response = Array.from(stockDataMap.entries()).map(([symbol, data]) => ({
       symbol,
       currentPrice: data.current,
-      change: data.change,
-      changePercent: data.changePercent,
+      change: data.thisMonthPercent, // Use thisMonthPercent as change
+      changePercent: data.thisMonthPercent, // Use thisMonthPercent as changePercent
       timestamp: new Date().toISOString()
     }));
     
