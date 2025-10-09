@@ -45,10 +45,16 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
       icon: PieChart,
       children: [
         {
+          id: 'portfolio-analysis',
+          label: 'Portfolio Analysis',
+          icon: PieChart,
+          href: '/analytics'
+        },
+        {
           id: 'performance',
           label: 'Performance',
           icon: BarChart3,
-          href: '/analytics'
+          href: '/analytics/performance'
         },
         {
           id: 'reports',
