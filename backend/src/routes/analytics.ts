@@ -6,6 +6,78 @@ import { historicalDataService } from '../services/historicalDataService';
 
 const router = express.Router();
 
+// Basic analytics endpoint for dashboard charts (no premium required)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user!._id;
+    console.log('🔍 [ANALYTICS] Fetching basic analytics for dashboard charts, user:', userId);
+    
+    // Get user's portfolio
+    const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
+    
+    if (portfolio.length === 0) {
+      console.log('⚠️ [ANALYTICS] No portfolio found for user:', userId);
+      return res.json({
+        portfolioPerformance: [],
+        sectorPerformance: [],
+        message: 'No portfolio data available.'
+      });
+    }
+
+    // Try to get historical performance data with fallback
+    let portfolioPerformance: any[] = [];
+    let sectorPerformance: any[] = [];
+    
+    try {
+      console.log('🔍 [ANALYTICS] Attempting to fetch historical portfolio data...');
+      portfolioPerformance = await historicalDataService.calculatePortfolioPerformance(
+        portfolio, 
+        30, // Last 30 days
+        userId.toString()
+      );
+      console.log('✅ [ANALYTICS] Historical portfolio data fetched:', portfolioPerformance.length, 'days');
+    } catch (error: any) {
+      console.error('❌ [ANALYTICS] Historical data service failed:', error?.message || error);
+      portfolioPerformance = [];
+    }
+
+    try {
+      console.log('🔍 [ANALYTICS] Attempting to fetch sector performance data...');
+      const sectorAnalysis = await sectorService.analyzePortfolio(portfolio);
+      sectorPerformance = await historicalDataService.calculateSectorPerformance(
+        sectorAnalysis.sectorAllocation,
+        30, // Last 30 days
+        userId.toString()
+      );
+      console.log('✅ [ANALYTICS] Historical sector data fetched:', sectorPerformance.length, 'sectors');
+    } catch (error: any) {
+      console.error('❌ [ANALYTICS] Sector performance service failed:', error?.message || error);
+      sectorPerformance = [];
+    }
+
+    const result = {
+      portfolioPerformance,
+      sectorPerformance,
+      dataStatus: {
+        portfolioPerformance: portfolioPerformance.length > 0 ? 'available' : 'unavailable',
+        sectorPerformance: sectorPerformance.length > 0 ? 'available' : 'unavailable'
+      }
+    };
+
+    console.log('✅ [ANALYTICS] Basic analytics generated successfully:', {
+      portfolioStocks: portfolio.length,
+      portfolioPerformanceDays: portfolioPerformance.length,
+      sectorPerformanceSectors: sectorPerformance.length
+    });
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('❌ [ANALYTICS] Error fetching basic analytics:', error);
+    res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
+  }
+});
+
 // Get comprehensive portfolio analysis for analytics page
 router.get('/portfolio-analysis', authenticateToken, requireSubscription, async (req, res) => {
   try {
