@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 import authRoutes from './routes/auth';
 import portfolioRoutes from './routes/portfolio';
