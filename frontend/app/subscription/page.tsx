@@ -37,7 +37,7 @@ export default function SubscriptionPage() {
       if (response.ok) {
         const userData = await response.json();
         console.log('🔍 [SUBSCRIPTION] User data received:', userData);
-        setUser(userData);
+        setUser(userData.user);
       } else {
         console.log('🔍 [SUBSCRIPTION] Profile fetch failed, trying subscription status...');
         // Try subscription status endpoint as fallback
