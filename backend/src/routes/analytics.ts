@@ -30,24 +30,34 @@ router.get('/', authenticateToken, async (req, res) => {
     
     try {
       console.log('🔍 [ANALYTICS] Attempting to fetch historical portfolio data...');
+      console.log(`📊 [ANALYTICS] Portfolio has ${portfolio.length} stocks:`, portfolio.map(p => p.ticker));
+      
       const performanceData = await historicalDataService.calculatePortfolioPerformance(
         portfolio, 
         30, // Last 30 days
         userId.toString()
       );
       
-      // Format data for Charts component
-      portfolioPerformance = performanceData.map(item => ({
-        date: item.date,
-        value: item.totalValue,
-        cost: portfolio.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0), // Total cost
-        pnl: item.totalPnL,
-        pnlPercent: item.totalPnLPercent,
-        dailyChange: item.dailyChange,
-        dailyChangePercent: item.dailyChangePercent
-      }));
+      console.log(`📊 [ANALYTICS] Raw performance data received:`, performanceData?.length || 0, 'days');
       
-      console.log('✅ [ANALYTICS] Historical portfolio data fetched:', portfolioPerformance.length, 'days');
+      if (performanceData && performanceData.length > 0) {
+        // Format data for Charts component
+        portfolioPerformance = performanceData.map(item => ({
+          date: item.date,
+          value: item.totalValue,
+          cost: portfolio.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0), // Total cost
+          pnl: item.totalPnL,
+          pnlPercent: item.totalPnLPercent,
+          dailyChange: item.dailyChange,
+          dailyChangePercent: item.dailyChangePercent
+        }));
+        
+        console.log('✅ [ANALYTICS] Historical portfolio data formatted:', portfolioPerformance.length, 'days');
+        console.log('📊 [ANALYTICS] Sample data:', portfolioPerformance.slice(0, 3));
+      } else {
+        console.warn('⚠️ [ANALYTICS] No performance data returned from historicalDataService');
+        portfolioPerformance = [];
+      }
     } catch (error: any) {
       console.error('❌ [ANALYTICS] Historical data service failed:', error?.message || error);
       portfolioPerformance = [];

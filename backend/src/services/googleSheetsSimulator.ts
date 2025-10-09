@@ -114,11 +114,14 @@ class GoogleSheetsSimulator {
       const priceColumns = [];
       let price = currentPrice;
       
-      // Generate 90 days of realistic price movements
+      // Generate 90 days of realistic price movements with proper volatility
       for (let i = 0; i < 90; i++) {
-        // Add realistic price movement based on volatility
-        const dailyChange = (Math.random() - 0.5) * (volatility / 100) * price * 0.02; // 2% daily max change
-        price = Math.max(price + dailyChange, currentPrice * 0.3); // Don't let price drop below 30% of current
+        // Add realistic price movement based on actual volatility
+        const randomFactor = (Math.random() - 0.5) * 2; // -1 to 1
+        const dailyVolatility = (volatility / 100) / Math.sqrt(252); // Daily volatility from annual
+        const dailyChange = price * dailyVolatility * randomFactor;
+        price = Math.max(price + dailyChange, currentPrice * 0.5); // Don't let price drop below 50% of current
+        price = Math.min(price, currentPrice * 2); // Don't let price exceed 200% of current
         priceColumns.unshift(price); // Add to beginning (oldest first)
       }
       
@@ -171,10 +174,17 @@ class GoogleSheetsSimulator {
 
     // Calculate returns using INDEX formulas
     // =(INDEX(G2:BG2,90) - INDEX(G2:BG2,1)) / INDEX(G2:BG2,1)
-    const return7D = ((priceColumns[89] - priceColumns[82]) / priceColumns[82]) * 100; // 7 days ago
-    const return30D = ((priceColumns[89] - priceColumns[59]) / priceColumns[59]) * 100; // 30 days ago
-    const return60D = ((priceColumns[89] - priceColumns[29]) / priceColumns[29]) * 100; // 60 days ago
-    const return90D = ((priceColumns[89] - priceColumns[0]) / priceColumns[0]) * 100; // 90 days ago
+    const currentPrice = priceColumns[89]; // Most recent price (last in array)
+    
+    // Ensure we have enough data points
+    const return7D = priceColumns.length > 7 ? 
+      ((currentPrice - priceColumns[82]) / priceColumns[82]) * 100 : 0;
+    const return30D = priceColumns.length > 30 ? 
+      ((currentPrice - priceColumns[59]) / priceColumns[59]) * 100 : 0;
+    const return60D = priceColumns.length > 60 ? 
+      ((currentPrice - priceColumns[29]) / priceColumns[29]) * 100 : 0;
+    const return90D = priceColumns.length > 90 ? 
+      ((currentPrice - priceColumns[0]) / priceColumns[0]) * 100 : 0;
 
     // Calculate top prices using MAX formulas
     // =MAX(G2:BG2)
