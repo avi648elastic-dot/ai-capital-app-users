@@ -33,59 +33,32 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
   useEffect(() => {
     if (portfolio.length === 0) return;
 
-    // Use real analytics data if available, otherwise fallback to portfolio data
+    // Use real analytics data if available, otherwise show current portfolio state
     if (portfolioPerformance && portfolioPerformance.length > 0) {
-      console.log('📊 [CHARTS] Using real analytics data');
+      console.log('📊 [CHARTS] Using real analytics data with', portfolioPerformance.length, 'data points');
       setChartData(portfolioPerformance);
     } else {
-      console.log('⚠️ [CHARTS] Using portfolio entry data (no analytics available)');
+      console.log('⚠️ [CHARTS] No analytics data available, showing current portfolio state');
       
-      // Fallback: Prepare enhanced chart data with proper time series
-      const sortedPortfolio = [...portfolio].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      // Create a simple current state data point instead of fake historical data
+      const totalCost = portfolio.reduce((sum, item) => sum + (item.entryPrice * item.shares), 0);
+      const totalValue = portfolio.reduce((sum, item) => sum + (item.currentPrice * item.shares), 0);
+      const totalPnL = totalValue - totalCost;
+      const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
 
-      // Calculate cumulative portfolio value over time
-      let cumulativeValue = 0;
-      let cumulativeCost = 0;
-      let previousTotal = 0;
+      // Create current state data point
+      const currentData = {
+        date: new Date().toLocaleDateString(),
+        fullDate: new Date(),
+        value: totalValue,
+        cost: totalCost,
+        pnl: totalPnL,
+        pnlPercent: totalPnLPercent,
+        dailyChange: 0,
+        dailyChangePercent: 0
+      };
 
-      const enhancedData = sortedPortfolio.map((item) => {
-        const cost = item.entryPrice * item.shares;
-        const value = item.currentPrice * item.shares;
-        const pnl = value - cost;
-        const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
-
-        cumulativeValue += value;
-        cumulativeCost += cost;
-        const totalPnL = cumulativeValue - cumulativeCost;
-        const totalPnLPercent = cumulativeCost > 0 ? (totalPnL / cumulativeCost) * 100 : 0;
-
-        const current = {
-          date: new Date(item.date).toLocaleDateString(),
-          fullDate: new Date(item.date),
-          value: cumulativeValue,
-          cost: cumulativeCost,
-          pnl: totalPnL,
-          pnlPercent: totalPnLPercent,
-          ticker: item.ticker,
-          shares: item.shares,
-          entryPrice: item.entryPrice,
-          currentPrice: item.currentPrice,
-          individualPnL: pnl,
-          individualPnLPercent: pnlPercent,
-          action: item.action,
-          // For candlestick-style visualization
-          open: previousTotal || cumulativeValue,
-          high: Math.max(cumulativeValue, previousTotal || cumulativeValue),
-          low: Math.min(cumulativeValue, previousTotal || cumulativeValue),
-          close: cumulativeValue,
-          volume: item.shares,
-        } as any;
-
-        previousTotal = cumulativeValue;
-        return current;
-      });
-
-      setChartData(enhancedData);
+      setChartData([currentData]);
     }
 
     // Prepare candlestick-style data for individual stocks

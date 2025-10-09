@@ -54,12 +54,12 @@ export default function Performance() {
       
       const portfolioData = response.data.portfolio || [];
       
-      // Fetch historical data for each stock
+      // Fetch Google Finance data for each stock
       const portfolioWithHistory = await Promise.all(
         portfolioData.map(async (stock: any) => {
           try {
             const histResponse = await axios.get(
-              `${process.env.NEXT_PUBLIC_API_URL}/api/stocks/${stock.ticker}/history?days=90`,
+              `${process.env.NEXT_PUBLIC_API_URL}/api/stocks/${stock.ticker}/google-finance?days=90`,
               { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
             );
             
@@ -68,7 +68,7 @@ export default function Performance() {
               historicalData: histResponse.data
             };
           } catch (error) {
-            console.warn(`Failed to fetch historical data for ${stock.ticker}:`, error);
+            console.warn(`Failed to fetch Google Finance data for ${stock.ticker}:`, error);
             return stock; // Return without historical data
           }
         })
@@ -95,7 +95,7 @@ export default function Performance() {
       let portfolioMaxDrawdown = 0;
 
       for (const stock of portfolio) {
-        const metrics = calculateStockMetrics(stock, days);
+        const metrics = calculateStockMetricsWithGoogleFormulas(stock, days);
         stockMetricsMap[stock.ticker] = metrics;
 
         // Calculate portfolio-weighted metrics
@@ -131,7 +131,8 @@ export default function Performance() {
     }
   };
 
-  const calculateStockMetrics = (stock: StockData, days: number): PerformanceMetrics => {
+  // Google Finance formulas implementation
+  const calculateStockMetricsWithGoogleFormulas = (stock: StockData, days: number): PerformanceMetrics => {
     if (!stock.historicalData || stock.historicalData.prices.length === 0) {
       // Fallback calculation using entry vs current price
       const totalReturn = ((stock.currentPrice - stock.entryPrice) / stock.entryPrice) * 100;
@@ -149,14 +150,18 @@ export default function Performance() {
 
     const prices = stock.historicalData.prices;
     const currentPrice = prices[prices.length - 1];
-    const startPrice = prices[Math.max(0, prices.length - days)];
     
-    // Calculate total return for the period
+    // Google Finance formula: =TRANSPOSE(QUERY(GOOGLEFINANCE(A2,"price",TODAY()-90,TODAY(),"DAILY"),"select Col2 offset 1",0))
+    // This gets 90-day price data - we'll use the last 'days' worth
+    const startIndex = Math.max(0, prices.length - days);
+    const startPrice = prices[startIndex];
+    
+    // Calculate total return for the period (Google Finance formula)
     const totalReturn = ((currentPrice - startPrice) / startPrice) * 100;
     
-    // Calculate volatility (standard deviation of daily returns)
+    // Calculate volatility using standard deviation of daily returns
     const dailyReturns = [];
-    for (let i = 1; i < prices.length; i++) {
+    for (let i = startIndex + 1; i < prices.length; i++) {
       const dailyReturn = (prices[i] - prices[i - 1]) / prices[i - 1];
       dailyReturns.push(dailyReturn * 100);
     }
@@ -171,22 +176,33 @@ export default function Performance() {
     
     // Calculate max drawdown
     let maxDrawdown = 0;
-    let peak = prices[0];
-    for (const price of prices) {
-      if (price > peak) peak = price;
-      const drawdown = ((peak - price) / peak) * 100;
+    let peak = prices[startIndex];
+    for (let i = startIndex; i < prices.length; i++) {
+      if (prices[i] > peak) peak = prices[i];
+      const drawdown = ((peak - prices[i]) / peak) * 100;
       maxDrawdown = Math.max(maxDrawdown, drawdown);
     }
     
-    // Calculate top price in the period
-    const periodPrices = prices.slice(-days);
+    // Google Finance formula: =MAX(G2:BG2) - get top price in period
+    const periodPrices = prices.slice(startIndex);
     const topPrice = Math.max(...periodPrices);
     
-    // Calculate monthly returns (approximate)
-    const lastMonthReturn = prices.length >= 30 ? 
-      ((prices[prices.length - 1] - prices[prices.length - 30]) / prices[prices.length - 30]) * 100 : 0;
-    const thisMonthReturn = prices.length >= 60 ? 
-      ((prices[prices.length - 30] - prices[prices.length - 60]) / prices[prices.length - 60]) * 100 : 0;
+    // Google Finance formulas for monthly returns:
+    // Last month: =(INDEX(G2:BJ2,30) - INDEX(G2:BJ2,1)) / INDEX(G2:BJ2,1)
+    // This month: =(INDEX(G2:BN2,60) - INDEX(G2:BJ2,31)) / INDEX(G2:BJ2,31)
+    let lastMonthReturn = 0;
+    let thisMonthReturn = 0;
+    
+    if (prices.length >= 30) {
+      const lastMonthStart = Math.max(0, prices.length - 30);
+      lastMonthReturn = ((currentPrice - prices[lastMonthStart]) / prices[lastMonthStart]) * 100;
+    }
+    
+    if (prices.length >= 60) {
+      const thisMonthStart = Math.max(0, prices.length - 60);
+      const thisMonthEnd = Math.max(0, prices.length - 30);
+      thisMonthReturn = ((prices[thisMonthEnd] - prices[thisMonthStart]) / prices[thisMonthStart]) * 100;
+    }
 
     return {
       totalReturn,
@@ -231,7 +247,7 @@ export default function Performance() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Performance Analysis</h1>
-          <p className="text-slate-400">Real-time performance metrics calculated from historical data</p>
+          <p className="text-slate-400">Real-time performance metrics calculated using Google Finance formulas</p>
           {calculating && (
             <div className="flex items-center mt-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500 mr-2"></div>
@@ -388,7 +404,7 @@ export default function Performance() {
         {/* Data Source Info */}
         <div className="mt-6 text-center">
           <p className="text-xs text-slate-500">
-            📊 Real-time calculations based on historical price data • 
+            📊 Real-time calculations using Google Finance formulas • 
             Sharpe ratio assumes 2% risk-free rate • 
             Volatility is annualized • 
             Data updates every 5 minutes
