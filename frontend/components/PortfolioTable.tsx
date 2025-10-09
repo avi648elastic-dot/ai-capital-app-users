@@ -194,15 +194,18 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                     )}
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
-                    <div className="flex flex-col items-center space-y-1">
-                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-bold rounded-full ${getActionColor(item.action)}`}>
-                        {item.action}
-                      </span>
-                      {item.reason && (
-                        <div className="text-xs text-slate-400 text-center max-w-16 truncate" title={item.reason}>
-                          {item.reason}
-                        </div>
-                      )}
+                    <div className="flex justify-center">
+                      <div className="relative group">
+                        <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-full ${getActionColor(item.action)} cursor-help`}>
+                          {item.action}
+                        </span>
+                        {item.reason && (
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 border border-slate-700">
+                            {item.reason}
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
