@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Users, TrendingUp, DollarSign, Activity, Eye, Power, RotateCcw } from 'lucide-react';
+import { Users, TrendingUp, DollarSign, Activity, Eye, Power, RotateCcw, Trash2 } from 'lucide-react';
 
 interface User {
   id: string;
@@ -83,10 +83,10 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'reset' | 'make-premium' | 'make-free') => {
+  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'reset' | 'make-premium' | 'make-free' | 'refresh') => {
     try {
       let endpoint = '';
-      let method: 'put' | 'delete' = 'put';
+      let method: 'put' | 'delete' | 'post' = 'put';
       
       switch (action) {
         case 'activate':
@@ -105,16 +105,32 @@ export default function AdminDashboard() {
         case 'make-free':
           endpoint = `/api/admin/users/${userId}/make-free`;
           break;
+        case 'refresh':
+          endpoint = `/api/admin/users/${userId}/refresh`;
+          method = 'post';
+          break;
       }
 
-      await axios[method](
+      const response = await axios[method](
         `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
         {},
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
       );
 
-      alert(`✅ User ${action} successful!`);
-      fetchData(); // Refresh data
+      if (action === 'refresh') {
+        // Update the specific user's data in the state
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, ...response.data.user }
+              : user
+          )
+        );
+        alert(`✅ ${response.data.message}`);
+      } else {
+        alert(`✅ User ${action} successful!`);
+        fetchData(); // Refresh data
+      }
     } catch (error) {
       console.error(`Error ${action} user:`, error);
       const err = error as any;
@@ -337,11 +353,18 @@ export default function AdminDashboard() {
                             <Power className="w-4 h-4" />
                           </button>
                           <button
+                            onClick={() => handleUserAction(user.id, 'refresh')}
+                            className="text-blue-400 hover:text-blue-300"
+                            title="Refresh Portfolio Data"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => handleUserAction(user.id, 'reset')}
                             className="text-warning-400 hover:text-warning-300"
                             title="Reset Portfolio"
                           >
-                            <RotateCcw className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>

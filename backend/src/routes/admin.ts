@@ -26,10 +26,51 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
       users.map(async (user) => {
         const portfolio = await Portfolio.find({ userId: user._id });
         
-        // Calculate portfolio stats
+        if (portfolio.length === 0) {
+          return {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            subscriptionActive: user.subscriptionActive,
+            subscriptionTier: user.subscriptionTier || 'free',
+            onboardingCompleted: user.onboardingCompleted,
+            portfolioType: user.portfolioType,
+            portfolioSource: user.portfolioSource,
+            totalCapital: user.totalCapital,
+            riskTolerance: user.riskTolerance,
+            createdAt: user.createdAt,
+            portfolioStats: {
+              totalCost: 0,
+              totalValue: 0,
+              totalPnL: 0,
+              pnlPercent: 0,
+              stockCount: 0,
+              actionCounts: {},
+            },
+          };
+        }
+
+        // Get unique tickers for real-time price fetching
+        const tickers = [...new Set(portfolio.map(item => item.ticker))];
+        
+        // Fetch real-time prices using stockDataService
+        let realTimeData = new Map();
+        try {
+          const { stockDataService } = await import('../services/stockDataService');
+          realTimeData = await stockDataService.getMultipleStockData(tickers);
+          console.log(`📊 [ADMIN] Fetched real-time data for user ${user.email}:`, realTimeData.size, 'stocks');
+        } catch (priceError) {
+          console.warn(`⚠️ [ADMIN] Could not fetch real-time prices for user ${user.email}:`, priceError);
+        }
+        
+        // Calculate portfolio stats with real-time prices
         const totals = portfolio.reduce((acc, item) => {
           const cost = item.entryPrice * item.shares;
-          const value = item.currentPrice * item.shares;
+          
+          // Use real-time price if available, otherwise fallback to stored price
+          const realTimeStock = realTimeData.get(item.ticker);
+          const currentPrice = realTimeStock?.current || item.currentPrice;
+          const value = currentPrice * item.shares;
           const pnl = value - cost;
           
           return {
@@ -185,6 +226,89 @@ router.put('/users/:userId/make-free', authenticateToken, requireAdmin, async (r
     res.json({ message: 'User downgraded to free successfully', user });
   } catch (error) {
     console.error('Make free error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Refresh user's portfolio data with real-time prices
+router.post('/users/:userId/refresh', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    console.log(`🔄 [ADMIN] Refreshing portfolio data for user: ${userId}`);
+    
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const portfolio = await Portfolio.find({ userId });
+    if (portfolio.length === 0) {
+      return res.json({ 
+        message: 'No portfolio data to refresh',
+        user: {
+          ...user.toObject(),
+          portfolioStats: {
+            totalCost: 0,
+            totalValue: 0,
+            totalPnL: 0,
+            pnlPercent: 0,
+            stockCount: 0,
+            actionCounts: {},
+          }
+        }
+      });
+    }
+
+    // Get unique tickers for real-time price fetching
+    const tickers = [...new Set(portfolio.map(item => item.ticker))];
+    console.log(`📊 [ADMIN] Refreshing prices for tickers:`, tickers);
+    
+    // Fetch real-time prices
+    const { stockDataService } = await import('../services/stockDataService');
+    const realTimeData = await stockDataService.getMultipleStockData(tickers);
+    console.log(`✅ [ADMIN] Fetched real-time data for ${realTimeData.size} stocks`);
+    
+    // Calculate updated portfolio stats with real-time prices
+    const totals = portfolio.reduce((acc, item) => {
+      const cost = item.entryPrice * item.shares;
+      
+      // Use real-time price if available, otherwise fallback to stored price
+      const realTimeStock = realTimeData.get(item.ticker);
+      const currentPrice = realTimeStock?.current || item.currentPrice;
+      const value = currentPrice * item.shares;
+      const pnl = value - cost;
+      
+      return {
+        totalCost: acc.totalCost + cost,
+        totalValue: acc.totalValue + value,
+        totalPnL: acc.totalPnL + pnl,
+        stockCount: acc.stockCount + 1,
+      };
+    }, { totalCost: 0, totalValue: 0, totalPnL: 0, stockCount: 0 });
+    
+    // Count actions
+    const actionCounts = portfolio.reduce((acc, item) => {
+      acc[item.action] = (acc[item.action] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const updatedUser = {
+      ...user.toObject(),
+      portfolioStats: {
+        ...totals,
+        pnlPercent: totals.totalCost > 0 ? (totals.totalPnL / totals.totalCost) * 100 : 0,
+        actionCounts,
+      },
+    };
+    
+    console.log(`✅ [ADMIN] Portfolio refreshed for user ${user.email}: P&L ${updatedUser.portfolioStats.pnlPercent.toFixed(2)}%`);
+    
+    res.json({ 
+      message: 'Portfolio data refreshed successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Refresh portfolio error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
