@@ -27,6 +27,11 @@
       radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
       radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
   }
+
+  /* Light Theme - Override main container */
+  [data-theme="light"] .min-h-screen {
+    @apply bg-gray-50;
+  }
   
   /* Perfect logo transparency */
   img[alt*="Logo"], img[alt*="logo"] {
@@ -159,7 +164,24 @@
 
   /* Light Theme Financial Metrics */
   [data-theme="light"] .financial-metric {
-    @apply bg-white/60 border border-gray-200/50 hover:bg-gray-50/60;
+    @apply bg-white/90 border border-gray-200 hover:bg-gray-50 text-gray-900;
+  }
+  
+  /* Light Theme Financial Metrics Text */
+  [data-theme="light"] .financial-metric p {
+    @apply text-gray-700;
+  }
+  
+  [data-theme="light"] .financial-metric .text-slate-400 {
+    @apply text-gray-600;
+  }
+  
+  [data-theme="light"] .financial-metric .text-slate-500 {
+    @apply text-gray-500;
+  }
+  
+  [data-theme="light"] .financial-metric .text-slate-100 {
+    @apply text-gray-900;
   }
   
   /* Market Data Styling */
@@ -170,6 +192,123 @@
   /* Light Theme Market Data */
   [data-theme="light"] .market-data {
     @apply bg-gray-100 border border-gray-300 text-gray-800;
+  }
+
+  /* Light Theme Text Colors */
+  [data-theme="light"] .text-white {
+    @apply text-gray-900;
+  }
+  
+  [data-theme="light"] .text-slate-100 {
+    @apply text-gray-900;
+  }
+  
+  [data-theme="light"] .text-slate-200 {
+    @apply text-gray-800;
+  }
+  
+  [data-theme="light"] .text-slate-300 {
+    @apply text-gray-700;
+  }
+  
+  [data-theme="light"] .text-slate-400 {
+    @apply text-gray-600;
+  }
+  
+  [data-theme="light"] .text-slate-500 {
+    @apply text-gray-500;
+  }
+
+  /* Light Theme Background Colors */
+  [data-theme="light"] .bg-slate-900 {
+    @apply bg-white;
+  }
+  
+  [data-theme="light"] .bg-slate-800 {
+    @apply bg-gray-100;
+  }
+  
+  [data-theme="light"] .bg-slate-700 {
+    @apply bg-gray-200;
+  }
+  
+  [data-theme="light"] .bg-slate-950 {
+    @apply bg-gray-50;
+  }
+
+  /* Light Theme Subscription Banner */
+  [data-theme="light"] .bg-emerald-900\/30 {
+    @apply bg-green-100;
+  }
+  
+  [data-theme="light"] .bg-blue-900\/30 {
+    @apply bg-blue-100;
+  }
+  
+  [data-theme="light"] .bg-amber-900\/30 {
+    @apply bg-amber-100;
+  }
+  
+  [data-theme="light"] .bg-orange-900\/30 {
+    @apply bg-orange-100;
+  }
+  
+  [data-theme="light"] .border-emerald-500\/50 {
+    @apply border-green-300;
+  }
+  
+  [data-theme="light"] .border-amber-500\/50 {
+    @apply border-amber-300;
+  }
+  
+  [data-theme="light"] .text-emerald-300 {
+    @apply text-green-700;
+  }
+  
+  [data-theme="light"] .text-amber-300 {
+    @apply text-amber-700;
+  }
+  
+  [data-theme="light"] .text-blue-300 {
+    @apply text-blue-700;
+  }
+
+  /* Light Theme Portfolio Counters */
+  [data-theme="light"] .bg-emerald-900\/30 {
+    @apply bg-green-100;
+  }
+  
+  [data-theme="light"] .bg-amber-900\/30 {
+    @apply bg-amber-100;
+  }
+  
+  [data-theme="light"] .border-emerald-500\/30 {
+    @apply border-green-300;
+  }
+  
+  [data-theme="light"] .border-amber-500\/30 {
+    @apply border-amber-300;
+  }
+
+  /* Light Theme Market Overview */
+  [data-theme="light"] .bg-gradient-to-br {
+    @apply bg-white border-gray-200;
+  }
+  
+  [data-theme="light"] .from-slate-900\/80 {
+    @apply from-white;
+  }
+  
+  [data-theme="light"] .to-slate-800\/80 {
+    @apply to-gray-50;
+  }
+  
+  [data-theme="light"] .border-slate-700\/50 {
+    @apply border-gray-200;
+  }
+  
+  [data-theme="light"] .bg-slate-900\/60 {
+    @apply bg-white;
   }
 }
 
