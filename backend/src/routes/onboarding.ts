@@ -67,28 +67,44 @@ router.post('/check-existing', authenticateToken, async (req, res) => {
  */
 router.post('/import-portfolio', authenticateToken, async (req, res) => {
   try {
+    console.log('🔍 [IMPORT PORTFOLIO] Starting import process...');
     const { stocks, totalCapital, riskTolerance } = req.body;
+    
+    console.log('🔍 [IMPORT PORTFOLIO] Request data:', { stocks, totalCapital, riskTolerance });
+    
     if (!stocks || !Array.isArray(stocks) || stocks.length === 0) {
+      console.log('❌ [IMPORT PORTFOLIO] No stocks provided');
       return res.status(400).json({ message: 'Stocks array is required' });
     }
 
+    console.log('🔍 [IMPORT PORTFOLIO] Finding user:', req.user!._id);
     const user = await User.findById(req.user!._id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      console.log('❌ [IMPORT PORTFOLIO] User not found');
+      return res.status(404).json({ message: 'User not found' });
+    }
 
+    console.log('🔍 [IMPORT PORTFOLIO] Updating user data...');
     user.portfolioType = 'imported';
     user.portfolioSource = 'imported';
     user.totalCapital = totalCapital || 0;
     user.riskTolerance = riskTolerance || 7;
     await user.save();
 
+    console.log('🔍 [IMPORT PORTFOLIO] Clearing existing portfolio...');
     await Portfolio.deleteMany({ userId: req.user!._id });
     const portfolioItems = [];
 
+    console.log('🔍 [IMPORT PORTFOLIO] Processing stocks...');
     for (const stock of stocks) {
+      console.log('🔍 [IMPORT PORTFOLIO] Processing stock:', stock.ticker);
+      
       const { stopLoss, takeProfit } = portfolioGenerator.calculateStopLossAndTakeProfit(
         stock.entryPrice,
         riskTolerance || 7
       );
+
+      console.log('🔍 [IMPORT PORTFOLIO] Stop loss/take profit:', { stopLoss, takeProfit });
 
       const item = new Portfolio({
         userId: req.user!._id,
@@ -102,20 +118,31 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
         portfolioType: 'solid', // Imported portfolios default to solid
       });
 
+      console.log('🔍 [IMPORT PORTFOLIO] Saving portfolio item...');
       await item.save();
       portfolioItems.push(item);
     }
 
+    console.log('🔍 [IMPORT PORTFOLIO] Completing onboarding...');
     user.onboardingCompleted = true;
     await user.save();
 
+    console.log('✅ [IMPORT PORTFOLIO] Import completed successfully');
     return res.json({
       message: 'Portfolio imported successfully',
       portfolio: portfolioItems,
     });
   } catch (error) {
     console.error('❌ Import portfolio error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error('❌ Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    return res.status(500).json({ 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Server error'
+    });
   }
 });
 
