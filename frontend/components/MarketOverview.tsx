@@ -6,10 +6,9 @@ import Cookies from 'js-cookie';
 
 type IndexItem = { symbol: string; price: number | null; thisMonthPercent?: number };
 
-export default function MarketOverview({ canCustomize = false }: { canCustomize?: boolean }) {
+export default function MarketOverview() {
   const [data, setData] = useState<{ indexes: Record<string, IndexItem>; featured: IndexItem[]; updatedAt: string } | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [tickers, setTickers] = useState<string[]>([]);
+  // Remove editing functionality since Customize button is removed
   const [loading, setLoading] = useState(true);
   const load = async () => {
     try {
@@ -43,26 +42,22 @@ export default function MarketOverview({ canCustomize = false }: { canCustomize?
         <h3 className="text-xl font-bold text-white tracking-wide">Markets Overview</h3>
         <div className="flex items-center space-x-3">
           {data?.updatedAt && <span className="text-xs text-slate-400">Updated {new Date(data.updatedAt).toLocaleTimeString()}</span>}
-          {canCustomize && (
-          <button
-            onClick={() => {
-              setTickers((data?.featured || []).map((f) => f.symbol));
-              setEditing(true);
-            }}
-            className="text-xs px-3 py-1.5 rounded bg-emerald-600/80 hover:bg-emerald-600 text-white shadow"
-          >
-            Customize
-          </button>
-          )}
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {['SPY','QQQ','DIA'].map((k) => {
-          const item = data!.indexes[k];
+        {[
+          { symbol: 'SPY', name: 'S&P 500' },
+          { symbol: 'QQQ', name: 'NASDAQ' },
+          { symbol: 'DIA', name: 'DOW' }
+        ].map(({ symbol, name }) => {
+          const item = data!.indexes[symbol];
           return (
-            <div key={k} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">
+            <div key={symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">
               <div className="flex items-center justify-between">
-                <div className="text-slate-300 text-sm font-medium">{k}</div>
+                <div>
+                  <div className="text-slate-300 text-sm font-medium">{symbol}</div>
+                  <div className="text-slate-400 text-xs">{name}</div>
+                </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${item?.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(item?.thisMonthPercent)}</span>
               </div>
               <div className="text-white text-2xl font-bold mt-1">{fmt(item?.price)}</div>
@@ -73,57 +68,35 @@ export default function MarketOverview({ canCustomize = false }: { canCustomize?
 
       {/* Featured stocks: same tile style as indexes, 30% smaller, in a clean row */}
       <div className="mt-3 grid grid-cols-4 gap-4">
-        {data!.featured.map((f) => (
-          <div key={f.symbol} className="rounded-xl p-3 border border-slate-700/50 bg-slate-900/60 shadow-inner scale-90 origin-top-left">
-            <div className="flex items-center justify-between">
-              <div className="text-slate-300 text-sm font-medium">{f.symbol}</div>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(f.thisMonthPercent)}</span>
+        {data!.featured.map((f) => {
+          // Add company names for common stocks
+          const getCompanyName = (symbol: string) => {
+            const names: Record<string, string> = {
+              'AAPL': 'Apple',
+              'MSFT': 'Microsoft',
+              'AMZN': 'Amazon',
+              'TSLA': 'Tesla',
+              'GOOGL': 'Google',
+              'META': 'Meta',
+              'NVDA': 'NVIDIA'
+            };
+            return names[symbol] || symbol;
+          };
+          
+          return (
+            <div key={f.symbol} className="rounded-xl p-3 border border-slate-700/50 bg-slate-900/60 shadow-inner scale-90 origin-top-left">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-slate-300 text-sm font-medium">{f.symbol}</div>
+                  <div className="text-slate-400 text-xs">{getCompanyName(f.symbol)}</div>
+                </div>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(f.thisMonthPercent)}</span>
+              </div>
+              <div className="text-white text-xl font-bold mt-1">{fmt(f.price)}</div>
             </div>
-            <div className="text-white text-xl font-bold mt-1">{fmt(f.price)}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-      {editing && (
-        <div className="mt-4 border-t border-slate-700 pt-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[0,1,2,3].map((i) => (
-              <input
-                key={i}
-                value={tickers[i] || ''}
-                onChange={(e) => {
-                  const v = e.target.value.toUpperCase();
-                  const next = [...tickers];
-                  next[i] = v;
-                  setTickers(next);
-                }}
-                placeholder={`Ticker ${i+1}`}
-                className="input-field"
-              />
-            ))}
-          </div>
-          <div className="mt-3 flex space-x-2">
-            <button
-              onClick={async () => {
-                try {
-                  await axios.post(
-                    `${process.env.NEXT_PUBLIC_API_URL}/api/markets/featured`,
-                    { featuredTickers: tickers },
-                    { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
-                  );
-                  setEditing(false);
-                  load();
-                } catch (e: any) {
-                  alert(e?.response?.data?.message || 'Failed to save featured tickers');
-                }
-              }}
-              className="btn-primary text-xs"
-            >
-              Save
-            </button>
-            <button onClick={() => setEditing(false)} className="btn-secondary text-xs">Cancel</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

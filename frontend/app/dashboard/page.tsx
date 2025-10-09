@@ -478,7 +478,7 @@ export default function Dashboard() {
         {/* Markets Overview placed below subscription banner, above summary */}
         <div className="mb-6">
           <ErrorBoundary label="markets">
-            <MarketOverview canCustomize={user?.subscriptionTier === 'premium'} />
+            <MarketOverview />
           </ErrorBoundary>
         </div>
 
