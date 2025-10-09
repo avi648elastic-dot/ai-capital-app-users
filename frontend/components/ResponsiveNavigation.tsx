@@ -23,6 +23,9 @@ export default function ResponsiveNavigation({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const { isMobile, isTablet } = useDevice();
+  
+  // Debug logging
+  console.log('🔍 [RESPONSIVE NAV] Device detection:', { isMobile, isTablet, screenWidth: useDevice().screenWidth });
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/dashboard' },
@@ -47,7 +50,7 @@ export default function ResponsiveNavigation({
     }
   };
 
-  // Desktop Navigation
+  // Desktop Navigation - Only show on desktop (>= 1024px)
   if (!isMobile && !isTablet) {
     return (
       <div className="hidden lg:flex flex-col w-64 bg-slate-800 border-r border-slate-700 h-screen">
@@ -149,14 +152,14 @@ export default function ResponsiveNavigation({
   // Mobile Navigation
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button - ALWAYS VISIBLE ON MOBILE */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-3 bg-gradient-to-r from-blue-600 to-emerald-600 shadow-lg border border-blue-500/50 rounded-xl text-white hover:from-blue-500 hover:to-emerald-500 transition-all duration-300"
+          className="p-4 bg-gradient-to-r from-blue-600 to-emerald-600 shadow-xl border-2 border-blue-500/50 rounded-xl text-white hover:from-blue-500 hover:to-emerald-500 transition-all duration-300 transform hover:scale-110 active:scale-95"
           aria-label="Toggle navigation menu"
         >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
         </button>
       </div>
 

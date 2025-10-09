@@ -12,6 +12,7 @@ import Charts from '@/components/Charts';
 import Header from '@/components/Header';
 import MarketOverview from '@/components/MarketOverview';
 import ResponsiveNavigation from '@/components/ResponsiveNavigation';
+import MobileHeader from '@/components/MobileHeader';
 import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';
 import CreatePortfolioModal from '@/components/CreatePortfolioModal';
 import DeletePortfolioModal from '@/components/DeletePortfolioModal';
@@ -383,6 +384,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex">
+      {/* Mobile Header - Only shows on mobile */}
+      <MobileHeader 
+        title="AiCapital Dashboard"
+        subtitle="Portfolio Management"
+      />
+      
       {/* Responsive Navigation - Auto-detects device */}
       <ResponsiveNavigation 
         userName={user?.name || 'User'} 
@@ -395,7 +402,7 @@ export default function Dashboard() {
       {/* Professional Header */}
       <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} />
 
-        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-8 w-full">
         {/* Enhanced Subscription Status Banner */}
         <div className={`mb-6 p-6 rounded-xl border-2 ${
           user?.subscriptionTier === 'premium' 
