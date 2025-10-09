@@ -396,6 +396,8 @@ export default function Dashboard() {
       
       {/* Professional Header */}
       <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} />
+      
+      <div className="px-4 sm:px-6 lg:px-8">
         {/* Enhanced Subscription Status Banner - AGGRESSIVE Mobile Optimization */}
         <div className={`mb-6 sm:mb-6 p-6 sm:p-6 rounded-xl border-2 ${
           user?.subscriptionTier === 'premium' 
@@ -746,7 +748,6 @@ export default function Dashboard() {
             </div>
           </>
         )}
-        </div>
       </div>
 
       {/* Stock Form Modal */}
