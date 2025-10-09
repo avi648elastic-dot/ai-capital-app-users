@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Trash2, ArrowRight } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
