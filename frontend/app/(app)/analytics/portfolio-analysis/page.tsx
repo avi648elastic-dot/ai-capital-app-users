@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { DollarSign, AlertTriangle, PieChart } from 'lucide-react';
-import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 
 export default function PortfolioAnalysis() {
   const [portfolio, setPortfolio] = useState<any[]>([]);
@@ -96,16 +95,7 @@ export default function PortfolioAnalysis() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
-      <ResponsiveNavigation 
-        userName={user?.name || 'User'} 
-        subscriptionTier={user?.subscriptionTier || 'free'}
-        userAvatar={user?.avatarUrl}
-        onLogout={handleLogout}
-      />
-      
-      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-6 sm:pb-8">
-        <div className="max-w-7xl mx-auto w-full">
+    <div className="w-full">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">Portfolio Analysis</h1>
             <p className="text-lg text-slate-400">Deep dive into your portfolio composition and performance</p>
@@ -195,8 +185,6 @@ export default function PortfolioAnalysis() {
               )}
             </div>
           </div>
-        </div>
-      </div>
     </div>
   );
 }

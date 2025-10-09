@@ -11,7 +11,6 @@ import StockForm from '@/components/StockForm';
 import Charts from '@/components/Charts';
 import Header from '@/components/Header';
 import MarketOverview from '@/components/MarketOverview';
-import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 import MobileHeader from '@/components/MobileHeader';
 import { getSubscriptionLimits, canCreatePortfolio, canAddStock, getUpgradeMessage } from '@/utils/subscriptionLimits';
 import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { TrendingUp, BarChart3, PieChart, Activity, Building2, TrendingDown, Bot, Smile, Frown, AlertCircle, RefreshCw } from 'lucide-react';
-import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 
 // Real Portfolio Chart Component
 const RealPortfolioChart = ({ data }: { data: any[] }) => {
@@ -334,16 +333,7 @@ export default function Analytics() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
-      <ResponsiveNavigation 
-        userName={user?.name || 'User'} 
-        subscriptionTier={user?.subscriptionTier || 'free'}
-        userAvatar={user?.avatarUrl}
-        onLogout={handleLogout}
-      />
-      
-      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-6 sm:pb-8">
-        <div className="max-w-7xl mx-auto w-full">
+    <div className="w-full">
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -797,8 +787,6 @@ export default function Analytics() {
             </div>
           </div>
         </div>
-        </div>
-      </div>
     </div>
   );
 }

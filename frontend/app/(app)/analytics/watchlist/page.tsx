@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Eye, Plus, Trash2, TrendingUp, TrendingDown, Bell, BellOff } from 'lucide-react';
-import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 
 interface WatchlistItem {
   id: string;
@@ -155,16 +154,7 @@ export default function Watchlist() {
   const isAtLimit = watchlist.length >= maxStocks;
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
-      <ResponsiveNavigation 
-        userName={user?.name || 'User'} 
-        subscriptionTier={user?.subscriptionTier || 'free'}
-        userAvatar={user?.avatarUrl}
-        onLogout={handleLogout}
-      />
-      
-      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-6 sm:pb-8">
-        <div className="max-w-7xl mx-auto w-full">
+    <div className="w-full">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">Watchlist</h1>
           <p className="text-lg text-slate-400">Track stocks and get notifications for price changes</p>
@@ -305,8 +295,6 @@ export default function Watchlist() {
             </div>
           )}
         </div>
-        </div>
-      </div>
     </div>
   );
 }

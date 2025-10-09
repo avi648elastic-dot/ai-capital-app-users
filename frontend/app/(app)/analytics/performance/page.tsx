@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { TrendingUp, Activity, Target, BarChart3 } from 'lucide-react';
-import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 import { useRouter } from 'next/navigation';
 
 interface StockData {
@@ -157,15 +156,7 @@ export default function Performance() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
-      {/* Responsive Navigation - Auto-detects device */}
-      <ResponsiveNavigation 
-        userName="User" 
-        subscriptionTier="premium"
-        onLogout={handleLogout}
-      />
-      
-      <div className="flex-1 flex flex-col">
+    <div className="w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Performance Analysis</h1>
@@ -343,8 +334,6 @@ export default function Performance() {
             Portfolio: {portfolio.length} stocks
           </p>
         </div>
-        </div>
-      </div>
     </div>
   );
 }

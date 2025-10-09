@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { FileText, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
-import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 
 export default function Reports() {
   const [portfolio, setPortfolio] = useState<any[]>([]);
@@ -100,16 +99,7 @@ export default function Reports() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
-      <ResponsiveNavigation 
-        userName={user?.name || 'User'} 
-        subscriptionTier={user?.subscriptionTier || 'free'}
-        userAvatar={user?.avatarUrl}
-        onLogout={handleLogout}
-      />
-      
-      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-6 sm:pb-8">
-        <div className="max-w-7xl mx-auto w-full">
+    <div className="w-full">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Reports & News</h1>
           <p className="text-slate-400">Latest news, earnings, and analysis for your portfolio</p>
@@ -199,8 +189,6 @@ export default function Reports() {
             </div>
           </div>
         </div>
-        </div>
-      </div>
     </div>
   );
 }
