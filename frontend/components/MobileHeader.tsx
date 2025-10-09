@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Menu, X, BarChart3 } from 'lucide-react';
+import { Menu, BarChart3 } from 'lucide-react';
 
 interface MobileHeaderProps {
   title: string;

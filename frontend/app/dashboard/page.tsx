@@ -385,19 +385,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Mobile Header */}
-      <MobileHeader 
-        title="AiCapital Dashboard"
-        subtitle="Portfolio Management"
-      />
-      
-      {/* Mobile Navigation */}
-      <MobileNavigation 
-        userName={user?.name || 'User'} 
-        subscriptionTier={user?.subscriptionTier || 'free'}
-        onLogout={handleLogout}
-      />
-      
       {/* Desktop Navigation Sidebar */}
       <Navigation 
         userName={user?.name || 'User'} 
@@ -791,18 +778,6 @@ export default function Dashboard() {
         />
       )}
 
-      {/* Mobile Floating Action Button */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-50">
-        <button
-          onClick={() => setShowStockForm(true)}
-          className="w-14 h-14 bg-gradient-to-r from-blue-600 to-emerald-600 rounded-full shadow-lg flex items-center justify-center text-white hover:from-blue-500 hover:to-emerald-500 transition-all duration-300 transform hover:scale-110 active:scale-95"
-          aria-label="Add new stock"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-        </button>
-      </div>
     </div>
   );
 }
