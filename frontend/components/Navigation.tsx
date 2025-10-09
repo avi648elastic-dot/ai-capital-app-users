@@ -52,63 +52,24 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
       href: '/dashboard'
     },
     {
-      id: 'portfolio',
-      label: 'Portfolio Management',
-      icon: BarChart3,
-      children: [
-        {
-          id: 'solid-portfolio',
-          label: 'Solid Portfolio',
-          icon: Shield,
-          href: '/dashboard?tab=solid'
-        },
-        {
-          id: 'risky-portfolio',
-          label: 'Risky Portfolio',
-          icon: TrendingUp,
-          href: '/dashboard?tab=risky',
-          premium: true
-        }
-      ]
+      id: 'analytics',
+      label: '📊 Analytics & Performance',
+      icon: PieChart,
+      href: '/analytics',
+      badge: 'Important'
     },
-      {
-        id: 'analytics',
-        label: 'Analytics',
-        icon: PieChart,
-        children: [
-          {
-            id: 'performance',
-            label: 'Performance',
-            icon: BarChart3,
-            href: '/analytics/performance'
-          },
-          {
-            id: 'reports',
-            label: 'Reports',
-            icon: FileText,
-            href: '/analytics/reports',
-            premium: true
-          }
-        ]
-      },
-      {
-        id: 'risk-management',
-        label: 'Risk Management',
-        icon: AlertTriangle,
-        href: '/risk-management',
-        premium: true
-      },
+    {
+      id: 'risk-management',
+      label: 'Risk Management',
+      icon: AlertTriangle,
+      href: '/risk-management',
+      premium: true
+    },
     {
       id: 'trading',
       label: 'Trading Tools',
       icon: Plus,
       children: [
-        {
-          id: 'add-stock',
-          label: 'Add Stock',
-          icon: Plus,
-          href: '/dashboard?action=add'
-        },
         {
           id: 'watchlist',
           label: 'Watchlist',

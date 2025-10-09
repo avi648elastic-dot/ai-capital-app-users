@@ -40,16 +40,11 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
       href: '/dashboard'
     },
     {
-      id: 'portfolio-analysis',
-      label: 'Portfolio Analysis',
+      id: 'analytics',
+      label: '📊 Analytics & Performance',
       icon: PieChart,
-      href: '/analytics'
-    },
-    {
-      id: 'add-stock',
-      label: 'Add Stock',
-      icon: Plus,
-      href: '/dashboard?action=add'
+      href: '/analytics',
+      badge: 'Important'
     },
     {
       id: 'risk-management',

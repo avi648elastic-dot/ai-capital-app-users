@@ -52,30 +52,10 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
             <Logo />
           </div>
 
-          {/* Navigation */}
+          {/* Navigation - Removed dead links as requested */}
           {showNavigation && (
             <nav className="hidden md:flex space-x-8">
-              <a
-                href="/dashboard"
-                className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors duration-200"
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Dashboard</span>
-              </a>
-              <a
-                href="/portfolio"
-                className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors duration-200"
-              >
-                <TrendingUp className="w-4 h-4" />
-                <span>Portfolio</span>
-              </a>
-              <a
-                href="/analytics"
-                className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors duration-200"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Analytics</span>
-              </a>
+              {/* All navigation moved to left sidebar - clean header */}
             </nav>
           )}
 
