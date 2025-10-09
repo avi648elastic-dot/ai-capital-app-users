@@ -45,7 +45,7 @@ const getNotificationsSchema = z.object({
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user!._id;
+    const userId = req.user!._id.toString();
     const filters = getNotificationsSchema.parse(req.query);
     
     const result = await notificationService.getUserNotifications({
@@ -178,7 +178,7 @@ router.post('/stock-action', authenticateAdmin, async (req, res) => {
 router.put('/:id/read', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user!._id;
+    const userId = req.user!._id.toString();
     
     const notification = await notificationService.markAsRead(id, userId);
     
@@ -210,7 +210,7 @@ router.put('/:id/read', authenticateToken, async (req, res) => {
  */
 router.put('/read-all', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user!._id;
+    const userId = req.user!._id.toString();
     
     const count = await notificationService.markAllAsRead(userId);
 
@@ -236,7 +236,7 @@ router.put('/read-all', authenticateToken, async (req, res) => {
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user!._id;
+    const userId = req.user!._id.toString();
     
     const deleted = await notificationService.deleteNotification(id, userId);
     
