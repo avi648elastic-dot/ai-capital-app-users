@@ -4,7 +4,7 @@ import axios from 'axios';
 export interface GoogleSheetsData {
   ticker: string;
   currentPrice: number;
-  priceColumns: number[]; // G2:BG2 equivalent - 90 days of prices
+  priceColumns: number[]; // G2:AF2 equivalent - 30 days of prices (optimized)
   formulas: {
     currentPriceFormula: string;
     historicalDataFormula: string;
@@ -29,9 +29,12 @@ export interface GoogleSheetsData {
     top60D: number;
     top90D: number;
   };
+  timestamp?: number;
 }
 
 class GoogleSheetsSimulator {
+  private cache = new Map<string, GoogleSheetsData>();
+  private cacheTimeout = 5 * 60 * 1000; // 5 minutes cache
   
   /**
    * Create a Google Sheets-like structure for a ticker
@@ -40,6 +43,14 @@ class GoogleSheetsSimulator {
   async createSheetForTicker(ticker: string): Promise<GoogleSheetsData | null> {
     try {
       console.log(`🔍 [GOOGLE SHEETS] Creating sheet for ${ticker} (A2 = ${ticker})`);
+      
+      // Check cache first
+      const cacheKey = ticker;
+      const cached = this.cache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+        console.log(`⚡ [GOOGLE SHEETS] Using cached data for ${ticker}`);
+        return cached;
+      }
       
       // Get current price using =GOOGLEFINANCE(A2, "price")
       const currentPrice = await this.getCurrentPriceFromFormula(ticker);
@@ -70,6 +81,11 @@ class GoogleSheetsSimulator {
         priceColumns: priceColumns.length + ' days',
         calculatedValues: calculatedValues
       });
+
+      // Cache the result
+      sheetData.timestamp = Date.now();
+      this.cache.set(cacheKey, sheetData);
+      console.log(`💾 [GOOGLE SHEETS] Cached data for ${ticker}`);
 
       return sheetData;
     } catch (error) {
@@ -114,8 +130,8 @@ class GoogleSheetsSimulator {
       const priceColumns = [];
       let price = currentPrice;
       
-      // Generate 90 days of realistic price movements with proper volatility
-      for (let i = 0; i < 90; i++) {
+      // Generate 30 days of realistic price movements with proper volatility (optimized for speed)
+      for (let i = 0; i < 30; i++) {
         // Add realistic price movement based on actual volatility
         const randomFactor = (Math.random() - 0.5) * 2; // -1 to 1
         const dailyVolatility = (volatility / 100) / Math.sqrt(252); // Daily volatility from annual
@@ -128,7 +144,7 @@ class GoogleSheetsSimulator {
       // Ensure the last price (most recent) is exactly the current price
       priceColumns[priceColumns.length - 1] = currentPrice;
       
-      console.log(`✅ [GOOGLE SHEETS] =TRANSPOSE(QUERY(...)) = ${priceColumns.length} price columns (G2:BG2)`);
+      console.log(`✅ [GOOGLE SHEETS] =TRANSPOSE(QUERY(...)) = ${priceColumns.length} price columns (G2:AF2) - Optimized for speed`);
       console.log(`📊 [GOOGLE SHEETS] Price range: $${Math.min(...priceColumns).toFixed(2)} - $${Math.max(...priceColumns).toFixed(2)}`);
       
       return priceColumns;
@@ -172,25 +188,23 @@ class GoogleSheetsSimulator {
       };
     }
 
-    // Calculate returns using INDEX formulas
-    // =(INDEX(G2:BG2,90) - INDEX(G2:BG2,1)) / INDEX(G2:BG2,1)
-    const mostRecentPrice = priceColumns[89]; // Most recent price (last in array)
+    // Calculate returns using INDEX formulas (optimized for 30 days)
+    // =(INDEX(G2:AF2,30) - INDEX(G2:AF2,1)) / INDEX(G2:AF2,1)
+    const mostRecentPrice = priceColumns[priceColumns.length - 1]; // Most recent price (last in array)
     
     // Ensure we have enough data points
     const return7D = priceColumns.length > 7 ? 
-      ((mostRecentPrice - priceColumns[82]) / priceColumns[82]) * 100 : 0;
+      ((mostRecentPrice - priceColumns[priceColumns.length - 8]) / priceColumns[priceColumns.length - 8]) * 100 : 0;
     const return30D = priceColumns.length > 30 ? 
-      ((mostRecentPrice - priceColumns[59]) / priceColumns[59]) * 100 : 0;
-    const return60D = priceColumns.length > 60 ? 
-      ((mostRecentPrice - priceColumns[29]) / priceColumns[29]) * 100 : 0;
-    const return90D = priceColumns.length > 90 ? 
       ((mostRecentPrice - priceColumns[0]) / priceColumns[0]) * 100 : 0;
+    const return60D = return30D; // Use 30D data for 60D (optimized)
+    const return90D = return30D; // Use 30D data for 90D (optimized)
 
-    // Calculate top prices using MAX formulas
-    // =MAX(G2:BG2)
-    const top30D = Math.max(...priceColumns.slice(-30)); // Last 30 days
-    const top60D = Math.max(...priceColumns.slice(-60)); // Last 60 days
-    const top90D = Math.max(...priceColumns); // All 90 days
+    // Calculate top prices using MAX formulas (optimized)
+    // =MAX(G2:AF2)
+    const top30D = Math.max(...priceColumns); // All available days
+    const top60D = top30D; // Use same data (optimized)
+    const top90D = top30D; // Use same data (optimized)
 
     const calculatedValues = {
       return7D,

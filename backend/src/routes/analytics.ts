@@ -34,7 +34,7 @@ router.get('/', authenticateToken, async (req, res) => {
       
       const performanceData = await historicalDataService.calculatePortfolioPerformance(
         portfolio, 
-        30, // Last 30 days
+        7, // Reduced to 7 days for faster loading
         userId.toString()
       );
       
