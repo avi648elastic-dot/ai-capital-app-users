@@ -18,6 +18,15 @@
       radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
       radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
   }
+
+  /* Light Theme */
+  [data-theme="light"] body {
+    @apply bg-gray-50 text-gray-900;
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
+  }
   
   /* Perfect logo transparency */
   img[alt*="Logo"], img[alt*="logo"] {
@@ -50,24 +59,49 @@
   .btn-warning {
     @apply bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
   }
+
+  /* Light Theme Button Variants */
+  [data-theme="light"] .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 hover:border-gray-400;
+  }
   
   /* Financial Input Fields */
   .input-field {
     @apply w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+  }
+
+  /* Light Theme Input Fields */
+  [data-theme="light"] .input-field {
+    @apply bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500;
   }
   
   /* Professional Cards */
   .card {
     @apply bg-slate-900/80 backdrop-blur-sm rounded-xl shadow-2xl border border-slate-800/50;
   }
+
+  /* Light Theme Cards */
+  [data-theme="light"] .card {
+    @apply bg-white/80 border border-gray-200/50 shadow-lg;
+  }
   
   /* Market Data Tables */
   .table-header {
     @apply bg-slate-800/80 text-slate-200 font-semibold backdrop-blur-sm;
   }
+
+  /* Light Theme Table Header */
+  [data-theme="light"] .table-header {
+    @apply bg-gray-100 text-gray-800;
+  }
   
   .table-row {
     @apply border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors duration-200;
+  }
+
+  /* Light Theme Table Rows */
+  [data-theme="light"] .table-row {
+    @apply border-b border-gray-200 hover:bg-gray-50;
   }
   
   /* Trading Actions */
@@ -82,6 +116,19 @@
   .action-sell {
     @apply text-red-400 font-bold bg-red-900/20 px-3 py-1 rounded-full border border-red-500/30;
   }
+
+  /* Light Theme Trading Actions */
+  [data-theme="light"] .action-buy {
+    @apply text-emerald-600 bg-emerald-100 border-emerald-300;
+  }
+  
+  [data-theme="light"] .action-hold {
+    @apply text-amber-600 bg-amber-100 border-amber-300;
+  }
+  
+  [data-theme="light"] .action-sell {
+    @apply text-red-600 bg-red-100 border-red-300;
+  }
   
   /* P&L Styling */
   .positive-pnl {
@@ -90,6 +137,15 @@
   
   .negative-pnl {
     @apply text-red-400 font-semibold;
+  }
+
+  /* Light Theme P&L Styling */
+  [data-theme="light"] .positive-pnl {
+    @apply text-emerald-600;
+  }
+  
+  [data-theme="light"] .negative-pnl {
+    @apply text-red-600;
   }
   
   /* Logo and Branding */
@@ -100,10 +156,20 @@
   .financial-metric {
     @apply bg-slate-900/60 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/60 transition-all duration-300;
   }
+
+  /* Light Theme Financial Metrics */
+  [data-theme="light"] .financial-metric {
+    @apply bg-white/60 border border-gray-200/50 hover:bg-gray-50/60;
+  }
   
   /* Market Data Styling */
   .market-data {
     @apply font-mono text-sm bg-slate-800/50 px-2 py-1 rounded border border-slate-700/50;
+  }
+
+  /* Light Theme Market Data */
+  [data-theme="light"] .market-data {
+    @apply bg-gray-100 border border-gray-300 text-gray-800;
   }
 }
 

@@ -5,7 +5,7 @@ import { ArrowRight, Globe, Palette, X } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 // import { useLanguage } from '@/contexts/LanguageContext';
-// import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface Step0Props {
   onComplete: (data: any) => void;
@@ -13,7 +13,7 @@ interface Step0Props {
 
 export default function Step0({ onComplete }: Step0Props) {
   // const { setLanguage, t } = useLanguage();
-  // const { setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedTheme, setSelectedTheme] = useState<'dark' | 'light'>('dark');
   const [loading, setLoading] = useState(false);
@@ -34,6 +34,7 @@ export default function Step0({ onComplete }: Step0Props) {
 
   const handleThemeChange = (theme: string) => {
     setSelectedTheme(theme as 'dark' | 'light');
+    setTheme(theme as 'dark' | 'light');
     localStorage.setItem('theme', theme);
   };
 

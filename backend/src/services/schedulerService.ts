@@ -33,23 +33,7 @@ export class SchedulerService {
       timezone: 'America/New_York'
     });
 
-    // For testing: Also run every 2 minutes regardless of market hours
-    cron.schedule('*/2 * * * *', async () => {
-      const now = new Date();
-      const est = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
-      const hour = est.getHours();
-      const day = est.getDay();
-      
-      console.log(`🕐 [SCHEDULER] Test update - EST: ${est.toLocaleString()}, Market hours: ${day >= 1 && day <= 5 && hour >= 9 && hour < 16}`);
-      
-      if (day >= 1 && day <= 5 && hour >= 9 && hour < 16) {
-        console.log('🕐 [SCHEDULER] Market is open - running updates');
-        await this.updateStockData();
-        await this.updatePortfolioDecisions();
-      } else {
-        console.log('🕐 [SCHEDULER] Market is closed - skipping updates');
-      }
-    });
+    // Removed 2-minute test scheduler - users can refresh manually in admin
 
     // Update stock data once at 9:30 AM EST (market open)
     cron.schedule('30 9 * * 1-5', async () => {

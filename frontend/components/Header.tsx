@@ -5,6 +5,7 @@ import { LogOut, User, Settings, TrendingUp, BarChart3 } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import ThemeToggle from './ThemeToggle';
 
 interface HeaderProps {
   userName?: string;
@@ -67,6 +68,9 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                 <p className="text-sm font-medium text-slate-200">Welcome, {userName}</p>
                 <p className="text-xs text-slate-400">Portfolio Manager</p>
               </div>
+              
+              {/* Theme Toggle */}
+              <ThemeToggle />
               
               {/* User Avatar */}
               <div className="relative">
