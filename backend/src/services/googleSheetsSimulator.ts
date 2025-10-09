@@ -174,17 +174,17 @@ class GoogleSheetsSimulator {
 
     // Calculate returns using INDEX formulas
     // =(INDEX(G2:BG2,90) - INDEX(G2:BG2,1)) / INDEX(G2:BG2,1)
-    const currentPrice = priceColumns[89]; // Most recent price (last in array)
+    const mostRecentPrice = priceColumns[89]; // Most recent price (last in array)
     
     // Ensure we have enough data points
     const return7D = priceColumns.length > 7 ? 
-      ((currentPrice - priceColumns[82]) / priceColumns[82]) * 100 : 0;
+      ((mostRecentPrice - priceColumns[82]) / priceColumns[82]) * 100 : 0;
     const return30D = priceColumns.length > 30 ? 
-      ((currentPrice - priceColumns[59]) / priceColumns[59]) * 100 : 0;
+      ((mostRecentPrice - priceColumns[59]) / priceColumns[59]) * 100 : 0;
     const return60D = priceColumns.length > 60 ? 
-      ((currentPrice - priceColumns[29]) / priceColumns[29]) * 100 : 0;
+      ((mostRecentPrice - priceColumns[29]) / priceColumns[29]) * 100 : 0;
     const return90D = priceColumns.length > 90 ? 
-      ((currentPrice - priceColumns[0]) / priceColumns[0]) * 100 : 0;
+      ((mostRecentPrice - priceColumns[0]) / priceColumns[0]) * 100 : 0;
 
     // Calculate top prices using MAX formulas
     // =MAX(G2:BG2)
