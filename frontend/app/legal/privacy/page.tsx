@@ -10,10 +10,10 @@ export default function PrivacyPage() {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-slate-900 rounded-lg max-w-4xl w-full h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
-          <h1 className="text-2xl font-bold text-white">Privacy Policy</h1>
+        <div className="flex items-center justify-between p-4 border-b border-slate-700 flex-shrink-0">
+          <h1 className="text-xl font-bold text-white">Privacy Policy</h1>
           <button
             onClick={() => setIsModalOpen(false)}
             className="text-slate-400 hover:text-white transition-colors"
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <div className="p-4 overflow-y-auto flex-1">
           <div className="prose prose-invert max-w-none">
             <div className="bg-blue-900/20 border border-blue-500/50 rounded-lg p-4 mb-6">
               <h2 className="text-blue-300 text-lg font-semibold mb-2">🔒 GDPR Compliant</h2>
@@ -186,7 +186,7 @@ export default function PrivacyPage() {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-slate-700">
+        <div className="p-4 border-t border-slate-700 flex-shrink-0">
           <button
             onClick={() => setIsModalOpen(false)}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
