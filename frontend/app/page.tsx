@@ -160,7 +160,7 @@ export default function Page() {
             <h1 className="logo-text text-4xl mb-3 font-bold">AI-Capital</h1>
             <div className="flex items-center justify-center space-x-2 mb-2">
               <Crown className="w-5 h-5 text-yellow-400" />
-              <p className="text-slate-300 text-lg font-semibold">Professional Portfolio Management</p>
+              <p className="text-slate-300 text-lg font-semibold">Professional Portfolio Management V2</p>
               <Crown className="w-5 h-5 text-yellow-400" />
             </div>
             <p className="text-slate-400 text-sm">AI-Powered Trading Decisions & Real-Time Analytics</p>

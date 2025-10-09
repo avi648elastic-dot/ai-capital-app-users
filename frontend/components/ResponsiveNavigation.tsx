@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   BarChart3, Home, TrendingUp, Target, Shield, 
   Crown, Menu, X, LogOut, Eye, PieChart,
-  Activity, AlertTriangle, Star
+  Activity, AlertTriangle, Star, User, Settings
 } from 'lucide-react';
 import { useDevice } from '@/hooks/useDevice';
 
@@ -66,7 +66,7 @@ export default function ResponsiveNavigation({
             </div>
             <div>
               <h1 className="text-lg font-bold text-white">AiCapital</h1>
-              <p className="text-xs text-slate-400">PRO</p>
+              <p className="text-xs text-slate-400">PRO V2</p>
             </div>
           </div>
         </div>
@@ -90,6 +90,24 @@ export default function ResponsiveNavigation({
                 </p>
               </div>
             </div>
+          </div>
+          
+          {/* Profile and Settings buttons */}
+          <div className="flex space-x-2 mt-3">
+            <button
+              onClick={() => router.push('/profile')}
+              className="flex-1 px-3 py-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors flex items-center justify-center space-x-1"
+            >
+              <User className="w-3 h-3" />
+              <span>Profile</span>
+            </button>
+            <button
+              onClick={() => router.push('/settings')}
+              className="flex-1 px-3 py-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors flex items-center justify-center space-x-1"
+            >
+              <Settings className="w-3 h-3" />
+              <span>Settings</span>
+            </button>
           </div>
         </div>
 
@@ -178,7 +196,7 @@ export default function ResponsiveNavigation({
                 </div>
                 <div>
                   <h1 className="text-lg font-bold text-white">AiCapital</h1>
-                  <p className="text-xs text-slate-400">PRO</p>
+                  <p className="text-xs text-slate-400">PRO V2</p>
                 </div>
               </div>
               
@@ -200,6 +218,30 @@ export default function ResponsiveNavigation({
                     </p>
                   </div>
                 </div>
+              </div>
+              
+              {/* Profile and Settings buttons for mobile */}
+              <div className="flex space-x-2 mt-3">
+                <button
+                  onClick={() => {
+                    router.push('/profile');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 px-3 py-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors flex items-center justify-center space-x-1"
+                >
+                  <User className="w-3 h-3" />
+                  <span>Profile</span>
+                </button>
+                <button
+                  onClick={() => {
+                    router.push('/settings');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex-1 px-3 py-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors flex items-center justify-center space-x-1"
+                >
+                  <Settings className="w-3 h-3" />
+                  <span>Settings</span>
+                </button>
               </div>
             </div>
 
