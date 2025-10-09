@@ -9,6 +9,7 @@ import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 export default function SubscriptionPage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [upgrading, setUpgrading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -17,14 +18,132 @@ export default function SubscriptionPage() {
       router.push('/');
       return;
     }
-    // TODO: Fetch user data
-    setUser({ subscriptionTier: 'free' });
-    setLoading(false);
+    fetchUserData();
   }, [router]);
+
+  const fetchUserData = async () => {
+    try {
+      const token = Cookies.get('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      } else {
+        setUser({ subscriptionTier: 'free' });
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setUser({ subscriptionTier: 'free' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     Cookies.remove('token');
     router.push('/');
+  };
+
+  const handleUpgrade = async (plan: string) => {
+    setUpgrading(true);
+    try {
+      const token = Cookies.get('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/upgrade`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ plan })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Refresh user data
+          await fetchUserData();
+          alert(`Successfully upgraded to ${plan}!`);
+        }
+      } else {
+        alert('Upgrade failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Upgrade error:', error);
+      alert('Upgrade failed. Please try again.');
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
+  // Define the three subscription plans
+  const plans = {
+    free: {
+      name: 'Free Plan',
+      price: '$0',
+      period: 'forever',
+      description: 'Perfect for getting started with basic portfolio tracking',
+      features: [
+        'Portfolio tracking (up to 5 stocks)',
+        'Basic performance metrics',
+        'Market overview',
+        'Email support'
+      ],
+      limitations: [
+        'Limited to 5 stocks',
+        'Basic analytics only',
+        'No advanced reports',
+        'No risk management tools'
+      ],
+      color: 'amber',
+      icon: '📊'
+    },
+    premium: {
+      name: 'Premium Plan',
+      price: '$29.99',
+      period: 'month',
+      description: 'Advanced features for serious investors',
+      features: [
+        'Unlimited portfolio tracking',
+        'Advanced portfolio analysis',
+        'Detailed reports & insights',
+        'Risk management tools',
+        'Watchlist management',
+        'Priority email support',
+        'Real-time data updates'
+      ],
+      limitations: [
+        'No AI recommendations',
+        'No advanced backtesting',
+        'Limited custom alerts'
+      ],
+      color: 'blue',
+      icon: '⭐'
+    },
+    'premium+': {
+      name: 'Premium+ Plan',
+      price: '$59.99',
+      period: 'month',
+      description: 'Complete AI-powered investment suite',
+      features: [
+        'Everything in Premium',
+        'AI-powered investment recommendations',
+        'Advanced backtesting tools',
+        'Custom alerts & notifications',
+        'Portfolio optimization suggestions',
+        'Market sentiment analysis',
+        'Priority phone support',
+        'White-label options',
+        'API access'
+      ],
+      limitations: [],
+      color: 'emerald',
+      icon: '👑'
+    }
   };
 
   if (loading) {
@@ -39,7 +158,6 @@ export default function SubscriptionPage() {
   }
 
   const currentPlan = user?.subscriptionTier || 'free';
-  const isPremium = currentPlan === 'premium';
 
   return (
     <div className="min-h-screen bg-slate-900 flex">
@@ -50,58 +168,199 @@ export default function SubscriptionPage() {
       />
       
       <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-8">
-        <div className="max-w-4xl mx-auto w-full">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Subscription & Billing</h1>
-            <p className="text-slate-400">Manage your subscription and billing information</p>
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold text-white mb-2">Choose Your Plan</h1>
+            <p className="text-slate-400">Select the perfect plan for your investment journey</p>
           </div>
 
           {/* Current Plan Status */}
           <div className="mb-8">
             <div className={`p-6 rounded-xl border-2 ${
-              isPremium 
+              plans[currentPlan as keyof typeof plans]?.color === 'emerald'
                 ? 'bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border-emerald-500/50' 
+                : plans[currentPlan as keyof typeof plans]?.color === 'blue'
+                ? 'bg-gradient-to-r from-blue-900/30 to-emerald-900/30 border-blue-500/50'
                 : 'bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/50'
             }`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className={`p-3 rounded-lg ${
-                    isPremium ? 'bg-emerald-500' : 'bg-amber-500'
-                  }`}>
-                    <Crown className="w-6 h-6 text-white" />
-                  </div>
+                  <div className="text-2xl">{plans[currentPlan as keyof typeof plans]?.icon}</div>
                   <div>
                     <h2 className="text-xl font-bold text-white">
-                      {isPremium ? 'Premium Plan' : 'Free Plan'}
+                      Current Plan: {plans[currentPlan as keyof typeof plans]?.name}
                     </h2>
                     <p className="text-slate-400">
-                      {isPremium ? 'Full access to all features' : 'Limited features available'}
+                      {plans[currentPlan as keyof typeof plans]?.description}
                     </p>
                   </div>
                 </div>
                 <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                  isPremium 
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                  currentPlan !== 'free'
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                     : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                 }`}>
-                  {isPremium ? 'Active' : 'Upgrade Available'}
+                  {currentPlan !== 'free' ? 'Active' : 'Free'}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Billing Section */}
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-              <CreditCard className="w-5 h-5 mr-2" />
-              Billing Information
-            </h3>
-            <div className="bg-slate-800 p-6 rounded-xl">
-              {isPremium ? (
+          {/* Plans Comparison */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            {/* Free Plan */}
+            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 ${
+              currentPlan === 'free' 
+                ? 'border-amber-500/50 bg-gradient-to-b from-amber-900/20 to-slate-800' 
+                : 'border-slate-700 hover:border-amber-500/30'
+            }`}>
+              {currentPlan === 'free' && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    Current Plan
+                  </span>
+                </div>
+              )}
+              
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-2">{plans.free.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2">{plans.free.name}</h3>
+                <div className="text-3xl font-bold text-amber-400 mb-1">{plans.free.price}</div>
+                <div className="text-slate-400 text-sm">{plans.free.period}</div>
+                <p className="text-slate-300 text-sm mt-2">{plans.free.description}</p>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                {plans.free.features.map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    <span className="text-slate-300 text-sm">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              {currentPlan === 'free' ? (
+                <button disabled className="w-full px-4 py-3 bg-amber-500/20 text-amber-400 rounded-lg cursor-not-allowed">
+                  Current Plan
+                </button>
+              ) : (
+                <button 
+                  onClick={() => handleUpgrade('free')}
+                  disabled={upgrading}
+                  className="w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                >
+                  Downgrade to Free
+                </button>
+              )}
+            </div>
+
+            {/* Premium Plan */}
+            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 ${
+              currentPlan === 'premium' 
+                ? 'border-blue-500/50 bg-gradient-to-b from-blue-900/20 to-slate-800' 
+                : 'border-slate-700 hover:border-blue-500/30'
+            }`}>
+              {currentPlan === 'premium' && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    Current Plan
+                  </span>
+                </div>
+              )}
+              
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-2">{plans.premium.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2">{plans.premium.name}</h3>
+                <div className="text-3xl font-bold text-blue-400 mb-1">{plans.premium.price}</div>
+                <div className="text-slate-400 text-sm">per {plans.premium.period}</div>
+                <p className="text-slate-300 text-sm mt-2">{plans.premium.description}</p>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                {plans.premium.features.map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    <span className="text-slate-300 text-sm">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              {currentPlan === 'premium' ? (
+                <button disabled className="w-full px-4 py-3 bg-blue-500/20 text-blue-400 rounded-lg cursor-not-allowed">
+                  Current Plan
+                </button>
+              ) : (
+                <button 
+                  onClick={() => handleUpgrade('premium')}
+                  disabled={upgrading}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg transition-all duration-300 font-medium"
+                >
+                  {upgrading ? 'Upgrading...' : 'Upgrade to Premium'}
+                </button>
+              )}
+            </div>
+
+            {/* Premium+ Plan */}
+            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 ${
+              currentPlan === 'premium+' 
+                ? 'border-emerald-500/50 bg-gradient-to-b from-emerald-900/20 to-slate-800' 
+                : 'border-slate-700 hover:border-emerald-500/30'
+            }`}>
+              {currentPlan === 'premium+' && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    Current Plan
+                  </span>
+                </div>
+              )}
+              
+              <div className="text-center mb-6">
+                <div className="text-4xl mb-2">{plans['premium+'].icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2">{plans['premium+'].name}</h3>
+                <div className="text-3xl font-bold text-emerald-400 mb-1">{plans['premium+'].price}</div>
+                <div className="text-slate-400 text-sm">per {plans['premium+'].period}</div>
+                <p className="text-slate-300 text-sm mt-2">{plans['premium+'].description}</p>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                {plans['premium+'].features.map((feature, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    <span className="text-slate-300 text-sm">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              {currentPlan === 'premium+' ? (
+                <button disabled className="w-full px-4 py-3 bg-emerald-500/20 text-emerald-400 rounded-lg cursor-not-allowed">
+                  Current Plan
+                </button>
+              ) : (
+                <button 
+                  onClick={() => handleUpgrade('premium+')}
+                  disabled={upgrading}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-lg transition-all duration-300 font-medium"
+                >
+                  {upgrading ? 'Upgrading...' : 'Upgrade to Premium+'}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Billing Information */}
+          {currentPlan !== 'free' && (
+            <div className="mb-8">
+              <h3 className="text-xl font-bold text-white mb-4 flex items-center">
+                <CreditCard className="w-5 h-5 mr-2" />
+                Billing Information
+              </h3>
+              <div className="bg-slate-800 p-6 rounded-xl">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-300">Plan</span>
-                    <span className="text-white font-medium">Premium - $29.99/month</span>
+                    <span className="text-white font-medium">
+                      {plans[currentPlan as keyof typeof plans]?.name} - {plans[currentPlan as keyof typeof plans]?.price}/{plans[currentPlan as keyof typeof plans]?.period}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-300">Next Billing Date</span>
@@ -113,74 +372,6 @@ export default function SubscriptionPage() {
                   </div>
                   <button className="w-full mt-4 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">
                     Update Payment Method
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-slate-400 mb-4">No billing information available for free accounts</p>
-                  <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white rounded-lg hover:from-blue-500 hover:to-emerald-500 transition-all duration-300">
-                    Upgrade to Premium
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Upgrade Section */}
-          {!isPremium && (
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center">
-                <Star className="w-5 h-5 mr-2" />
-                Upgrade to Premium
-              </h3>
-              <div className="bg-gradient-to-r from-blue-900/30 to-emerald-900/30 border border-blue-500/50 p-6 rounded-xl">
-                <div className="text-center mb-6">
-                  <h4 className="text-2xl font-bold text-white mb-2">Premium Plan</h4>
-                  <p className="text-blue-200">$29.99/month</p>
-                </div>
-                
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center space-x-3">
-                    <Check className="w-5 h-5 text-green-400" />
-                    <span className="text-slate-300">Advanced Portfolio Analysis</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Check className="w-5 h-5 text-green-400" />
-                    <span className="text-slate-300">Detailed Reports</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Check className="w-5 h-5 text-green-400" />
-                    <span className="text-slate-300">Risk Management Tools</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Check className="w-5 h-5 text-green-400" />
-                    <span className="text-slate-300">Watchlist Management</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Check className="w-5 h-5 text-green-400" />
-                    <span className="text-slate-300">Priority Support</span>
-                  </div>
-                </div>
-                
-                <button className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-emerald-600 text-white rounded-lg hover:from-blue-500 hover:to-emerald-500 transition-all duration-300 font-medium">
-                  Start Premium Trial
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Cancel Subscription */}
-          {isPremium && (
-            <div className="mb-8">
-              <h3 className="text-xl font-bold text-white mb-4">Manage Subscription</h3>
-              <div className="bg-red-900/20 border border-red-500/50 p-6 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-lg font-medium text-white mb-1">Cancel Subscription</h4>
-                    <p className="text-red-200">You will lose access to premium features at the end of your billing period.</p>
-                  </div>
-                  <button className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors">
-                    Cancel Plan
                   </button>
                 </div>
               </div>
