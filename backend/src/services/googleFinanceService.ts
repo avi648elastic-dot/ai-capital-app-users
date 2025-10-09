@@ -51,6 +51,13 @@ class GoogleFinanceService {
           historicalPrices[historicalPrices.length - 1].price : 0;
 
         console.log(`✅ [GOOGLE FINANCE] Retrieved ${historicalPrices.length} data points for ${symbol}`);
+        console.log(`📊 [GOOGLE FINANCE] ${symbol} sample data:`, {
+          firstDate: historicalPrices[0]?.date,
+          lastDate: historicalPrices[historicalPrices.length - 1]?.date,
+          firstPrice: historicalPrices[0]?.price,
+          lastPrice: historicalPrices[historicalPrices.length - 1]?.price,
+          currentPrice
+        });
         
         return {
           symbol,

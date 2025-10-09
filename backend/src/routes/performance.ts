@@ -29,7 +29,9 @@ router.get('/', authenticateToken, async (req, res) => {
     console.log(`🔍 [PERFORMANCE] Fetching Google Finance data for tickers: ${tickers.join(', ')}`);
     
     // Fetch real Google Finance data
+    console.log(`🔍 [PERFORMANCE] Fetching Google Finance data for ${tickers.length} tickers:`, tickers);
     const stockDataMap = await googleFinanceService.getMultipleStockData(tickers, 90);
+    console.log(`📊 [PERFORMANCE] Retrieved data for ${stockDataMap.size} stocks:`, Array.from(stockDataMap.keys()));
     
     // Calculate metrics for each stock
     const stockMetrics: Record<string, any> = {};
@@ -46,7 +48,12 @@ router.get('/', authenticateToken, async (req, res) => {
       }
 
       // Calculate performance metrics using Google Finance formulas
+      console.log(`🔍 [PERFORMANCE] Calculating metrics for ${stock.ticker}, ${days} days`);
+      console.log(`📊 [PERFORMANCE] ${stock.ticker} data points:`, stockData.historicalPrices.length);
+      console.log(`📊 [PERFORMANCE] ${stock.ticker} price range: $${Math.min(...stockData.historicalPrices.map(p => p.price)).toFixed(2)} - $${Math.max(...stockData.historicalPrices.map(p => p.price)).toFixed(2)}`);
+      
       const metrics = googleFinanceService.calculatePerformanceMetrics(stockData, days);
+      console.log(`📊 [PERFORMANCE] ${stock.ticker} calculated metrics:`, metrics);
       stockMetrics[stock.ticker] = metrics;
 
       // Calculate portfolio-weighted metrics
@@ -90,6 +97,55 @@ router.get('/', authenticateToken, async (req, res) => {
     res.status(500).json({
       message: 'Failed to calculate performance metrics',
       error: error.message
+    });
+  }
+});
+
+// Test endpoint to debug data fetching
+router.get('/test/:symbol', authenticateToken, async (req, res) => {
+  try {
+    const symbol = req.params.symbol.toUpperCase();
+    const days = parseInt(req.query.days as string) || 7;
+    
+    console.log(`🔍 [PERFORMANCE TEST] Testing ${symbol} for ${days} days`);
+    
+    const stockData = await googleFinanceService.getStockHistory(symbol, days);
+    
+    if (!stockData) {
+      return res.status(404).json({
+        message: `No data found for ${symbol}`,
+        symbol,
+        days
+      });
+    }
+    
+    const metrics = googleFinanceService.calculatePerformanceMetrics(stockData, days);
+    
+    res.json({
+      symbol,
+      days,
+      stockData: {
+        currentPrice: stockData.currentPrice,
+        dataPoints: stockData.historicalPrices.length,
+        firstPrice: stockData.historicalPrices[0]?.price,
+        lastPrice: stockData.historicalPrices[stockData.historicalPrices.length - 1]?.price,
+        priceRange: {
+          min: Math.min(...stockData.historicalPrices.map(p => p.price)),
+          max: Math.max(...stockData.historicalPrices.map(p => p.price))
+        },
+        sampleDates: stockData.historicalPrices.slice(0, 3).map(p => p.date)
+      },
+      metrics,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error: any) {
+    console.error(`❌ [PERFORMANCE TEST] Error testing ${req.params.symbol}:`, error);
+    
+    res.status(500).json({
+      message: 'Test failed',
+      error: error.message,
+      symbol: req.params.symbol
     });
   }
 });
