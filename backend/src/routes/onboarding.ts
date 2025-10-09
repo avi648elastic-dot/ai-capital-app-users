@@ -106,6 +106,8 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
 
       console.log('🔍 [IMPORT PORTFOLIO] Stop loss/take profit:', { stopLoss, takeProfit });
 
+      // For imported portfolios, default to HOLD action
+      // AI decisions will be calculated later by the scheduler
       const item = new Portfolio({
         userId: req.user!._id,
         ticker: stock.ticker.toUpperCase(),
@@ -116,6 +118,10 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
         takeProfit,
         notes: stock.notes || '',
         portfolioType: 'solid', // Imported portfolios default to solid
+        portfolioId: 'solid-1', // Default portfolio ID
+        action: 'HOLD', // Default to HOLD for imported stocks
+        reason: 'Portfolio imported - AI analysis pending',
+        color: 'yellow',
       });
 
       console.log('🔍 [IMPORT PORTFOLIO] Saving portfolio item...');
