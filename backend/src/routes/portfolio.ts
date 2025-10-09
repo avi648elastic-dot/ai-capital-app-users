@@ -32,22 +32,69 @@ router.get('/', authenticateToken, async (req, res) => {
       console.log(`📊 [PORTFOLIO] ${symbol}: $${data.current} (vs stored: $${portfolio.find(p => p.ticker === symbol)?.currentPrice})`);
     });
 
-    // Update portfolio with real-time prices
-    const updatedPortfolio = portfolio.map(item => {
+    // Update portfolio with real-time prices, exchange info, and recalculate decisions
+    const updatedPortfolio = await Promise.all(portfolio.map(async item => {
       const realTimeStock = realTimeData.get(item.ticker);
       const currentPrice = realTimeStock?.current || item.currentPrice; // Fallback to stored price
       
-      console.log(`🔍 [PORTFOLIO] ${item.ticker}: Entry=${item.entryPrice}, Current=${currentPrice}, RealTime=${realTimeStock?.current || 'N/A'}`);
+      console.log(`🔍 [PORTFOLIO] ${item.ticker}: Entry=${item.entryPrice}, Current=${currentPrice}, StopLoss=${item.stopLoss}, RealTime=${realTimeStock?.current || 'N/A'}`);
+      
+      // Recalculate decision with real-time data
+      const decision = decisionEngine.decideActionEnhanced({
+        ticker: item.ticker,
+        entryPrice: item.entryPrice,
+        currentPrice: currentPrice,
+        stopLoss: item.stopLoss,
+        takeProfit: item.takeProfit,
+      });
+
+      console.log(`🔍 [PORTFOLIO] ${item.ticker} Decision: ${decision.action} - ${decision.reason}`);
+      
+      // Fetch exchange information
+      let exchange = '—';
+      try {
+        const { default: axios } = await import('axios');
+        const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g';
+        
+        // Quick mapping by suffix first
+        if (item.ticker.endsWith('.TO')) exchange = 'TSX';
+        else if (item.ticker.endsWith('.SW')) exchange = 'SWISS';
+        else if (item.ticker.endsWith('.L')) exchange = 'LSE';
+        else if (item.ticker.includes(':')) {
+          exchange = item.ticker.split(':')[0].toUpperCase();
+        } else {
+          // Use Finnhub API
+          const response = await axios.get(`https://finnhub.io/api/v1/stock/profile2?symbol=${item.ticker}&token=${FINNHUB_API_KEY}`);
+          const data = response.data;
+          
+          if (data && data.exchange) {
+            let exchangeName = (data.exchange || '').toUpperCase();
+            
+            // Map exchange names to standard format
+            if (/NASDAQ/.test(exchangeName)) exchange = 'NASDAQ';
+            else if (/NEW YORK STOCK EXCHANGE|NYSE/.test(exchangeName)) exchange = 'NYSE';
+            else if (/TORONTO|TSX/.test(exchangeName)) exchange = 'TSX';
+            else if (/EURONEXT/.test(exchangeName)) exchange = 'EURONEXT';
+            else if (/SWISS|SIX/.test(exchangeName)) exchange = 'SWISS';
+            else if (/LSE|LONDON/.test(exchangeName)) exchange = 'LSE';
+            else if (/AMEX|AMERICAN/.test(exchangeName)) exchange = 'AMEX';
+            else exchange = exchangeName;
+          }
+        }
+      } catch (exchangeError) {
+        console.warn(`⚠️ [PORTFOLIO] Could not fetch exchange for ${item.ticker}:`, exchangeError);
+        exchange = '—';
+      }
       
       return {
         ...item.toObject(),
         currentPrice: currentPrice,
-        // Update action and reason based on real-time data
-        action: item.action || 'HOLD',
-        reason: item.reason || 'Real-time data updated',
-        color: item.color || 'yellow'
+        action: decision.action,
+        reason: decision.reason,
+        color: decision.color,
+        exchange: exchange
       };
-    });
+    }));
 
     // Calculate totals with real-time prices
     const totals = updatedPortfolio.reduce((acc, item) => {

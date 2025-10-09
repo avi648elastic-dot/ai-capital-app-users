@@ -16,6 +16,7 @@ interface PortfolioItem {
   action: 'BUY' | 'HOLD' | 'SELL';
   reason?: string;
   color?: string;
+  exchange?: string;
 }
 
 interface PortfolioTableProps {
@@ -103,6 +104,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
         <table className="w-full">
           <thead className="table-header">
             <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Exchange</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ticker</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Shares</th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Entry</th>
@@ -125,6 +127,9 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
 
               return (
                 <tr key={item._id} className="table-row">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-slate-400">{item.exchange || '—'}</div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-white">{item.ticker}</div>
                   </td>
