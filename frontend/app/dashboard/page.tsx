@@ -393,22 +393,22 @@ export default function Dashboard() {
       
       {/* Mobile Navigation */}
       <MobileNavigation 
-        userName={user?.name} 
-        subscriptionTier={user?.subscriptionTier}
+        userName={user?.name || 'User'} 
+        subscriptionTier={user?.subscriptionTier || 'free'}
         onLogout={handleLogout}
       />
       
       {/* Desktop Navigation Sidebar */}
       <Navigation 
-        userName={user?.name} 
-        subscriptionTier={user?.subscriptionTier}
+        userName={user?.name || 'User'} 
+        subscriptionTier={user?.subscriptionTier || 'free'}
         onLogout={handleLogout}
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8">
       {/* Professional Header */}
-      <Header userName={user?.name} isAdmin={user?.isAdmin} />
+      <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} />
 
         <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Enhanced Subscription Status Banner */}
