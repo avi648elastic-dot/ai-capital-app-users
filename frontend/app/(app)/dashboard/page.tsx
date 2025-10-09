@@ -388,27 +388,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="w-full">
       {/* Mobile Header - Only shows on mobile */}
       <MobileHeader 
         title="AiCapital Dashboard"
         subtitle="Portfolio Management"
       />
       
-      {/* Responsive Navigation - Auto-detects device */}
-      <ResponsiveNavigation 
-        userName={user?.name || 'User'} 
-        subscriptionTier={user?.subscriptionTier || 'free'}
-        userAvatar={user?.avatarUrl}
-        onLogout={handleLogout}
-      />
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col px-2 sm:px-4 lg:px-8">
       {/* Professional Header */}
       <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} />
-
-        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-4 lg:px-8 pt-20 sm:pt-20 lg:pt-8 pb-6 sm:pb-8 w-full">
         {/* Enhanced Subscription Status Banner - AGGRESSIVE Mobile Optimization */}
         <div className={`mb-6 sm:mb-6 p-6 sm:p-6 rounded-xl border-2 ${
           user?.subscriptionTier === 'premium' 
