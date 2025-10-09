@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useDevice } from '@/hooks/useDevice';
 import Image from 'next/image';
+import NotificationCenter from './NotificationCenter';
 
 interface ResponsiveNavigationProps {
   userName?: string;
@@ -105,6 +106,8 @@ export default function ResponsiveNavigation({
                 </p>
               </div>
             </div>
+            {/* Notification Center */}
+            <NotificationCenter userId={userName || 'user'} />
           </div>
           
           {/* Profile and Settings buttons */}
@@ -245,6 +248,8 @@ export default function ResponsiveNavigation({
                     </p>
                   </div>
                 </div>
+                {/* Notification Center for mobile */}
+                <NotificationCenter userId={userName || 'user'} />
               </div>
               
               {/* Profile and Settings buttons for mobile */}

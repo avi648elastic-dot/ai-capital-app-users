@@ -20,6 +20,7 @@ import stocksRoutes from './routes/stocks';
 import performanceRoutes from './routes/performance';
 import subscriptionRoutes from './routes/subscription';
 import userRoutes from './routes/user';
+import notificationRoutes from './routes/notifications';
 import { schedulerService } from './services/schedulerService';
 
 // Load environment variables
@@ -83,6 +84,7 @@ app.use('/api/stocks', stocksRoutes);
 app.use('/api/performance', performanceRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {

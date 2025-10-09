@@ -4,6 +4,7 @@ import { stockDataService } from './stockDataService';
 import { volatilityService } from './volatilityService';
 import { riskManagementService } from './riskManagementService';
 import { historicalDataService } from './historicalDataService';
+import notificationService from './notificationService';
 import Portfolio from '../models/Portfolio';
 
 export class SchedulerService {
@@ -168,6 +169,9 @@ export class SchedulerService {
               portfolioItem.currentPrice !== newCurrentPrice;
 
             if (needsUpdate) {
+              const previousAction = portfolioItem.action;
+              const previousReason = portfolioItem.reason;
+              
               portfolioItem.action = decision.action;
               portfolioItem.reason = decision.reason;
               portfolioItem.color = decision.color;
@@ -175,6 +179,22 @@ export class SchedulerService {
               
               await portfolioItem.save();
               updatedCount++;
+              
+              // Send notification if action changed (and it's not the first time)
+              if (previousAction && previousAction !== decision.action) {
+                try {
+                  await notificationService.createStockActionNotification(
+                    userId,
+                    portfolioItem.ticker,
+                    decision.action,
+                    decision.reason,
+                    portfolioItem.portfolioId
+                  );
+                  console.log(`🔔 [SCHEDULER] Sent notification for ${portfolioItem.ticker} action change: ${previousAction} → ${decision.action}`);
+                } catch (notificationError) {
+                  console.error(`❌ [SCHEDULER] Failed to send notification for ${portfolioItem.ticker}:`, notificationError);
+                }
+              }
             }
           }
         } catch (error) {
