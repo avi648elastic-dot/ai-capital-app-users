@@ -62,10 +62,17 @@ export const authenticateAdmin = async (req: AuthRequest, res: Response, next: N
       return res.status(401).json({ message: 'Invalid token' });
     }
 
-    // Check if user is admin (you can modify this logic based on your admin criteria)
-    if (user.email !== 'avi648elastic@gmail.com') {
+    // Check if user is admin (allow multiple admin emails or users with admin role)
+    const adminEmails = ['avi648elastic@gmail.com', 'admin@aicapital.com'];
+    const isAdminEmail = adminEmails.includes(user.email);
+    const isAdminRole = user.email === 'admin' || user.name === 'admin';
+    
+    if (!isAdminEmail && !isAdminRole) {
+      console.log(`❌ [AUTH] Admin access denied for user: ${user.email} (${user.name})`);
       return res.status(403).json({ message: 'Admin access required' });
     }
+    
+    console.log(`✅ [AUTH] Admin access granted for user: ${user.email} (${user.name})`);
 
     req.user = user;
     next();
