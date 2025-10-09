@@ -250,8 +250,28 @@ export default function AdminDashboard() {
 
         {/* Users Table */}
         <div className="card overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-700 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-white">All Users</h2>
+            <button
+              onClick={async () => {
+                try {
+                  const response = await axios.post(
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/update-all-prices`,
+                    {},
+                    { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
+                  );
+                  alert(`✅ ${response.data.message}`);
+                  fetchData(); // Refresh all data
+                } catch (error) {
+                  console.error('Error updating all prices:', error);
+                  alert('❌ Error updating all prices. Please try again.');
+                }
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Update All Prices</span>
+            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">

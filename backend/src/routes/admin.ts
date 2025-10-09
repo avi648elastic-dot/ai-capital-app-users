@@ -313,6 +313,25 @@ router.post('/users/:userId/refresh', authenticateToken, requireAdmin, async (re
   }
 });
 
+// Force update all portfolio prices (admin only)
+router.post('/update-all-prices', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('🔄 [ADMIN] Force updating all portfolio prices...');
+    
+    // Import scheduler service
+    const { schedulerService } = await import('../services/schedulerService');
+    
+    // Trigger portfolio update
+    await schedulerService.triggerPortfolioUpdate();
+    
+    console.log('✅ [ADMIN] All portfolio prices updated successfully');
+    res.json({ message: 'All portfolio prices updated successfully' });
+  } catch (error) {
+    console.error('❌ [ADMIN] Error updating all portfolio prices:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // Reset user portfolio
 router.delete('/users/:userId/portfolio', authenticateToken, requireAdmin, async (req, res) => {
   try {

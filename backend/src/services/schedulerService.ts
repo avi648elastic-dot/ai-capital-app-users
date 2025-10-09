@@ -127,7 +127,7 @@ export class SchedulerService {
 
   private async updatePortfolioDecisions() {
     try {
-      console.log('🔄 [SCHEDULER] Updating portfolio decisions...');
+      console.log('🔄 [SCHEDULER] Updating portfolio decisions and prices...');
       
       // Get all portfolios that need updating
       const portfolios = await Portfolio.find({});
@@ -151,22 +151,43 @@ export class SchedulerService {
       // Update each user's portfolio
       for (const [userId, userPortfolio] of userPortfolios) {
         try {
+          // Get unique tickers for this user
+          const tickers = [...new Set(userPortfolio.map((item: any) => item.ticker))];
+          
+          // Fetch real-time prices for this user's stocks
+          let realTimeData = new Map();
+          try {
+            realTimeData = await stockDataService.getMultipleStockData(tickers);
+            console.log(`📊 [SCHEDULER] Fetched real-time data for user ${userId}: ${realTimeData.size} stocks`);
+          } catch (priceError) {
+            console.warn(`⚠️ [SCHEDULER] Could not fetch real-time prices for user ${userId}:`, priceError);
+          }
+
           for (const portfolioItem of userPortfolio) {
+            // Get real-time price if available
+            const realTimeStock = realTimeData.get(portfolioItem.ticker);
+            const newCurrentPrice = realTimeStock?.current || portfolioItem.currentPrice;
+            
+            // Calculate decision with real-time price
             const decision = decisionEngine.decideActionEnhanced({
               ticker: portfolioItem.ticker,
               entryPrice: portfolioItem.entryPrice,
-              currentPrice: portfolioItem.currentPrice,
+              currentPrice: newCurrentPrice,
               stopLoss: portfolioItem.stopLoss,
               takeProfit: portfolioItem.takeProfit,
             });
 
-            // Only update if decision changed
-            if (portfolioItem.action !== decision.action || 
-                portfolioItem.reason !== decision.reason) {
-              
+            // Check if anything needs updating
+            const needsUpdate = 
+              portfolioItem.action !== decision.action || 
+              portfolioItem.reason !== decision.reason ||
+              portfolioItem.currentPrice !== newCurrentPrice;
+
+            if (needsUpdate) {
               portfolioItem.action = decision.action;
               portfolioItem.reason = decision.reason;
               portfolioItem.color = decision.color;
+              portfolioItem.currentPrice = newCurrentPrice; // ✅ Update price in database
               
               await portfolioItem.save();
               updatedCount++;
@@ -177,7 +198,7 @@ export class SchedulerService {
         }
       }
 
-      console.log(`✅ [SCHEDULER] Updated ${updatedCount} portfolio decisions`);
+      console.log(`✅ [SCHEDULER] Updated ${updatedCount} portfolio items (decisions + prices)`);
       
     } catch (error) {
       console.error('❌ [SCHEDULER] Error updating portfolio decisions:', error);
