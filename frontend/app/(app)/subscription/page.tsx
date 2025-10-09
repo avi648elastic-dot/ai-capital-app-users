@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { Crown, CreditCard, Star, Check, X } from 'lucide-react';
-import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 
 export default function SubscriptionPage() {
   const [user, setUser] = useState<any>(null);
@@ -194,16 +193,7 @@ export default function SubscriptionPage() {
   const currentPlan = user?.subscriptionTier || 'free';
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
-             <ResponsiveNavigation 
-               userName={user?.name || 'User'} 
-               subscriptionTier={currentPlan}
-               userAvatar={user?.avatarUrl}
-               onLogout={handleLogout}
-             />
-      
-      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-8">
-        <div className="max-w-7xl mx-auto w-full">
+    <div className="w-full">
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-white mb-2">Choose Your Plan</h1>
             <p className="text-slate-400">Select the perfect plan for your investment journey</p>
@@ -421,7 +411,6 @@ export default function SubscriptionPage() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
