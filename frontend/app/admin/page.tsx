@@ -179,14 +179,14 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-16 sm:h-20">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-white">AiCapital Admin</h1>
-              <span className="ml-2 px-2 py-1 bg-danger-600 text-xs rounded-full">ADMIN</span>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">AiCapital Admin</h1>
+              <span className="ml-2 px-3 py-1 bg-danger-600 text-sm rounded-full">ADMIN</span>
             </div>
             <button
               onClick={() => router.push('/dashboard')}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="text-gray-400 hover:text-white transition-colors text-base sm:text-lg"
             >
               Back to Dashboard
             </button>
@@ -194,15 +194,15 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* System Stats */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="card p-6">
+            <div className="card p-6 sm:p-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Total Users</p>
-                  <p className="text-2xl font-bold text-white">{stats.users.total}</p>
+                  <p className="text-base font-medium text-gray-400">Total Users</p>
+                  <p className="text-3xl font-bold text-white">{stats.users.total}</p>
                 </div>
                 <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
                   <Users className="w-6 h-6 text-white" />

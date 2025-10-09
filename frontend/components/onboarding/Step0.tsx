@@ -74,45 +74,45 @@ export default function Step0({ onComplete }: Step0Props) {
   };
 
   return (
-    <div className="text-center">
+    <div className="text-center px-4">
       <div className="mb-8">
-        <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Globe className="w-8 h-8 text-white" />
+        <div className="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Globe className="w-10 h-10 text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Choose Your Language</h2>
-        <p className="text-gray-400 mb-6">Select your preferred language for the best experience</p>
+        <h2 className="text-3xl font-bold text-white mb-3">Choose Your Language</h2>
+        <p className="text-lg text-gray-400 mb-8">Select your preferred language for the best experience</p>
       </div>
 
-      <div className="max-w-md mx-auto space-y-3">
+      <div className="max-w-md mx-auto space-y-4">
         {languages.map((lang) => (
                <button
                  key={lang.code}
                  onClick={() => handleLanguageChange(lang.code)}
-                 className={`w-full p-4 rounded-lg border text-left transition-colors flex items-center space-x-4 ${
+                 className={`w-full p-6 rounded-xl border text-left transition-colors flex items-center space-x-6 ${
                    selectedLanguage === lang.code
                      ? 'border-primary-500 bg-primary-500/10'
                      : 'border-slate-700 hover:border-slate-600'
                  }`}
                >
-            <span className="text-2xl">{lang.flag}</span>
+            <span className="text-4xl">{lang.flag}</span>
             <div className="flex-1">
-              <div className="text-white font-medium">{lang.name}</div>
-              <div className="text-sm text-slate-400">{lang.native}</div>
+              <div className="text-xl text-white font-medium">{lang.name}</div>
+              <div className="text-base text-slate-400">{lang.native}</div>
             </div>
             {selectedLanguage === lang.code && (
-              <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
+              <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
             )}
           </button>
         ))}
       </div>
 
       {/* Theme selection */}
-      <div className="mt-8">
-        <div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-3">
-          <Palette className="w-6 h-6 text-white" />
+      <div className="mt-12">
+        <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Palette className="w-8 h-8 text-white" />
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Choose Theme</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+        <h3 className="text-2xl font-semibold text-white mb-4">Choose Theme</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
           {[
             { id: 'dark', name: 'Dark', description: 'Default dark theme' },
             { id: 'light', name: 'Light', description: 'Clean light theme' },
@@ -120,35 +120,35 @@ export default function Step0({ onComplete }: Step0Props) {
             <button
               key={theme.id}
               onClick={() => handleThemeChange(theme.id)}
-              className={`p-4 rounded-lg border text-left transition-colors ${
+              className={`p-6 rounded-xl border text-left transition-colors ${
                 selectedTheme === theme.id
                   ? 'border-primary-500 bg-primary-500/10'
                   : 'border-slate-700 hover:border-slate-600'
               }`}
             >
-              <div className="text-white font-medium">{theme.name}</div>
-              <div className="text-sm text-slate-400">{theme.description}</div>
+              <div className="text-xl text-white font-medium mb-2">{theme.name}</div>
+              <div className="text-base text-slate-400">{theme.description}</div>
             </button>
           ))}
         </div>
       </div>
 
       {/* Terms and Privacy Acceptance - REQUIRED */}
-      <div className="mt-8 max-w-md mx-auto">
-        <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 mb-4">
-          <label className="flex items-start space-x-3 cursor-pointer">
+      <div className="mt-12 max-w-md mx-auto">
+        <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 mb-6">
+          <label className="flex items-start space-x-4 cursor-pointer">
             <input
               type="checkbox"
               checked={acceptedTerms}
               onChange={(e) => setAcceptedTerms(e.target.checked)}
-              className="mt-1 w-5 h-5 rounded border-red-500 text-red-600 focus:ring-red-500"
+              className="mt-1 w-6 h-6 rounded border-red-500 text-red-600 focus:ring-red-500"
             />
-            <span className="text-sm text-red-100 flex-1">
+            <span className="text-base text-red-100 flex-1 leading-relaxed">
               I have read and accept the{' '}
               <button 
                 type="button"
                 onClick={() => setShowTermsModal(true)}
-                className="text-red-300 underline hover:text-red-200 font-semibold"
+                className="text-red-300 underline hover:text-red-200 font-medium"
               >
                 Terms of Service
               </button>
@@ -156,7 +156,7 @@ export default function Step0({ onComplete }: Step0Props) {
               <button 
                 type="button"
                 onClick={() => setShowPrivacyModal(true)}
-                className="text-red-300 underline hover:text-red-200 font-semibold"
+                className="text-red-300 underline hover:text-red-200 font-medium"
               >
                 Privacy Policy
               </button>. 
@@ -168,14 +168,23 @@ export default function Step0({ onComplete }: Step0Props) {
         <button
           onClick={handleSubmit}
           disabled={loading || !acceptedTerms}
-          className="btn-primary flex items-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-primary flex items-center space-x-3 mx-auto disabled:opacity-50 disabled:cursor-not-allowed px-8 py-4 text-lg"
         >
-          <span>Continue</span>
-          <ArrowRight className="w-4 h-4" />
+          {loading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <span>Setting up...</span>
+            </>
+          ) : (
+            <>
+              <span>Continue</span>
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
         </button>
         
         {!acceptedTerms && (
-          <p className="text-xs text-red-400 mt-2 text-center">
+          <p className="text-sm text-red-400 mt-3 text-center">
             You must accept the terms to continue
           </p>
         )}
@@ -191,27 +200,27 @@ export default function Step0({ onComplete }: Step0Props) {
       {/* Terms of Service Modal */}
       {showTermsModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 rounded-lg max-w-4xl w-full h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-slate-700 flex-shrink-0">
-              <h1 className="text-xl font-bold text-white">Terms of Service</h1>
+          <div className="bg-slate-900 rounded-lg max-w-4xl w-full h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-slate-700 flex-shrink-0">
+              <h1 className="text-2xl font-bold text-white">Terms of Service</h1>
               <button
                 onClick={() => setShowTermsModal(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-slate-400 hover:text-white transition-colors p-2"
               >
-                <X className="w-6 h-6" />
+                <X className="w-7 h-7" />
               </button>
             </div>
-            <div className="p-4 overflow-y-auto flex-1">
-              <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 mb-6">
-                <h2 className="text-red-300 text-lg font-semibold mb-2">⚠️ IMPORTANT LEGAL DISCLAIMER</h2>
-                <p className="text-red-100">
+            <div className="p-6 overflow-y-auto flex-1 text-base">
+              <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 mb-8">
+                <h2 className="text-red-300 text-xl font-semibold mb-3">⚠️ IMPORTANT LEGAL DISCLAIMER</h2>
+                <p className="text-red-100 text-base leading-relaxed">
                   <strong>AiCapital does NOT provide financial advice.</strong> All information, analysis, and recommendations 
                   are for educational and informational purposes only. You are solely responsible for your investment decisions.
                 </p>
               </div>
-              <section className="mb-6">
-                <h2 className="text-xl font-semibold text-white mb-3">1. Acceptance of Terms</h2>
-                <p className="text-slate-300 leading-relaxed">
+              <section className="mb-8">
+                <h2 className="text-2xl font-semibold text-white mb-4">1. Acceptance of Terms</h2>
+                <p className="text-slate-300 leading-relaxed text-base">
                   By accessing and using AiCapital ("Service"), you accept and agree to be bound by the terms and provision of this agreement. 
                   If you do not agree to abide by the above, please do not use this service.
                 </p>

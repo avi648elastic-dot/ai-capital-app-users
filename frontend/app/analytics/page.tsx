@@ -320,34 +320,34 @@ export default function Analytics() {
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Analytics</h1>
-              <p className="text-slate-400">Detailed analysis of your portfolio performance</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Analytics</h1>
+              <p className="text-lg text-slate-400">Detailed analysis of your portfolio performance</p>
             </div>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white rounded-lg transition-colors text-base font-medium"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
               <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Portfolio Overview */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <PieChart className="w-5 h-5 mr-2" />
+          <div className="card p-6 sm:p-8">
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+              <PieChart className="w-6 h-6 mr-3" />
               Portfolio Allocation
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {portfolio.length === 0 ? (
-                <p className="text-slate-400 text-center py-8">No stocks in portfolio</p>
+                <p className="text-lg text-slate-400 text-center py-8">No stocks in portfolio</p>
               ) : (
                 portfolio.map((stock, index) => {
                   const value = stock.currentPrice * stock.shares;
@@ -355,14 +355,14 @@ export default function Analytics() {
                   const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0;
                   
                   return (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-3 h-3 rounded-full bg-primary-500"></div>
-                        <span className="text-white font-medium">{stock.ticker}</span>
+                    <div key={index} className="flex items-center justify-between py-2">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-4 h-4 rounded-full bg-primary-500"></div>
+                        <span className="text-lg text-white font-medium">{stock.ticker}</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-white">{percentage.toFixed(1)}%</div>
-                        <div className="text-sm text-slate-400">${value.toFixed(2)}</div>
+                        <div className="text-lg text-white font-semibold">{percentage.toFixed(1)}%</div>
+                        <div className="text-base text-slate-400">${value.toFixed(2)}</div>
                       </div>
                     </div>
                   );
@@ -372,31 +372,31 @@ export default function Analytics() {
           </div>
 
           {/* Sector Segmentation */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <Building2 className="w-5 h-5 mr-2" />
+          <div className="card p-6 sm:p-8">
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+              <Building2 className="w-6 h-6 mr-3" />
               Sector Segmentation
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {sectorData.map((sector, index) => (
-                <div key={index} className="space-y-2">
+                <div key={index} className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
-                      <span className="text-white font-medium">{sector.sector}</span>
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-4 h-4 rounded-full ${sector.color}`}></div>
+                      <span className="text-lg text-white font-medium">{sector.sector}</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-white font-semibold">{sector.percentage}%</div>
-                      <div className="text-sm text-slate-400">${sector.value.toLocaleString()}</div>
+                      <div className="text-lg text-white font-semibold">{sector.percentage}%</div>
+                      <div className="text-base text-slate-400">${sector.value.toLocaleString()}</div>
                     </div>
                   </div>
-                  <div className="w-full bg-slate-700 rounded-full h-2">
+                  <div className="w-full bg-slate-700 rounded-full h-3">
                     <div 
-                      className={`h-2 rounded-full ${sector.color}`}
+                      className={`h-3 rounded-full ${sector.color}`}
                       style={{ width: `${sector.percentage}%` }}
                     ></div>
                   </div>
-                  <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-400">Stocks: {sector.stocks.join(', ')}</span>
                     <div className={`flex items-center space-x-1 ${
                       sector.performance90D >= 0 ? 'text-green-400' : 'text-red-400'

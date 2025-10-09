@@ -143,38 +143,38 @@ export default function Profile() {
         onLogout={handleLogout}
       />
       
-      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-8">
+      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-6 sm:pb-8">
         <div className="max-w-4xl mx-auto w-full">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
-            <p className="text-slate-400">Manage your account and subscription</p>
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3">Profile</h1>
+            <p className="text-lg text-slate-400">Manage your account and subscription</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Profile Picture & Basic Info */}
             <div className="lg:col-span-1">
-              <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+              <div className="bg-slate-800 rounded-xl p-6 sm:p-8 border border-slate-700">
                 <div className="flex flex-col items-center text-center">
-                  <div className="relative w-24 h-24 mb-4">
+                  <div className="relative w-28 h-28 sm:w-32 sm:h-32 mb-6">
                     {user?.avatarUrl ? (
                       <img 
                         src={`${process.env.NEXT_PUBLIC_API_URL}${user.avatarUrl}`}
                         alt="Profile"
-                        className="w-24 h-24 rounded-full object-cover border-2 border-slate-600"
+                        className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-2 border-slate-600"
                       />
                     ) : (
-                      <div className="w-24 h-24 bg-slate-700 rounded-full flex items-center justify-center border-2 border-slate-600">
-                        <User className="w-12 h-12 text-slate-400" />
+                      <div className="w-28 h-28 sm:w-32 sm:h-32 bg-slate-700 rounded-full flex items-center justify-center border-2 border-slate-600">
+                        <User className="w-14 h-14 sm:w-16 sm:h-16 text-slate-400" />
                       </div>
                     )}
                     {uploading && (
                       <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                       </div>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">{user?.name || 'User'}</h3>
-                  <p className="text-slate-400 mb-4">{user?.email}</p>
+                  <h3 className="text-2xl font-semibold text-white mb-3">{user?.name || 'User'}</h3>
+                  <p className="text-lg text-slate-400 mb-6">{user?.email}</p>
                   
                   <input
                     ref={fileInputRef}
@@ -187,22 +187,22 @@ export default function Profile() {
                   <button 
                     onClick={handleFileSelect}
                     disabled={uploading}
-                    className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed text-base font-medium"
                   >
                     {uploading ? (
                       <>
-                        <Upload className="w-4 h-4 animate-pulse" />
+                        <Upload className="w-5 h-5 animate-pulse" />
                         <span>Uploading...</span>
                       </>
                     ) : (
                       <>
-                        <Camera className="w-4 h-4" />
+                        <Camera className="w-5 h-5" />
                         <span>Change Photo</span>
                       </>
                     )}
                   </button>
                   
-                  <p className="text-xs text-slate-500 mt-2">
+                  <p className="text-sm text-slate-500 mt-3">
                     Max 1MB • JPEG, PNG, WebP
                   </p>
                 </div>
