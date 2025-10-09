@@ -5,6 +5,8 @@ import { volatilityService } from './volatilityService';
 import { riskManagementService } from './riskManagementService';
 import { historicalDataService } from './historicalDataService';
 import notificationService from './notificationService';
+import { redisService } from './redisService';
+import { loggerService } from './loggerService';
 import Portfolio from '../models/Portfolio';
 
 export class SchedulerService {
@@ -20,16 +22,16 @@ export class SchedulerService {
     // Update stock data every 15 minutes during market hours (9:30 AM - 4:00 PM EST)
     // This runs every 15 minutes from 9:30 AM to 4:00 PM EST (Monday-Friday)
     cron.schedule('*/15 9-16 * * 1-5', async () => {
-      console.log('🕐 [SCHEDULER] 15-minute stock data update triggered');
-      await this.updateStockData();
+      loggerService.info('🕐 [SCHEDULER] 15-minute stock data update triggered');
+      await this.updateStockDataWithLock();
     }, {
       timezone: 'America/New_York'
     });
 
     // Update portfolio decisions every 5 minutes during market hours
     cron.schedule('*/5 9-16 * * 1-5', async () => {
-      console.log('🕐 [SCHEDULER] 5-minute portfolio decisions update triggered');
-      await this.updatePortfolioDecisions();
+      loggerService.info('🕐 [SCHEDULER] 5-minute portfolio decisions update triggered');
+      await this.updatePortfolioDecisionsWithLock();
     }, {
       timezone: 'America/New_York'
     });
@@ -38,26 +40,26 @@ export class SchedulerService {
 
     // Update stock data once at 9:30 AM EST (market open)
     cron.schedule('30 9 * * 1-5', async () => {
-      console.log('🔔 [SCHEDULER] Market opening - updating all data');
-      await this.updateStockData();
-      await this.updatePortfolioDecisions();
+      loggerService.info('🔔 [SCHEDULER] Market opening - updating all data');
+      await this.updateStockDataWithLock();
+      await this.updatePortfolioDecisionsWithLock();
     }, {
       timezone: 'America/New_York'
     });
 
     // Update stock data once at 4:00 PM EST (market close)
     cron.schedule('0 16 * * 1-5', async () => {
-      console.log('🔔 [SCHEDULER] Market closing - final update');
-      await this.updateStockData();
-      await this.updatePortfolioDecisions();
+      loggerService.info('🔔 [SCHEDULER] Market closing - final update');
+      await this.updateStockDataWithLock();
+      await this.updatePortfolioDecisionsWithLock();
     }, {
       timezone: 'America/New_York'
     });
 
     // Update portfolio volatilities daily at 6:00 PM EST (after market close)
     cron.schedule('0 18 * * 1-5', async () => {
-      console.log('📊 [SCHEDULER] Daily volatility update triggered');
-      await this.updatePortfolioVolatilities();
+      loggerService.info('📊 [SCHEDULER] Daily volatility update triggered');
+      await this.updatePortfolioVolatilitiesWithLock();
     }, {
       timezone: 'America/New_York'
     });
@@ -364,6 +366,63 @@ export class SchedulerService {
     const nextUpdate = new Date(est);
     nextUpdate.setMinutes(nextUpdate.getMinutes() + 5);
     return nextUpdate.toLocaleString("en-US", {timeZone: "America/New_York"});
+  }
+
+  /**
+   * 🔒 Update stock data with distributed lock
+   */
+  private async updateStockDataWithLock(): Promise<void> {
+    const lockKey = 'scheduler:stock-data-update';
+    const lockTTL = 300000; // 5 minutes lock TTL
+
+    await redisService.withLock(
+      lockKey,
+      async () => {
+        loggerService.info('🔒 [SCHEDULER] Executing stock data update with distributed lock');
+        await this.updateStockData();
+      },
+      lockTTL,
+      2000, // 2 second retry delay
+      2 // Max 2 retries
+    );
+  }
+
+  /**
+   * 🔒 Update portfolio decisions with distributed lock
+   */
+  private async updatePortfolioDecisionsWithLock(): Promise<void> {
+    const lockKey = 'scheduler:portfolio-decisions-update';
+    const lockTTL = 300000; // 5 minutes lock TTL
+
+    await redisService.withLock(
+      lockKey,
+      async () => {
+        loggerService.info('🔒 [SCHEDULER] Executing portfolio decisions update with distributed lock');
+        await this.updatePortfolioDecisions();
+      },
+      lockTTL,
+      2000, // 2 second retry delay
+      2 // Max 2 retries
+    );
+  }
+
+  /**
+   * 🔒 Update portfolio volatilities with distributed lock
+   */
+  private async updatePortfolioVolatilitiesWithLock(): Promise<void> {
+    const lockKey = 'scheduler:volatility-update';
+    const lockTTL = 600000; // 10 minutes lock TTL
+
+    await redisService.withLock(
+      lockKey,
+      async () => {
+        loggerService.info('🔒 [SCHEDULER] Executing volatility update with distributed lock');
+        await this.updatePortfolioVolatilities();
+      },
+      lockTTL,
+      5000, // 5 second retry delay
+      2 // Max 2 retries
+    );
   }
 }
 

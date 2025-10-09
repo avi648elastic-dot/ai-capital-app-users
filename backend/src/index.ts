@@ -6,6 +6,8 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import { loggerService } from './services/loggerService';
+import { requestIdMiddleware } from './middleware/requestId';
 
 import authRoutes from './routes/auth';
 import portfolioRoutes from './routes/portfolio';
@@ -31,35 +33,79 @@ const app = express();
 // ✅ Render מחייב להשתמש ב־process.env.PORT
 const PORT = Number(process.env.PORT) || 10000;
 
-// 🔒 אבטחה
-app.use(helmet());
+// 🔒 Enhanced Security Configuration
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'", "https://api.stripe.com", "https://finnhub.io", "https://www.alphavantage.co"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow embedding for Vercel/Render
+}));
 
-// 🧁 Cookie Parser – חובה בשביל לזהות token מה-cookie
+// 🧁 Secure Cookie Parser with enhanced security
 app.use(cookieParser());
 
-// 🔄 Rate Limit
+// 🔍 Request ID middleware for tracking
+app.use(requestIdMiddleware);
+
+// 🍪 Secure Cookie Configuration
+app.use((req, res, next) => {
+  // Set secure cookie defaults
+  res.cookie('test', 'value', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+  next();
+});
+
+// 🔄 Enhanced Rate Limiting (300 req/min as per TODO)
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 300, // 300 requests per minute as specified in TODO
+  message: {
+    error: 'Too many requests from this IP, please try again later.',
+    retryAfter: '1 minute'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use(limiter);
 
-// ✅ רשימת דומיינים מותרים לגישה
+// ✅ Strict CORS Configuration (Vercel + admin domains only)
 const allowedOrigins = [
   'https://ai-capital.vercel.app',
-  'https://ai-capital-app7-qalnn40zw-avi648elastic-dots-projects.vercel.app',
-  'https://ai-capital-app7.onrender.com',
-  'http://localhost:3000',
-  'https://ai-capital-app7-git-main-avi648elastic-dots-projects.vercel.app',
   'https://ai-capital-app7.vercel.app',
+  'https://ai-capital-app7-qalnn40zw-avi648elastic-dots-projects.vercel.app',
+  'https://ai-capital-app7-git-main-avi648elastic-dots-projects.vercel.app',
   'https://ai-capital-app7-c08qh68ux-avi648elastic-dots-projects.vercel.app',
+  'https://ai-capital-app7.onrender.com',
+  'http://localhost:3000', // Development only
 ];
 
-// ⚙️ CORS – כולל credentials כדי להעביר cookies
 app.use(
   cors({
-    origin: true, // Allow all origins temporarily
-    credentials: true, // חשוב מאוד — מאפשר שליחת cookies
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        console.warn(`🚫 [CORS] Blocked origin: ${origin}`);
+        return callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
 
@@ -88,11 +134,61 @@ app.use('/api/notifications', notificationRoutes);
 
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {
-  res.json({
+  const healthData = {
     status: 'OK',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-  });
+    uptime: process.uptime(),
+    mongoState: mongoose.connection.readyState,
+    requestId: loggerService.getRequestId(),
+  };
+  
+  loggerService.info('Health check requested', healthData);
+  res.json(healthData);
+});
+
+// 🏥 Enhanced /healthz endpoint for Render healthcheck
+app.get('/healthz', (req, res) => {
+  const startTime = Date.now();
+  
+  try {
+    const healthData = {
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      mongoState: mongoose.connection.readyState,
+      memory: process.memoryUsage(),
+      cpu: process.cpuUsage(),
+      requestId: loggerService.getRequestId(),
+      responseTime: `${Date.now() - startTime}ms`,
+    };
+
+    // Check critical services
+    const isHealthy = mongoose.connection.readyState === 1;
+    
+    if (isHealthy) {
+      loggerService.info('Healthz check passed', healthData);
+      res.status(200).json(healthData);
+    } else {
+      loggerService.error('Healthz check failed - MongoDB not connected', healthData);
+      res.status(503).json({
+        ...healthData,
+        status: 'ERROR',
+        message: 'MongoDB connection not healthy'
+      });
+    }
+  } catch (error) {
+    const errorData = {
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      error: error instanceof Error ? error.message : 'Unknown error',
+      requestId: loggerService.getRequestId(),
+      responseTime: `${Date.now() - startTime}ms`,
+    };
+    
+    loggerService.error('Healthz check error', errorData);
+    res.status(500).json(errorData);
+  }
 });
 
 // 🧪 Test endpoint for debugging
@@ -363,15 +459,61 @@ app.post('/api/test-portfolio-update', async (req, res) => {
 
 // 🌐 דף בית בסיסי
 app.get('/', (req, res) => {
-  res.send('✅ AiCapital Backend is Running and Healthy! CORS: ALL_ORIGINS_ALLOWED - VERSION 2.0');
+  res.send('✅ AiCapital Backend is Running and Healthy! Enhanced Security Active - VERSION 2.1');
 });
 
-// ⚠️ טיפול בשגיאות כלליות
+// ⚠️ Enhanced Central Error Handler Middleware (JSON + logging)
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('❌ Error:', err);
-  res.status(500).json({
-    message: 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { error: err.message }),
+  // Log error with request context using Pino logger
+  loggerService.error('Application Error', {
+    message: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+    requestId: loggerService.getRequestId(),
+    errorType: err.name,
+    statusCode: err.status || 500,
+  });
+
+  // Handle different error types
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation error',
+      errors: err.details || err.message,
+      requestId: loggerService.getRequestId(),
+    });
+  }
+
+  if (err.name === 'UnauthorizedError' || err.status === 401) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized access',
+      requestId: loggerService.getRequestId(),
+    });
+  }
+
+  if (err.name === 'ForbiddenError' || err.status === 403) {
+    return res.status(403).json({
+      success: false,
+      message: 'Forbidden access',
+      requestId: loggerService.getRequestId(),
+    });
+  }
+
+  // Default error response
+  res.status(err.status || 500).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production' 
+      ? 'Internal server error' 
+      : err.message || 'Internal server error',
+    requestId: loggerService.getRequestId(),
+    ...(process.env.NODE_ENV === 'development' && { 
+      stack: err.stack,
+      details: err.details 
+    }),
   });
 });
 
@@ -394,6 +536,10 @@ const connectDB = async () => {
     try {
       await mongoose.connect(mongoURI);
       console.log('✅ MongoDB connected successfully');
+      
+      // 📊 Ensure all indexes are created
+      await ensureIndexes();
+      
     } catch (error) {
       const backoffMs = Math.min(30000, attempt * 5000);
       console.error(`❌ MongoDB connection error (attempt ${attempt}). Retrying in ${backoffMs}ms`, error);
@@ -406,6 +552,48 @@ const connectDB = async () => {
   };
 
   attemptConnect();
+};
+
+// 📊 Ensure MongoDB indexes are created for optimal performance
+const ensureIndexes = async () => {
+  try {
+    console.log('📊 [INDEXES] Ensuring MongoDB indexes...');
+    
+    // Import models to trigger index creation
+    await import('./models/User');
+    await import('./models/Portfolio');
+    await import('./models/Notification');
+    
+    // Create indexes explicitly
+    const User = mongoose.model('User');
+    const Portfolio = mongoose.model('Portfolio');
+    const Notification = mongoose.model('Notification');
+    
+    // User indexes
+    await User.collection.createIndex({ email: 1 }, { unique: true });
+    await User.collection.createIndex({ subscriptionTier: 1 });
+    await User.collection.createIndex({ subscriptionActive: 1 });
+    await User.collection.createIndex({ createdAt: -1 });
+    
+    // Portfolio indexes
+    await Portfolio.collection.createIndex({ userId: 1, portfolioType: 1 });
+    await Portfolio.collection.createIndex({ userId: 1, portfolioId: 1 });
+    await Portfolio.collection.createIndex({ ticker: 1 });
+    await Portfolio.collection.createIndex({ action: 1 });
+    await Portfolio.collection.createIndex({ createdAt: -1 });
+    await Portfolio.collection.createIndex({ updatedAt: -1 });
+    await Portfolio.collection.createIndex({ userId: 1, ticker: 1 }, { unique: true });
+    
+    // Notification indexes
+    await Notification.collection.createIndex({ userId: 1, isRead: 1 });
+    await Notification.collection.createIndex({ type: 1 });
+    await Notification.collection.createIndex({ priority: 1 });
+    await Notification.collection.createIndex({ createdAt: -1 });
+    
+    console.log('✅ [INDEXES] All MongoDB indexes ensured successfully');
+  } catch (error) {
+    console.error('❌ [INDEXES] Error ensuring indexes:', error);
+  }
 };
 
 // 🚀 הפעלת השרת
@@ -425,6 +613,14 @@ const startServer = async () => {
 
     // Start the server immediately so platform health checks can succeed
     const server = app.listen(PORT, '0.0.0.0', () => {
+      loggerService.info('Server started successfully', {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        nodeVersion: process.version,
+        platform: process.platform,
+        arch: process.arch,
+      });
+      
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
