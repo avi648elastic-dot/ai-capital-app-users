@@ -17,6 +17,7 @@ export default function Step0({ onComplete }: Step0Props) {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [selectedTheme, setSelectedTheme] = useState<'dark' | 'light'>('dark');
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸', native: 'English' },
@@ -129,15 +130,44 @@ export default function Step0({ onComplete }: Step0Props) {
         </div>
       </div>
 
-      <div className="mt-8">
+      {/* Terms and Privacy Acceptance - REQUIRED */}
+      <div className="mt-8 max-w-md mx-auto">
+        <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 mb-4">
+          <label className="flex items-start space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 w-5 h-5 rounded border-red-500 text-red-600 focus:ring-red-500"
+            />
+            <span className="text-sm text-red-100 flex-1">
+              I have read and accept the{' '}
+              <a href="/legal/terms" target="_blank" className="text-red-300 underline hover:text-red-200 font-semibold">
+                Terms of Service
+              </a>
+              {' '}and{' '}
+              <a href="/legal/privacy" target="_blank" className="text-red-300 underline hover:text-red-200 font-semibold">
+                Privacy Policy
+              </a>. 
+              I understand that AiCapital does NOT provide financial advice and I am solely responsible for my investment decisions.
+            </span>
+          </label>
+        </div>
+        
         <button
           onClick={handleSubmit}
-          disabled={loading}
-          className="btn-primary flex items-center space-x-2 mx-auto"
+          disabled={loading || !acceptedTerms}
+          className="btn-primary flex items-center space-x-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span>Continue</span>
           <ArrowRight className="w-4 h-4" />
         </button>
+        
+        {!acceptedTerms && (
+          <p className="text-xs text-red-400 mt-2 text-center">
+            You must accept the terms to continue
+          </p>
+        )}
       </div>
 
       {loading && (
