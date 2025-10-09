@@ -13,6 +13,7 @@ import Header from '@/components/Header';
 import MarketOverview from '@/components/MarketOverview';
 import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 import MobileHeader from '@/components/MobileHeader';
+import { getSubscriptionLimits, canCreatePortfolio, canAddStock, getUpgradeMessage } from '@/utils/subscriptionLimits';
 import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';
 import CreatePortfolioModal from '@/components/CreatePortfolioModal';
 import DeletePortfolioModal from '@/components/DeletePortfolioModal';
@@ -72,6 +73,9 @@ export default function Dashboard() {
   const [sectorPerformance, setSectorPerformance] = useState<any[]>([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const router = useRouter();
+
+  // Get subscription limits
+  const subscriptionLimits = getSubscriptionLimits(user?.subscriptionTier || 'free');
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -499,6 +503,12 @@ export default function Dashboard() {
              <div className="flex space-x-4 items-center">
                <button
                  onClick={() => {
+                   // Check subscription limits
+                   if (!canAddStock(portfolio.length, user?.subscriptionTier || 'free')) {
+                     alert(getUpgradeMessage(user?.subscriptionTier || 'free', 'more stocks'));
+                     return;
+                   }
+                   
                    if (user?.subscriptionTier === 'premium' && showMultiPortfolio) {
                      // In multi-view, add to selected portfolio
                      if (selectedMultiPortfolio) {
@@ -538,6 +548,11 @@ export default function Dashboard() {
               <div className="flex space-x-2">
                 <button
                   onClick={() => {
+                    // Check subscription limits
+                    if (!canCreatePortfolio(portfolioMeta.total, user?.subscriptionTier || 'free')) {
+                      alert(getUpgradeMessage(user?.subscriptionTier || 'free', 'more portfolios'));
+                      return;
+                    }
                     console.log('🔍 [DASHBOARD] Add Portfolio button clicked');
                     setShowCreatePortfolio(true);
                   }}
@@ -786,7 +801,14 @@ export default function Dashboard() {
       {/* Mobile Floating Action Button - Only shows on mobile */}
       <div className="lg:hidden fixed bottom-6 right-6 z-50">
         <button
-          onClick={() => setShowStockForm(true)}
+          onClick={() => {
+            // Check subscription limits
+            if (!canAddStock(portfolio.length, user?.subscriptionTier || 'free')) {
+              alert(getUpgradeMessage(user?.subscriptionTier || 'free', 'more stocks'));
+              return;
+            }
+            setShowStockForm(true);
+          }}
           className="w-14 h-14 bg-gradient-to-r from-blue-600 to-emerald-600 rounded-full shadow-lg flex items-center justify-center text-white hover:from-blue-500 hover:to-emerald-500 transition-all duration-300 transform hover:scale-110 active:scale-95"
           aria-label="Add new stock"
         >

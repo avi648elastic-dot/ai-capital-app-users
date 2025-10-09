@@ -134,7 +134,7 @@ export default function SubscriptionPage() {
       yearlyPeriod: 'year',
       description: 'Advanced features for serious investors',
       features: [
-        '3 portfolios (Solid or Risky)',
+        '3 Solid portfolios + 3 Risky portfolios (6 total)',
         'Up to 15 stocks per portfolio',
         'AI engine recommendations',
         'Portfolio Analysis reports',
@@ -145,7 +145,7 @@ export default function SubscriptionPage() {
         'Priority email support'
       ],
       limitations: [
-        'Limited to 3 portfolios',
+        'Limited to 6 portfolios total',
         'Max 15 stocks per portfolio',
         'No advanced backtesting',
         'No white-label options'
@@ -161,7 +161,7 @@ export default function SubscriptionPage() {
       yearlyPeriod: 'year',
       description: 'Complete AI-powered investment suite',
       features: [
-        '5 portfolios (Solid or Risky)',
+        '5 Solid portfolios + 5 Risky portfolios (10 total)',
         'Up to 20 stocks per portfolio',
         'AI engine recommendations',
         'Portfolio Analysis reports',
@@ -330,11 +330,10 @@ export default function SubscriptionPage() {
                   </button>
                 ) : (
                   <button 
-                    onClick={() => handleUpgrade('premium')}
-                    disabled={upgrading}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg transition-all duration-300 font-medium"
+                    disabled
+                    className="w-full px-4 py-3 bg-slate-600 text-slate-400 rounded-lg cursor-not-allowed"
                   >
-                    {upgrading ? 'Upgrading...' : 'Upgrade to Premium'}
+                    Payment Integration Coming Soon
                   </button>
                 )}
               </div>
@@ -380,11 +379,10 @@ export default function SubscriptionPage() {
                   </button>
                 ) : (
                   <button 
-                    onClick={() => handleUpgrade('premium+')}
-                    disabled={upgrading}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-lg transition-all duration-300 font-medium"
+                    disabled
+                    className="w-full px-4 py-3 bg-slate-600 text-slate-400 rounded-lg cursor-not-allowed"
                   >
-                    {upgrading ? 'Upgrading...' : 'Upgrade to Premium+'}
+                    Payment Integration Coming Soon
                   </button>
                 )}
               </div>
