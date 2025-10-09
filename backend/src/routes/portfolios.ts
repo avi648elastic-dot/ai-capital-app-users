@@ -11,42 +11,96 @@ router.get('/', authenticateToken, requireSubscription, async (req, res) => {
   try {
     const portfolios = await Portfolio.find({ userId: req.user!._id }).sort({ portfolioId: 1, createdAt: -1 });
     
-    // Group portfolios by portfolioId
-    const groupedPortfolios = portfolios.reduce((acc, item) => {
-      const key = item.portfolioId;
-      if (!acc[key]) {
-        acc[key] = {
-          portfolioId: item.portfolioId,
-          portfolioType: item.portfolioType,
-          portfolioName: item.portfolioName || `${item.portfolioType} Portfolio ${item.portfolioId.split('-')[1]}`,
-          stocks: [],
-          totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 },
-          volatility: item.volatility || 0,
-          lastVolatilityUpdate: item.lastVolatilityUpdate
+    // Group portfolios by portfolioId and fetch exchange information
+    const groupedPortfolios = await Promise.all(
+      Object.values(
+        portfolios.reduce((acc, item) => {
+          const key = item.portfolioId;
+          if (!acc[key]) {
+            acc[key] = {
+              portfolioId: item.portfolioId,
+              portfolioType: item.portfolioType,
+              portfolioName: item.portfolioName || `${item.portfolioType} Portfolio ${item.portfolioId.split('-')[1]}`,
+              stocks: [],
+              totals: { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 },
+              volatility: item.volatility || 0,
+              lastVolatilityUpdate: item.lastVolatilityUpdate
+            };
+          }
+          
+          // Calculate totals
+          const cost = item.entryPrice * item.shares;
+          const value = item.currentPrice * item.shares;
+          const pnl = value - cost;
+          
+          acc[key].totals.initial += cost;
+          acc[key].totals.current += value;
+          acc[key].totals.totalPnL += pnl;
+          acc[key].stocks.push(item);
+          
+          return acc;
+        }, {} as any)
+      ).map(async (portfolio: any) => {
+        // Fetch exchange information for each stock
+        const stocksWithExchange = await Promise.all(
+          portfolio.stocks.map(async (stock: any) => {
+            let exchange = '—';
+            try {
+              const { default: axios } = await import('axios');
+              const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g';
+              
+              // Quick mapping by suffix first
+              if (stock.ticker.endsWith('.TO')) exchange = 'TSX';
+              else if (stock.ticker.endsWith('.SW')) exchange = 'SWISS';
+              else if (stock.ticker.endsWith('.L')) exchange = 'LSE';
+              else if (stock.ticker.includes(':')) {
+                exchange = stock.ticker.split(':')[0].toUpperCase();
+              } else {
+                // Use Finnhub API
+                const response = await axios.get(`https://finnhub.io/api/v1/stock/profile2?symbol=${stock.ticker}&token=${FINNHUB_API_KEY}`);
+                const data = response.data;
+                
+                if (data && data.exchange) {
+                  let exchangeName = (data.exchange || '').toUpperCase();
+                  
+                  // Map exchange names to standard format
+                  if (/NASDAQ/.test(exchangeName)) exchange = 'NASDAQ';
+                  else if (/NEW YORK STOCK EXCHANGE|NYSE/.test(exchangeName)) exchange = 'NYSE';
+                  else if (/TORONTO|TSX/.test(exchangeName)) exchange = 'TSX';
+                  else if (/EURONEXT/.test(exchangeName)) exchange = 'EURONEXT';
+                  else if (/SWISS|SIX/.test(exchangeName)) exchange = 'SWISS';
+                  else if (/LSE|LONDON/.test(exchangeName)) exchange = 'LSE';
+                  else if (/AMEX|AMERICAN/.test(exchangeName)) exchange = 'AMEX';
+                  else exchange = exchangeName;
+                }
+              }
+            } catch (exchangeError) {
+              console.warn(`⚠️ [PORTFOLIOS] Could not fetch exchange for ${stock.ticker}:`, exchangeError);
+              exchange = '—';
+            }
+            
+            return {
+              ...stock.toObject(),
+              exchange: exchange
+            };
+          })
+        );
+        
+        return {
+          ...portfolio,
+          stocks: stocksWithExchange
         };
-      }
-      
-      // Calculate totals
-      const cost = item.entryPrice * item.shares;
-      const value = item.currentPrice * item.shares;
-      const pnl = value - cost;
-      
-      acc[key].totals.initial += cost;
-      acc[key].totals.current += value;
-      acc[key].totals.totalPnL += pnl;
-      acc[key].stocks.push(item);
-      
-      return acc;
-    }, {} as any);
+      })
+    );
 
     // Calculate percentages
-    Object.values(groupedPortfolios).forEach((portfolio: any) => {
+    groupedPortfolios.forEach((portfolio: any) => {
       portfolio.totals.totalPnLPercent = portfolio.totals.initial > 0 
         ? (portfolio.totals.totalPnL / portfolio.totals.initial) * 100 
         : 0;
     });
 
-    res.json({ portfolios: Object.values(groupedPortfolios) });
+    res.json({ portfolios: groupedPortfolios });
   } catch (error) {
     console.error('Get portfolios error:', error);
     res.status(500).json({ message: 'Internal server error' });
