@@ -1,18 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { User, Mail, CreditCard, Shield, Camera } from 'lucide-react';
+import { User, Mail, CreditCard, Shield, Camera, Upload, X } from 'lucide-react';
+import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 
 export default function Profile() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -25,7 +28,7 @@ export default function Profile() {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       setUser(response.data.user);
@@ -43,14 +46,84 @@ export default function Profile() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // TODO: implement update profile API
-      alert('Profile update not yet implemented');
-    } catch (error) {
+      // Check if email is being changed
+      const emailChanged = formData.email !== user?.email;
+      
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`, formData, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      });
+      
+      if (response.data.success) {
+        setUser(response.data.user);
+        
+        if (emailChanged) {
+          alert('✅ Profile updated successfully!\n\n⚠️ IMPORTANT: Your email has been changed.\nPlease use your new email (' + formData.email + ') to log in next time.');
+        } else {
+          alert('✅ Profile updated successfully!');
+        }
+      }
+    } catch (error: any) {
       console.error('Error updating profile:', error);
-      alert('Error updating profile');
+      const errorMessage = error.response?.data?.error || 'Error updating profile';
+      alert('❌ ' + errorMessage);
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
+      return;
+    }
+
+    // Validate file size (1MB = 1024 * 1024 bytes)
+    if (file.size > 1024 * 1024) {
+      alert('File size too large. Maximum size is 1MB.');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/user/avatar`, formData, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get('token')}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        setUser(response.data.user);
+        alert('Avatar updated successfully!');
+      }
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      const errorMessage = error.response?.data?.error || 'Error uploading avatar';
+      alert(errorMessage);
+    } finally {
+      setUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleLogout = () => {
+    Cookies.remove('token');
+    window.location.href = '/';
   };
 
   if (loading) {
@@ -62,85 +135,140 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
-          <p className="text-slate-400">Manage your account and subscription</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Picture & Basic Info */}
-          <div className="lg:col-span-1">
-            <div className="card p-6">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-24 h-24 bg-slate-700 rounded-full flex items-center justify-center mb-4">
-                  <User className="w-12 h-12 text-slate-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">{user?.name || 'User'}</h3>
-                <p className="text-slate-400 mb-4">{user?.email}</p>
-                <button className="btn-secondary flex items-center space-x-2">
-                  <Camera className="w-4 h-4" />
-                  <span>Change Photo</span>
-                </button>
-              </div>
-            </div>
+    <div className="min-h-screen bg-slate-900 flex">
+      <ResponsiveNavigation 
+        userName={user?.name || 'User'} 
+        subscriptionTier={user?.subscriptionTier || 'free'}
+        onLogout={handleLogout}
+      />
+      
+      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-8">
+        <div className="max-w-4xl mx-auto w-full">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
+            <p className="text-slate-400">Manage your account and subscription</p>
           </div>
 
-          {/* Profile Form */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                <User className="w-5 h-5 mr-2" />
-                Personal Information
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Name</label>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Profile Picture & Basic Info */}
+            <div className="lg:col-span-1">
+              <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <div className="flex flex-col items-center text-center">
+                  <div className="relative w-24 h-24 mb-4">
+                    {user?.avatarUrl ? (
+                      <img 
+                        src={`${process.env.NEXT_PUBLIC_API_URL}${user.avatarUrl}`}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover border-2 border-slate-600"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 bg-slate-700 rounded-full flex items-center justify-center border-2 border-slate-600">
+                        <User className="w-12 h-12 text-slate-400" />
+                      </div>
+                    )}
+                    {uploading && (
+                      <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">{user?.name || 'User'}</h3>
+                  <p className="text-slate-400 mb-4">{user?.email}</p>
+                  
                   <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleFileChange}
+                    className="hidden"
                   />
+                  
+                  <button 
+                    onClick={handleFileSelect}
+                    disabled={uploading}
+                    className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {uploading ? (
+                      <>
+                        <Upload className="w-4 h-4 animate-pulse" />
+                        <span>Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-4 h-4" />
+                        <span>Change Photo</span>
+                      </>
+                    )}
+                  </button>
+                  
+                  <p className="text-xs text-slate-500 mt-2">
+                    Max 1MB • JPEG, PNG, WebP
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="btn-primary"
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </button>
               </div>
             </div>
 
-            {/* Subscription */}
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                <CreditCard className="w-5 h-5 mr-2" />
-                Subscription
-              </h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white font-medium">
-                    {user?.subscriptionTier === 'premium' ? 'Premium' : 'Free'} Plan
-                  </p>
-                  <p className="text-slate-400 text-sm">
-                    {user?.subscriptionTier === 'premium' ? 'Full access to all features' : 'Limited features'}
-                  </p>
+            {/* Profile Form */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <User className="w-5 h-5 mr-2" />
+                  Personal Information
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Name</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
                 </div>
-                {user?.subscriptionTier === 'free' && (
-                  <button className="btn-primary">Upgrade to Premium</button>
-                )}
+              </div>
+
+              {/* Subscription */}
+              <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Subscription
+                </h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-medium">
+                      {user?.subscriptionTier === 'premium' ? 'Premium' : 
+                       user?.subscriptionTier === 'premium+' ? 'Premium+' : 'Free'} Plan
+                    </p>
+                    <p className="text-slate-400 text-sm">
+                      {user?.subscriptionTier === 'free' ? 'Limited features' : 'Full access to all features'}
+                    </p>
+                  </div>
+                  {user?.subscriptionTier === 'free' && (
+                    <button 
+                      onClick={() => window.location.href = '/subscription'}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Upgrade to Premium
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

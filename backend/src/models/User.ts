@@ -6,7 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   subscriptionActive: boolean;
-  subscriptionTier: 'free' | 'premium'; // New field for subscription tier
+  subscriptionTier: 'free' | 'premium' | 'premium+'; // Updated to include premium+
   onboardingCompleted: boolean;
   isAdmin?: boolean;
   featuredTickers?: string[];
@@ -16,6 +16,7 @@ export interface IUser extends Document {
   riskTolerance?: number;
   language?: string;
   theme?: string;
+  avatarUrl?: string; // New field for avatar
   createdAt: Date;
 
   apiKey?: string;
@@ -29,7 +30,7 @@ const UserSchema: Schema<IUser> = new Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     subscriptionActive: { type: Boolean, default: false },
-    subscriptionTier: { type: String, enum: ['free', 'premium'], default: 'free' },
+    subscriptionTier: { type: String, enum: ['free', 'premium', 'premium+'], default: 'free' },
     onboardingCompleted: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
     featuredTickers: { type: [String], default: undefined },
@@ -39,6 +40,7 @@ const UserSchema: Schema<IUser> = new Schema(
     riskTolerance: { type: Number, default: 0 },
     language: { type: String, default: 'en' },
     theme: { type: String, default: 'dark' },
+    avatarUrl: { type: String }, // New field for avatar
 
     apiKey: { type: String },
     apiSecret: { type: String },

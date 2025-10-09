@@ -18,6 +18,7 @@ import analyticsRoutes from './routes/analytics';
 import stocksRoutes from './routes/stocks';
 import performanceRoutes from './routes/performance';
 import subscriptionRoutes from './routes/subscription';
+import userRoutes from './routes/user';
 import { schedulerService } from './services/schedulerService';
 
 // Load environment variables
@@ -64,6 +65,9 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// 📁 Serve static files (for avatar uploads)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // ✅ מסלולים ראשיים
 app.use('/api/auth', authRoutes);
 app.use('/api/portfolio', portfolioRoutes);
@@ -77,6 +81,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/stocks', stocksRoutes);
 app.use('/api/performance', performanceRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/user', userRoutes);
 
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {
