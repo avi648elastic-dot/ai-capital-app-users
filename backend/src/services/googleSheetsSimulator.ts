@@ -47,7 +47,7 @@ class GoogleSheetsSimulator {
       // Check cache first
       const cacheKey = ticker;
       const cached = this.cache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      if (cached && cached.timestamp && Date.now() - cached.timestamp < this.cacheTimeout) {
         console.log(`⚡ [GOOGLE SHEETS] Using cached data for ${ticker}`);
         return cached;
       }
