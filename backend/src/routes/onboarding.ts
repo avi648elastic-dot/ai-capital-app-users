@@ -138,16 +138,16 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
       message: 'Portfolio imported successfully',
       portfolio: portfolioItems,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Import portfolio error:', error);
     console.error('❌ Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
+      message: error?.message || 'Unknown error',
+      stack: error?.stack || 'No stack trace',
+      name: error?.name || 'Unknown error'
     });
     return res.status(500).json({ 
       message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Server error'
+      error: process.env.NODE_ENV === 'development' ? (error?.message || 'Unknown error') : 'Server error'
     });
   }
 });
