@@ -195,11 +195,12 @@ export default function SubscriptionPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 flex">
-      <ResponsiveNavigation 
-        userName={user?.name || 'User'} 
-        subscriptionTier={currentPlan}
-        onLogout={handleLogout}
-      />
+             <ResponsiveNavigation 
+               userName={user?.name || 'User'} 
+               subscriptionTier={currentPlan}
+               userAvatar={user?.avatarUrl}
+               onLogout={handleLogout}
+             />
       
       <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-8">
         <div className="max-w-7xl mx-auto w-full">

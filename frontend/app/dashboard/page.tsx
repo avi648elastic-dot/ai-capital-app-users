@@ -22,9 +22,10 @@ interface User {
   id: string;
   email: string;
   name: string;
-  subscriptionTier: 'free' | 'premium';
+  subscriptionTier: 'free' | 'premium' | 'premium+';
   isAdmin?: boolean;
   portfolioType?: 'solid' | 'risky';
+  avatarUrl?: string;
 }
 
 interface PortfolioItem {
@@ -398,13 +399,14 @@ export default function Dashboard() {
       <ResponsiveNavigation 
         userName={user?.name || 'User'} 
         subscriptionTier={user?.subscriptionTier || 'free'}
+        userAvatar={user?.avatarUrl}
         onLogout={handleLogout}
       />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8">
       {/* Professional Header */}
-      <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} />
+      <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} />
 
         <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-8 w-full">
         {/* Enhanced Subscription Status Banner */}

@@ -8,16 +8,19 @@ import {
   Activity, AlertTriangle, Star, User, Settings
 } from 'lucide-react';
 import { useDevice } from '@/hooks/useDevice';
+import Image from 'next/image';
 
 interface ResponsiveNavigationProps {
   userName?: string;
   subscriptionTier?: string;
+  userAvatar?: string;
   onLogout: () => void;
 }
 
 export default function ResponsiveNavigation({ 
   userName, 
   subscriptionTier = 'free', 
+  userAvatar,
   onLogout 
 }: ResponsiveNavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -74,9 +77,21 @@ export default function ResponsiveNavigation({
         {/* User Info */}
         <div className="p-4 border-b border-slate-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-slate-300" />
-            </div>
+            {userAvatar ? (
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-600">
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_API_URL}${userAvatar}`}
+                  alt="User Avatar"
+                  width={40}
+                  height={40}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-slate-300" />
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">
                 {userName || 'User'}
@@ -200,11 +215,23 @@ export default function ResponsiveNavigation({
                 </div>
               </div>
               
-              {/* User Info */}
-              <div className="flex items-center space-x-3 p-3 bg-slate-800/50 rounded-lg">
-                <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-slate-300" />
-                </div>
+                     {/* User Info */}
+                     <div className="flex items-center space-x-3 p-3 bg-slate-800/50 rounded-lg">
+                       {userAvatar ? (
+                         <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-600">
+                           <Image
+                             src={`${process.env.NEXT_PUBLIC_API_URL}${userAvatar}`}
+                             alt="User Avatar"
+                             width={32}
+                             height={32}
+                             className="w-full h-full object-cover"
+                           />
+                         </div>
+                       ) : (
+                         <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
+                           <BarChart3 className="w-4 h-4 text-slate-300" />
+                         </div>
+                       )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white truncate">
                     {userName || 'User'}

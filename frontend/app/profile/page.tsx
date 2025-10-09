@@ -139,6 +139,7 @@ export default function Profile() {
       <ResponsiveNavigation 
         userName={user?.name || 'User'} 
         subscriptionTier={user?.subscriptionTier || 'free'}
+        userAvatar={user?.avatarUrl}
         onLogout={handleLogout}
       />
       

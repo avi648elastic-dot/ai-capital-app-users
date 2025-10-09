@@ -10,9 +10,10 @@ interface HeaderProps {
   userName?: string;
   showNavigation?: boolean;
   isAdmin?: boolean;
+  userAvatar?: string;
 }
 
-export default function Header({ userName, showNavigation = true, isAdmin = false }: HeaderProps) {
+export default function Header({ userName, showNavigation = true, isAdmin = false, userAvatar }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -73,9 +74,21 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors duration-200"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
-                  </div>
+                  {userAvatar ? (
+                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-600">
+                      <Image
+                        src={`${process.env.NEXT_PUBLIC_API_URL}${userAvatar}`}
+                        alt="User Avatar"
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                  )}
                 </button>
 
                 {/* Dropdown Menu */}
