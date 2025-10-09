@@ -43,7 +43,15 @@ export default function ResponsiveNavigation({
         { id: 'watchlist', label: 'Watchlist', icon: Eye, href: '/analytics/watchlist', premium: true }
       ]
     },
-    { id: 'subscription', label: 'Subscription & Billing', icon: Crown, href: '/subscription', premium: true }
+    { 
+      id: 'subscription', 
+      label: 'Subscription', 
+      icon: Crown,
+      children: [
+        { id: 'billing', label: 'Billing', icon: Target, href: '/billing' },
+        { id: 'upgrade', label: 'Upgrade to Premium', icon: Star, href: '/upgrade' }
+      ]
+    }
   ];
 
   const handleItemClick = (item: any) => {
@@ -151,8 +159,8 @@ export default function ResponsiveNavigation({
         </div>
       </div>
 
-      {/* Mobile Menu Button - HUGE AND VISIBLE */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      {/* Mobile Menu Button - Positioned below header */}
+      <div className="lg:hidden fixed top-20 left-4 z-50">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-6 bg-red-600 shadow-2xl border-4 border-red-400 rounded-2xl text-white text-xl font-bold hover:bg-red-500 transition-all duration-300 transform hover:scale-110 active:scale-95"
