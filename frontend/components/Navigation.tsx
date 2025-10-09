@@ -60,7 +60,8 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
           id: 'portfolio-analysis',
           label: 'Portfolio Analysis',
           icon: PieChart,
-          href: '/analytics'
+          href: '/analytics',
+          premium: true
         },
         {
           id: 'performance',
@@ -74,15 +75,15 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
           icon: FileText,
           href: '/analytics/reports',
           premium: true
+        },
+        {
+          id: 'risk-management',
+          label: 'Risk Management',
+          icon: AlertTriangle,
+          href: '/risk-management',
+          premium: true
         }
       ]
-    },
-    {
-      id: 'risk-management',
-      label: 'Risk Management',
-      icon: AlertTriangle,
-      href: '/risk-management',
-      premium: true
     },
     {
       id: 'trading',
