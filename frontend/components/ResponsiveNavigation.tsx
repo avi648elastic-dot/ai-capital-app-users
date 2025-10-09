@@ -26,6 +26,8 @@ export default function ResponsiveNavigation({
   
   // Debug logging
   console.log('🔍 [RESPONSIVE NAV] Device detection:', { isMobile, isTablet, screenWidth: useDevice().screenWidth });
+  console.log('🔍 [RESPONSIVE NAV] Will show desktop sidebar:', !isMobile && !isTablet);
+  console.log('🔍 [RESPONSIVE NAV] Will show mobile button:', isMobile || isTablet);
 
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/dashboard' },
@@ -40,7 +42,8 @@ export default function ResponsiveNavigation({
         { id: 'risk-management', label: 'Risk Management', icon: Shield, href: '/analytics/risk-management', premium: true },
         { id: 'watchlist', label: 'Watchlist', icon: Eye, href: '/analytics/watchlist', premium: true }
       ]
-    }
+    },
+    { id: 'subscription', label: 'Subscription & Billing', icon: Crown, href: '/subscription', premium: true }
   ];
 
   const handleItemClick = (item: any) => {
@@ -50,9 +53,10 @@ export default function ResponsiveNavigation({
     }
   };
 
-  // Desktop Navigation - Only show on desktop (>= 1024px)
-  if (!isMobile && !isTablet) {
-    return (
+  // Desktop Navigation - Always show sidebar on desktop
+  return (
+    <>
+      {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden lg:flex flex-col w-64 bg-slate-800 border-r border-slate-700 h-screen">
         {/* Header */}
         <div className="p-6 border-b border-slate-700">
@@ -146,20 +150,15 @@ export default function ResponsiveNavigation({
           </button>
         </div>
       </div>
-    );
-  }
 
-  // Mobile Navigation
-  return (
-    <>
-      {/* Mobile Menu Button - ALWAYS VISIBLE ON MOBILE */}
+      {/* Mobile Menu Button - HUGE AND VISIBLE */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-4 bg-gradient-to-r from-blue-600 to-emerald-600 shadow-xl border-2 border-blue-500/50 rounded-xl text-white hover:from-blue-500 hover:to-emerald-500 transition-all duration-300 transform hover:scale-110 active:scale-95"
+          className="p-6 bg-red-600 shadow-2xl border-4 border-red-400 rounded-2xl text-white text-xl font-bold hover:bg-red-500 transition-all duration-300 transform hover:scale-110 active:scale-95"
           aria-label="Toggle navigation menu"
         >
-          {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+          {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
         </button>
       </div>
 
