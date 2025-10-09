@@ -658,8 +658,8 @@ export default function Dashboard() {
             <div className="flex mb-6 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
               <button
                 onClick={() => {
-                  // Prevent switching tabs for free users
-                  if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid') {
+                  // Prevent switching tabs for free users (allow imported portfolios to access solid)
+                  if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported') {
                     alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Risky portfolios!');
                     return;
                   }
