@@ -67,6 +67,9 @@ export default function Dashboard() {
   const [showDeletePortfolio, setShowDeletePortfolio] = useState(false);
   const [selectedMultiPortfolio, setSelectedMultiPortfolio] = useState<any>(null);
   const [portfolioMeta, setPortfolioMeta] = useState({ total: 0, solid: 0, risky: 0 });
+  const [portfolioPerformance, setPortfolioPerformance] = useState<any[]>([]);
+  const [sectorPerformance, setSectorPerformance] = useState<any[]>([]);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -208,6 +211,42 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+  // Fetch real-time analytics data for charts
+  const fetchAnalyticsData = async () => {
+    if (portfolio.length === 0) return;
+    
+    try {
+      setAnalyticsLoading(true);
+      console.log('🔍 [DASHBOARD] Fetching analytics data...');
+      
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        timeout: 30000 // 30 second timeout for analytics
+      });
+      
+      console.log('✅ [DASHBOARD] Analytics data fetched:', response.data);
+      
+      if (response.data) {
+        setPortfolioPerformance(response.data.portfolioPerformance || []);
+        setSectorPerformance(response.data.sectorPerformance || []);
+      }
+    } catch (error: any) {
+      console.error('❌ [DASHBOARD] Error fetching analytics:', error);
+      // Don't show error to user, just use portfolio data as fallback
+      setPortfolioPerformance([]);
+      setSectorPerformance([]);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
+
+  // Fetch analytics when portfolio changes
+  useEffect(() => {
+    if (portfolio.length > 0) {
+      fetchAnalyticsData();
+    }
+  }, [portfolio]);
 
   const handleAddStock = async (stockData: any) => {
     try {
@@ -684,7 +723,12 @@ export default function Dashboard() {
             {/* Charts */}
             <div className="mt-8">
               <ErrorBoundary label="charts">
-                <Charts portfolio={portfolio} />
+                  <Charts 
+                    portfolio={portfolio} 
+                    portfolioPerformance={portfolioPerformance}
+                    sectorPerformance={sectorPerformance}
+                    analyticsLoading={analyticsLoading}
+                  />
               </ErrorBoundary>
             </div>
           </>

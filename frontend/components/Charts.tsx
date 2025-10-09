@@ -20,9 +20,12 @@ interface PortfolioItem {
 
 interface ChartsProps {
   portfolio: PortfolioItem[];
+  portfolioPerformance?: any[];
+  sectorPerformance?: any[];
+  analyticsLoading?: boolean;
 }
 
-export default function Charts({ portfolio }: ChartsProps) {
+export default function Charts({ portfolio, portfolioPerformance, sectorPerformance, analyticsLoading }: ChartsProps) {
   const [chartData, setChartData] = useState<any[]>([]);
   const [pieData, setPieData] = useState<any[]>([]);
   const [candlestickData, setCandlestickData] = useState<any[]>([]);
@@ -30,53 +33,60 @@ export default function Charts({ portfolio }: ChartsProps) {
   useEffect(() => {
     if (portfolio.length === 0) return;
 
-    // Prepare enhanced chart data with proper time series
-    const sortedPortfolio = [...portfolio].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Use real analytics data if available, otherwise fallback to portfolio data
+    if (portfolioPerformance && portfolioPerformance.length > 0) {
+      console.log('📊 [CHARTS] Using real analytics data');
+      setChartData(portfolioPerformance);
+    } else {
+      console.log('⚠️ [CHARTS] Using portfolio entry data (no analytics available)');
+      
+      // Fallback: Prepare enhanced chart data with proper time series
+      const sortedPortfolio = [...portfolio].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    // Calculate cumulative portfolio value over time WITHOUT referencing an array
-    // that hasn't been created yet (prevents "Cannot access 'a' before initialization").
-    let cumulativeValue = 0;
-    let cumulativeCost = 0;
-    let previousTotal = 0; // used for pseudo-candlestick open value
+      // Calculate cumulative portfolio value over time
+      let cumulativeValue = 0;
+      let cumulativeCost = 0;
+      let previousTotal = 0;
 
-    const enhancedData = sortedPortfolio.map((item) => {
-      const cost = item.entryPrice * item.shares;
-      const value = item.currentPrice * item.shares;
-      const pnl = value - cost;
-      const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
+      const enhancedData = sortedPortfolio.map((item) => {
+        const cost = item.entryPrice * item.shares;
+        const value = item.currentPrice * item.shares;
+        const pnl = value - cost;
+        const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
 
-      cumulativeValue += value;
-      cumulativeCost += cost;
-      const totalPnL = cumulativeValue - cumulativeCost;
-      const totalPnLPercent = cumulativeCost > 0 ? (totalPnL / cumulativeCost) * 100 : 0;
+        cumulativeValue += value;
+        cumulativeCost += cost;
+        const totalPnL = cumulativeValue - cumulativeCost;
+        const totalPnLPercent = cumulativeCost > 0 ? (totalPnL / cumulativeCost) * 100 : 0;
 
-      const current = {
-        date: new Date(item.date).toLocaleDateString(),
-        fullDate: new Date(item.date),
-        value: cumulativeValue,
-        cost: cumulativeCost,
-        pnl: totalPnL,
-        pnlPercent: totalPnLPercent,
-        ticker: item.ticker,
-        shares: item.shares,
-        entryPrice: item.entryPrice,
-        currentPrice: item.currentPrice,
-        individualPnL: pnl,
-        individualPnLPercent: pnlPercent,
-        action: item.action,
-        // For candlestick-style visualization
-        open: previousTotal || cumulativeValue,
-        high: Math.max(cumulativeValue, previousTotal || cumulativeValue),
-        low: Math.min(cumulativeValue, previousTotal || cumulativeValue),
-        close: cumulativeValue,
-        volume: item.shares,
-      } as any;
+        const current = {
+          date: new Date(item.date).toLocaleDateString(),
+          fullDate: new Date(item.date),
+          value: cumulativeValue,
+          cost: cumulativeCost,
+          pnl: totalPnL,
+          pnlPercent: totalPnLPercent,
+          ticker: item.ticker,
+          shares: item.shares,
+          entryPrice: item.entryPrice,
+          currentPrice: item.currentPrice,
+          individualPnL: pnl,
+          individualPnLPercent: pnlPercent,
+          action: item.action,
+          // For candlestick-style visualization
+          open: previousTotal || cumulativeValue,
+          high: Math.max(cumulativeValue, previousTotal || cumulativeValue),
+          low: Math.min(cumulativeValue, previousTotal || cumulativeValue),
+          close: cumulativeValue,
+          volume: item.shares,
+        } as any;
 
-      previousTotal = cumulativeValue;
-      return current;
-    });
+        previousTotal = cumulativeValue;
+        return current;
+      });
 
-    setChartData(enhancedData);
+      setChartData(enhancedData);
+    }
 
     // Prepare candlestick-style data for individual stocks
     const candlestickData = portfolio.map((item) => {
@@ -113,7 +123,7 @@ export default function Charts({ portfolio }: ChartsProps) {
     });
 
     setPieData(pieChartData);
-  }, [portfolio]);
+  }, [portfolio, portfolioPerformance]);
 
   const COLORS = {
     BUY: '#22c55e',
@@ -187,6 +197,17 @@ export default function Charts({ portfolio }: ChartsProps) {
           <h3 className="text-xl font-bold text-white">Portfolio Performance Over Time</h3>
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center space-x-2">
+              {analyticsLoading && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              )}
+              <span className="text-xs text-slate-400">
+                {portfolioPerformance && portfolioPerformance.length > 0 
+                  ? '📊 Real-time historical data' 
+                  : '⚠️ Using portfolio entry data'
+                }
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
               <span className="text-slate-300">Portfolio Value</span>
             </div>
@@ -248,7 +269,15 @@ export default function Charts({ portfolio }: ChartsProps) {
 
       {/* Individual Stock Performance (Candlestick-style) */}
       <div className="card p-6">
-        <h3 className="text-xl font-bold text-white mb-6">Individual Stock Performance</h3>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-white">Individual Stock Performance</h3>
+          <span className="text-xs text-slate-400">
+            {portfolioPerformance && portfolioPerformance.length > 0 
+              ? '📊 Real-time data' 
+              : '📈 Entry vs Current prices'
+            }
+          </span>
+        </div>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={candlestickData}>
