@@ -668,21 +668,21 @@ export default function Dashboard() {
                 className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
                   activeTab === 'solid'
                     ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                    : user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid'
+                    : user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported'
                       ? 'text-slate-500 cursor-not-allowed opacity-50'
                       : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 }`}
-                disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid'}
-                title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' ? 'This portfolio type is locked for free users' : ''}
+                disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported'}
+                title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported' ? 'This portfolio type is locked for free users' : ''}
               >
                 <div className={`w-2 h-2 rounded-full ${
-                  user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' ? 'bg-slate-500' : 'bg-green-400'
+                  user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported' ? 'bg-slate-500' : 'bg-green-400'
                 }`}></div>
                 <span>Solid Portfolio</span>
                 <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
                   {portfolio.filter(p => p.portfolioType === 'solid').length}
                 </span>
-                {user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && (
+                {user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported' && (
                   <span className="text-yellow-400">🔒</span>
                 )}
               </button>
