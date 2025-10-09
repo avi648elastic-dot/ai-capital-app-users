@@ -44,8 +44,8 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     const sectorAnalysis = await sectorService.analyzePortfolio(portfolio);
     
     // Try to get historical performance data with fallback
-    let portfolioPerformance = [];
-    let sectorPerformance = [];
+    let portfolioPerformance: any[] = [];
+    let sectorPerformance: any[] = [];
     
     try {
       console.log('🔍 [ANALYTICS] Attempting to fetch historical data...');
@@ -55,8 +55,8 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         userId.toString()
       );
       console.log('✅ [ANALYTICS] Historical portfolio data fetched:', portfolioPerformance.length, 'days');
-    } catch (error) {
-      console.error('❌ [ANALYTICS] Historical data service failed:', error.message);
+    } catch (error: any) {
+      console.error('❌ [ANALYTICS] Historical data service failed:', error?.message || error);
       // No fake data - return empty array with error info
       portfolioPerformance = [];
     }
@@ -69,8 +69,8 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         userId.toString()
       );
       console.log('✅ [ANALYTICS] Historical sector data fetched:', sectorPerformance.length, 'sectors');
-    } catch (error) {
-      console.error('❌ [ANALYTICS] Sector performance service failed:', error.message);
+    } catch (error: any) {
+      console.error('❌ [ANALYTICS] Sector performance service failed:', error?.message || error);
       // No fake data - return empty array with error info
       sectorPerformance = [];
     }
@@ -79,7 +79,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     const riskAssessment = calculateRiskAssessment(portfolio, sectorAnalysis);
 
     // Determine what data is available and what failed
-    const dataStatus = {
+    const dataStatus: { portfolioPerformance: string; sectorPerformance: string; issues: string[] } = {
       portfolioPerformance: portfolioPerformance.length > 0 ? 'available' : 'unavailable',
       sectorPerformance: sectorPerformance.length > 0 ? 'available' : 'unavailable',
       issues: []

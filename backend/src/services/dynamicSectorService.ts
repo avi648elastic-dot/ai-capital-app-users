@@ -34,8 +34,8 @@ class DynamicSectorService {
         } as any);
         return sector;
       }
-    } catch (error) {
-      console.warn(`Alpha Vantage failed for ${upperTicker}:`, error.message);
+    } catch (error: any) {
+      console.warn(`Alpha Vantage failed for ${upperTicker}:`, error?.message || error);
     }
 
     try {
@@ -51,8 +51,8 @@ class DynamicSectorService {
         } as any);
         return sector;
       }
-    } catch (error) {
-      console.warn(`Yahoo Finance failed for ${upperTicker}:`, error.message);
+    } catch (error: any) {
+      console.warn(`Yahoo Finance failed for ${upperTicker}:`, error?.message || error);
     }
 
     // Fallback to hardcoded mapping
@@ -119,7 +119,7 @@ class DynamicSectorService {
       'JPM': 'Financial Services', 'BAC': 'Financial Services', 'V': 'Financial Services',
       'MA': 'Financial Services', 'WFC': 'Financial Services', 'GS': 'Financial Services',
       'MS': 'Financial Services', 'C': 'Financial Services', 'AXP': 'Financial Services',
-      'SPG': 'Financial Services', 'BLK': 'Financial Services', 'PYPL': 'Financial Services',
+      'BLK': 'Financial Services', 'PYPL': 'Financial Services',
       'AEG': 'Financial Services',
 
       // Energy

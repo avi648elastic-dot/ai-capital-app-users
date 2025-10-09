@@ -213,8 +213,8 @@ class SectorService {
       if (dynamicSector && dynamicSector !== 'Other') {
         return dynamicSector;
       }
-    } catch (error) {
-      console.warn(`Dynamic sector classification failed for ${ticker}:`, error.message);
+    } catch (error: any) {
+      console.warn(`Dynamic sector classification failed for ${ticker}:`, error?.message || error);
     }
 
     // Fallback to hardcoded mapping
