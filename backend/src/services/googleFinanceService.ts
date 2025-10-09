@@ -10,65 +10,94 @@ export interface GoogleFinanceData {
 }
 
 class GoogleFinanceService {
-  private baseUrl = 'https://query1.finance.yahoo.com/v8/finance/chart';
+  private alphaVantageApiKey: string;
+  private baseUrl = 'https://www.alphavantage.co/query';
+
+  constructor() {
+    this.alphaVantageApiKey = process.env.ALPHA_VANTAGE_API_KEY || 'demo';
+    if (this.alphaVantageApiKey === 'demo') {
+      console.warn('⚠️ [GOOGLE FINANCE] Using demo Alpha Vantage API key. Get real key for production.');
+    } else {
+      console.log('✅ [GOOGLE FINANCE] Using real Alpha Vantage API for stock data');
+    }
+  }
 
   /**
-   * Get historical data for a stock using Yahoo Finance (Google Finance alternative)
-   * This mimics Google Finance behavior
+   * Get real-time stock data using Alpha Vantage API (replaces deprecated Google Finance)
    */
   async getStockHistory(symbol: string, days: number = 90): Promise<GoogleFinanceData | null> {
     try {
-      console.log(`🔍 [GOOGLE FINANCE] Fetching ${days} days of data for ${symbol}`);
+      console.log(`🔍 [GOOGLE FINANCE] Fetching ${days} days of REAL data for ${symbol} using Alpha Vantage`);
       
-      const endDate = Math.floor(Date.now() / 1000);
-      const startDate = endDate - (days * 24 * 60 * 60);
-      
-      const response = await axios.get(`${this.baseUrl}/${symbol}`, {
+      // Get current price first
+      const currentResponse = await axios.get(this.baseUrl, {
         params: {
-          period1: startDate,
-          period2: endDate,
-          interval: '1d'
+          function: 'GLOBAL_QUOTE',
+          symbol: symbol,
+          apikey: this.alphaVantageApiKey
         },
         timeout: 10000
       });
 
-      if (response.data.chart?.result?.[0]?.indicators?.quote?.[0]) {
-        const result = response.data.chart.result[0];
-        const timestamps = result.timestamp;
-        const quote = result.indicators.quote[0];
-        
-        const historicalPrices = [];
-        for (let i = 0; i < timestamps.length; i++) {
-          if (quote.close[i] && quote.open[i] && quote.high[i] && quote.low[i]) {
-            historicalPrices.push({
-              date: new Date(timestamps[i] * 1000).toISOString().split('T')[0],
-              price: quote.close[i]
-            });
-          }
-        }
-        
-        const currentPrice = historicalPrices.length > 0 ? 
-          historicalPrices[historicalPrices.length - 1].price : 0;
+      let currentPrice = 0;
+      if (currentResponse.data['Global Quote'] && currentResponse.data['Global Quote']['05. price']) {
+        currentPrice = parseFloat(currentResponse.data['Global Quote']['05. price']);
+        console.log(`📊 [GOOGLE FINANCE] ${symbol} current price: $${currentPrice}`);
+      }
 
-        console.log(`✅ [GOOGLE FINANCE] Retrieved ${historicalPrices.length} data points for ${symbol}`);
+      // Get historical data
+      const historicalResponse = await axios.get(this.baseUrl, {
+        params: {
+          function: 'TIME_SERIES_DAILY',
+          symbol: symbol,
+          outputsize: days > 30 ? 'full' : 'compact',
+          apikey: this.alphaVantageApiKey
+        },
+        timeout: 15000
+      });
+
+      if (historicalResponse.data['Time Series (Daily)']) {
+        const timeSeries = historicalResponse.data['Time Series (Daily)'];
+        const historicalPrices = [];
+        
+        // Sort dates (most recent first)
+        const sortedDates = Object.keys(timeSeries).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+        
+        // Take only the requested number of days
+        const recentDates = sortedDates.slice(0, days);
+        
+        for (const date of recentDates) {
+          const dayData = timeSeries[date];
+          historicalPrices.push({
+            date: date,
+            price: parseFloat(dayData['4. close'])
+          });
+        }
+
+        // Use current price from Global Quote if available, otherwise use latest historical price
+        if (currentPrice > 0) {
+          historicalPrices[0] = { date: new Date().toISOString().split('T')[0], price: currentPrice };
+        }
+
+        console.log(`✅ [GOOGLE FINANCE] Retrieved ${historicalPrices.length} REAL data points for ${symbol}`);
         console.log(`📊 [GOOGLE FINANCE] ${symbol} sample data:`, {
           firstDate: historicalPrices[0]?.date,
           lastDate: historicalPrices[historicalPrices.length - 1]?.date,
           firstPrice: historicalPrices[0]?.price,
           lastPrice: historicalPrices[historicalPrices.length - 1]?.price,
-          currentPrice
+          currentPrice: currentPrice || historicalPrices[0]?.price
         });
         
         return {
           symbol,
-          currentPrice,
-          historicalPrices: historicalPrices.reverse() // Most recent first
+          currentPrice: currentPrice || historicalPrices[0]?.price || 0,
+          historicalPrices
         };
       }
       
       return null;
     } catch (error) {
-      console.error(`❌ [GOOGLE FINANCE] Error fetching data for ${symbol}:`, error);
+      console.error(`❌ [GOOGLE FINANCE] Error fetching REAL data for ${symbol}:`, error);
       return null;
     }
   }

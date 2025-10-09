@@ -87,7 +87,7 @@ router.get('/', authenticateToken, async (req, res) => {
       portfolioMetrics,
       stockMetrics,
       timeframe: `${days}d`,
-      dataSource: 'Google Finance API',
+      dataSource: 'Alpha Vantage API',
       timestamp: new Date().toISOString()
     });
 
