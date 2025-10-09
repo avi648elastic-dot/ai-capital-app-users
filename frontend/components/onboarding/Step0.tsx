@@ -5,7 +5,7 @@ import { ArrowRight, Globe, Palette, X } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 // import { useLanguage } from '@/contexts/LanguageContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface Step0Props {
   onComplete: (data: any) => void;

@@ -11,7 +11,8 @@ import {
   X,
   Crown,
   AlertTriangle,
-  BarChart3
+  BarChart3,
+  FileText
 } from 'lucide-react';
 
 interface MobileNavigationProps {
@@ -26,6 +27,7 @@ interface NavItem {
   icon: React.ComponentType<any>;
   href?: string;
   premium?: boolean;
+  children?: NavItem[];
 }
 
 export default function MobileNavigation({ userName, subscriptionTier, onLogout }: MobileNavigationProps) {
