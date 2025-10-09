@@ -101,22 +101,22 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
   return (
     <div className="card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px]">
+        <table className="w-full">
           <thead className="table-header">
             <tr>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Exchange</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ticker</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Shares</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Entry</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Current</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cost</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Value</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">P&L</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Stop Loss</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Take Profit</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">Exchange</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">Ticker</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">Shares</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Entry</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Current</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Cost</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Value</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-24">P&L</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Stop Loss</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Take Profit</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Action</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Date</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -127,102 +127,102 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
 
               return (
                 <tr key={item._id} className="table-row">
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="text-xs sm:text-sm text-slate-400">{item.exchange || '—'}</div>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs text-slate-400">{item.exchange || '—'}</div>
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="text-xs sm:text-sm font-medium text-white">{item.ticker}</div>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs font-medium text-white">{item.ticker}</div>
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="text-xs sm:text-sm text-gray-300">{item.shares.toLocaleString()}</div>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs text-gray-300">{item.shares.toLocaleString()}</div>
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     {editingId === item._id ? (
                       <input
                         type="number"
                         step="0.01"
                         value={editData.entryPrice ?? item.entryPrice}
                         onChange={(e) => setEditData({ ...editData, entryPrice: Number(e.target.value) })}
-                        className="input-field w-24"
+                        className="input-field w-16 text-xs"
                       />
                     ) : (
-                      <div className="text-xs sm:text-sm text-gray-300">{formatCurrency(item.entryPrice)}</div>
+                      <div className="text-xs text-gray-300">{formatCurrency(item.entryPrice)}</div>
                     )}
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="text-xs sm:text-sm text-gray-300">{formatCurrency(item.currentPrice)}</div>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs text-gray-300">{formatCurrency(item.currentPrice)}</div>
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="text-xs sm:text-sm text-gray-300">{formatCurrency(cost)}</div>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs text-gray-300">{formatCurrency(cost)}</div>
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="text-xs sm:text-sm text-gray-300">{formatCurrency(value)}</div>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs text-gray-300">{formatCurrency(value)}</div>
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className={`text-xs font-medium ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                       {formatCurrency(pnl)} ({formatPercent(pnlPercent)})
                     </div>
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     {editingId === item._id ? (
                       <input
                         type="number"
                         step="0.01"
                         value={editData.stopLoss || ''}
                         onChange={(e) => setEditData({ ...editData, stopLoss: Number(e.target.value) })}
-                        className="input-field w-24"
+                        className="input-field w-16 text-xs"
                       />
                     ) : (
-                      <div className="text-xs sm:text-sm text-gray-300">
+                      <div className="text-xs text-gray-300">
                         {item.stopLoss ? formatCurrency(item.stopLoss) : '-'}
                       </div>
                     )}
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     {editingId === item._id ? (
                       <input
                         type="number"
                         step="0.01"
                         value={editData.takeProfit || ''}
                         onChange={(e) => setEditData({ ...editData, takeProfit: Number(e.target.value) })}
-                        className="input-field w-24"
+                        className="input-field w-16 text-xs"
                       />
                     ) : (
-                      <div className="text-xs sm:text-sm text-gray-300">
+                      <div className="text-xs text-gray-300">
                         {item.takeProfit ? formatCurrency(item.takeProfit) : '-'}
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 min-w-64">
-                    <div className="flex flex-col">
-                      <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${getActionColor(item.action)} w-fit mb-2`}>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="flex flex-col items-center space-y-1">
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-bold rounded-full ${getActionColor(item.action)}`}>
                         {item.action}
                       </span>
                       {item.reason && (
-                        <div className="text-xs text-slate-400 mt-1 max-w-60 break-words leading-relaxed" title={item.reason}>
+                        <div className="text-xs text-slate-400 text-center max-w-16 truncate" title={item.reason}>
                           {item.reason}
                         </div>
                       )}
                     </div>
                   </td>
-                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="text-xs sm:text-sm text-gray-300">
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="text-xs text-gray-300">
                       {new Date(item.date).toLocaleDateString()}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="flex space-x-1">
                       {editingId === item._id ? (
                         <>
                           <button
                             onClick={handleSave}
-                            className="text-success-400 hover:text-success-300"
+                            className="text-success-400 hover:text-success-300 text-xs"
                           >
                             Save
                           </button>
                           <button
                             onClick={handleCancel}
-                            className="text-gray-400 hover:text-gray-300"
+                            className="text-gray-400 hover:text-gray-300 text-xs"
                           >
                             Cancel
                           </button>
@@ -232,14 +232,16 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                           <button
                             onClick={() => handleEdit(item)}
                             className="text-primary-400 hover:text-primary-300"
+                            title="Edit"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3 h-3" />
                           </button>
                           <button
                             onClick={() => onDelete(item._id)}
                             className="text-danger-400 hover:text-danger-300"
+                            title="Delete"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3 h-3" />
                           </button>
                         </>
                       )}
