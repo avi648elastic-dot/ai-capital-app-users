@@ -334,16 +334,16 @@ export default function Analytics() {
 
   return (
     <div className="w-full">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Analytics</h1>
-              <p className="text-slate-400">Detailed analysis of your portfolio performance</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Analytics</h1>
+              <p className="text-sm sm:text-base text-slate-400">Detailed analysis of your portfolio performance</p>
             </div>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-4 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
@@ -351,10 +351,10 @@ export default function Analytics() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Portfolio Overview */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
               <PieChart className="w-5 h-5 mr-2" />
               Portfolio Allocation
             </h3>
@@ -385,8 +385,8 @@ export default function Analytics() {
           </div>
 
           {/* Sector Segmentation */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
               <Building2 className="w-5 h-5 mr-2" />
               Sector Segmentation
             </h3>
@@ -429,8 +429,8 @@ export default function Analytics() {
           </div>
 
           {/* Performance Metrics */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
               <TrendingUp className="w-5 h-5 mr-2" />
               Performance Metrics
             </h3>
@@ -525,8 +525,8 @@ export default function Analytics() {
           </div>
 
           {/* AI Capital Character Analysis */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
               <Bot className="w-5 h-5 mr-2" />
               AI-Capital Analysis
             </h3>
