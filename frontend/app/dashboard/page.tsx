@@ -12,6 +12,8 @@ import Charts from '@/components/Charts';
 import Header from '@/components/Header';
 import MarketOverview from '@/components/MarketOverview';
 import Navigation from '@/components/Navigation';
+import MobileNavigation from '@/components/MobileNavigation';
+import MobileHeader from '@/components/MobileHeader';
 import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';
 import CreatePortfolioModal from '@/components/CreatePortfolioModal';
 import DeletePortfolioModal from '@/components/DeletePortfolioModal';
@@ -383,7 +385,20 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Navigation Sidebar */}
+      {/* Mobile Header */}
+      <MobileHeader 
+        title="AiCapital Dashboard"
+        subtitle="Portfolio Management"
+      />
+      
+      {/* Mobile Navigation */}
+      <MobileNavigation 
+        userName={user?.name} 
+        subscriptionTier={user?.subscriptionTier}
+        onLogout={handleLogout}
+      />
+      
+      {/* Desktop Navigation Sidebar */}
       <Navigation 
         userName={user?.name} 
         subscriptionTier={user?.subscriptionTier}

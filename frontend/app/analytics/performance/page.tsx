@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { TrendingUp, Activity, Target, BarChart3 } from 'lucide-react';
+import MobileNavigation from '@/components/MobileNavigation';
+import MobileHeader from '@/components/MobileHeader';
 
 interface StockData {
   ticker: string;
@@ -150,6 +152,19 @@ export default function Performance() {
 
   return (
     <div className="min-h-screen bg-slate-900">
+      {/* Mobile Header */}
+      <MobileHeader 
+        title="Performance Analysis"
+        subtitle="Real-time metrics"
+      />
+      
+      {/* Mobile Navigation */}
+      <MobileNavigation 
+        userName="User" 
+        subscriptionTier="premium"
+        onLogout={() => {}}
+      />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Performance Analysis</h1>
