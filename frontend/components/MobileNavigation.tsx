@@ -109,14 +109,14 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Enhanced Mobile Menu Button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-3 bg-slate-900/95 backdrop-blur-sm border border-slate-800/50 rounded-lg text-white hover:bg-slate-800/50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="p-4 bg-gradient-to-r from-blue-600 to-emerald-600 shadow-lg border border-blue-500/50 rounded-xl text-white hover:from-blue-500 hover:to-emerald-500 transition-all duration-300 min-h-[52px] min-w-[52px] flex items-center justify-center transform hover:scale-105"
           aria-label="Toggle navigation menu"
         >
-          {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
         </button>
       </div>
 
@@ -127,7 +127,7 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-80 bg-slate-900/95 backdrop-blur-sm border-r border-slate-800/50 p-4 overflow-y-auto">
+          <div className="absolute left-0 top-0 bottom-0 w-80 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 backdrop-blur-lg border-r border-blue-500/30 p-6 overflow-y-auto shadow-2xl">
             {/* Header */}
             <div className="mb-6">
               <div className="flex items-center space-x-3 mb-4">
@@ -173,10 +173,10 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
                     onClick={() => handleItemClick(item)}
                     disabled={isPremiumLocked}
                     className={`
-                      w-full flex items-center space-x-3 px-4 py-4 rounded-lg text-left transition-colors min-h-[44px]
+                      w-full flex items-center space-x-4 px-6 py-5 rounded-xl text-left transition-all duration-300 min-h-[52px] border border-transparent
                       ${isPremiumLocked 
-                        ? 'text-slate-500 cursor-not-allowed' 
-                        : 'text-slate-200 hover:bg-slate-800/50 hover:text-white'
+                        ? 'text-slate-500 cursor-not-allowed bg-slate-700/30' 
+                        : 'text-slate-200 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-emerald-600/20 hover:text-white hover:border-blue-500/50 hover:shadow-lg hover:scale-[1.02]'
                       }
                     `}
                   >
@@ -196,7 +196,7 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
                 onLogout();
                 setIsOpen(false);
               }}
-              className="w-full flex items-center space-x-3 px-4 py-4 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors min-h-[44px]"
+              className="w-full flex items-center space-x-4 px-6 py-5 text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-red-600/20 hover:to-red-500/20 rounded-xl transition-all duration-300 min-h-[52px] border border-transparent hover:border-red-500/50 hover:shadow-lg hover:scale-[1.02]"
             >
               <LogOut className="w-5 h-5" />
               <span className="text-sm">Logout</span>
