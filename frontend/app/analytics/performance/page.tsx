@@ -53,25 +53,33 @@ export default function Performance() {
   const fetchPortfolio = async () => {
     try {
       setLoading(true);
+      console.log('🔍 [PERFORMANCE] Fetching portfolio data...');
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       
-      setPortfolio(response.data.portfolio || []);
+      console.log('📊 [PERFORMANCE] Portfolio response:', response.data);
+      const portfolioData = response.data.portfolio || [];
+      console.log('📊 [PERFORMANCE] Portfolio data:', portfolioData);
+      setPortfolio(portfolioData);
     } catch (error) {
-      console.error('Error fetching portfolio:', error);
+      console.error('❌ [PERFORMANCE] Error fetching portfolio:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const calculateRealPerformanceMetrics = async () => {
-    if (portfolio.length === 0) return;
+    if (portfolio.length === 0) {
+      console.log('⚠️ [PERFORMANCE] No portfolio data available for calculations');
+      return;
+    }
     
     setCalculating(true);
     try {
       const days = parseInt(timeframe.replace('d', ''));
-      console.log(`🔍 [PERFORMANCE] Calculating real metrics for ${days} days`);
+      console.log(`🔍 [PERFORMANCE] Calculating real metrics for ${days} days with ${portfolio.length} stocks`);
+      console.log('📊 [PERFORMANCE] Portfolio tickers:', portfolio.map(s => s.ticker));
       
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/performance?days=${days}`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
@@ -80,8 +88,20 @@ export default function Performance() {
 
       console.log('📊 [PERFORMANCE] Received real performance data:', response.data);
       
-      setPortfolioMetrics(response.data.portfolioMetrics);
-      setStockMetrics(response.data.stockMetrics);
+      if (response.data.portfolioMetrics) {
+        console.log('✅ [PERFORMANCE] Portfolio metrics received:', response.data.portfolioMetrics);
+        setPortfolioMetrics(response.data.portfolioMetrics);
+      } else {
+        console.warn('⚠️ [PERFORMANCE] No portfolio metrics in response');
+      }
+      
+      if (response.data.stockMetrics && Object.keys(response.data.stockMetrics).length > 0) {
+        console.log('✅ [PERFORMANCE] Stock metrics received:', Object.keys(response.data.stockMetrics));
+        setStockMetrics(response.data.stockMetrics);
+      } else {
+        console.warn('⚠️ [PERFORMANCE] No stock metrics in response');
+      }
+      
       setDataSource(response.data.dataSource || 'Google Finance API');
       
     } catch (error) {
@@ -236,9 +256,11 @@ export default function Performance() {
           {portfolio.length === 0 ? (
             <p className="text-slate-400 text-center py-8">No stocks in portfolio</p>
           ) : Object.keys(stockMetrics).length === 0 ? (
-            <p className="text-slate-400 text-center py-8">
-              {calculating ? 'Calculating performance metrics...' : 'No performance data available'}
-            </p>
+            <div className="text-slate-400 text-center py-8">
+              <p>{calculating ? 'Calculating performance metrics...' : 'No performance data available'}</p>
+              <p className="text-xs mt-2">Portfolio has {portfolio.length} stocks: {portfolio.map(s => s.ticker).join(', ')}</p>
+              <p className="text-xs mt-1">Check browser console for debug info</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
