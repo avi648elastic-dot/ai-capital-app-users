@@ -43,15 +43,7 @@ export default function ResponsiveNavigation({
         { id: 'watchlist', label: 'Watchlist', icon: Eye, href: '/analytics/watchlist', premium: true }
       ]
     },
-    { 
-      id: 'subscription', 
-      label: 'Subscription', 
-      icon: Crown,
-      children: [
-        { id: 'billing', label: 'Billing', icon: Target, href: '/billing' },
-        { id: 'upgrade', label: 'Upgrade to Premium', icon: Star, href: '/upgrade' }
-      ]
-    }
+    { id: 'subscription', label: 'Subscription', icon: Crown, href: '/subscription', premium: true }
   ];
 
   const handleItemClick = (item: any) => {
@@ -126,16 +118,16 @@ export default function ResponsiveNavigation({
                           key={child.id}
                           onClick={() => handleItemClick(child)}
                           disabled={isPremiumLocked}
-                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                          className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
                             isPremiumLocked 
                               ? 'text-slate-500 cursor-not-allowed' 
                               : 'text-slate-400 hover:text-white hover:bg-slate-700'
                           }`}
                         >
-                          <ChildIcon className="w-4 h-4" />
-                          <span className="text-sm">{child.label}</span>
+                          <ChildIcon className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-sm flex-1 ml-3">{child.label}</span>
                           {child.premium && (
-                            <Crown className="w-3 h-3 text-yellow-400" />
+                            <Crown className="w-3 h-3 text-yellow-400 flex-shrink-0" />
                           )}
                         </button>
                       );
@@ -237,16 +229,16 @@ export default function ResponsiveNavigation({
                               key={child.id}
                               onClick={() => handleItemClick(child)}
                               disabled={isPremiumLocked}
-                              className={`w-full flex items-center space-x-4 px-6 py-4 rounded-xl text-left transition-all duration-300 border border-transparent ${
+                              className={`w-full flex items-center px-6 py-4 rounded-xl text-left transition-all duration-300 border border-transparent ${
                                 isPremiumLocked 
                                   ? 'text-slate-500 cursor-not-allowed bg-slate-700/30' 
                                   : 'text-slate-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-emerald-600/20 hover:text-white hover:border-blue-500/50 hover:shadow-lg hover:scale-[1.02]'
                               }`}
                             >
-                              <ChildIcon className="w-4 h-4" />
-                              <span className="text-sm">{child.label}</span>
+                              <ChildIcon className="w-4 h-4 flex-shrink-0" />
+                              <span className="text-sm flex-1 ml-4">{child.label}</span>
                               {child.premium && (
-                                <Crown className="w-4 h-4 text-yellow-400" />
+                                <Crown className="w-4 h-4 text-yellow-400 flex-shrink-0" />
                               )}
                             </button>
                           );
