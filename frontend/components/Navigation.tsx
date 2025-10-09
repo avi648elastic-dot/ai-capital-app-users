@@ -53,10 +53,23 @@ export default function Navigation({ userName, subscriptionTier, onLogout }: Nav
     },
     {
       id: 'analytics',
-      label: '📊 Analytics & Performance',
+      label: 'Analytics',
       icon: PieChart,
-      href: '/analytics',
-      badge: 'Important'
+      children: [
+        {
+          id: 'performance',
+          label: 'Performance',
+          icon: BarChart3,
+          href: '/analytics'
+        },
+        {
+          id: 'reports',
+          label: 'Reports',
+          icon: FileText,
+          href: '/analytics/reports',
+          premium: true
+        }
+      ]
     },
     {
       id: 'risk-management',
