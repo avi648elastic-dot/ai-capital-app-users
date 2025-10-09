@@ -165,7 +165,7 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
   return (
     <div className="space-y-8">
       {/* Enhanced Portfolio Value Over Time */}
-      <div className="card p-6">
+      <div className="card p-4 sm:p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-bold text-white">Portfolio Performance Over Time</h3>
           <div className="flex items-center space-x-4 text-sm">

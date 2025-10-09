@@ -391,7 +391,7 @@ export default function Dashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col px-4 lg:px-8">
       {/* Professional Header */}
       <Header userName={user?.name} isAdmin={user?.isAdmin} />
 

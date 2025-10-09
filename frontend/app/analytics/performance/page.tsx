@@ -150,7 +150,7 @@ export default function Performance() {
 
   return (
     <div className="min-h-screen bg-slate-900">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Performance Analysis</h1>
           <p className="text-slate-400">Real-time performance metrics calculated using Google Finance formulas</p>
@@ -183,7 +183,7 @@ export default function Performance() {
 
         {/* Portfolio Performance Overview */}
         {portfolioMetrics && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
             <div className="card p-6">
               <div className="flex items-center justify-between">
                 <div>

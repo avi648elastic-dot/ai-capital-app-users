@@ -113,7 +113,8 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-3 bg-slate-900/95 backdrop-blur-sm border border-slate-800/50 rounded-lg text-white hover:bg-slate-800/50 transition-colors"
+          className="p-3 bg-slate-900/95 backdrop-blur-sm border border-slate-800/50 rounded-lg text-white hover:bg-slate-800/50 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+          aria-label="Toggle navigation menu"
         >
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -172,7 +173,7 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
                     onClick={() => handleItemClick(item)}
                     disabled={isPremiumLocked}
                     className={`
-                      w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors
+                      w-full flex items-center space-x-3 px-4 py-4 rounded-lg text-left transition-colors min-h-[44px]
                       ${isPremiumLocked 
                         ? 'text-slate-500 cursor-not-allowed' 
                         : 'text-slate-200 hover:bg-slate-800/50 hover:text-white'
@@ -195,7 +196,7 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
                 onLogout();
                 setIsOpen(false);
               }}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors"
+              className="w-full flex items-center space-x-3 px-4 py-4 text-slate-400 hover:text-white hover:bg-slate-800/50 rounded-lg transition-colors min-h-[44px]"
             >
               <LogOut className="w-5 h-5" />
               <span className="text-sm">Logout</span>
