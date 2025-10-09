@@ -24,20 +24,39 @@ export default function SubscriptionPage() {
   const fetchUserData = async () => {
     try {
       const token = Cookies.get('token');
+      console.log('🔍 [SUBSCRIPTION] Fetching user data with token:', token ? 'exists' : 'missing');
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
+      console.log('🔍 [SUBSCRIPTION] User profile response:', response.status);
+      
       if (response.ok) {
         const userData = await response.json();
+        console.log('🔍 [SUBSCRIPTION] User data received:', userData);
         setUser(userData);
       } else {
-        setUser({ subscriptionTier: 'free' });
+        console.log('🔍 [SUBSCRIPTION] Profile fetch failed, trying subscription status...');
+        // Try subscription status endpoint as fallback
+        const subResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/status`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (subResponse.ok) {
+          const subData = await subResponse.json();
+          console.log('🔍 [SUBSCRIPTION] Subscription data received:', subData);
+          setUser(subData.user || { subscriptionTier: subData.subscriptionTier || 'free' });
+        } else {
+          setUser({ subscriptionTier: 'free' });
+        }
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error('❌ [SUBSCRIPTION] Error fetching user data:', error);
       setUser({ subscriptionTier: 'free' });
     } finally {
       setLoading(false);
@@ -86,54 +105,69 @@ export default function SubscriptionPage() {
       name: 'Free Plan',
       price: '$0',
       period: 'forever',
+      yearlyPrice: null,
       description: 'Perfect for getting started with basic portfolio tracking',
       features: [
-        'Portfolio tracking (up to 5 stocks)',
+        '1 portfolio (Solid or Risky)',
+        'Up to 10 stocks per portfolio',
+        'AI engine recommendations',
         'Basic performance metrics',
         'Market overview',
         'Email support'
       ],
       limitations: [
-        'Limited to 5 stocks',
-        'Basic analytics only',
-        'No advanced reports',
-        'No risk management tools'
+        'Only 1 portfolio allowed',
+        'Limited to 10 stocks max',
+        'No portfolio analysis',
+        'No risk management tools',
+        'No watchlist',
+        'No live notifications'
       ],
       color: 'amber',
       icon: '📊'
     },
     premium: {
       name: 'Premium Plan',
-      price: '$29.99',
+      price: '$9.99',
       period: 'month',
+      yearlyPrice: '$79',
+      yearlyPeriod: 'year',
       description: 'Advanced features for serious investors',
       features: [
-        'Unlimited portfolio tracking',
-        'Advanced portfolio analysis',
-        'Detailed reports & insights',
-        'Risk management tools',
-        'Watchlist management',
-        'Priority email support',
-        'Real-time data updates'
+        '3 portfolios (Solid or Risky)',
+        'Up to 15 stocks per portfolio',
+        'AI engine recommendations',
+        'Portfolio Analysis reports',
+        'Risk Management tools',
+        'Watchlist with live notifications',
+        'Advanced performance metrics',
+        'Real-time data updates',
+        'Priority email support'
       ],
       limitations: [
-        'No AI recommendations',
+        'Limited to 3 portfolios',
+        'Max 15 stocks per portfolio',
         'No advanced backtesting',
-        'Limited custom alerts'
+        'No white-label options'
       ],
       color: 'blue',
       icon: '⭐'
     },
     'premium+': {
       name: 'Premium+ Plan',
-      price: '$59.99',
+      price: '$17.99',
       period: 'month',
+      yearlyPrice: '$149.99',
+      yearlyPeriod: 'year',
       description: 'Complete AI-powered investment suite',
       features: [
-        'Everything in Premium',
-        'AI-powered investment recommendations',
+        '5 portfolios (Solid or Risky)',
+        'Up to 20 stocks per portfolio',
+        'AI engine recommendations',
+        'Portfolio Analysis reports',
+        'Risk Management tools',
+        'Watchlist with live notifications',
         'Advanced backtesting tools',
-        'Custom alerts & notifications',
         'Portfolio optimization suggestions',
         'Market sentiment analysis',
         'Priority phone support',
@@ -209,7 +243,7 @@ export default function SubscriptionPage() {
           {/* Plans Comparison */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Free Plan */}
-            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 ${
+            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 flex flex-col ${
               currentPlan === 'free' 
                 ? 'border-amber-500/50 bg-gradient-to-b from-amber-900/20 to-slate-800' 
                 : 'border-slate-700 hover:border-amber-500/30'
@@ -230,7 +264,7 @@ export default function SubscriptionPage() {
                 <p className="text-slate-300 text-sm mt-2">{plans.free.description}</p>
               </div>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-6 flex-1">
                 {plans.free.features.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3">
                     <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
@@ -239,23 +273,25 @@ export default function SubscriptionPage() {
                 ))}
               </div>
 
-              {currentPlan === 'free' ? (
-                <button disabled className="w-full px-4 py-3 bg-amber-500/20 text-amber-400 rounded-lg cursor-not-allowed">
-                  Current Plan
-                </button>
-              ) : (
-                <button 
-                  onClick={() => handleUpgrade('free')}
-                  disabled={upgrading}
-                  className="w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
-                >
-                  Downgrade to Free
-                </button>
-              )}
+              <div className="mt-auto">
+                {currentPlan === 'free' ? (
+                  <button disabled className="w-full px-4 py-3 bg-amber-500/20 text-amber-400 rounded-lg cursor-not-allowed">
+                    Current Plan
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleUpgrade('free')}
+                    disabled={upgrading}
+                    className="w-full px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"
+                  >
+                    Downgrade to Free
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Premium Plan */}
-            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 ${
+            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 flex flex-col ${
               currentPlan === 'premium' 
                 ? 'border-blue-500/50 bg-gradient-to-b from-blue-900/20 to-slate-800' 
                 : 'border-slate-700 hover:border-blue-500/30'
@@ -273,10 +309,12 @@ export default function SubscriptionPage() {
                 <h3 className="text-xl font-bold text-white mb-2">{plans.premium.name}</h3>
                 <div className="text-3xl font-bold text-blue-400 mb-1">{plans.premium.price}</div>
                 <div className="text-slate-400 text-sm">per {plans.premium.period}</div>
+                <div className="text-lg font-medium text-blue-300 mb-1">{plans.premium.yearlyPrice}</div>
+                <div className="text-slate-400 text-sm">per {plans.premium.yearlyPeriod}</div>
                 <p className="text-slate-300 text-sm mt-2">{plans.premium.description}</p>
               </div>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-6 flex-1">
                 {plans.premium.features.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3">
                     <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
@@ -285,23 +323,25 @@ export default function SubscriptionPage() {
                 ))}
               </div>
 
-              {currentPlan === 'premium' ? (
-                <button disabled className="w-full px-4 py-3 bg-blue-500/20 text-blue-400 rounded-lg cursor-not-allowed">
-                  Current Plan
-                </button>
-              ) : (
-                <button 
-                  onClick={() => handleUpgrade('premium')}
-                  disabled={upgrading}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg transition-all duration-300 font-medium"
-                >
-                  {upgrading ? 'Upgrading...' : 'Upgrade to Premium'}
-                </button>
-              )}
+              <div className="mt-auto">
+                {currentPlan === 'premium' ? (
+                  <button disabled className="w-full px-4 py-3 bg-blue-500/20 text-blue-400 rounded-lg cursor-not-allowed">
+                    Current Plan
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleUpgrade('premium')}
+                    disabled={upgrading}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-lg transition-all duration-300 font-medium"
+                  >
+                    {upgrading ? 'Upgrading...' : 'Upgrade to Premium'}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Premium+ Plan */}
-            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 ${
+            <div className={`relative bg-slate-800 rounded-xl border-2 p-6 flex flex-col ${
               currentPlan === 'premium+' 
                 ? 'border-emerald-500/50 bg-gradient-to-b from-emerald-900/20 to-slate-800' 
                 : 'border-slate-700 hover:border-emerald-500/30'
@@ -319,10 +359,12 @@ export default function SubscriptionPage() {
                 <h3 className="text-xl font-bold text-white mb-2">{plans['premium+'].name}</h3>
                 <div className="text-3xl font-bold text-emerald-400 mb-1">{plans['premium+'].price}</div>
                 <div className="text-slate-400 text-sm">per {plans['premium+'].period}</div>
+                <div className="text-lg font-medium text-emerald-300 mb-1">{plans['premium+'].yearlyPrice}</div>
+                <div className="text-slate-400 text-sm">per {plans['premium+'].yearlyPeriod}</div>
                 <p className="text-slate-300 text-sm mt-2">{plans['premium+'].description}</p>
               </div>
 
-              <div className="space-y-3 mb-6">
+              <div className="space-y-3 mb-6 flex-1">
                 {plans['premium+'].features.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3">
                     <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
@@ -331,19 +373,21 @@ export default function SubscriptionPage() {
                 ))}
               </div>
 
-              {currentPlan === 'premium+' ? (
-                <button disabled className="w-full px-4 py-3 bg-emerald-500/20 text-emerald-400 rounded-lg cursor-not-allowed">
-                  Current Plan
-                </button>
-              ) : (
-                <button 
-                  onClick={() => handleUpgrade('premium+')}
-                  disabled={upgrading}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-lg transition-all duration-300 font-medium"
-                >
-                  {upgrading ? 'Upgrading...' : 'Upgrade to Premium+'}
-                </button>
-              )}
+              <div className="mt-auto">
+                {currentPlan === 'premium+' ? (
+                  <button disabled className="w-full px-4 py-3 bg-emerald-500/20 text-emerald-400 rounded-lg cursor-not-allowed">
+                    Current Plan
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleUpgrade('premium+')}
+                    disabled={upgrading}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-lg transition-all duration-300 font-medium"
+                  >
+                    {upgrading ? 'Upgrading...' : 'Upgrade to Premium+'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
