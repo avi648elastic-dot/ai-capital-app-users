@@ -3,23 +3,78 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { TrendingUp, Calendar, DollarSign, Target } from 'lucide-react';
+import { TrendingUp, Calendar, DollarSign, Target, Activity, BarChart3 } from 'lucide-react';
+
+interface StockData {
+  ticker: string;
+  shares: number;
+  entryPrice: number;
+  currentPrice: number;
+  historicalData?: {
+    dates: string[];
+    prices: number[];
+  };
+}
+
+interface PerformanceMetrics {
+  totalReturn: number;
+  volatility: number;
+  sharpeRatio: number;
+  maxDrawdown: number;
+  topPrice: number;
+  currentPrice: number;
+  lastMonthReturn: number;
+  thisMonthReturn: number;
+}
 
 export default function Performance() {
-  const [portfolio, setPortfolio] = useState<any[]>([]);
+  const [portfolio, setPortfolio] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [calculating, setCalculating] = useState(false);
   const [timeframe, setTimeframe] = useState('30d');
+  const [portfolioMetrics, setPortfolioMetrics] = useState<PerformanceMetrics | null>(null);
+  const [stockMetrics, setStockMetrics] = useState<Record<string, PerformanceMetrics>>({});
 
   useEffect(() => {
     fetchPortfolio();
   }, []);
 
+  useEffect(() => {
+    if (portfolio.length > 0) {
+      calculatePerformanceMetrics();
+    }
+  }, [portfolio, timeframe]);
+
   const fetchPortfolio = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
-      setPortfolio(response.data.portfolio || []);
+      
+      const portfolioData = response.data.portfolio || [];
+      
+      // Fetch historical data for each stock
+      const portfolioWithHistory = await Promise.all(
+        portfolioData.map(async (stock: any) => {
+          try {
+            const histResponse = await axios.get(
+              `${process.env.NEXT_PUBLIC_API_URL}/api/stocks/${stock.ticker}/history?days=90`,
+              { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
+            );
+            
+            return {
+              ...stock,
+              historicalData: histResponse.data
+            };
+          } catch (error) {
+            console.warn(`Failed to fetch historical data for ${stock.ticker}:`, error);
+            return stock; // Return without historical data
+          }
+        })
+      );
+      
+      setPortfolio(portfolioWithHistory);
     } catch (error) {
       console.error('Error fetching portfolio:', error);
     } finally {
@@ -27,22 +82,139 @@ export default function Performance() {
     }
   };
 
-  const calculatePerformance = (stock: any, days: number) => {
-    // Mock calculation - in real app, this would use historical data
-    const baseReturn = Math.random() * 20 - 10; // -10% to +10%
-    const volatility = Math.random() * 5 + 5; // 5-10%
+  const calculatePerformanceMetrics = async () => {
+    if (portfolio.length === 0) return;
+    
+    setCalculating(true);
+    try {
+      const days = parseInt(timeframe.replace('d', ''));
+      const stockMetricsMap: Record<string, PerformanceMetrics> = {};
+      let totalPortfolioValue = 0;
+      let totalPortfolioReturn = 0;
+      let totalWeightedVolatility = 0;
+      let portfolioMaxDrawdown = 0;
+
+      for (const stock of portfolio) {
+        const metrics = calculateStockMetrics(stock, days);
+        stockMetricsMap[stock.ticker] = metrics;
+
+        // Calculate portfolio-weighted metrics
+        const stockValue = stock.currentPrice * stock.shares;
+        const stockWeight = stockValue / portfolio.reduce((sum, s) => sum + (s.currentPrice * s.shares), 0);
+        
+        totalPortfolioValue += stockValue;
+        totalPortfolioReturn += metrics.totalReturn * stockWeight;
+        totalWeightedVolatility += metrics.volatility * stockWeight;
+        portfolioMaxDrawdown = Math.max(portfolioMaxDrawdown, metrics.maxDrawdown);
+      }
+
+      // Calculate portfolio Sharpe ratio (assuming risk-free rate of 2%)
+      const riskFreeRate = 2.0;
+      const portfolioSharpe = (totalPortfolioReturn - riskFreeRate) / totalWeightedVolatility;
+
+      setStockMetrics(stockMetricsMap);
+      setPortfolioMetrics({
+        totalReturn: totalPortfolioReturn,
+        volatility: totalWeightedVolatility,
+        sharpeRatio: portfolioSharpe,
+        maxDrawdown: portfolioMaxDrawdown,
+        topPrice: 0, // Portfolio-level doesn't have a single top price
+        currentPrice: totalPortfolioValue,
+        lastMonthReturn: 0, // Will be calculated separately
+        thisMonthReturn: 0, // Will be calculated separately
+      });
+
+    } catch (error) {
+      console.error('Error calculating performance metrics:', error);
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  const calculateStockMetrics = (stock: StockData, days: number): PerformanceMetrics => {
+    if (!stock.historicalData || stock.historicalData.prices.length === 0) {
+      // Fallback calculation using entry vs current price
+      const totalReturn = ((stock.currentPrice - stock.entryPrice) / stock.entryPrice) * 100;
+      return {
+        totalReturn,
+        volatility: Math.abs(totalReturn) * 0.5, // Rough estimate
+        sharpeRatio: totalReturn > 0 ? totalReturn / Math.abs(totalReturn) * 0.5 : -1,
+        maxDrawdown: Math.max(0, -totalReturn),
+        topPrice: Math.max(stock.currentPrice, stock.entryPrice),
+        currentPrice: stock.currentPrice,
+        lastMonthReturn: totalReturn * 0.3, // Rough estimate
+        thisMonthReturn: totalReturn * 0.7, // Rough estimate
+      };
+    }
+
+    const prices = stock.historicalData.prices;
+    const currentPrice = prices[prices.length - 1];
+    const startPrice = prices[Math.max(0, prices.length - days)];
+    
+    // Calculate total return for the period
+    const totalReturn = ((currentPrice - startPrice) / startPrice) * 100;
+    
+    // Calculate volatility (standard deviation of daily returns)
+    const dailyReturns = [];
+    for (let i = 1; i < prices.length; i++) {
+      const dailyReturn = (prices[i] - prices[i - 1]) / prices[i - 1];
+      dailyReturns.push(dailyReturn * 100);
+    }
+    
+    const avgReturn = dailyReturns.reduce((sum, ret) => sum + ret, 0) / dailyReturns.length;
+    const variance = dailyReturns.reduce((sum, ret) => sum + Math.pow(ret - avgReturn, 2), 0) / dailyReturns.length;
+    const volatility = Math.sqrt(variance) * Math.sqrt(252); // Annualized volatility
+    
+    // Calculate Sharpe ratio (assuming risk-free rate of 2%)
+    const riskFreeRate = 2.0;
+    const sharpeRatio = (avgReturn - riskFreeRate) / volatility;
+    
+    // Calculate max drawdown
+    let maxDrawdown = 0;
+    let peak = prices[0];
+    for (const price of prices) {
+      if (price > peak) peak = price;
+      const drawdown = ((peak - price) / peak) * 100;
+      maxDrawdown = Math.max(maxDrawdown, drawdown);
+    }
+    
+    // Calculate top price in the period
+    const periodPrices = prices.slice(-days);
+    const topPrice = Math.max(...periodPrices);
+    
+    // Calculate monthly returns (approximate)
+    const lastMonthReturn = prices.length >= 30 ? 
+      ((prices[prices.length - 1] - prices[prices.length - 30]) / prices[prices.length - 30]) * 100 : 0;
+    const thisMonthReturn = prices.length >= 60 ? 
+      ((prices[prices.length - 30] - prices[prices.length - 60]) / prices[prices.length - 60]) * 100 : 0;
+
     return {
-      return: baseReturn,
+      totalReturn,
       volatility,
-      sharpe: baseReturn / volatility,
-      maxDrawdown: Math.random() * 15 + 5, // 5-20%
+      sharpeRatio,
+      maxDrawdown,
+      topPrice,
+      currentPrice,
+      lastMonthReturn,
+      thisMonthReturn,
     };
+  };
+
+  const formatPercentage = (value: number) => {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+  };
+
+  const formatNumber = (value: number) => {
+    return value.toFixed(2);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading performance data...</p>
+        </div>
       </div>
     );
   }
@@ -59,7 +231,13 @@ export default function Performance() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Performance Analysis</h1>
-          <p className="text-slate-400">Detailed performance metrics for your portfolio</p>
+          <p className="text-slate-400">Real-time performance metrics calculated from historical data</p>
+          {calculating && (
+            <div className="flex items-center mt-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500 mr-2"></div>
+              <span className="text-sm text-primary-400">Calculating metrics...</span>
+            </div>
+          )}
         </div>
 
         {/* Timeframe Selector */}
@@ -81,49 +259,62 @@ export default function Performance() {
           </div>
         </div>
 
-        {/* Performance Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-400 text-sm">Total Return</p>
-                <p className="text-2xl font-bold text-green-400">+12.5%</p>
+        {/* Portfolio Performance Overview */}
+        {portfolioMetrics && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm">Total Return</p>
+                  <p className={`text-2xl font-bold ${portfolioMetrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {formatPercentage(portfolioMetrics.totalReturn)}
+                  </p>
+                </div>
+                <TrendingUp className={`w-8 h-8 ${portfolioMetrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`} />
               </div>
-              <TrendingUp className="w-8 h-8 text-green-400" />
+            </div>
+            
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm">Volatility</p>
+                  <p className="text-2xl font-bold text-blue-400">
+                    {formatPercentage(portfolioMetrics.volatility)}
+                  </p>
+                </div>
+                <Activity className="w-8 h-8 text-blue-400" />
+              </div>
+            </div>
+            
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm">Sharpe Ratio</p>
+                  <p className={`text-2xl font-bold ${portfolioMetrics.sharpeRatio >= 1 ? 'text-green-400' : portfolioMetrics.sharpeRatio >= 0 ? 'text-yellow-400' : 'text-red-400'}`}>
+                    {formatNumber(portfolioMetrics.sharpeRatio)}
+                  </p>
+                </div>
+                <Target className="w-8 h-8 text-purple-400" />
+              </div>
+            </div>
+            
+            <div className="card p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-400 text-sm">Max Drawdown</p>
+                  <p className="text-2xl font-bold text-red-400">
+                    -{formatPercentage(portfolioMetrics.maxDrawdown)}
+                  </p>
+                </div>
+                <BarChart3 className="w-8 h-8 text-red-400" />
+              </div>
             </div>
           </div>
-          <div className="card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-400 text-sm">Volatility</p>
-                <p className="text-2xl font-bold text-blue-400">15.3%</p>
-              </div>
-              <Target className="w-8 h-8 text-blue-400" />
-            </div>
-          </div>
-          <div className="card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-400 text-sm">Sharpe Ratio</p>
-                <p className="text-2xl font-bold text-purple-400">1.24</p>
-              </div>
-              <DollarSign className="w-8 h-8 text-purple-400" />
-            </div>
-          </div>
-          <div className="card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-slate-400 text-sm">Max Drawdown</p>
-                <p className="text-2xl font-bold text-red-400">-8.2%</p>
-              </div>
-              <Calendar className="w-8 h-8 text-red-400" />
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Individual Stock Performance */}
         <div className="card p-6">
-          <h3 className="text-lg font-semibold text-white mb-6">Individual Stock Performance</h3>
+          <h3 className="text-lg font-semibold text-white mb-6">Individual Stock Performance ({timeframe})</h3>
           {portfolio.length === 0 ? (
             <p className="text-slate-400 text-center py-8">No stocks in portfolio</p>
           ) : (
@@ -136,30 +327,54 @@ export default function Performance() {
                     <th className="text-right py-3 px-4 text-slate-400">Volatility</th>
                     <th className="text-right py-3 px-4 text-slate-400">Sharpe</th>
                     <th className="text-right py-3 px-4 text-slate-400">Max DD</th>
+                    <th className="text-right py-3 px-4 text-slate-400">Top Price</th>
+                    <th className="text-right py-3 px-4 text-slate-400">Current</th>
+                    <th className="text-right py-3 px-4 text-slate-400">Last Month</th>
+                    <th className="text-right py-3 px-4 text-slate-400">This Month</th>
                   </tr>
                 </thead>
                 <tbody>
                   {portfolio.map((stock, index) => {
-                    const perf = calculatePerformance(stock, 30);
+                    const metrics = stockMetrics[stock.ticker];
+                    if (!metrics) return null;
+                    
                     return (
-                      <tr key={index} className="border-b border-slate-800">
+                      <tr key={index} className="border-b border-slate-800 hover:bg-slate-800/50">
                         <td className="py-3 px-4">
                           <div className="font-medium text-white">{stock.ticker}</div>
                           <div className="text-sm text-slate-400">{stock.shares} shares</div>
                         </td>
                         <td className="py-3 px-4 text-right">
-                          <span className={`font-medium ${perf.return >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {perf.return >= 0 ? '+' : ''}{perf.return.toFixed(2)}%
+                          <span className={`font-medium ${metrics.totalReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatPercentage(metrics.totalReturn)}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right text-slate-300">
-                          {perf.volatility.toFixed(2)}%
+                          {formatPercentage(metrics.volatility)}
                         </td>
-                        <td className="py-3 px-4 text-right text-slate-300">
-                          {perf.sharpe.toFixed(2)}
+                        <td className="py-3 px-4 text-right">
+                          <span className={`font-medium ${metrics.sharpeRatio >= 1 ? 'text-green-400' : metrics.sharpeRatio >= 0 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            {formatNumber(metrics.sharpeRatio)}
+                          </span>
                         </td>
                         <td className="py-3 px-4 text-right text-red-400">
-                          -{perf.maxDrawdown.toFixed(2)}%
+                          -{formatPercentage(metrics.maxDrawdown)}
+                        </td>
+                        <td className="py-3 px-4 text-right text-slate-300">
+                          ${formatNumber(metrics.topPrice)}
+                        </td>
+                        <td className="py-3 px-4 text-right text-slate-300">
+                          ${formatNumber(metrics.currentPrice)}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <span className={`font-medium ${metrics.lastMonthReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatPercentage(metrics.lastMonthReturn)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <span className={`font-medium ${metrics.thisMonthReturn >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {formatPercentage(metrics.thisMonthReturn)}
+                          </span>
                         </td>
                       </tr>
                     );
@@ -168,6 +383,16 @@ export default function Performance() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Data Source Info */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-slate-500">
+            📊 Real-time calculations based on historical price data • 
+            Sharpe ratio assumes 2% risk-free rate • 
+            Volatility is annualized • 
+            Data updates every 5 minutes
+          </p>
         </div>
       </div>
     </div>

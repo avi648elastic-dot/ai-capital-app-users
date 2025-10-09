@@ -251,6 +251,34 @@ class HistoricalDataService {
     }
   }
 
+  // Get stock history for performance calculations
+  async getStockHistory(ticker: string, days: number = 90): Promise<{ date: string; price: number; volume?: number }[]> {
+    try {
+      console.log(`🔍 [HISTORICAL] Getting ${days} days of history for ${ticker}`);
+      
+      const historicalData = await this.getHistoricalData(ticker, days);
+      
+      if (historicalData.length === 0) {
+        console.warn(`⚠️ [HISTORICAL] No historical data found for ${ticker}`);
+        return [];
+      }
+      
+      // Format for performance calculations
+      const formattedData = historicalData.map(item => ({
+        date: item.date,
+        price: item.close, // Use close price for calculations
+        volume: item.volume
+      }));
+      
+      console.log(`✅ [HISTORICAL] Retrieved ${formattedData.length} data points for ${ticker}`);
+      return formattedData;
+      
+    } catch (error) {
+      console.error(`❌ [HISTORICAL] Error getting stock history for ${ticker}:`, error);
+      return [];
+    }
+  }
+
   // Calculate sector performance over time
   async calculateSectorPerformance(
     sectorData: any[], 
