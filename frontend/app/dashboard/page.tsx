@@ -502,7 +502,7 @@ export default function Dashboard() {
 
       {/* Action Buttons with Stock/Portfolio Counters - AGGRESSIVE Mobile Optimization */}
         <div className="flex flex-col mb-6 space-y-4">
-             <div className="flex flex-col space-y-4">
+             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                <button
                  onClick={() => {
                    // Check subscription limits
@@ -524,7 +524,7 @@ export default function Dashboard() {
                      setShowStockForm(true);
                    }
                  }}
-                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-lg"
+                 className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-lg"
                >
                  Add Stock
                </button>
@@ -539,7 +539,7 @@ export default function Dashboard() {
                       console.error('❌ [DASHBOARD] Error toggling multi-portfolio view:', error);
                     }
                   }}
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-4 px-6 rounded-lg transition-all duration-200 border border-slate-600 hover:border-slate-500 flex items-center justify-center space-x-3 text-lg"
+                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-4 px-6 rounded-lg transition-all duration-200 border border-slate-600 hover:border-slate-500 flex items-center justify-center space-x-3 text-lg"
                 >
                   <span className="text-2xl">{showMultiPortfolio ? '📊' : '📈'}</span>
                   <span>{showMultiPortfolio ? 'Single View' : 'Multi-Portfolio'}</span>
