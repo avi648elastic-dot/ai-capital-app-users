@@ -37,14 +37,14 @@ export default function MarketOverview() {
   const pct = (n?: number) => (n == null ? '' : `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`);
 
   return (
-    <div className="card p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/80">
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-xl font-bold text-white tracking-wide">Markets Overview</h3>
+    <div className="card p-3 sm:p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-5 space-y-2 sm:space-y-0">
+        <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide">Markets Overview</h3>
         <div className="flex items-center space-x-3">
           {data?.updatedAt && <span className="text-xs text-slate-400">Updated {new Date(data.updatedAt).toLocaleTimeString()}</span>}
         </div>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {[
           { symbol: 'SPY', name: 'S&P 500' },
           { symbol: 'QQQ', name: 'NASDAQ' },
@@ -52,22 +52,22 @@ export default function MarketOverview() {
         ].map(({ symbol, name }) => {
           const item = data!.indexes[symbol];
           return (
-            <div key={symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">
+            <div key={symbol} className="rounded-xl p-3 sm:p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-slate-300 text-sm font-medium">{symbol}</div>
-                  <div className="text-slate-400 text-xs">{name}</div>
+                  <div className="text-slate-300 text-sm sm:text-base font-medium">{symbol}</div>
+                  <div className="text-slate-400 text-xs sm:text-sm">{name}</div>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${item?.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(item?.thisMonthPercent)}</span>
+                <span className={`text-xs sm:text-sm px-2 py-0.5 rounded-full ${item?.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(item?.thisMonthPercent)}</span>
               </div>
-              <div className="text-white text-2xl font-bold mt-1">{fmt(item?.price)}</div>
+              <div className="text-white text-lg sm:text-2xl font-bold mt-1">{fmt(item?.price)}</div>
             </div>
           );
         })}
       </div>
 
       {/* Featured stocks: same tile style as indexes, 30% smaller, in a clean row */}
-      <div className="mt-3 grid grid-cols-4 gap-4">
+      <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
         {data!.featured.map((f) => {
           // Add company names for common stocks
           const getCompanyName = (symbol: string) => {
@@ -84,15 +84,15 @@ export default function MarketOverview() {
           };
           
           return (
-            <div key={f.symbol} className="rounded-xl p-3 border border-slate-700/50 bg-slate-900/60 shadow-inner scale-90 origin-top-left">
+            <div key={f.symbol} className="rounded-xl p-2 sm:p-3 border border-slate-700/50 bg-slate-900/60 shadow-inner">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-slate-300 text-sm font-medium">{f.symbol}</div>
+                  <div className="text-slate-300 text-xs sm:text-sm font-medium">{f.symbol}</div>
                   <div className="text-slate-400 text-xs">{getCompanyName(f.symbol)}</div>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(f.thisMonthPercent)}</span>
+                <span className={`text-xs px-1 sm:px-2 py-0.5 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(f.thisMonthPercent)}</span>
               </div>
-              <div className="text-white text-xl font-bold mt-1">{fmt(f.price)}</div>
+              <div className="text-white text-sm sm:text-xl font-bold mt-1">{fmt(f.price)}</div>
             </div>
           );
         })}

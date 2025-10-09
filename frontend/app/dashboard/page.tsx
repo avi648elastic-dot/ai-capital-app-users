@@ -404,42 +404,42 @@ export default function Dashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8">
+      <div className="flex-1 flex flex-col px-2 sm:px-4 lg:px-8">
       {/* Professional Header */}
       <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} />
 
-        <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-8 w-full">
-        {/* Enhanced Subscription Status Banner */}
-        <div className={`mb-6 p-6 rounded-xl border-2 ${
+        <div className="flex-1 max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 pt-16 sm:pt-20 lg:pt-8 pb-4 sm:pb-8 w-full">
+        {/* Enhanced Subscription Status Banner - Mobile Optimized */}
+        <div className={`mb-4 sm:mb-6 p-3 sm:p-6 rounded-xl border-2 ${
           user?.subscriptionTier === 'premium' 
             ? 'bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border-emerald-500/50 shadow-lg shadow-emerald-500/10' 
             : 'bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/50 shadow-lg shadow-amber-500/10'
         }`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className={`w-4 h-4 rounded-full ${
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${
                 user?.subscriptionTier === 'premium' ? 'bg-emerald-400' : 'bg-amber-400'
               } animate-pulse`}></div>
               <div>
-                <div className="flex items-center space-x-2 mb-1">
-                  <h3 className={`text-xl font-bold ${
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+                  <h3 className={`text-lg sm:text-xl font-bold ${
                     user?.subscriptionTier === 'premium' ? 'text-emerald-300' : 'text-amber-300'
                   }`}>
                     {user?.subscriptionTier === 'premium' ? '✨ Premium Account' : '🔒 Free Account'}
                   </h3>
                   {user?.subscriptionTier === 'premium' && (
-                    <span className="px-2 py-1 bg-emerald-600 text-white text-xs rounded-full font-semibold">
+                    <span className="px-2 py-1 bg-emerald-600 text-white text-xs rounded-full font-semibold w-fit">
                       ACTIVE
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-slate-300 mb-2">
+                <p className="text-xs sm:text-sm text-slate-300 mb-2 leading-relaxed">
                   {user?.subscriptionTier === 'premium' 
                     ? 'Full access: Up to 3 portfolios of each type (Solid & Risky) with 15 stocks each. Plus real-time push notifications and advanced portfolio analytics with detailed market insights.' 
                     : 'Limited to 1 portfolio with 10 stocks. Upgrade to unlock 6 portfolios with 15 stocks each!'
                   }
                 </p>
-                <div className="flex items-center space-x-4 text-xs">
+                <div className="flex flex-wrap gap-2 text-xs">
                   <span className={`px-2 py-1 rounded-full ${
                     user?.subscriptionTier === 'premium' 
                       ? 'bg-emerald-600/20 text-emerald-300' 
@@ -500,9 +500,9 @@ export default function Dashboard() {
           <PortfolioSummary totals={totals} />
         </ErrorBoundary>
 
-      {/* Action Buttons with Stock/Portfolio Counters */}
-        <div className="flex justify-between items-center mb-6">
-             <div className="flex space-x-4 items-center">
+      {/* Action Buttons with Stock/Portfolio Counters - Mobile Optimized */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                <button
                  onClick={() => {
                    // Check subscription limits
@@ -524,7 +524,7 @@ export default function Dashboard() {
                      setShowStockForm(true);
                    }
                  }}
-                 className="btn-primary"
+                 className="btn-primary text-sm sm:text-base py-2 sm:py-3"
                >
                  Add Stock
                </button>
@@ -539,7 +539,7 @@ export default function Dashboard() {
                       console.error('❌ [DASHBOARD] Error toggling multi-portfolio view:', error);
                     }
                   }}
-                  className="btn-secondary flex items-center space-x-2"
+                  className="btn-secondary flex items-center justify-center space-x-2 text-sm sm:text-base py-2 sm:py-3"
                 >
                   <span>{showMultiPortfolio ? '📊' : '📈'}</span>
                   <span>{showMultiPortfolio ? 'Single View' : 'Multi-Portfolio'}</span>
@@ -572,29 +572,31 @@ export default function Dashboard() {
                 </button>
               </div>
             )}
-        {/* Stock/Portfolio Counters */}
+        {/* Stock/Portfolio Counters - Mobile Optimized */}
             {user && (
-          <div className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center space-x-3 ${
+          <div className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-3 ${
                 user.subscriptionTier === 'free' 
               ? 'bg-amber-900/30 text-amber-300 border border-amber-500/30'
               : 'bg-emerald-900/30 text-emerald-300 border border-emerald-500/30'
               }`}>
-            <span className="opacity-70">Stocks:</span>
-            <span className="font-bold">
-                  {showMultiPortfolio && selectedMultiPortfolio 
-                    ? `${selectedMultiPortfolio.stocks.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
-                    : `${filteredPortfolio.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
-                  }
-                </span>
-                {showMultiPortfolio && selectedMultiPortfolio && (
-                  <span className="text-xs opacity-70 ml-2">
-                    ({selectedMultiPortfolio.portfolioName})
+            <div className="flex items-center space-x-2">
+              <span className="opacity-70">Stocks:</span>
+              <span className="font-bold">
+                    {showMultiPortfolio && selectedMultiPortfolio 
+                      ? `${selectedMultiPortfolio.stocks.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
+                      : `${filteredPortfolio.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
+                    }
                   </span>
-                )}
+                  {showMultiPortfolio && selectedMultiPortfolio && (
+                    <span className="text-xs opacity-70 ml-1">
+                      ({selectedMultiPortfolio.portfolioName})
+                    </span>
+                  )}
+            </div>
             {user.subscriptionTier === 'premium' && (
-              <span className="ml-3 text-xs opacity-80">
+              <div className="text-xs opacity-80">
                 Portfolios: {portfolioMeta.total}/6 ({portfolioMeta.solid} solid · {portfolioMeta.risky} risky)
-              </span>
+              </div>
             )}
               </div>
             )}

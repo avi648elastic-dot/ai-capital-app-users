@@ -101,22 +101,22 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
   return (
     <div className="card overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[800px]">
           <thead className="table-header">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Exchange</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ticker</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Shares</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Entry</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Current</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cost</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Value</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">P&L</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Stop Loss</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Take Profit</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Exchange</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ticker</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Shares</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Entry</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Current</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cost</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Value</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">P&L</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Stop Loss</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Take Profit</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+              <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -127,16 +127,16 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
 
               return (
                 <tr key={item._id} className="table-row">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-slate-400">{item.exchange || '—'}</div>
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm text-slate-400">{item.exchange || '—'}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-white">{item.ticker}</div>
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm font-medium text-white">{item.ticker}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{item.shares.toLocaleString()}</div>
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm text-gray-300">{item.shares.toLocaleString()}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                     {editingId === item._id ? (
                       <input
                         type="number"
@@ -146,24 +146,24 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                         className="input-field w-24"
                       />
                     ) : (
-                      <div className="text-sm text-gray-300">{formatCurrency(item.entryPrice)}</div>
+                      <div className="text-xs sm:text-sm text-gray-300">{formatCurrency(item.entryPrice)}</div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{formatCurrency(item.currentPrice)}</div>
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm text-gray-300">{formatCurrency(item.currentPrice)}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{formatCurrency(cost)}</div>
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm text-gray-300">{formatCurrency(cost)}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{formatCurrency(value)}</div>
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm text-gray-300">{formatCurrency(value)}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                     <div className={`text-sm font-medium ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
                       {formatCurrency(pnl)} ({formatPercent(pnlPercent)})
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                     {editingId === item._id ? (
                       <input
                         type="number"
@@ -173,12 +173,12 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                         className="input-field w-24"
                       />
                     ) : (
-                      <div className="text-sm text-gray-300">
+                      <div className="text-xs sm:text-sm text-gray-300">
                         {item.stopLoss ? formatCurrency(item.stopLoss) : '-'}
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                     {editingId === item._id ? (
                       <input
                         type="number"
@@ -188,7 +188,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                         className="input-field w-24"
                       />
                     ) : (
-                      <div className="text-sm text-gray-300">
+                      <div className="text-xs sm:text-sm text-gray-300">
                         {item.takeProfit ? formatCurrency(item.takeProfit) : '-'}
                       </div>
                     )}
@@ -205,8 +205,8 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">
+                  <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm text-gray-300">
                       {new Date(item.date).toLocaleDateString()}
                     </div>
                   </td>

@@ -163,15 +163,15 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
   }
 
   return (
-    <div className="space-y-8">
-      {/* Enhanced Portfolio Value Over Time */}
-      <div className="card p-4 sm:p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">Portfolio Performance Over Time</h3>
-          <div className="flex items-center space-x-4 text-sm">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Enhanced Portfolio Value Over Time - Mobile Optimized */}
+      <div className="card p-3 sm:p-4 lg:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-2 sm:space-y-0">
+          <h3 className="text-lg sm:text-xl font-bold text-white">Portfolio Performance Over Time</h3>
+          <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
             <div className="flex items-center space-x-2">
               {analyticsLoading && (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-blue-500"></div>
               )}
               <span className="text-xs text-slate-400">
                 {portfolioPerformance && portfolioPerformance.length > 0 
@@ -181,28 +181,28 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
-              <span className="text-slate-300">Portfolio Value</span>
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-emerald-400 rounded-full"></div>
+              <span className="text-slate-300 text-xs sm:text-sm">Portfolio Value</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-              <span className="text-slate-300">Total Cost</span>
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-400 rounded-full"></div>
+              <span className="text-slate-300 text-xs sm:text-sm">Total Cost</span>
             </div>
           </div>
         </div>
-        <div className="h-96">
+        <div className="h-64 sm:h-80 lg:h-96">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="date" 
                 stroke="#9ca3af"
-                fontSize={12}
+                fontSize={10}
                 tick={{ fill: '#9ca3af' }}
               />
               <YAxis 
                 stroke="#9ca3af"
-                fontSize={12}
+                fontSize={10}
                 tick={{ fill: '#9ca3af' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
               />
@@ -240,10 +240,10 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
         </div>
       </div>
 
-      {/* Individual Stock Performance (Candlestick-style) */}
-      <div className="card p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white">Individual Stock Performance</h3>
+      {/* Individual Stock Performance (Candlestick-style) - Mobile Optimized */}
+      <div className="card p-3 sm:p-4 lg:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-2 sm:space-y-0">
+          <h3 className="text-lg sm:text-xl font-bold text-white">Individual Stock Performance</h3>
           <span className="text-xs text-slate-400">
             {portfolioPerformance && portfolioPerformance.length > 0 
               ? '📊 Real-time data' 
@@ -251,19 +251,19 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
             }
           </span>
         </div>
-        <div className="h-80">
+        <div className="h-48 sm:h-64 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={candlestickData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
               <XAxis 
                 dataKey="ticker" 
                 stroke="#9ca3af"
-                fontSize={12}
+                fontSize={10}
                 tick={{ fill: '#9ca3af' }}
               />
               <YAxis 
                 stroke="#9ca3af"
-                fontSize={12}
+                fontSize={10}
                 tick={{ fill: '#9ca3af' }}
                 tickFormatter={(value) => `$${value.toLocaleString()}`}
               />
