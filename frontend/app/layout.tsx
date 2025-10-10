@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { ThemeProvider } from '../contexts/ThemeContext'
+import { TourProvider } from '@/contexts/TourContext'
+import TourOverlay from '@/components/TourOverlay'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,12 +24,16 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <LanguageProvider>
-            <div className="min-h-screen bg-slate-950">
-              {children}
-              {/* Build/version footer for deployment verification */}
-              <div className="fixed bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-slate-800/80 text-slate-300 border border-slate-700">
+            <TourProvider>
+              <div className="min-h-screen bg-slate-950">
+                {children}
+                {/* Tour Overlay */}
+                <TourOverlay />
+                {/* Build/version footer for deployment verification */}
+                <div className="fixed bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-slate-800/80 text-slate-300 border border-slate-700">
+                </div>
               </div>
-            </div>
+            </TourProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

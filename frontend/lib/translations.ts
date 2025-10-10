@@ -146,6 +146,62 @@ export const translations = {
       portfolioUpdate: 'Portfolio Update',
       systemNotification: 'System Notification',
       marketAlert: 'Market Alert'
+    },
+    tour: {
+      startTour: 'Start Tour',
+      next: 'Next',
+      previous: 'Previous',
+      skip: 'Skip',
+      finish: 'Finish',
+      welcome: {
+        title: 'Welcome to AI-Capital! 🚀',
+        content: 'Let me show you around our powerful AI-driven portfolio management platform. This tour will highlight all the key features that can help you make smarter investment decisions.'
+      },
+      navigation: {
+        title: 'Navigation Menu',
+        content: 'Here you can access all the main features: Dashboard, Portfolios, Analytics, Risk Management, and more. Premium+ users get access to advanced features like Risk Management and Reports.'
+      },
+      portfolioOverview: {
+        title: 'Portfolio Overview',
+        content: 'This shows your total portfolio value, today\'s returns, and key performance metrics. Watch how these numbers update in real-time as markets move!'
+      },
+      marketStatus: {
+        title: 'Live Market Status',
+        content: 'This bar shows real-time market status with your local time. The animated indicator shows market activity - green when open, gray when closed.'
+      },
+      portfolioTable: {
+        title: 'Your Portfolio Holdings',
+        content: 'Here you can see all your stocks with AI-generated BUY/SELL/HOLD recommendations. Our algorithm analyzes 90 days of data to give you the best advice!'
+      },
+      analyticsButton: {
+        title: 'Advanced Analytics',
+        content: 'Click here to access detailed performance analytics, volatility analysis, and risk metrics. Premium+ users get access to comprehensive reporting tools.'
+      },
+      premiumFeatures: {
+        title: 'Premium Features',
+        content: 'These features are available to Premium+ subscribers: Multi-portfolio management, advanced risk analysis, detailed reports, and priority support.'
+      },
+      riskManagement: {
+        title: 'Risk Management',
+        content: 'Premium+ feature: Advanced risk analysis tools, portfolio optimization, and risk-adjusted performance metrics to help you manage your investments safely.'
+      },
+      notifications: {
+        title: 'Smart Notifications',
+        content: 'Get real-time alerts for important stock movements, portfolio changes, and market opportunities. Never miss a critical trading opportunity!'
+      },
+      settings: {
+        title: 'Settings & Preferences',
+        content: 'Customize your experience, manage notifications, update your profile, and configure your trading preferences here.'
+      },
+      upgradeCta: {
+        title: 'Ready to Upgrade? 💎',
+        content: 'You\'ve seen the power of AI-Capital! Upgrade to Premium+ to unlock advanced analytics, risk management tools, multi-portfolio support, and priority features. Start your journey to smarter investing today!'
+      },
+      actionHint: {
+        click: 'Click this element to continue',
+        hover: 'Hover over this element',
+        scroll: 'This area will be highlighted'
+      }
     }
   },
   ar: {
@@ -290,6 +346,62 @@ export const translations = {
       portfolioUpdate: 'تحديث المحفظة',
       systemNotification: 'إشعار النظام',
       marketAlert: 'تنبيه السوق'
+    },
+    tour: {
+      startTour: 'بدء الجولة',
+      next: 'التالي',
+      previous: 'السابق',
+      skip: 'تخطي',
+      finish: 'إنهاء',
+      welcome: {
+        title: 'مرحباً بك في AI-Capital! 🚀',
+        content: 'دعني أوضح لك منصة إدارة المحافظ القوية المدعومة بالذكاء الاصطناعي. ستوضح لك هذه الجولة جميع الميزات الرئيسية التي يمكن أن تساعدك في اتخاذ قرارات استثمارية أكثر ذكاءً.'
+      },
+      navigation: {
+        title: 'قائمة التنقل',
+        content: 'هنا يمكنك الوصول إلى جميع الميزات الرئيسية: لوحة التحكم، المحافظ، التحليلات، إدارة المخاطر، والمزيد. يحصل مستخدمو Premium+ على وصول للميزات المتقدمة مثل إدارة المخاطر والتقارير.'
+      },
+      portfolioOverview: {
+        title: 'نظرة عامة على المحفظة',
+        content: 'يعرض هذا القيمة الإجمالية لمحفظتك وعوائد اليوم والمقاييس الرئيسية للأداء. راقب كيف تتحدث هذه الأرقام في الوقت الفعلي مع حركة الأسواق!'
+      },
+      marketStatus: {
+        title: 'حالة السوق المباشرة',
+        content: 'يعرض هذا الشريط حالة السوق في الوقت الفعلي مع وقتك المحلي. المؤشر المتحرك يوضح نشاط السوق - أخضر عند الفتح، رمادي عند الإغلاق.'
+      },
+      portfolioTable: {
+        title: 'حيازات محفظتك',
+        content: 'هنا يمكنك رؤية جميع أسهمك مع توصيات الشراء/البيع/الاحتفاظ المولدة بالذكاء الاصطناعي. يحلل خوارزميتنا 90 يوماً من البيانات لإعطائك أفضل نصيحة!'
+      },
+      analyticsButton: {
+        title: 'التحليلات المتقدمة',
+        content: 'انقر هنا للوصول إلى تحليلات الأداء التفصيلية وتحليل التقلب ومقاييس المخاطر. يحصل مستخدمو Premium+ على وصول لأدوات التقارير الشاملة.'
+      },
+      premiumFeatures: {
+        title: 'ميزات مميزة',
+        content: 'هذه الميزات متاحة لمشتركي Premium+: إدارة محافظ متعددة، تحليل مخاطر متقدم، تقارير مفصلة، ودعم أولوية.'
+      },
+      riskManagement: {
+        title: 'إدارة المخاطر',
+        content: 'ميزة Premium+: أدوات تحليل مخاطر متقدمة وتحسين المحافظ ومقاييس الأداء المعدلة حسب المخاطر لمساعدتك في إدارة استثماراتك بأمان.'
+      },
+      notifications: {
+        title: 'إشعارات ذكية',
+        content: 'احصل على تنبيهات فورية للحركات المهمة للأسهم وتغييرات المحفظة وفرص السوق. لا تفوت أبداً فرصة تداول حاسمة!'
+      },
+      settings: {
+        title: 'الإعدادات والتفضيلات',
+        content: 'خصص تجربتك وأدر الإشعارات وحدث ملفك الشخصي واعدد تفضيلات التداول الخاصة بك هنا.'
+      },
+      upgradeCta: {
+        title: 'مستعد للترقية؟ 💎',
+        content: 'لقد رأيت قوة AI-Capital! ارفع إلى Premium+ لفتح التحليلات المتقدمة وأدوات إدارة المخاطر ودعم المحافظ المتعددة والميزات ذات الأولوية. ابدأ رحلتك نحو الاستثمار الأذكى اليوم!'
+      },
+      actionHint: {
+        click: 'انقر على هذا العنصر للمتابعة',
+        hover: 'مرر الماوس فوق هذا العنصر',
+        scroll: 'سيتم تمييز هذه المنطقة'
+      }
     }
   },
   he: {
@@ -434,6 +546,62 @@ export const translations = {
       portfolioUpdate: 'עדכון תיק',
       systemNotification: 'התראת מערכת',
       marketAlert: 'התראת שוק'
+    },
+    tour: {
+      startTour: 'התחל סיור',
+      next: 'הבא',
+      previous: 'הקודם',
+      skip: 'דלג',
+      finish: 'סיים',
+      welcome: {
+        title: 'ברוך הבא ל-AI-Capital! 🚀',
+        content: 'בואו נסייר בפלטפורמת ניהול התיקים החזקה שלנו המבוססת על בינה מלאכותית. הסיור הזה יציג את כל התכונות העיקריות שיכולות לעזור לכם לקבל החלטות השקעה חכמות יותר.'
+      },
+      navigation: {
+        title: 'תפריט ניווט',
+        content: 'כאן תוכלו לגשת לכל התכונות העיקריות: לוח בקרה, תיקים, ניתוחים, ניהול סיכונים ועוד. משתמשי Premium+ מקבלים גישה לתכונות מתקדמות כמו ניהול סיכונים ודוחות.'
+      },
+      portfolioOverview: {
+        title: 'סקירת תיק',
+        content: 'כאן מוצגת ערך התיק הכולל, התשואות של היום והמדדים העיקריים לביצועים. צפו איך המספרים האלה מתעדכנים בזמן אמת כשהשווקים נעים!'
+      },
+      marketStatus: {
+        title: 'סטטוס שוק חי',
+        content: 'הפס הזה מציג את סטטוס השוק בזמן אמת עם השעה המקומית שלכם. האינדיקטור המונפש מציג פעילות שוק - ירוק כשפתוח, אפור כשסגור.'
+      },
+      portfolioTable: {
+        title: 'החזקות התיק שלכם',
+        content: 'כאן תוכלו לראות את כל המניות שלכם עם המלצות קנייה/מכירה/החזקה שנוצרו על ידי בינה מלאכותית. האלגוריתם שלנו מנתח 90 ימי נתונים כדי לתת לכם את העצה הטובה ביותר!'
+      },
+      analyticsButton: {
+        title: 'ניתוחים מתקדמים',
+        content: 'לחצו כאן כדי לגשת לניתוחי ביצועים מפורטים, ניתוח תנודתיות ומדדי סיכון. משתמשי Premium+ מקבלים גישה לכלי דוחות מקיפים.'
+      },
+      premiumFeatures: {
+        title: 'תכונות פרימיום',
+        content: 'התכונות האלה זמינות למנויי Premium+: ניהול תיקים מרובים, ניתוח סיכונים מתקדם, דוחות מפורטים ותמיכה בעדיפות.'
+      },
+      riskManagement: {
+        title: 'ניהול סיכונים',
+        content: 'תכונת Premium+: כלי ניתוח סיכונים מתקדמים, אופטימיזציה של תיקים ומדדי ביצועים מותאמים לסיכון כדי לעזור לכם לנהל את ההשקעות שלכם בבטחה.'
+      },
+      notifications: {
+        title: 'התראות חכמות',
+        content: 'קבלו התראות בזמן אמת לתנועות חשובות של מניות, שינויים בתיק והזדמנויות שוק. לעולם אל תחמיצו הזדמנות מסחר קריטית!'
+      },
+      settings: {
+        title: 'הגדרות והעדפות',
+        content: 'התאימו את החוויה שלכם, נהלו התראות, עדכנו את הפרופיל שלכם והגדירו את העדפות המסחר שלכם כאן.'
+      },
+      upgradeCta: {
+        title: 'מוכנים לשדרוג? 💎',
+        content: 'ראיתם את הכוח של AI-Capital! שדרגו ל-Premium+ כדי לפתוח ניתוחים מתקדמים, כלי ניהול סיכונים, תמיכה בתיקים מרובים ותכונות בעדיפות. התחילו את המסע שלכם להשקעה חכמה יותר היום!'
+      },
+      actionHint: {
+        click: 'לחצו על האלמנט הזה כדי להמשיך',
+        hover: 'רחפו מעל האלמנט הזה',
+        scroll: 'האזור הזה יודגש'
+      }
     }
   }
 };

@@ -386,6 +386,97 @@
   .btn-primary, .btn-secondary { padding-left: 12px !important; padding-right: 12px !important; height: 40px; }
 }
 
+/* Auto-minimize mobile view by 50% - Improved approach */
+@media (max-width: 768px) {
+  body {
+    transform: scale(0.5);
+    transform-origin: top left;
+    width: 200vw;
+    height: 200vh;
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+  
+  /* Ensure proper mobile container sizing */
+  .mobile-container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  /* Fix for mobile input zoom */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Tour overlay styles */
+.tour-active {
+  overflow: hidden !important;
+}
+
+.tour-spotlight {
+  position: relative;
+  z-index: 9999;
+}
+
+.tour-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 320px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+.tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 9998;
+}
+
+.tour-highlight {
+  box-shadow: 0 0 0 4px #3b82f6, 0 0 20px rgba(59, 130, 246, 0.5) !important;
+  border-radius: 8px;
+  transition: all 0.3s ease-out;
+}
+
+/* Tour animations */
+@keyframes tour-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tour-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px #3b82f6, 0 0 20px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px #3b82f6, 0 0 30px rgba(59, 130, 246, 0.8);
+  }
+}
+
+.tour-fade-in {
+  animation: tour-fade-in 0.3s ease-out;
+}
+
+.tour-pulse {
+  animation: tour-pulse 2s ease-in-out infinite;
+}
+
 /* Stock ticker scroll animation */
 @keyframes scroll {
   0% { transform: translateX(100%); }
