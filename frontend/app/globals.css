@@ -18,6 +18,28 @@
   50% { transform: translateY(-10px) scale(1.1); }
 }
 
+@keyframes sparkle {
+  0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
+  50% { opacity: 0.8; transform: scale(1.2) rotate(180deg); }
+}
+
+@keyframes data-stream {
+  0% { transform: translateX(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes financial-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3); }
+}
+
+@keyframes chart-pulse {
+  0%, 100% { stroke-opacity: 0.6; }
+  50% { stroke-opacity: 1; }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -28,6 +50,22 @@
 
 .animate-float-slow {
   animation: float-slow 10s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+.animate-data-stream {
+  animation: data-stream 15s linear infinite;
+}
+
+.animate-financial-glow {
+  animation: financial-glow 4s ease-in-out infinite;
+}
+
+.animate-chart-pulse {
+  animation: chart-pulse 2s ease-in-out infinite;
 }
 
 /* Force CSS rebuild - Design Update v2.0 */
