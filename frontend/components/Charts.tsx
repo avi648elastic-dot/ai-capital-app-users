@@ -95,7 +95,13 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
       };
     });
 
-    setPieData(pieChartData);
+    // Sort pie chart data by action to group colors together
+    const sortedPieData = pieChartData.sort((a, b) => {
+      const actionOrder = { 'BUY': 0, 'HOLD': 1, 'SELL': 2 };
+      return actionOrder[a.action] - actionOrder[b.action];
+    });
+    
+    setPieData(sortedPieData);
   }, [portfolio, portfolioPerformance]);
 
   const COLORS = {

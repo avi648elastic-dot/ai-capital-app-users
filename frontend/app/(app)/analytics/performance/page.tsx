@@ -116,6 +116,11 @@ export default function Performance() {
       
     } catch (error) {
       console.error('❌ [PERFORMANCE] Error calculating metrics:', error);
+      console.error('❌ [PERFORMANCE] Error details:', error instanceof Error ? error.message : 'Unknown error');
+      
+      // Show error message to user
+      alert(`Performance calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}. Check browser console for details.`);
+      
       // Reset to empty state on error
       setPortfolioMetrics(null);
       setStockMetrics({});
@@ -164,12 +169,22 @@ export default function Performance() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Performance Analysis</h1>
           <p className="text-slate-400">Real-time performance metrics calculated using 90-day Google Finance data</p>
-          {calculating && (
-            <div className="flex items-center mt-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500 mr-2"></div>
-              <span className="text-sm text-primary-400">Calculating real metrics...</span>
-            </div>
-          )}
+          <div className="flex items-center justify-between mt-2">
+            {calculating && (
+              <div className="flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500 mr-2"></div>
+                <span className="text-sm text-primary-400">Calculating real metrics...</span>
+              </div>
+            )}
+            {portfolio.length > 0 && !calculating && (
+              <button
+                onClick={() => calculateRealPerformanceMetrics()}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                {Object.keys(stockMetrics).length === 0 ? '🔄 Calculate Performance' : '🔄 Refresh Data'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Timeframe Selector */}
