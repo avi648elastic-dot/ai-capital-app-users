@@ -8,7 +8,7 @@ import { Crown } from 'lucide-react';
 import AcaciaLogo from '@/components/AcaciaLogo';
 // import { useLanguage } from '@/contexts/LanguageContext';
 
-// ✅ כל הבקשות ישלחו קובצי cookie גם לדומיין אחר (cross-site)
+// ✅ All requests will send cookies to other domains (cross-site)
 axios.defaults.withCredentials = true;
 
 type MeUser = {
@@ -28,7 +28,7 @@ export default function Page() {
   const router = useRouter();
 
   /**
-   * ✅ בטעינה — אם יש token נבדוק סטטוס onboarding
+   * ✅ On load - if token exists, check onboarding status
    */
   useEffect(() => {
     const token = Cookies.get('token');
@@ -75,7 +75,7 @@ export default function Page() {
   }, [router]);
 
   /**
-   * ✅ התחברות / הרשמה
+   * ✅ Login / Signup
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,14 +95,14 @@ export default function Page() {
         return;
       }
 
-      // ✅ cookie מוגדר נכון לפרודקשן (https)
+      // ✅ Cookie set correctly for production (https)
       Cookies.set('token', token, {
         expires: 7,
         secure: true,
-        sameSite: 'None', // חובה בפרודקשן
+        sameSite: 'None', // Required in production
       });
 
-      // ✅ נבדוק שוב את הסטטוס
+      // ✅ Check status again
       const { data: status } = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`,
         {
@@ -127,7 +127,7 @@ export default function Page() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   /**
-   * ⏳ בזמן בדיקה של הטוקן – נציג ספינר
+   * ⏳ While checking token - show spinner
    */
   if (checkingToken) {
     return (
@@ -141,7 +141,7 @@ export default function Page() {
   }
 
   /**
-   * 🧠 טופס התחברות / הרשמה
+   * Login/Signup Form
    */
   return (
     <div className="min-h-screen relative overflow-hidden">
