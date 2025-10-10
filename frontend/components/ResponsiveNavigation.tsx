@@ -10,6 +10,8 @@ import {
 import { useDevice } from '@/hooks/useDevice';
 import Image from 'next/image';
 import NotificationCenter from './NotificationCenter';
+import FeaturePreviewTooltip from './ui/FeaturePreviewTooltip';
+import { getFeatureDescription } from './ui/FeaturePreviewImages';
 
 interface ResponsiveNavigationProps {
   userName?: string;
@@ -169,10 +171,13 @@ export default function ResponsiveNavigation({
                           const isAdminLocked = child.admin && !isAdmin;
                           const isLocked = isPremiumLocked || isPremiumPlusLocked || isAdminLocked;
                           
-                          return (
+                          // Get feature preview info
+                          const featureInfo = isLocked ? getFeatureDescription(child.id) : null;
+                          
+                          const childButton = (
                             <button
                               key={child.id}
-                              onClick={() => handleItemClick(child)}
+                              onClick={() => !isLocked && handleItemClick(child)}
                               disabled={isLocked}
                               className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
                                 isLocked 
@@ -196,6 +201,19 @@ export default function ResponsiveNavigation({
                                 <Shield className="w-3 h-3 text-red-400 flex-shrink-0" />
                               )}
                             </button>
+                          );
+                          
+                          return isLocked && featureInfo ? (
+                            <FeaturePreviewTooltip
+                              key={child.id}
+                              featureName={featureInfo.name}
+                              description={featureInfo.description}
+                              requiredTier={featureInfo.tier}
+                            >
+                              {childButton}
+                            </FeaturePreviewTooltip>
+                          ) : (
+                            childButton
                           );
                         })}
                       </div>

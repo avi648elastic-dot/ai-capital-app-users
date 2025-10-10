@@ -22,6 +22,8 @@ import {
   CreditCard,
   AlertTriangle
 } from 'lucide-react';
+import FeaturePreviewTooltip from './ui/FeaturePreviewTooltip';
+import { FeaturePreviewImages, getFeatureDescription } from './ui/FeaturePreviewImages';
 
 interface NavigationProps {
   userName?: string;
@@ -176,51 +178,72 @@ export default function Navigation({ userName, subscriptionTier, isAdmin, onLogo
     const isExpanded = expandedItems.includes(item.id);
     const hasChildren = item.children && item.children.length > 0;
     const Icon = item.icon;
+    
+    // Check if item is locked
+    const isPremiumLocked = item.premium && subscriptionTier === 'free';
+    const isPremiumPlusLocked = item.premiumPlus && subscriptionTier !== 'premium+';
+    const isAdminLocked = item.admin && !isAdmin;
+    const isLocked = isPremiumLocked || isPremiumPlusLocked || isAdminLocked;
+
+    // Get feature preview info
+    const featureInfo = isLocked ? getFeatureDescription(item.id) : null;
+
+    const navItemContent = (
+      <div
+        className={`
+          flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 group
+          ${level === 0 ? 'text-slate-200 hover:bg-slate-800/50' : 'text-slate-300 hover:bg-slate-700/50 ml-4'}
+          ${isLocked ? 'opacity-60' : ''}
+        `}
+        onClick={() => !isLocked && handleItemClick(item)}
+      >
+        <div className="flex items-center space-x-3">
+          <Icon className={`w-5 h-5 ${item.premium ? 'text-yellow-400' : item.premiumPlus ? 'text-purple-400' : item.admin ? 'text-red-400' : ''}`} />
+          {!isCollapsed && (
+            <>
+              <span className="text-sm font-medium">{item.label}</span>
+              {item.premium && (
+                <Crown className="w-4 h-4 text-yellow-400" />
+              )}
+              {item.premiumPlus && (
+                <Crown className="w-4 h-4 text-purple-400" />
+              )}
+              {item.admin && (
+                <Shield className="w-4 h-4 text-red-400" />
+              )}
+              {item.badge && (
+                <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
+                  {item.badge}
+                </span>
+              )}
+            </>
+          )}
+        </div>
+        {hasChildren && !isCollapsed && (
+          <div className="text-slate-400">
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </div>
+        )}
+      </div>
+    );
 
     return (
       <div key={item.id}>
-        <div
-          className={`
-            flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all duration-200 group
-            ${level === 0 ? 'text-slate-200 hover:bg-slate-800/50' : 'text-slate-300 hover:bg-slate-700/50 ml-4'}
-            ${item.premium && subscriptionTier === 'free' ? 'opacity-60' : ''}
-            ${item.premiumPlus && subscriptionTier !== 'premium+' ? 'opacity-60' : ''}
-            ${item.admin && !isAdmin ? 'opacity-60' : ''}
-          `}
-          onClick={() => handleItemClick(item)}
-        >
-          <div className="flex items-center space-x-3">
-            <Icon className={`w-5 h-5 ${item.premium ? 'text-yellow-400' : item.premiumPlus ? 'text-purple-400' : item.admin ? 'text-red-400' : ''}`} />
-            {!isCollapsed && (
-              <>
-                <span className="text-sm font-medium">{item.label}</span>
-                {item.premium && (
-                  <Crown className="w-4 h-4 text-yellow-400" />
-                )}
-                {item.premiumPlus && (
-                  <Crown className="w-4 h-4 text-purple-400" />
-                )}
-                {item.admin && (
-                  <Shield className="w-4 h-4 text-red-400" />
-                )}
-                {item.badge && (
-                  <span className="px-2 py-1 text-xs bg-blue-600 text-white rounded-full">
-                    {item.badge}
-                  </span>
-                )}
-              </>
-            )}
-          </div>
-          {hasChildren && !isCollapsed && (
-            <div className="text-slate-400">
-              {isExpanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
-            </div>
-          )}
-        </div>
+        {isLocked && featureInfo ? (
+          <FeaturePreviewTooltip
+            featureName={featureInfo.name}
+            description={featureInfo.description}
+            requiredTier={featureInfo.tier}
+          >
+            {navItemContent}
+          </FeaturePreviewTooltip>
+        ) : (
+          navItemContent
+        )}
         
         {hasChildren && isExpanded && !isCollapsed && (
           <div className="mt-1 space-y-1">

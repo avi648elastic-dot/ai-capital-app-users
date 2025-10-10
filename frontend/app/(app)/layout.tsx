@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import ResponsiveNavigation from '@/components/ResponsiveNavigation';
+import MarketStatusBar from '@/components/MarketStatusBar';
 
 export default function AppLayout({
   children,
@@ -73,9 +74,15 @@ export default function AppLayout({
         onLogout={handleLogout}
       />
       
-      <div className="flex-1 flex flex-col px-4 sm:px-6 lg:px-8 pt-20 lg:pt-8 pb-6 sm:pb-8">
-        <div className="max-w-7xl mx-auto w-full">
-          {children}
+      <div className="flex-1 flex flex-col">
+        {/* Market Status Bar - positioned at the top */}
+        <MarketStatusBar />
+        
+        {/* Main Content */}
+        <div className="flex-1 px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-8">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
         </div>
       </div>
     </div>

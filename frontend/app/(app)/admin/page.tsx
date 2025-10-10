@@ -265,6 +265,25 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleCleanupInvalidNotifications = async () => {
+    if (!confirm('This will delete all BUY and HOLD portfolio notifications. Only SELL notifications will remain. Continue?')) {
+      return;
+    }
+
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/cleanup-invalid`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      fetchData();
+      alert(response.data.message);
+    } catch (error) {
+      console.error('Error cleaning up invalid notifications:', error);
+      alert('Failed to cleanup invalid notifications');
+    }
+  };
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'info': return 'bg-blue-100 text-blue-800';
@@ -733,6 +752,12 @@ export default function AdminDashboard() {
                 className="px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold transition-colors"
               >
                 🔄 Refresh
+              </button>
+              <button
+                onClick={handleCleanupInvalidNotifications}
+                className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                🧹 Clean Invalid
               </button>
             </div>
 

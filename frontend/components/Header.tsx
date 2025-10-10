@@ -6,6 +6,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import ThemeToggle from './ThemeToggle';
+import AcaciaLogo from './AcaciaLogo';
 
 interface HeaderProps {
   userName?: string;
@@ -24,21 +25,16 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
   };
 
   const Logo = () => {
-    // Professional static logo - no animations
+    // Professional Acacia Tree logo with perfect transparency
     return (
       <div className="flex items-center space-x-3">
         <div className="relative w-12 h-12">
-          <Image 
-            src="/logo.png" 
-            alt="AiCapital Logo" 
-            fill 
-            sizes="48px" 
-            className="object-contain" 
-            priority 
-          />
+          <AcaciaLogo size={48} className="drop-shadow-lg" />
         </div>
         <div>
-          <h1 className="logo-text text-xl">AI-Capital</h1>
+          <h1 className="logo-text text-xl bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent font-bold">
+            AI-Capital
+          </h1>
           <p className="text-xs text-slate-400 font-medium">Professional Portfolio Management</p>
         </div>
       </div>

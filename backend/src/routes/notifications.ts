@@ -306,6 +306,29 @@ router.post('/cleanup', authenticateAdmin, async (req, res) => {
 });
 
 /**
+ * @route POST /api/notifications/cleanup-invalid
+ * @desc Clean up invalid portfolio notifications (non-SELL actions) (Admin only)
+ * @access Admin
+ */
+router.post('/cleanup-invalid', authenticateAdmin, async (req, res) => {
+  try {
+    const deletedCount = await notificationService.cleanupInvalidPortfolioNotifications();
+
+    res.json({
+      success: true,
+      data: { deletedCount },
+      message: `${deletedCount} invalid portfolio notifications cleaned up (BUY/HOLD actions removed)`
+    });
+  } catch (error) {
+    console.error('Cleanup invalid notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cleanup invalid notifications'
+    });
+  }
+});
+
+/**
  * @route POST /api/notifications/test
  * @desc Create a test notification for the current user
  * @access Private

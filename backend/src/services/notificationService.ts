@@ -80,7 +80,7 @@ class NotificationService {
   }
 
   /**
-   * Create notifications for stock actions
+   * Create notifications for stock actions (SELL only for users)
    */
   async createStockActionNotification(
     userId: string,
@@ -89,9 +89,14 @@ class NotificationService {
     reason: string,
     portfolioId?: string
   ): Promise<INotification> {
+    // Only create notifications for SELL actions (as per user requirements)
+    if (action !== 'SELL') {
+      throw new Error('Only SELL notifications are allowed for user portfolios');
+    }
+
     const actionMessages = {
       BUY: `AI recommends BUYING ${ticker}`,
-      SELL: `AI recommends SELLING ${ticker}`,
+      SELL: `🚨 SELL Signal: ${ticker}`,
       HOLD: `AI recommends HOLDING ${ticker}`
     };
 
@@ -100,7 +105,7 @@ class NotificationService {
       title: actionMessages[action],
       message: reason,
       type: 'action',
-      priority: action === 'SELL' ? 'high' : 'medium',
+      priority: 'high', // SELL actions are always high priority
       category: 'portfolio',
       actionData: {
         ticker,
@@ -111,7 +116,7 @@ class NotificationService {
       channels: {
         dashboard: true,
         popup: true,
-        email: action === 'SELL' // Only email for SELL actions
+        email: true // Always email for SELL actions
       }
     });
   }
@@ -140,7 +145,7 @@ class NotificationService {
   }
 
   /**
-   * Get notifications for a user
+   * Get notifications for a user (only their own + global notifications)
    */
   async getUserNotifications(filters: NotificationFilters): Promise<{
     notifications: INotification[];
@@ -150,9 +155,10 @@ class NotificationService {
     const query: any = {};
     
     if (filters.userId) {
+      // Users can only see their own notifications + global notifications (userId: null)
       query.$or = [
-        { userId: filters.userId },
-        { userId: null } // Global notifications
+        { userId: filters.userId }, // User's own notifications
+        { userId: null } // Global notifications (admin-created)
       ];
     }
     
@@ -395,6 +401,18 @@ class NotificationService {
   async cleanupExpiredNotifications(): Promise<number> {
     const result = await Notification.deleteMany({
       expiresAt: { $lt: new Date() }
+    });
+
+    return result.deletedCount;
+  }
+
+  /**
+   * Clean up invalid portfolio notifications (non-SELL actions)
+   */
+  async cleanupInvalidPortfolioNotifications(): Promise<number> {
+    const result = await Notification.deleteMany({
+      category: 'portfolio',
+      'actionData.action': { $in: ['BUY', 'HOLD'] }
     });
 
     return result.deletedCount;

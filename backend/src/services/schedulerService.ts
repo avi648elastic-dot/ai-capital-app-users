@@ -182,8 +182,8 @@ export class SchedulerService {
               await portfolioItem.save();
               updatedCount++;
               
-              // Send notification if action changed (and it's not the first time)
-              if (previousAction && previousAction !== decision.action) {
+              // Send notification ONLY for SELL actions (user-specific notifications)
+              if (previousAction && previousAction !== decision.action && decision.action === 'SELL') {
                 try {
                   await notificationService.createStockActionNotification(
                     userId,
@@ -192,9 +192,9 @@ export class SchedulerService {
                     decision.reason,
                     portfolioItem.portfolioId
                   );
-                  console.log(`🔔 [SCHEDULER] Sent notification for ${portfolioItem.ticker} action change: ${previousAction} → ${decision.action}`);
+                  console.log(`🔔 [SCHEDULER] Sent SELL notification for ${portfolioItem.ticker} to user ${userId}: ${previousAction} → ${decision.action}`);
                 } catch (notificationError) {
-                  console.error(`❌ [SCHEDULER] Failed to send notification for ${portfolioItem.ticker}:`, notificationError);
+                  console.error(`❌ [SCHEDULER] Failed to send SELL notification for ${portfolioItem.ticker}:`, notificationError);
                 }
               }
             }

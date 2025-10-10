@@ -184,4 +184,38 @@ router.put('/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// Update user settings (theme, language, etc.)
+router.put('/settings', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user._id;
+    const { theme, language, notifications, emailUpdates } = req.body;
+
+    const updateData: any = {};
+    if (theme) updateData.theme = theme;
+    if (language) updateData.language = language;
+    // Note: notifications and emailUpdates would need to be added to User schema if needed
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, select: '-password' }
+    );
+
+    console.log(`✅ [USER] Settings updated for user ${userId}`);
+
+    res.json({
+      success: true,
+      message: 'Settings updated successfully',
+      user: updatedUser
+    });
+
+  } catch (error: any) {
+    console.error('❌ [USER] Settings update error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update settings'
+    });
+  }
+});
+
 export default router;
