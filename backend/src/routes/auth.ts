@@ -104,6 +104,11 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User not found' });
     }
 
+    // Check if user has a password (not a Google OAuth user)
+    if (!user.password) {
+      return res.status(400).json({ message: 'Please login with Google' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Invalid credentials' });

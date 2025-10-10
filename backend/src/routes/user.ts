@@ -56,18 +56,18 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
 
     // Delete old avatar if exists
     const user = await User.findById(userId);
-    if (user && user.avatarUrl) {
-      const oldAvatarPath = path.join(__dirname, '../../uploads/avatars', path.basename(user.avatarUrl));
+    if (user && user.avatar) {
+      const oldAvatarPath = path.join(__dirname, '../../uploads/avatars', path.basename(user.avatar));
       if (fs.existsSync(oldAvatarPath)) {
         fs.unlinkSync(oldAvatarPath);
       }
     }
 
     // Save new avatar URL to user
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    const avatar = `/uploads/avatars/${req.file.filename}`;
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { avatarUrl },
+      { avatar },
       { new: true, select: '-password' }
     );
 
@@ -77,7 +77,7 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
       success: true,
       message: 'Avatar updated successfully',
       user: updatedUser,
-      avatarUrl
+      avatar
     });
 
   } catch (error: any) {
