@@ -2,6 +2,7 @@ import express from 'express';
 import Portfolio from '../models/Portfolio';
 import { authenticateToken } from '../middleware/auth';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
+import { volatilityService } from '../services/volatilityService';
 import { loggerService } from '../services/loggerService';
 
 const router = express.Router();
@@ -48,7 +49,10 @@ router.get('/', authenticateToken, async (req, res) => {
 
       // Calculate performance for the requested timeframe from 90-day data
       const timeframeReturn = calculateTimeframeReturn(stockData, days);
-      const volatility = stockData.volatility * 100; // Convert to percentage
+      
+      // Get detailed volatility metrics from our volatility service
+      const volatilityMetrics = await volatilityService.calculateStockVolatility(stock.ticker);
+      const volatility = volatilityMetrics ? volatilityMetrics.volatility : stockData.volatility * 100;
       
       // Calculate Sharpe ratio (assuming risk-free rate of 2%)
       const riskFreeRate = 2.0;
@@ -60,6 +64,7 @@ router.get('/', authenticateToken, async (req, res) => {
       const metrics = {
         totalReturn: timeframeReturn,
         volatility,
+        volatilityMetrics, // Include detailed volatility data
         sharpeRatio,
         maxDrawdown,
         topPrice: stockData.top60D, // Use TOP60D from our service
@@ -98,9 +103,13 @@ router.get('/', authenticateToken, async (req, res) => {
     const portfolioSharpe = totalWeightedVolatility > 0 ? 
       (totalPortfolioReturn - riskFreeRate) / totalWeightedVolatility : 0;
 
+    // Calculate portfolio-level volatility metrics
+    const portfolioVolatilityMetrics = await volatilityService.calculatePortfolioVolatility(tickers);
+
     const portfolioMetrics = {
       totalReturn: totalPortfolioReturn,
       volatility: totalWeightedVolatility,
+      volatilityMetrics: portfolioVolatilityMetrics, // Include detailed portfolio volatility
       sharpeRatio: portfolioSharpe,
       maxDrawdown: portfolioMaxDrawdown,
       currentValue: totalPortfolioValue,
@@ -206,6 +215,110 @@ router.get('/test/:symbol', authenticateToken, async (req, res) => {
       message: 'Test failed',
       error: error.message,
       symbol: req.params.symbol
+    });
+  }
+});
+
+// Get volatility metrics for portfolio or individual stocks
+router.get('/volatility', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user!._id;
+    const { portfolioId, tickers } = req.query;
+    
+    loggerService.info(`🔍 [VOLATILITY API] Calculating volatility for user ${userId}`);
+    
+    if (tickers) {
+      // Calculate volatility for specific tickers
+      const tickerArray = Array.isArray(tickers) ? tickers : [tickers];
+      const volatilityMap = await volatilityService.calculateMultipleStockVolatilities(tickerArray as string[]);
+      
+      const result: Record<string, any> = {};
+      volatilityMap.forEach((metrics, ticker) => {
+        result[ticker] = metrics;
+      });
+      
+      res.json({
+        volatilities: result,
+        timestamp: new Date().toISOString(),
+        dataSource: 'Google Finance 90-Day Data'
+      });
+      
+    } else if (portfolioId) {
+      // Calculate volatility for specific portfolio
+      const portfolio = await Portfolio.find({ userId, portfolioId }).sort({ createdAt: 1 });
+      
+      if (portfolio.length === 0) {
+        return res.json({
+          volatilityMetrics: null,
+          message: 'No portfolio data available for this portfolio ID.'
+        });
+      }
+      
+      const tickers = [...new Set(portfolio.map(item => item.ticker))];
+      const weights = portfolio.map(item => {
+        const totalValue = portfolio.reduce((sum, p) => sum + (p.currentPrice * p.shares), 0);
+        return totalValue > 0 ? (item.currentPrice * item.shares) / totalValue : 0;
+      });
+      
+      const portfolioVolatility = await volatilityService.calculatePortfolioVolatility(tickers, weights);
+      
+      res.json({
+        portfolioId,
+        volatilityMetrics: portfolioVolatility,
+        stockCount: portfolio.length,
+        timestamp: new Date().toISOString(),
+        dataSource: 'Google Finance 90-Day Data'
+      });
+      
+    } else {
+      // Calculate volatility for all user portfolios
+      const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
+      
+      if (portfolio.length === 0) {
+        return res.json({
+          portfolioVolatilities: {},
+          message: 'No portfolio data available.'
+        });
+      }
+      
+      // Group by portfolio ID
+      const portfolioGroups: Record<string, any[]> = {};
+      portfolio.forEach(item => {
+        if (!portfolioGroups[item.portfolioId]) {
+          portfolioGroups[item.portfolioId] = [];
+        }
+        portfolioGroups[item.portfolioId].push(item);
+      });
+      
+      const portfolioVolatilities: Record<string, any> = {};
+      
+      for (const [portfolioId, portfolioItems] of Object.entries(portfolioGroups)) {
+        const tickers = [...new Set(portfolioItems.map(item => item.ticker))];
+        const weights = portfolioItems.map(item => {
+          const totalValue = portfolioItems.reduce((sum, p) => sum + (p.currentPrice * p.shares), 0);
+          return totalValue > 0 ? (item.currentPrice * item.shares) / totalValue : 0;
+        });
+        
+        const portfolioVolatility = await volatilityService.calculatePortfolioVolatility(tickers, weights);
+        if (portfolioVolatility) {
+          portfolioVolatilities[portfolioId] = portfolioVolatility;
+        }
+      }
+      
+      res.json({
+        portfolioVolatilities,
+        totalPortfolios: Object.keys(portfolioVolatilities).length,
+        timestamp: new Date().toISOString(),
+        dataSource: 'Google Finance 90-Day Data'
+      });
+    }
+
+  } catch (error: any) {
+    loggerService.error('❌ [VOLATILITY API] Error calculating volatility:', error);
+    
+    res.status(500).json({
+      message: 'Failed to calculate volatility metrics',
+      error: error.message
     });
   }
 });
