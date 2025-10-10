@@ -130,12 +130,12 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'info': return <Info className="w-5 h-5" />;
-      case 'warning': return <AlertTriangle className="w-5 h-5" />;
-      case 'success': return <CheckCircle className="w-5 h-5" />;
-      case 'error': return <XCircle className="w-5 h-5" />;
-      case 'action': return <TrendingUp className="w-5 h-5" />;
-      default: return <Info className="w-5 h-5" />;
+      case 'info': return <Info className="w-4 h-4" />;
+      case 'warning': return <AlertTriangle className="w-4 h-4" />;
+      case 'success': return <CheckCircle className="w-4 h-4" />;
+      case 'error': return <XCircle className="w-4 h-4" />;
+      case 'action': return <TrendingUp className="w-4 h-4" />;
+      default: return <Info className="w-4 h-4" />;
     }
   };
 
@@ -182,62 +182,62 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-[420px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[500px] overflow-hidden">
-            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="absolute right-0 mt-2 w-[320px] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[400px] overflow-hidden">
+            <div className="p-3 border-b border-gray-200 bg-slate-50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <Bell className="w-5 h-5 text-blue-600" />
-                  <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
+                  <Bell className="w-4 h-4 text-blue-600" />
+                  <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
                   {unreadCount > 0 && (
-                    <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    <span className="bg-blue-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                       {unreadCount}
                     </span>
                   )}
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-1">
                   <button
                     onClick={createTestNotification}
                     disabled={loading}
-                    className="text-xs text-green-700 hover:text-green-900 font-semibold bg-green-100 hover:bg-green-200 px-2 py-1 rounded-lg transition-colors disabled:opacity-50"
+                    className="text-xs text-green-700 hover:text-green-900 font-medium bg-green-100 hover:bg-green-200 px-2 py-1 rounded transition-colors disabled:opacity-50"
                   >
-                    {loading ? 'Testing...' : 'Test'}
+                    {loading ? 'Test...' : 'Test'}
                   </button>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="text-sm text-blue-700 hover:text-blue-900 font-semibold bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-lg transition-colors"
+                      className="text-xs text-blue-700 hover:text-blue-900 font-medium bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded transition-colors"
                     >
-                      Mark all read
+                      Mark read
                     </button>
                   )}
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-lg transition-colors"
+                    className="text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 p-1 rounded transition-colors"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3 h-3" />
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-80 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="p-8 text-center">
-                  <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600 font-medium">No notifications yet</p>
-                  <p className="text-sm text-gray-500 mt-1">We'll notify you about portfolio updates and market changes</p>
+                <div className="p-6 text-center">
+                  <Bell className="w-8 h-8 mx-auto mb-3 text-gray-400" />
+                  <p className="text-gray-600 text-sm font-medium">No notifications yet</p>
+                  <p className="text-xs text-gray-500 mt-1">We'll notify you about portfolio updates</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
                   {notifications.map((notification) => (
                     <div
                       key={notification._id}
-                      className={`p-4 hover:bg-gray-50 transition-all duration-200 border-l-4 ${
-                        !notification.readAt ? 'bg-blue-50 border-blue-500 shadow-sm' : 'bg-white border-transparent hover:border-gray-200'
+                      className={`p-3 hover:bg-gray-50 transition-all duration-200 border-l-3 ${
+                        !notification.readAt ? 'bg-blue-50 border-blue-500' : 'bg-white border-transparent hover:border-gray-200'
                       }`}
                     >
-                      <div className="flex items-start space-x-3">
-                        <div className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center ${
+                      <div className="flex items-start space-x-2">
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full border flex items-center justify-center ${
                           getNotificationColor(notification.type, notification.priority)
                         }`}>
                           <div className={`${
@@ -253,42 +253,35 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className={`text-base font-bold ${
+                          <div className="flex items-center justify-between mb-1">
+                            <p className={`text-sm font-semibold ${
                               !notification.readAt ? 'text-gray-900' : 'text-gray-700'
                             }`}>
                               {notification.title || 'System Notification'}
                             </p>
-                            <div className="flex items-center space-x-2">
-                              <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                            <div className="flex items-center space-x-1">
+                              <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
                                 {formatTimeAgo(notification.createdAt)}
                               </span>
                               {!notification.readAt && (
-                                <div className="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-sm"></div>
+                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                               )}
                             </div>
                           </div>
                           
-                          <div className="mb-3">
-                            {(() => {
-                              console.log('🔔 [NOTIFICATION] Rendering notification:', notification);
-                              console.log('🔔 [NOTIFICATION] Title:', notification.title);
-                              console.log('🔔 [NOTIFICATION] Message:', notification.message);
-                              console.log('🔔 [NOTIFICATION] ActionData:', notification.actionData);
-                              
-                              return notification.message ? (
-                                <p className="text-sm font-medium text-gray-800 leading-relaxed">
-                                  {notification.message}
-                                </p>
-                              ) : (
-                                <div className="text-sm text-gray-600 italic">
-                                  {notification.actionData ? 
-                                    `Portfolio action: ${notification.actionData.action} ${notification.actionData.ticker}` :
-                                    `Title: ${notification.title || 'No title'}`
-                                  }
-                                </div>
-                              );
-                            })()}
+                          <div className="mb-2">
+                            {notification.message ? (
+                              <p className="text-xs text-gray-700 leading-relaxed">
+                                {notification.message}
+                              </p>
+                            ) : (
+                              <div className="text-xs text-gray-600">
+                                {notification.actionData ? 
+                                  `Action: ${notification.actionData.action} ${notification.actionData.ticker}` :
+                                  notification.title || 'No details'
+                                }
+                              </div>
+                            )}
                           </div>
 
                           {notification.actionData && (
@@ -313,19 +306,19 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
                             </div>
                           )}
 
-                          <div className="flex items-center space-x-3 mt-4">
+                          <div className="flex items-center space-x-2 mt-2">
                             {!notification.readAt && (
                               <button
                                 onClick={() => markAsRead(notification._id)}
-                                className="flex items-center space-x-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors"
+                                className="flex items-center space-x-1 text-xs font-medium text-blue-700 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded transition-colors"
                               >
                                 <Check className="w-3 h-3" />
-                                <span>Mark read</span>
+                                <span>Read</span>
                               </button>
                             )}
                             <button
                               onClick={() => deleteNotification(notification._id)}
-                              className="flex items-center space-x-1.5 text-xs font-semibold text-red-700 hover:text-red-800 bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg transition-colors"
+                              className="flex items-center space-x-1 text-xs font-medium text-red-700 hover:text-red-800 bg-red-100 hover:bg-red-200 px-2 py-1 rounded transition-colors"
                             >
                               <X className="w-3 h-3" />
                               <span>Delete</span>
@@ -340,13 +333,13 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
             </div>
 
             {notifications.length > 0 && (
-              <div className="p-4 border-t border-gray-200 text-center bg-gradient-to-r from-gray-50 to-blue-50">
+              <div className="p-3 border-t border-gray-200 text-center bg-gray-50">
                 <a
                   href="/dashboard/notifications"
-                  className="inline-flex items-center space-x-2 text-sm text-blue-700 hover:text-blue-900 font-semibold bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg transition-colors"
+                  className="inline-flex items-center space-x-1 text-xs text-blue-700 hover:text-blue-900 font-medium bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded transition-colors"
                 >
-                  <Bell className="w-4 h-4" />
-                  <span>View all notifications</span>
+                  <Bell className="w-3 h-3" />
+                  <span>View all</span>
                 </a>
               </div>
             )}
