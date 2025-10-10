@@ -36,6 +36,11 @@ export class DecisionEngine {
       loggerService.info(`🔍 [DECISION ENGINE] Analyzing ${ticker}`);
       const stockData = await googleFinanceFormulasService.getStockMetrics(ticker);
 
+      // Validate stock data (as requested - show error if data is null)
+      if (!stockData) {
+        throw new Error(`Stock data unavailable for ${ticker}`);
+      }
+
       // Rule 1: Stop Loss / Take Profit (absolute rules)
       if (stopLoss && currentPrice <= stopLoss) {
         return {
@@ -45,64 +50,74 @@ export class DecisionEngine {
         };
       }
 
-      if (takeProfit && currentPrice >= takeProfit) {
-        return {
-          action: 'SELL',
-          reason: 'Take profit target reached',
-          color: 'green',
-        };
+      // Take profit awareness (EXACT LEGACY LOGIC)
+      if (takeProfit) {
+        const tp1 = takeProfit;
+        if (currentPrice >= tp1 * 0.95) {
+          return {
+            action: 'SELL',
+            reason: `Reached TP zone (${tp1})`,
+            color: 'red',
+          };
+        }
+        if (currentPrice >= tp1 * 0.90) {
+          return {
+            action: 'BUY',
+            reason: `Approaching TP (${tp1})`,
+            color: 'green',
+          };
+        }
       }
 
-      // Rule 2: Scoring system (original thresholds: 3/-3)
+      // Rule 2: Scoring system (OPTIMIZED LEGACY: 2/-2 thresholds)
       let score = 0;
       const reasons: string[] = [];
 
-      // Current vs TOP30/TOP60 (30% weight)
-      const top60Ratio = stockData.current / stockData.top60D;
-      if (top60Ratio > 0.95) {
-        score += 1;
-        reasons.push('Strong vs TOP60');
-      } else if (top60Ratio < 0.5) {
-        score -= 1;
-        reasons.push('Weak vs TOP60');
+      // 30% weight via thresholds around TOP60 (EXACT LEGACY LOGIC)
+      if (stockData.top60D) {
+        if (currentPrice >= stockData.top60D * 0.90) {
+          score += 1;
+          reasons.push('Near TOP60 (90%+)');
+        } else if (currentPrice <= stockData.top60D * 0.70) {
+          score -= 1;
+          reasons.push('Far below TOP60 (70%-)');
+        }
       }
 
-      // This Month % (20% weight)
-      if (stockData.thisMonthPercent > 15) {
+      // 20% each: this month / last month (EXACT LEGACY THRESHOLDS)
+      if (stockData.thisMonthPercent >= 10) {
         score += 1;
-        reasons.push('Strong monthly performance');
-      } else if (stockData.thisMonthPercent < -20) {
+        reasons.push('Strong this month (10%+)');
+      } else if (stockData.thisMonthPercent <= -10) {
         score -= 1;
-        reasons.push('Poor monthly performance');
+        reasons.push('Poor this month (-10%-)');
       }
 
-      // Last Month % (20% weight)
-      if (stockData.lastMonthPercent > 15) {
+      if (stockData.lastMonthPercent >= 10) {
         score += 1;
-        reasons.push('Strong previous month');
-      } else if (stockData.lastMonthPercent < -20) {
+        reasons.push('Strong last month (10%+)');
+      } else if (stockData.lastMonthPercent <= -10) {
         score -= 1;
-        reasons.push('Poor previous month');
+        reasons.push('Poor last month (-10%-)');
       }
 
-      // Price vs Entry (30% weight)
-      const priceChange = ((currentPrice - entryPrice) / entryPrice) * 100;
-      if (priceChange > 5) {
+      // 30% price vs entry (EXACT LEGACY LOGIC)
+      if (currentPrice > entryPrice) {
         score += 1;
         reasons.push('Above entry price');
-      } else if (priceChange < -15) {
+      } else if (currentPrice < entryPrice * 0.90) {
         score -= 1;
-        reasons.push('Below entry price');
+        reasons.push('Below entry price (90%-)');
       }
 
-      // Decision based on score (original thresholds: 3/-3)
+      // Decision based on score (EXACT LEGACY THRESHOLDS: 2/-2)
       let action: 'BUY' | 'HOLD' | 'SELL';
       let color: string;
 
-      if (score >= 3) {
+      if (score >= 2) {
         action = 'BUY';
         color = 'green';
-      } else if (score <= -3) {
+      } else if (score <= -2) {
         action = 'SELL';
         color = 'red';
       } else {
