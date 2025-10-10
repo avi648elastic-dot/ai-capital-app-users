@@ -1,40 +1,5 @@
-# Multi-stage Dockerfile for AiCapital Application
-# Stage 1: Build Frontend
-FROM node:20-alpine AS frontend-builder
-
-WORKDIR /app/frontend
-
-# Copy frontend package files
-COPY frontend/package*.json ./
-
-# Install ALL dependencies (including dev dependencies for build)
-RUN npm ci
-
-# Copy frontend source code
-COPY frontend/ ./
-
-# Build frontend
-RUN npm run build
-
-# Stage 2: Build Backend
-FROM node:20-alpine AS backend-builder
-
-WORKDIR /app/backend
-
-# Copy backend package files
-COPY backend/package*.json ./
-
-# Install ALL dependencies (including dev dependencies for build)
-RUN npm ci
-
-# Copy backend source code
-COPY backend/ ./
-
-# Build backend TypeScript
-RUN npm run build
-
-# Stage 3: Production Runtime
-FROM node:20-alpine AS production
+# Simple Dockerfile for AiCapital Backend Only
+FROM node:20-alpine
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
@@ -43,20 +8,26 @@ RUN apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S aicapital -u 1001
 
+# Set working directory
 WORKDIR /app
 
-# Copy built frontend from builder stage
-COPY --from=frontend-builder --chown=aicapital:nodejs /app/frontend/.next ./frontend/.next
-COPY --from=frontend-builder --chown=aicapital:nodejs /app/frontend/public ./frontend/public
-COPY --from=frontend-builder --chown=aicapital:nodejs /app/frontend/package*.json ./frontend/
+# Copy package files
+COPY backend/package*.json ./
 
-# Copy built backend from builder stage
-COPY --from=backend-builder --chown=aicapital:nodejs /app/backend/dist ./backend/dist
-COPY --from=backend-builder --chown=aicapital:nodejs /app/backend/package*.json ./backend/
+# Install dependencies (including dev dependencies for build)
+RUN npm ci
 
-# Install ONLY production dependencies for runtime
-WORKDIR /app/backend
+# Copy source code
+COPY backend/ ./
+
+# Build TypeScript
+RUN npm run build
+
+# Remove dev dependencies
 RUN npm ci --omit=dev && npm cache clean --force
+
+# Change ownership
+RUN chown -R aicapital:nodejs /app
 
 # Switch to non-root user
 USER aicapital
