@@ -68,12 +68,6 @@
   animation: chart-pulse 2s ease-in-out infinite;
 }
 
-/* Force CSS rebuild - Design Update v2.0 */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=David:wght@400;700&display=swap');
-
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
@@ -87,296 +81,43 @@
       radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
   }
 
-  /* Light Theme */
+  /* Light theme overrides */
   [data-theme="light"] body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-slate-50 text-slate-900;
     background-image: 
       radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
       radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
       radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
   }
-
-  /* Light Theme - Override main container */
-  [data-theme="light"] .min-h-screen {
-    @apply bg-gray-50;
-  }
-  
-  /* Perfect logo transparency */
-  img[alt*="Logo"], img[alt*="logo"] {
-    background: transparent !important;
-    filter: none !important;
-    mix-blend-mode: normal !important;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-  }
 }
 
 @layer components {
-  /* Financial Theme Buttons */
-  .btn-primary {
-    @apply bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
-  }
-  
-  .btn-secondary {
-    @apply bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-3 px-6 rounded-lg transition-all duration-200 border border-slate-600 hover:border-slate-500;
-  }
-  
-  .btn-success {
-    @apply bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
-  }
-  
-  .btn-danger {
-    @apply bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
-  }
-  
-  .btn-warning {
-    @apply bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
-  }
-
-  /* Light Theme Button Variants */
-  [data-theme="light"] .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300 hover:border-gray-400;
-  }
-  
-  /* Financial Input Fields */
-  .input-field {
-    @apply w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
-  }
-
-  /* Light Theme Input Fields */
-  [data-theme="light"] .input-field {
-    @apply bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:ring-blue-500 focus:border-blue-500;
-  }
-  
-  /* Professional Cards */
   .card {
-    @apply bg-slate-900/80 backdrop-blur-sm rounded-xl shadow-2xl border border-slate-800/50;
+    @apply bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl;
   }
 
-  /* Light Theme Cards */
   [data-theme="light"] .card {
-    @apply bg-white/80 border border-gray-200/50 shadow-lg;
-  }
-  
-  /* Market Data Tables */
-  .table-header {
-    @apply bg-slate-800/80 text-slate-200 font-semibold backdrop-blur-sm;
+    @apply bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-lg;
   }
 
-  /* Light Theme Table Header */
-  [data-theme="light"] .table-header {
-    @apply bg-gray-100 text-gray-800;
-  }
-  
-  .table-row {
-    @apply border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors duration-200;
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
   }
 
-  /* Light Theme Table Rows */
-  [data-theme="light"] .table-row {
-    @apply border-b border-gray-200 hover:bg-gray-50;
-  }
-  
-  /* Trading Actions */
-  .action-buy {
-    @apply text-emerald-400 font-bold bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-500/30;
-  }
-  
-  .action-hold {
-    @apply text-amber-400 font-bold bg-amber-900/20 px-3 py-1 rounded-full border border-amber-500/30;
-  }
-  
-  .action-sell {
-    @apply text-red-400 font-bold bg-red-900/20 px-3 py-1 rounded-full border border-red-500/30;
+  .btn-secondary {
+    @apply bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium px-6 py-3 rounded-lg transition-all duration-200 border border-slate-600;
   }
 
-  /* Light Theme Trading Actions */
-  [data-theme="light"] .action-buy {
-    @apply text-emerald-600 bg-emerald-100 border-emerald-300;
-  }
-  
-  [data-theme="light"] .action-hold {
-    @apply text-amber-600 bg-amber-100 border-amber-300;
-  }
-  
-  [data-theme="light"] .action-sell {
-    @apply text-red-600 bg-red-100 border-red-300;
-  }
-  
-  /* P&L Styling */
-  .positive-pnl {
-    @apply text-emerald-400 font-semibold;
-  }
-  
-  .negative-pnl {
-    @apply text-red-400 font-semibold;
+  [data-theme="light"] .btn-secondary {
+    @apply bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300;
   }
 
-  /* Light Theme P&L Styling */
-  [data-theme="light"] .positive-pnl {
-    @apply text-emerald-600;
-  }
-  
-  [data-theme="light"] .negative-pnl {
-    @apply text-red-600;
-  }
-  
-  /* Logo and Branding */
-  .logo-text {
-    @apply text-2xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent;
-  }
-  
-  .financial-metric {
-    @apply bg-slate-900/60 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 hover:bg-slate-800/60 transition-all duration-300;
+  .input-field {
+    @apply w-full px-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
   }
 
-  /* Light Theme Financial Metrics */
-  [data-theme="light"] .financial-metric {
-    @apply bg-white/90 border border-gray-200 hover:bg-gray-50 text-gray-900;
-  }
-  
-  /* Light Theme Financial Metrics Text */
-  [data-theme="light"] .financial-metric p {
-    @apply text-gray-700;
-  }
-  
-  [data-theme="light"] .financial-metric .text-slate-400 {
-    @apply text-gray-600;
-  }
-  
-  [data-theme="light"] .financial-metric .text-slate-500 {
-    @apply text-gray-500;
-  }
-  
-  [data-theme="light"] .financial-metric .text-slate-100 {
-    @apply text-gray-900;
-  }
-  
-  /* Market Data Styling */
-  .market-data {
-    @apply font-mono text-sm bg-slate-800/50 px-2 py-1 rounded border border-slate-700/50;
-  }
-
-  /* Light Theme Market Data */
-  [data-theme="light"] .market-data {
-    @apply bg-gray-100 border border-gray-300 text-gray-800;
-  }
-
-  /* Light Theme Text Colors */
-  [data-theme="light"] .text-white {
-    @apply text-gray-900;
-  }
-  
-  [data-theme="light"] .text-slate-100 {
-    @apply text-gray-900;
-  }
-  
-  [data-theme="light"] .text-slate-200 {
-    @apply text-gray-800;
-  }
-  
-  [data-theme="light"] .text-slate-300 {
-    @apply text-gray-700;
-  }
-  
-  [data-theme="light"] .text-slate-400 {
-    @apply text-gray-600;
-  }
-  
-  [data-theme="light"] .text-slate-500 {
-    @apply text-gray-500;
-  }
-
-  /* Light Theme Background Colors */
-  [data-theme="light"] .bg-slate-900 {
-    @apply bg-white;
-  }
-  
-  [data-theme="light"] .bg-slate-800 {
-    @apply bg-gray-100;
-  }
-  
-  [data-theme="light"] .bg-slate-700 {
-    @apply bg-gray-200;
-  }
-  
-  [data-theme="light"] .bg-slate-950 {
-    @apply bg-gray-50;
-  }
-
-  /* Light Theme Subscription Banner */
-  [data-theme="light"] .bg-emerald-900\/30 {
-    @apply bg-green-100;
-  }
-  
-  [data-theme="light"] .bg-blue-900\/30 {
-    @apply bg-blue-100;
-  }
-  
-  [data-theme="light"] .bg-amber-900\/30 {
-    @apply bg-amber-100;
-  }
-  
-  [data-theme="light"] .bg-orange-900\/30 {
-    @apply bg-orange-100;
-  }
-  
-  [data-theme="light"] .border-emerald-500\/50 {
-    @apply border-green-300;
-  }
-  
-  [data-theme="light"] .border-amber-500\/50 {
-    @apply border-amber-300;
-  }
-  
-  [data-theme="light"] .text-emerald-300 {
-    @apply text-green-700;
-  }
-  
-  [data-theme="light"] .text-amber-300 {
-    @apply text-amber-700;
-  }
-  
-  [data-theme="light"] .text-blue-300 {
-    @apply text-blue-700;
-  }
-
-  /* Light Theme Portfolio Counters */
-  [data-theme="light"] .bg-emerald-900\/30 {
-    @apply bg-green-100;
-  }
-  
-  [data-theme="light"] .bg-amber-900\/30 {
-    @apply bg-amber-100;
-  }
-  
-  [data-theme="light"] .border-emerald-500\/30 {
-    @apply border-green-300;
-  }
-  
-  [data-theme="light"] .border-amber-500\/30 {
-    @apply border-amber-300;
-  }
-
-  /* Light Theme Market Overview */
-  [data-theme="light"] .bg-gradient-to-br {
-    @apply bg-white border-gray-200;
-  }
-  
-  [data-theme="light"] .from-slate-900\/80 {
-    @apply from-white;
-  }
-  
-  [data-theme="light"] .to-slate-800\/80 {
-    @apply to-gray-50;
-  }
-  
-  [data-theme="light"] .border-slate-700\/50 {
-    @apply border-gray-200;
-  }
-  
-  [data-theme="light"] .bg-slate-900\/60 {
-    @apply bg-white;
+  [data-theme="light"] .input-field {
+    @apply bg-white/80 border border-slate-300/50 text-slate-900 placeholder-slate-500 focus:ring-blue-500;
   }
 }
 
@@ -477,22 +218,6 @@
   animation: tour-pulse 2s ease-in-out infinite;
 }
 
-/* Stock ticker scroll animation */
-@keyframes scroll {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
-
-.animate-scroll {
-  animation: scroll 30s linear infinite;
-}
-
-@media (max-width: 768px) {
-  .animate-scroll {
-    animation: scroll 20s linear infinite;
-  }
-}
-
 /* RTL Support for Arabic and Hebrew */
 .rtl {
   direction: rtl;
@@ -569,11 +294,11 @@
 
 /* Font families for different languages */
 .lang-ar {
-  font-family: 'Cairo', 'Amiri', Arial, sans-serif;
+  font-family: var(--font-cairo), var(--font-amiri), Arial, sans-serif;
 }
 
 .lang-he {
-  font-family: 'Heebo', 'David', Arial, sans-serif;
+  font-family: var(--font-heebo), var(--font-david), Arial, sans-serif;
 }
 
 .lang-en {

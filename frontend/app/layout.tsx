@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Cairo, Amiri, Heebo, David } from 'next/font/google'
 import './globals.css'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { ThemeProvider } from '../contexts/ThemeContext'
@@ -7,6 +7,10 @@ import { TourProvider } from '@/contexts/TourContext'
 import TourOverlay from '@/components/TourOverlay'
 
 const inter = Inter({ subsets: ['latin'] })
+const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo' })
+const amiri = Amiri({ subsets: ['arabic'], weight: ['400', '700'], variable: '--font-amiri' })
+const heebo = Heebo({ subsets: ['hebrew'], variable: '--font-heebo' })
+const david = David({ subsets: ['hebrew'], weight: ['400', '700'], variable: '--font-david' })
 
 export const metadata: Metadata = {
   title: 'AI-Capital | Professional Portfolio Management',
@@ -21,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={inter.className}>
+      <body className={`${inter.className} ${cairo.variable} ${amiri.variable} ${heebo.variable} ${david.variable}`}>
         <ThemeProvider>
           <LanguageProvider>
             <TourProvider>
