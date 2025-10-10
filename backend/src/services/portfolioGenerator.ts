@@ -1,7 +1,10 @@
 import { decisionEngine } from './decisionEngine';
 import { stockDataService } from './stockDataService';
+import { volatilityService } from './volatilityService';
+import { googleFinanceFormulasService } from './googleFinanceFormulasService';
 import User from '../models/User';
 import Portfolio from '../models/Portfolio';
+import { loggerService } from './loggerService';
 
 interface StockData {
   symbol: string;
@@ -190,7 +193,80 @@ export class PortfolioGenerator {
   }
 
   /**
-   * 🧠 בחירת מניות
+   * 🎯 Enhanced stock selection using real-time volatility data
+   */
+  private async selectStocksWithVolatility(portfolioType: 'solid' | 'risky'): Promise<StockData[]> {
+    loggerService.info(`🔍 [PORTFOLIO GENERATOR] Selecting ${portfolioType} stocks with real-time volatility data`);
+    
+    let candidateStocks: string[] = [];
+    
+    if (portfolioType === 'solid') {
+      // For solid portfolio, use predefined solid stocks
+      candidateStocks = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'JNJ', 'PG', 'KO', 'PFE', 'WMT', 'JPM', 'V', 'MA', 'UNH', 'HD', 'DIS', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'IBM', 'CSCO', 'INTC', 'T', 'VZ', 'XOM', 'CVX', 'BAC', 'WFC', 'GS', 'AXP'];
+    } else {
+      // For risky portfolio, use predefined risky stocks
+      candidateStocks = ['TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD'];
+    }
+    
+    // Fetch real-time volatility data for all candidate stocks
+    loggerService.info(`🔍 [PORTFOLIO GENERATOR] Fetching volatility data for ${candidateStocks.length} candidates`);
+    const volatilityMap = await volatilityService.calculateMultipleStockVolatilities(candidateStocks);
+    const stockMetricsMap = await googleFinanceFormulasService.getMultipleStockMetrics(candidateStocks);
+    
+    // Filter stocks based on volatility and risk level
+    const filteredStocks: Array<{symbol: string, volatility: number, riskLevel: string, metrics: any}> = [];
+    
+    for (const symbol of candidateStocks) {
+      const volatilityMetrics = volatilityMap.get(symbol);
+      const stockMetrics = stockMetricsMap.get(symbol);
+      
+      if (volatilityMetrics && stockMetrics) {
+        const isSolidCandidate = portfolioType === 'solid' && 
+          (volatilityMetrics.riskLevel === 'Low' || volatilityMetrics.riskLevel === 'Medium');
+        const isRiskyCandidate = portfolioType === 'risky' && 
+          (volatilityMetrics.riskLevel === 'High' || volatilityMetrics.riskLevel === 'Extreme');
+          
+        if (isSolidCandidate || isRiskyCandidate) {
+          filteredStocks.push({
+            symbol,
+            volatility: volatilityMetrics.volatility,
+            riskLevel: volatilityMetrics.riskLevel,
+            metrics: stockMetrics
+          });
+        }
+      }
+    }
+    
+    loggerService.info(`📊 [PORTFOLIO GENERATOR] Filtered to ${filteredStocks.length} ${portfolioType} candidates based on volatility`);
+    
+    // Sort by performance (thisMonthPercent) and select top performers
+    const sortedStocks = filteredStocks
+      .sort((a, b) => b.metrics.thisMonthPercent - a.metrics.thisMonthPercent);
+    
+    // Add some randomness: take top 10-15 and randomly select 6
+    const topStocks = sortedStocks.slice(0, Math.min(15, sortedStocks.length));
+    const shuffled = topStocks.sort(() => Math.random() - 0.5);
+    
+    // Convert to StockData format
+    const selectedStocks: StockData[] = shuffled.slice(0, 6).map(stock => ({
+      symbol: stock.symbol,
+      current: stock.metrics.current,
+      top30D: stock.metrics.top30D,
+      top60D: stock.metrics.top60D,
+      thisMonthPercent: stock.metrics.thisMonthPercent,
+      lastMonthPercent: stock.metrics.lastMonthPercent,
+      volatility: stock.volatility / 100, // Convert percentage to decimal
+      marketCap: stock.metrics.marketCap
+    }));
+    
+    loggerService.info(`✅ [PORTFOLIO GENERATOR] Selected ${portfolioType} stocks with real volatility:`, 
+      selectedStocks.map(s => `${s.symbol} (${(s.volatility * 100).toFixed(1)}%)`));
+    
+    return selectedStocks;
+  }
+
+  /**
+   * 🧠 Legacy stock selection (fallback method)
    */
   private selectStocks(portfolioType: 'solid' | 'risky'): StockData[] {
     let filteredStocks: StockData[];
@@ -253,16 +329,49 @@ export class PortfolioGenerator {
   }
 
   /**
-   * 📈 הפעלת החישוב עצמו
+   * 📈 Enhanced portfolio generation with real-time volatility data
    */
   async generatePortfolio(portfolioType: 'solid' | 'risky', totalCapital: number, riskTolerance: number = 7): Promise<GeneratedStock[]> {
-    // Initialize database if empty
-    if (this.stockDatabase.length === 0) {
-      await this.initializeStockDatabase();
-    }
+    loggerService.info(`🚀 [PORTFOLIO GENERATOR] Generating ${portfolioType} portfolio with ${totalCapital} capital`);
     
-    const stocks = this.selectStocks(portfolioType);
+    try {
+      // Try to use real-time volatility data first
+      const stocks = await this.selectStocksWithVolatility(portfolioType);
+      
+      if (stocks.length === 0) {
+        loggerService.warn(`⚠️ [PORTFOLIO GENERATOR] No stocks found with volatility data, falling back to legacy method`);
+        // Fallback to legacy method
+        if (this.stockDatabase.length === 0) {
+          await this.initializeStockDatabase();
+        }
+        const fallbackStocks = this.selectStocks(portfolioType);
+        return this.generateFromStocks(fallbackStocks, portfolioType, totalCapital, riskTolerance);
+      }
+      
+      return this.generateFromStocks(stocks, portfolioType, totalCapital, riskTolerance);
+      
+    } catch (error) {
+      loggerService.error(`❌ [PORTFOLIO GENERATOR] Error with volatility-based selection, falling back:`, error);
+      
+      // Fallback to legacy method
+      if (this.stockDatabase.length === 0) {
+        await this.initializeStockDatabase();
+      }
+      const fallbackStocks = this.selectStocks(portfolioType);
+      return this.generateFromStocks(fallbackStocks, portfolioType, totalCapital, riskTolerance);
+    }
+  }
+
+  /**
+   * 📈 Generate portfolio from selected stocks
+   */
+  private generateFromStocks(stocks: StockData[], portfolioType: 'solid' | 'risky', totalCapital: number, riskTolerance: number): GeneratedStock[] {
     const allocations = this.calculateAllocations(stocks, portfolioType);
+
+    // Calculate portfolio-level volatility
+    const portfolioVolatility = this.calculatePortfolioVolatility(stocks, allocations);
+    
+    loggerService.info(`📊 [PORTFOLIO GENERATOR] ${portfolioType} portfolio volatility: ${(portfolioVolatility * 100).toFixed(2)}%`);
 
     return stocks.map((stock, i) => {
       const allocation = allocations[i];
@@ -282,8 +391,21 @@ export class PortfolioGenerator {
         takeProfit,
         allocation,
         riskScore: stock.volatility,
+        portfolioVolatility, // Include portfolio-level volatility
       };
     });
+  }
+
+  /**
+   * 📊 Calculate portfolio-level volatility
+   */
+  private calculatePortfolioVolatility(stocks: StockData[], allocations: number[]): number {
+    const weightedVolatility = stocks.reduce((sum, stock, i) => {
+      const weight = allocations[i] / 100;
+      return sum + (stock.volatility * weight);
+    }, 0);
+    
+    return weightedVolatility;
   }
 
   calculateStopLossAndTakeProfit(entryPrice: number, riskTolerance: number) {

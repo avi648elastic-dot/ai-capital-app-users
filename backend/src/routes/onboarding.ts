@@ -3,6 +3,8 @@ import User from '../models/User';
 import Portfolio from '../models/Portfolio';
 import { authenticateToken } from '../middleware/auth';
 import { portfolioGenerator } from '../services/portfolioGenerator';
+import { volatilityService } from '../services/volatilityService';
+import { loggerService } from '../services/loggerService';
 
 const router = express.Router();
 
@@ -175,14 +177,22 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    // הפעלת האלגוריתם ליצירת תיק
-    console.log('🔍 [GENERATE PORTFOLIO] Generating portfolio...');
+    // הפעלת האלגוריתם ליצירת תיק עם נתוני Volatility
+    loggerService.info(`🔍 [GENERATE PORTFOLIO] Generating ${portfolioType} portfolio with volatility insights...`);
     const generatedStocks = await portfolioGenerator.generatePortfolio(
       portfolioType,
       Number(totalCapital),
       Number(riskTolerance) || 7
     );
-    console.log('✅ [GENERATE PORTFOLIO] Generated stocks:', generatedStocks.length);
+    loggerService.info(`✅ [GENERATE PORTFOLIO] Generated ${generatedStocks.length} stocks with volatility data`);
+
+    // Calculate portfolio-level volatility insights
+    const tickers = generatedStocks.map(stock => stock.ticker);
+    const portfolioVolatilityMetrics = await volatilityService.calculatePortfolioVolatility(tickers);
+    
+    if (portfolioVolatilityMetrics) {
+      loggerService.info(`📊 [GENERATE PORTFOLIO] Portfolio volatility: ${portfolioVolatilityMetrics.volatility}% (${portfolioVolatilityMetrics.riskLevel})`);
+    }
 
     // שדרוג התיק ע"י Decision Engine
     console.log('🔍 [GENERATE PORTFOLIO] Enhancing portfolio...');
@@ -262,11 +272,25 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
       // Continue anyway - portfolio is saved
     }
 
-    console.log('✅ [GENERATE PORTFOLIO] Portfolio generation completed successfully');
-    return res.json({
-      message: 'AI portfolio generated and saved successfully',
+    loggerService.info('✅ [GENERATE PORTFOLIO] Portfolio generation completed successfully');
+    
+    // Prepare response with volatility insights
+    const response = {
+      message: 'AI portfolio generated and saved successfully with volatility insights',
       portfolio: savedItems,
-    });
+      volatilityInsights: portfolioVolatilityMetrics ? {
+        portfolioVolatility: portfolioVolatilityMetrics.volatility,
+        riskLevel: portfolioVolatilityMetrics.riskLevel,
+        riskColor: portfolioVolatilityMetrics.riskColor,
+        diversificationRatio: portfolioVolatilityMetrics.diversificationRatio,
+        concentrationRisk: portfolioVolatilityMetrics.concentrationRisk,
+        confidence: portfolioVolatilityMetrics.confidence
+      } : null,
+      portfolioType,
+      dataSource: 'Google Finance 90-Day Data'
+    };
+    
+    return res.json(response);
   } catch (error) {
     console.error('❌ Generate portfolio error:', error);
     return res.status(500).json({ message: 'Internal server error' });
