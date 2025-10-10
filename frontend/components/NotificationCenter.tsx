@@ -48,6 +48,9 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
         params: { limit: 20, unreadOnly: false }
       });
       
+      console.log('🔔 [NOTIFICATIONS] API Response:', response.data);
+      console.log('🔔 [NOTIFICATIONS] Notifications array:', response.data.data.notifications);
+      
       setNotifications(response.data.data.notifications);
       setUnreadCount(response.data.data.unreadCount);
     } catch (error) {
@@ -267,18 +270,25 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
                           </div>
                           
                           <div className="mb-3">
-                            {notification.message ? (
-                              <p className="text-sm font-medium text-gray-800 leading-relaxed">
-                                {notification.message}
-                              </p>
-                            ) : (
-                              <div className="text-sm text-gray-600 italic">
-                                {notification.actionData ? 
-                                  `Portfolio action: ${notification.actionData.action} ${notification.actionData.ticker}` :
-                                  'Notification details not available'
-                                }
-                              </div>
-                            )}
+                            {(() => {
+                              console.log('🔔 [NOTIFICATION] Rendering notification:', notification);
+                              console.log('🔔 [NOTIFICATION] Title:', notification.title);
+                              console.log('🔔 [NOTIFICATION] Message:', notification.message);
+                              console.log('🔔 [NOTIFICATION] ActionData:', notification.actionData);
+                              
+                              return notification.message ? (
+                                <p className="text-sm font-medium text-gray-800 leading-relaxed">
+                                  {notification.message}
+                                </p>
+                              ) : (
+                                <div className="text-sm text-gray-600 italic">
+                                  {notification.actionData ? 
+                                    `Portfolio action: ${notification.actionData.action} ${notification.actionData.ticker}` :
+                                    `Title: ${notification.title || 'No title'}`
+                                  }
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           {notification.actionData && (
