@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import User from '../models/User';
+import { validate } from '../middleware/validate';
+import { registerSchema, loginSchema, changePasswordSchema, changeEmailSchema } from '../schemas/auth';
 
 const router = Router();
 
@@ -28,15 +30,11 @@ const issueToken = (userId: string, email: string, res: Response) => {
 /**
  * 📌 SIGNUP - רישום משתמש חדש
  */
-router.post('/signup', async (req: Request, res: Response) => {
+router.post('/signup', validate({ body: registerSchema }), async (req: Request, res: Response) => {
   console.log('📩 [SIGNUP] Request body:', req.body);
 
   try {
     const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
 
     // Check if MongoDB is connected
     if (mongoose.connection.readyState !== 1) {
@@ -89,7 +87,7 @@ router.post('/signup', async (req: Request, res: Response) => {
 /**
  * 📌 LOGIN - כניסה למערכת
  */
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', validate({ body: loginSchema }), async (req: Request, res: Response) => {
   console.log('📩 [LOGIN] Request body:', req.body);
 
   try {

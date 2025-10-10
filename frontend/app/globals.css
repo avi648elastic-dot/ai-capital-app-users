@@ -90,6 +90,27 @@
   50% { transform: scale(1.02); }
 }
 
+@keyframes bubble {
+  0%, 100% { 
+    transform: translateY(0px) scale(1); 
+    opacity: 0.3; 
+  }
+  50% { 
+    transform: translateY(-30px) scale(1.1); 
+    opacity: 0.6; 
+  }
+}
+
+@keyframes ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 @keyframes tourFadeIn {
   from {
     opacity: 0;
@@ -313,4 +334,18 @@
   font-weight: inherit;
   font-size: inherit;
   line-height: inherit;
+}
+
+/* Login Page Animation Classes */
+.animate-bubble {
+  animation: bubble 8s ease-in-out infinite;
+}
+
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+}
+
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 3s ease infinite;
 }

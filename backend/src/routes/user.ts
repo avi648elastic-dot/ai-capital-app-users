@@ -4,6 +4,8 @@ import path from 'path';
 import fs from 'fs';
 import { authenticateToken } from '../middleware/auth';
 import User from '../models/User';
+import { validate, validatePartial } from '../middleware/validate';
+import { updateProfileSchema, userSettingsSchema, userQuerySchema } from '../schemas/user';
 
 const router = express.Router();
 
@@ -126,7 +128,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
 });
 
 // Update user profile
-router.put('/profile', authenticateToken, async (req, res) => {
+router.put('/profile', authenticateToken, validate({ body: updateProfileSchema }), async (req, res) => {
   try {
     const userId = (req as any).user._id;
     const { name, email } = req.body;
@@ -185,7 +187,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
 });
 
 // Update user settings (theme, language, etc.)
-router.put('/settings', authenticateToken, async (req, res) => {
+router.put('/settings', authenticateToken, validate({ body: userSettingsSchema }), async (req, res) => {
   try {
     const userId = (req as any).user._id;
     const { theme, language, notifications, emailUpdates } = req.body;

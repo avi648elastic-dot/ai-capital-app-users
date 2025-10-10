@@ -138,6 +138,22 @@ export default function Page() {
           }}
         />
         
+        {/* Floating Stock Symbols */}
+        {['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'BTC', 'ETH'].map((symbol, index) => (
+          <div
+            key={symbol}
+            className="absolute text-xs font-mono text-slate-400 opacity-30 animate-float"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${index * 0.5}s`,
+              animationDuration: `${10 + Math.random() * 10}s`
+            }}
+          >
+            {symbol}
+          </div>
+        ))}
+
         {/* Floating Financial Elements */}
         <div className="absolute top-20 left-10 animate-float text-4xl opacity-20">
           📈
@@ -156,6 +172,36 @@ export default function Page() {
         </div>
         <div className="absolute bottom-60 right-1/3 animate-float-slow text-4xl opacity-10">
           🚀
+        </div>
+
+        {/* Animated Bubbles */}
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-bubble"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 4 + 1}rem`,
+              height: `${Math.random() * 4 + 1}rem`,
+              animationDelay: `${Math.random() * 10}s`,
+              animationDuration: `${15 + Math.random() * 10}s`
+            }}
+          />
+        ))}
+
+        {/* Price Tickers */}
+        <div className="absolute top-10 left-0 w-full overflow-hidden">
+          <div className="flex animate-ticker">
+            {[
+              'AAPL +2.5%', 'GOOGL -1.2%', 'MSFT +0.8%', 'TSLA +5.3%', 
+              'AMZN -0.5%', 'META +3.1%', 'NVDA +4.2%', 'NFLX -2.1%'
+            ].map((ticker, index) => (
+              <span key={index} className="text-xs font-mono text-slate-400 whitespace-nowrap mx-8">
+                {ticker}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Data Stream Lines */}
@@ -204,10 +250,15 @@ export default function Page() {
           </div>
 
           {/* Form Container */}
-          <div className="card p-8 relative">
+          <div className="card p-8 relative backdrop-blur-xl bg-slate-900/80 border border-slate-700/50 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
+            {/* Animated Border */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 p-[1px] animate-gradient-x">
+              <div className="w-full h-full rounded-xl bg-slate-900/90"></div>
+            </div>
+            
             {/* Glass Effect Overlay */}
             <div 
-              className="absolute inset-0 rounded-xl opacity-10"
+              className="absolute inset-0 rounded-xl opacity-20 animate-pulse"
               style={{
                 background: `
                   linear-gradient(45deg, rgba(16, 185, 129, 0.3) 25%, transparent 25%),
@@ -218,6 +269,22 @@ export default function Page() {
                 backgroundSize: '20px 20px'
               }}
             />
+
+            {/* Floating Particles Inside Card */}
+            <div className="absolute inset-0 overflow-hidden rounded-xl">
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-blue-400/30 rounded-full animate-ping"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 3}s`,
+                    animationDuration: `${2 + Math.random() * 2}s`
+                  }}
+                />
+              ))}
+            </div>
             
             <div className="relative z-10">
               {/* Tab Navigation */}

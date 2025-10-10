@@ -105,21 +105,21 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
     <div className="card overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-slate-800/50 [data-theme='light']:bg-gray-100">
+          <thead className="bg-slate-800/50 [data-theme='light']:bg-gray-50 border-b border-slate-700 [data-theme='light']:border-gray-300">
             <tr>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.exchange')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.ticker')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.shares')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.entry')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.current')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.cost')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.value')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-24 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.pnl')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.stopLoss')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.takeProfit')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.action')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.date')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.actions')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.exchange')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.ticker')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.shares')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.entry')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.current')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.cost')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.value')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-24 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.pnl')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.stopLoss')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.takeProfit')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.action')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.date')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700 [data-theme='light']:divide-gray-300">
@@ -131,13 +131,13 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
               return (
                 <tr key={item._id} className="table-row hover:bg-slate-800/30 [data-theme='light']:hover:bg-gray-50">
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
-                    <div className="text-xs text-slate-400 [data-theme='light']:text-gray-600">{item.exchange || '—'}</div>
+                    <div className="text-xs text-slate-400 [data-theme='light']:text-gray-800">{item.exchange || '—'}</div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     <div className="text-xs font-medium text-white [data-theme='light']:text-gray-900">{item.ticker}</div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
-                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-700">{item.shares.toLocaleString()}</div>
+                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">{item.shares.toLocaleString()}</div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     {editingId === item._id ? (
@@ -149,17 +149,17 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                         className="input-field w-16 text-xs"
                       />
                     ) : (
-                      <div className="text-xs text-gray-300 [data-theme='light']:text-gray-700">{formatCurrency(item.entryPrice)}</div>
+                      <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">{formatCurrency(item.entryPrice)}</div>
                     )}
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
-                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-700">{formatCurrency(item.currentPrice)}</div>
+                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">{formatCurrency(item.currentPrice)}</div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
-                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-700">{formatCurrency(cost)}</div>
+                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">{formatCurrency(cost)}</div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
-                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-700">{formatCurrency(value)}</div>
+                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">{formatCurrency(value)}</div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     <div className={`text-xs font-medium ${pnl >= 0 ? 'text-success-400' : 'text-danger-400'}`}>
@@ -176,7 +176,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                         className="input-field w-16 text-xs"
                       />
                     ) : (
-                      <div className="text-xs text-gray-300 [data-theme='light']:text-gray-700">
+                      <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">
                         {item.stopLoss ? formatCurrency(item.stopLoss) : '-'}
                       </div>
                     )}
@@ -191,7 +191,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                         className="input-field w-16 text-xs"
                       />
                     ) : (
-                      <div className="text-xs text-gray-300 [data-theme='light']:text-gray-700">
+                      <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">
                         {item.takeProfit ? formatCurrency(item.takeProfit) : '-'}
                       </div>
                     )}
@@ -210,7 +210,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                     </div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
-                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-700">
+                    <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">
                       {new Date(item.date).toLocaleDateString()}
                     </div>
                   </td>

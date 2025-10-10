@@ -57,9 +57,16 @@ export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginBut
   };
 
   const initializeGoogleSignIn = () => {
+    // Check if Google Client ID is properly configured
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId || clientId.includes('your-google-client-id')) {
+      console.warn('Google OAuth not configured - client ID missing or placeholder');
+      return;
+    }
+
     if (typeof window !== 'undefined' && window.google) {
       window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        client_id: clientId,
         callback: (response: any) => {
           handleGoogleLogin(response.credential);
         },
@@ -96,6 +103,10 @@ export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginBut
     loadGoogleScript();
   }, []);
 
+  // Check if Google OAuth is properly configured
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const isGoogleOAuthConfigured = clientId && !clientId.includes('your-google-client-id');
+
   return (
     <div className="w-full">
       <div className="relative">
@@ -116,8 +127,13 @@ export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginBut
           {/* Fallback button if Google script fails to load */}
           <button
             onClick={() => loadGoogleScript()}
-            disabled={loading}
-            className="w-full flex items-center justify-center px-4 py-2 border border-slate-600 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
+            disabled={loading || !isGoogleOAuthConfigured}
+            className={`w-full flex items-center justify-center px-4 py-2 border rounded-lg transition-colors duration-200 ${
+              isGoogleOAuthConfigured 
+                ? 'border-slate-600 bg-white text-gray-700 hover:bg-gray-50' 
+                : 'border-slate-700 bg-slate-800 text-slate-500 cursor-not-allowed'
+            } disabled:opacity-50`}
+            title={!isGoogleOAuthConfigured ? 'Google OAuth setup required. Contact admin to configure Google Client ID.' : ''}
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
@@ -137,7 +153,7 @@ export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginBut
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            {loading ? 'Signing in...' : 'Continue with Google'}
+            {loading ? 'Signing in...' : isGoogleOAuthConfigured ? 'Continue with Google' : 'Google Login (Setup Required)'}
           </button>
         </div>
       </div>

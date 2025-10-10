@@ -4,11 +4,14 @@ import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { decisionEngine } from '../services/decisionEngine';
 import { stockDataService } from '../services/stockDataService';
 import { volatilityService } from '../services/volatilityService';
+import { validate, validatePartial } from '../middleware/validate';
+import { stockSchema, updatePortfolioSchema, portfolioQuerySchema } from '../schemas/portfolio';
+import { z } from 'zod';
 
 const router = express.Router();
 
 // Get user portfolio with real-time prices
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), async (req, res) => {
   try {
     console.log('🔍 [PORTFOLIO] Fetching portfolio for user:', req.user!._id);
     
@@ -149,7 +152,7 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Add stock to portfolio
-router.post('/add', authenticateToken, requireSubscription, async (req, res) => {
+router.post('/add', authenticateToken, requireSubscription, validate({ body: stockSchema }), async (req, res) => {
   try {
     console.log('🔍 [PORTFOLIO ADD] Adding stock for user:', req.user!._id);
     console.log('🔍 [PORTFOLIO ADD] Request body:', req.body);
@@ -327,7 +330,7 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
 });
 
 // Update stock in portfolio
-router.put('/:id', authenticateToken, requireSubscription, async (req, res) => {
+router.put('/:id', authenticateToken, requireSubscription, validate({ body: updatePortfolioSchema, params: z.object({ id: z.string().min(1) }) }), async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;

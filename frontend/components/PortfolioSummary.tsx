@@ -27,11 +27,11 @@ export default function PortfolioSummary({ totals }: PortfolioSummaryProps) {
       <div className="financial-metric group">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-400 mb-1">Initial Investment</p>
-            <p className="text-2xl font-bold text-slate-100">
+            <p className="text-sm font-medium text-slate-400 [data-theme='light']:text-gray-600 mb-1">Initial Investment</p>
+            <p className="text-2xl font-bold text-slate-100 [data-theme='light']:text-gray-900">
               {formatCurrency(totals.initial)}
             </p>
-            <p className="text-xs text-slate-500 mt-1">Total Capital Deployed</p>
+            <p className="text-xs text-slate-500 [data-theme='light']:text-gray-600 mt-1">Total Capital Deployed</p>
           </div>
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,11 +45,11 @@ export default function PortfolioSummary({ totals }: PortfolioSummaryProps) {
       <div className="financial-metric group">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-400 mb-1">Current Value</p>
-            <p className="text-2xl font-bold text-slate-100">
+            <p className="text-sm font-medium text-slate-400 [data-theme='light']:text-gray-600 mb-1">Current Value</p>
+            <p className="text-2xl font-bold text-slate-100 [data-theme='light']:text-gray-900">
               {formatCurrency(totals.current)}
             </p>
-            <p className="text-xs text-slate-500 mt-1">Real-time Portfolio Value</p>
+            <p className="text-xs text-slate-500 [data-theme='light']:text-gray-600 mt-1">Real-time Portfolio Value</p>
           </div>
           <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,13 +63,13 @@ export default function PortfolioSummary({ totals }: PortfolioSummaryProps) {
       <div className="financial-metric group">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-400 mb-1">Total P&L</p>
+            <p className="text-sm font-medium text-slate-400 [data-theme='light']:text-gray-600 mb-1">Total P&L</p>
             <p className={`text-2xl font-bold ${
-              totals.totalPnL >= 0 ? 'text-emerald-400' : 'text-red-400'
+              totals.totalPnL >= 0 ? 'text-emerald-400 [data-theme="light"]:text-emerald-600' : 'text-red-400 [data-theme="light"]:text-red-600'
             }`}>
               {formatCurrency(totals.totalPnL)}
             </p>
-            <p className="text-xs text-slate-500 mt-1">Profit & Loss</p>
+            <p className="text-xs text-slate-500 [data-theme='light']:text-gray-600 mt-1">Profit & Loss</p>
           </div>
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0 ${
             totals.totalPnL >= 0 
@@ -87,13 +87,13 @@ export default function PortfolioSummary({ totals }: PortfolioSummaryProps) {
       <div className="financial-metric group">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-slate-400 mb-1">P&L Percentage</p>
+            <p className="text-sm font-medium text-slate-400 [data-theme='light']:text-gray-600 mb-1">P&L Percentage</p>
             <p className={`text-2xl font-bold ${
-              totals.totalPnLPercent >= 0 ? 'text-emerald-400' : 'text-red-400'
+              totals.totalPnLPercent >= 0 ? 'text-emerald-400 [data-theme="light"]:text-emerald-600' : 'text-red-400 [data-theme="light"]:text-red-600'
             }`}>
               {formatPercent(totals.totalPnLPercent)}
             </p>
-            <p className="text-xs text-slate-500 mt-1">Return on Investment</p>
+            <p className="text-xs text-slate-500 [data-theme='light']:text-gray-600 mt-1">Return on Investment</p>
           </div>
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0 ${
             totals.totalPnLPercent >= 0 
