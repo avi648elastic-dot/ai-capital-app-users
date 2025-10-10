@@ -182,7 +182,7 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-[280px] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[350px] overflow-hidden">
+          <div className="absolute right-0 mt-2 w-[240px] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[280px] overflow-hidden">
             <div className="p-3 border-b border-gray-200 bg-slate-50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -220,7 +220,7 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
               </div>
             </div>
 
-            <div className="max-h-72 overflow-y-auto">
+            <div className="max-h-56 overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="p-6 text-center">
                   <Bell className="w-8 h-8 mx-auto mb-3 text-gray-400" />

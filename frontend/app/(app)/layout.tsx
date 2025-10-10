@@ -69,6 +69,7 @@ export default function AppLayout({
         userName={user?.name || 'User'} 
         subscriptionTier={user?.subscriptionTier || 'free'}
         userAvatar={user?.avatarUrl}
+        isAdmin={user?.isAdmin || false}
         onLogout={handleLogout}
       />
       

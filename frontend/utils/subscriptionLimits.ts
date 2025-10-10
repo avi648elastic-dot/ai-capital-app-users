@@ -31,8 +31,8 @@ export const getSubscriptionLimits = (subscriptionTier: string): SubscriptionLim
         maxPortfolios: 6, // 3 Solid + 3 Risky
         maxStocksPerPortfolio: 15,
         hasPortfolioAnalysis: true,
-        hasRiskManagement: true,
-        hasWatchlist: true,
+        hasRiskManagement: false, // Premium+ only
+        hasWatchlist: false, // Premium+ only
         hasLiveNotifications: true,
         hasAdvancedBacktesting: false,
         hasWhiteLabel: false,

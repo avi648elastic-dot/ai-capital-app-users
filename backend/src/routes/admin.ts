@@ -448,4 +448,46 @@ router.post('/setup-admin', async (req, res) => {
   }
 });
 
+// Promote user to admin or update subscription tier
+router.put('/users/:userId/promote', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { subscriptionTier, isAdmin } = req.body;
+
+    // Validate input
+    if (subscriptionTier && !['free', 'premium', 'premium+'].includes(subscriptionTier)) {
+      return res.status(400).json({ message: 'Invalid subscription tier' });
+    }
+
+    const updateData: any = {};
+    if (subscriptionTier !== undefined) updateData.subscriptionTier = subscriptionTier;
+    if (isAdmin !== undefined) updateData.isAdmin = isAdmin;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, select: '-password' }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      message: 'User updated successfully',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        isAdmin: user.isAdmin,
+        subscriptionActive: user.subscriptionActive
+      }
+    });
+  } catch (error) {
+    console.error('Error promoting user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 export default router;

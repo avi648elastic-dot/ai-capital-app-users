@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Users, TrendingUp, DollarSign, Activity, Eye, Power, RotateCcw, Trash2 } from 'lucide-react';
+import { Users, TrendingUp, DollarSign, Activity, Eye, Power, RotateCcw, Trash2, Shield, Crown } from 'lucide-react';
 
 interface User {
   id: string;
   name: string;
   email: string;
   subscriptionActive: boolean;
-  subscriptionTier: 'free' | 'premium';
+  subscriptionTier: 'free' | 'premium' | 'premium+';
+  isAdmin?: boolean;
   onboardingCompleted: boolean;
   portfolioType?: string;
   portfolioSource?: string;
@@ -52,6 +53,26 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userPortfolio, setUserPortfolio] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'users' | 'notifications'>('users');
+  
+  // Notification states
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notificationStats, setNotificationStats] = useState<any>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newNotification, setNewNotification] = useState({
+    title: '',
+    message: '',
+    type: 'info' as const,
+    priority: 'medium' as const,
+    category: 'system' as const,
+    userId: '',
+    channels: {
+      dashboard: true,
+      popup: true,
+      email: false
+    }
+  });
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -60,20 +81,29 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [usersResponse, statsResponse] = await Promise.all([
+      const [usersResponse, statsResponse, notificationsResponse, notificationStatsResponse] = await Promise.all([
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users`, {
           headers: { Authorization: `Bearer ${Cookies.get('token')}` }
         }),
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats`, {
           headers: { Authorization: `Bearer ${Cookies.get('token')}` }
-        })
+        }),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
+          headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+          params: { limit: 50 }
+        }).catch(() => ({ data: { data: { notifications: [] } } })),
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/stats`, {
+          headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+        }).catch(() => ({ data: { data: null } }))
       ]);
 
       setUsers(usersResponse.data.users);
       setStats(statsResponse.data);
+      setNotifications(notificationsResponse.data.data.notifications || []);
+      setNotificationStats(notificationStatsResponse.data.data);
     } catch (error) {
       console.error('Error fetching admin data:', error);
-      const err = error as any; // ✅ תיקון טיפוס
+      const err = error as any;
       if (err?.response?.status === 403) {
         alert('Admin access required');
         router.push('/dashboard');
@@ -83,10 +113,11 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'reset' | 'make-premium' | 'make-free' | 'refresh') => {
+  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'reset' | 'make-premium' | 'make-premium+' | 'make-free' | 'make-admin' | 'remove-admin' | 'refresh') => {
     try {
       let endpoint = '';
       let method: 'put' | 'delete' | 'post' = 'put';
+      let body: any = {};
       
       switch (action) {
         case 'activate':
@@ -100,10 +131,24 @@ export default function AdminDashboard() {
           method = 'delete';
           break;
         case 'make-premium':
-          endpoint = `/api/admin/users/${userId}/make-premium`;
+          endpoint = `/api/admin/users/${userId}/promote`;
+          body = { subscriptionTier: 'premium' };
+          break;
+        case 'make-premium+':
+          endpoint = `/api/admin/users/${userId}/promote`;
+          body = { subscriptionTier: 'premium+' };
           break;
         case 'make-free':
-          endpoint = `/api/admin/users/${userId}/make-free`;
+          endpoint = `/api/admin/users/${userId}/promote`;
+          body = { subscriptionTier: 'free' };
+          break;
+        case 'make-admin':
+          endpoint = `/api/admin/users/${userId}/promote`;
+          body = { isAdmin: true };
+          break;
+        case 'remove-admin':
+          endpoint = `/api/admin/users/${userId}/promote`;
+          body = { isAdmin: false };
           break;
         case 'refresh':
           endpoint = `/api/admin/users/${userId}/refresh`;
@@ -113,11 +158,11 @@ export default function AdminDashboard() {
 
       const response = await axios[method](
         `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`,
-        {},
+        Object.keys(body).length > 0 ? body : {},
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
       );
 
-      if (action === 'refresh') {
+      if (action === 'refresh' || action.includes('promote')) {
         // Update the specific user's data in the state
         setUsers(prevUsers => 
           prevUsers.map(user => 
@@ -126,7 +171,7 @@ export default function AdminDashboard() {
               : user
           )
         );
-        alert(`✅ ${response.data.message}`);
+        alert(`✅ ${response.data.message || 'User updated successfully!'}`);
       } else {
         alert(`✅ User ${action} successful!`);
         fetchData(); // Refresh data
@@ -163,6 +208,84 @@ export default function AdminDashboard() {
     return `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
   };
 
+  // Notification functions
+  const handleCreateNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = Cookies.get('token');
+      const payload = {
+        ...newNotification,
+        userId: newNotification.userId || undefined
+      };
+
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setShowCreateForm(false);
+      setNewNotification({
+        title: '',
+        message: '',
+        type: 'info',
+        priority: 'medium',
+        category: 'system',
+        userId: '',
+        channels: {
+          dashboard: true,
+          popup: true,
+          email: false
+        }
+      });
+      fetchData();
+      alert('Notification created successfully!');
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      alert('Failed to create notification');
+    }
+  };
+
+  const handleCreateGlobal = async () => {
+    try {
+      const token = Cookies.get('token');
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/global`, {
+        title: newNotification.title,
+        message: newNotification.message,
+        type: newNotification.type,
+        priority: newNotification.priority
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setShowCreateForm(false);
+      fetchData();
+      alert('Global notification created successfully!');
+    } catch (error) {
+      console.error('Error creating global notification:', error);
+      alert('Failed to create global notification');
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'info': return 'bg-blue-100 text-blue-800';
+      case 'warning': return 'bg-yellow-100 text-yellow-800';
+      case 'success': return 'bg-green-100 text-green-800';
+      case 'error': return 'bg-red-100 text-red-800';
+      case 'action': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'low': return 'bg-gray-100 text-gray-800';
+      case 'medium': return 'bg-blue-100 text-blue-800';
+      case 'high': return 'bg-orange-100 text-orange-800';
+      case 'urgent': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -195,7 +318,40 @@ export default function AdminDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* System Stats */}
+        {/* Tab Navigation */}
+        <div className="mb-8">
+          <div className="border-b border-gray-700">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'users'
+                    ? 'border-primary-500 text-primary-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+                }`}
+              >
+                <Users className="w-5 h-5 inline mr-2" />
+                User Management
+              </button>
+              <button
+                onClick={() => setActiveTab('notifications')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'notifications'
+                    ? 'border-primary-500 text-primary-400'
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
+                }`}
+              >
+                <Activity className="w-5 h-5 inline mr-2" />
+                Notifications
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Users Tab Content */}
+        {activeTab === 'users' && (
+          <>
+            {/* System Stats */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="card p-6 sm:p-8">
@@ -296,13 +452,24 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
-                        user.subscriptionTier === 'premium' 
-                          ? 'text-emerald-300 bg-emerald-900/50 border border-emerald-500/30' 
-                          : 'text-amber-300 bg-amber-900/50 border border-amber-500/30'
-                      }`}>
-                        {user.subscriptionTier === 'premium' ? '⭐ PREMIUM' : '🔒 FREE'}
-                      </span>
+                      <div className="flex flex-col space-y-1">
+                        <span className={`inline-flex px-3 py-1 text-xs font-bold rounded-full ${
+                          user.subscriptionTier === 'premium+' 
+                            ? 'text-purple-300 bg-purple-900/50 border border-purple-500/30' 
+                            : user.subscriptionTier === 'premium'
+                            ? 'text-emerald-300 bg-emerald-900/50 border border-emerald-500/30' 
+                            : 'text-amber-300 bg-amber-900/50 border border-amber-500/30'
+                        }`}>
+                          {user.subscriptionTier === 'premium+' ? '💎 PREMIUM+' : 
+                           user.subscriptionTier === 'premium' ? '⭐ PREMIUM' : '🔒 FREE'}
+                        </span>
+                        {user.isAdmin && (
+                          <span className="inline-flex px-2 py-1 text-xs font-bold rounded-full text-red-300 bg-red-900/50 border border-red-500/30">
+                            <Shield className="w-3 h-3 mr-1" />
+                            ADMIN
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col space-y-1">
@@ -349,18 +516,53 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col space-y-2">
-                        {/* Premium/Free Toggle */}
-                        <button
-                          onClick={() => handleUserAction(user.id, user.subscriptionTier === 'premium' ? 'make-free' : 'make-premium')}
-                          className={`px-3 py-1 text-xs font-semibold rounded ${
-                            user.subscriptionTier === 'premium' 
-                              ? 'bg-amber-600 hover:bg-amber-700 text-white' 
-                              : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          }`}
-                          title={user.subscriptionTier === 'premium' ? 'Downgrade to Free' : 'Upgrade to Premium'}
-                        >
-                          {user.subscriptionTier === 'premium' ? '⬇️ Make Free' : '⬆️ Make Premium'}
-                        </button>
+                        {/* Subscription Tier Actions */}
+                        <div className="flex flex-wrap gap-1">
+                          {user.subscriptionTier !== 'free' && (
+                            <button
+                              onClick={() => handleUserAction(user.id, 'make-free')}
+                              className="px-2 py-1 text-xs font-semibold rounded bg-amber-600 hover:bg-amber-700 text-white"
+                              title="Downgrade to Free"
+                            >
+                              Free
+                            </button>
+                          )}
+                          {user.subscriptionTier !== 'premium' && (
+                            <button
+                              onClick={() => handleUserAction(user.id, 'make-premium')}
+                              className="px-2 py-1 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-700 text-white"
+                              title="Upgrade to Premium"
+                            >
+                              Premium
+                            </button>
+                          )}
+                          {user.subscriptionTier !== 'premium+' && (
+                            <button
+                              onClick={() => handleUserAction(user.id, 'make-premium+')}
+                              className="px-2 py-1 text-xs font-semibold rounded bg-purple-600 hover:bg-purple-700 text-white"
+                              title="Upgrade to Premium+"
+                            >
+                              Premium+
+                            </button>
+                          )}
+                        </div>
+                        
+                        {/* Admin Actions */}
+                        <div className="flex flex-wrap gap-1">
+                          <button
+                            onClick={() => handleUserAction(user.id, user.isAdmin ? 'remove-admin' : 'make-admin')}
+                            className={`px-2 py-1 text-xs font-semibold rounded flex items-center space-x-1 ${
+                              user.isAdmin 
+                                ? 'bg-red-600 hover:bg-red-700 text-white' 
+                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            }`}
+                            title={user.isAdmin ? 'Remove Admin Access' : 'Make Admin'}
+                          >
+                            <Shield className="w-3 h-3" />
+                            <span>{user.isAdmin ? 'Remove Admin' : 'Make Admin'}</span>
+                          </button>
+                        </div>
+                        
                         {/* Other Actions */}
                         <div className="flex space-x-2">
                           <button
@@ -456,6 +658,247 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+          </>
+        )}
+
+        {/* Notifications Tab Content */}
+        {activeTab === 'notifications' && (
+          <>
+            {/* Notification Stats */}
+            {notificationStats && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="card p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-400">Total Notifications</p>
+                      <p className="text-2xl font-bold text-white">{notificationStats.total || 0}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <Activity className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-400">Unread</p>
+                      <p className="text-2xl font-bold text-white">{notificationStats.unread || 0}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-xl">🔔</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-400">Action Notifications</p>
+                      <p className="text-2xl font-bold text-white">{notificationStats.byType?.action || 0}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-xl">📈</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-400">Recent Activity</p>
+                      <p className="text-2xl font-bold text-white">{notificationStats.recentActivity || 0}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-xl">⚡</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-4 mb-8">
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                + Create Notification
+              </button>
+              <button
+                onClick={() => fetchData()}
+                className="px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                🔄 Refresh
+              </button>
+            </div>
+
+            {/* Notifications List */}
+            <div className="card overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-700">
+                <h2 className="text-lg font-semibold text-white">Recent Notifications</h2>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-700">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Title</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Priority</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">User</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Created</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {notifications.map((notification) => (
+                      <tr key={notification._id} className="hover:bg-gray-750">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(notification.type)}`}>
+                            {notification.type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-white font-medium">{notification.title}</div>
+                          <div className="text-sm text-gray-400 max-w-xs truncate">{notification.message}</div>
+                          {notification.actionData && (
+                            <div className="text-xs text-purple-400 mt-1">
+                              {notification.actionData.ticker} - {notification.actionData.action}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(notification.priority)}`}>
+                            {notification.priority}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          {notification.userId ? (
+                            <span className="font-mono text-xs">{notification.userId.substring(0, 8)}...</span>
+                          ) : (
+                            <span className="text-green-400">Global</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            notification.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                            notification.status === 'read' ? 'bg-blue-100 text-blue-800' :
+                            notification.status === 'failed' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {notification.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                          {new Date(notification.createdAt).toLocaleDateString()} {new Date(notification.createdAt).toLocaleTimeString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Create Notification Form Modal */}
+        {showCreateForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-slate-800 p-8 rounded-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold text-white mb-6">Create New Notification</h2>
+              
+              <form onSubmit={handleCreateNotification} className="space-y-6">
+                <div>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">Title</label>
+                  <input
+                    type="text"
+                    value={newNotification.title}
+                    onChange={(e) => setNewNotification({ ...newNotification, title: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">Message</label>
+                  <textarea
+                    value={newNotification.message}
+                    onChange={(e) => setNewNotification({ ...newNotification, message: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    rows={4}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-slate-300 text-sm font-medium mb-2">Type</label>
+                    <select
+                      value={newNotification.type}
+                      onChange={(e) => setNewNotification({ ...newNotification, type: e.target.value as any })}
+                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    >
+                      <option value="info">Info</option>
+                      <option value="warning">Warning</option>
+                      <option value="success">Success</option>
+                      <option value="error">Error</option>
+                      <option value="action">Action</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 text-sm font-medium mb-2">Priority</label>
+                    <select
+                      value={newNotification.priority}
+                      onChange={(e) => setNewNotification({ ...newNotification, priority: e.target.value as any })}
+                      className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 text-sm font-medium mb-2">User ID (leave empty for global)</label>
+                  <input
+                    type="text"
+                    value={newNotification.userId}
+                    onChange={(e) => setNewNotification({ ...newNotification, userId: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Enter user ID or leave empty for global notification"
+                  />
+                </div>
+
+                <div className="flex space-x-4 pt-4">
+                  <button
+                    type="submit"
+                    className="flex-1 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    Create for User
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCreateGlobal}
+                    className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    Create Global
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateForm(false)}
+                    className="px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

@@ -13,8 +13,9 @@ import NotificationCenter from './NotificationCenter';
 
 interface ResponsiveNavigationProps {
   userName?: string;
-  subscriptionTier?: string;
+  subscriptionTier?: 'free' | 'premium' | 'premium+';
   userAvatar?: string;
+  isAdmin?: boolean;
   onLogout: () => void;
 }
 
@@ -22,6 +23,7 @@ export default function ResponsiveNavigation({
   userName, 
   subscriptionTier = 'free', 
   userAvatar,
+  isAdmin = false,
   onLogout 
 }: ResponsiveNavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -41,14 +43,27 @@ export default function ResponsiveNavigation({
       icon: BarChart3,
       children: [
         { id: 'performance', label: 'Performance', icon: TrendingUp, href: '/analytics/performance' },
-        { id: 'portfolio-analysis', label: 'Portfolio Analysis', icon: PieChart, href: '/analytics/portfolio-analysis', premium: true },
-        { id: 'reports', label: 'Reports', icon: Activity, href: '/analytics/reports', premium: true },
-        { id: 'risk-management', label: 'Risk Management', icon: Shield, href: '/analytics/risk-management', premium: true },
-        { id: 'watchlist', label: 'Watchlist', icon: Eye, href: '/analytics/watchlist', premium: true }
+        { id: 'portfolio-analysis', label: 'Portfolio Analysis', icon: PieChart, href: '/analytics', premium: true },
+        { id: 'watchlist', label: 'Watchlist', icon: Eye, href: '/watchlist', premiumPlus: true },
+        { id: 'risk-management', label: 'Risk Management', icon: Shield, href: '/risk-management', premiumPlus: true },
+        { id: 'reports', label: 'Reports', icon: Activity, href: '/analytics/reports', premiumPlus: true }
       ]
     },
-    { id: 'subscription', label: 'Subscription', icon: Crown, href: '/subscription', premium: true }
+    { id: 'subscription', label: 'Subscription', icon: Crown, href: '/subscription' }
   ];
+
+  // Add admin navigation if user is admin
+  if (isAdmin) {
+    navigationItems.push({
+      id: 'admin',
+      label: 'Admin Panel',
+      icon: Shield,
+      children: [
+        { id: 'admin-dashboard', label: 'Admin Dashboard', icon: Shield, href: '/admin', admin: true },
+        { id: 'admin-notifications', label: 'Notifications', icon: Settings, href: '/admin/notifications', admin: true }
+      ]
+    });
+  }
 
   const handleItemClick = (item: any) => {
     if (item.href) {
@@ -99,10 +114,12 @@ export default function ResponsiveNavigation({
               </p>
               <div className="flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${
+                  subscriptionTier === 'premium+' ? 'bg-purple-400' :
                   subscriptionTier === 'premium' ? 'bg-yellow-400' : 'bg-slate-500'
                 }`} />
                 <p className="text-xs text-slate-400">
-                  {subscriptionTier === 'premium' ? 'Premium' : 'Free'}
+                  {subscriptionTier === 'premium+' ? 'Premium+' :
+                   subscriptionTier === 'premium' ? 'Premium' : 'Free'}
                 </p>
               </div>
             </div>
@@ -143,33 +160,46 @@ export default function ResponsiveNavigation({
                   <span className="text-sm font-medium">{item.label}</span>
                 </button>
                 
-                {item.children && (
-                  <div className="ml-8 mt-1 space-y-1">
-                    {item.children.map(child => {
-                      const ChildIcon = child.icon;
-                      const isPremiumLocked = child.premium && subscriptionTier === 'free';
-                      
-                      return (
-                        <button
-                          key={child.id}
-                          onClick={() => handleItemClick(child)}
-                          disabled={isPremiumLocked}
-                          className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
-                            isPremiumLocked 
-                              ? 'text-slate-500 cursor-not-allowed' 
-                              : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                          }`}
-                        >
-                          <ChildIcon className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-sm flex-1 ml-3">{child.label}</span>
-                          {child.premium && (
-                            <Crown className="w-3 h-3 text-yellow-400 flex-shrink-0" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
+                    {item.children && (
+                      <div className="ml-8 mt-1 space-y-1">
+                        {item.children.map(child => {
+                          const ChildIcon = child.icon;
+                          const isPremiumLocked = child.premium && subscriptionTier === 'free';
+                          const isPremiumPlusLocked = child.premiumPlus && subscriptionTier !== 'premium+';
+                          const isAdminLocked = child.admin && !isAdmin;
+                          const isLocked = isPremiumLocked || isPremiumPlusLocked || isAdminLocked;
+                          
+                          return (
+                            <button
+                              key={child.id}
+                              onClick={() => handleItemClick(child)}
+                              disabled={isLocked}
+                              className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
+                                isLocked 
+                                  ? 'text-slate-500 cursor-not-allowed' 
+                                  : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                              }`}
+                            >
+                              <ChildIcon className={`w-4 h-4 flex-shrink-0 ${
+                                child.premium ? 'text-yellow-400' : 
+                                child.premiumPlus ? 'text-purple-400' :
+                                child.admin ? 'text-red-400' : ''
+                              }`} />
+                              <span className="text-sm flex-1 ml-3">{child.label}</span>
+                              {child.premium && (
+                                <Crown className="w-3 h-3 text-yellow-400 flex-shrink-0" />
+                              )}
+                              {child.premiumPlus && (
+                                <Crown className="w-3 h-3 text-purple-400 flex-shrink-0" />
+                              )}
+                              {child.admin && (
+                                <Shield className="w-3 h-3 text-red-400 flex-shrink-0" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
               </div>
             );
           })}
@@ -241,10 +271,12 @@ export default function ResponsiveNavigation({
                   </p>
                   <div className="flex items-center space-x-2">
                     <div className={`w-2 h-2 rounded-full ${
+                      subscriptionTier === 'premium+' ? 'bg-purple-400' :
                       subscriptionTier === 'premium' ? 'bg-yellow-400' : 'bg-slate-500'
                     }`} />
                     <p className="text-xs text-slate-400">
-                      {subscriptionTier === 'premium' ? 'Premium' : 'Free'}
+                      {subscriptionTier === 'premium+' ? 'Premium+' :
+                       subscriptionTier === 'premium' ? 'Premium' : 'Free'}
                     </p>
                   </div>
                 </div>
@@ -297,22 +329,35 @@ export default function ResponsiveNavigation({
                         {item.children.map(child => {
                           const ChildIcon = child.icon;
                           const isPremiumLocked = child.premium && subscriptionTier === 'free';
+                          const isPremiumPlusLocked = child.premiumPlus && subscriptionTier !== 'premium+';
+                          const isAdminLocked = child.admin && !isAdmin;
+                          const isLocked = isPremiumLocked || isPremiumPlusLocked || isAdminLocked;
                           
                           return (
                             <button
                               key={child.id}
                               onClick={() => handleItemClick(child)}
-                              disabled={isPremiumLocked}
+                              disabled={isLocked}
                               className={`w-full flex items-center px-6 py-4 rounded-xl text-left transition-all duration-300 border border-transparent ${
-                                isPremiumLocked 
+                                isLocked 
                                   ? 'text-slate-500 cursor-not-allowed bg-slate-700/30' 
                                   : 'text-slate-300 hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-emerald-600/20 hover:text-white hover:border-blue-500/50 hover:shadow-lg hover:scale-[1.02]'
                               }`}
                             >
-                              <ChildIcon className="w-4 h-4 flex-shrink-0" />
+                              <ChildIcon className={`w-4 h-4 flex-shrink-0 ${
+                                child.premium ? 'text-yellow-400' : 
+                                child.premiumPlus ? 'text-purple-400' :
+                                child.admin ? 'text-red-400' : ''
+                              }`} />
                               <span className="text-sm flex-1 ml-4">{child.label}</span>
                               {child.premium && (
                                 <Crown className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                              )}
+                              {child.premiumPlus && (
+                                <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                              )}
+                              {child.admin && (
+                                <Shield className="w-4 h-4 text-red-400 flex-shrink-0" />
                               )}
                             </button>
                           );
