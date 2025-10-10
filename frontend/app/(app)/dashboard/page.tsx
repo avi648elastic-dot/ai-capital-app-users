@@ -545,7 +545,7 @@ export default function Dashboard() {
                      return;
                    }
                    
-                   if (user?.subscriptionTier === 'premium' && showMultiPortfolio) {
+                   if ((user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio) {
                      // In multi-view, add to selected portfolio
                      if (selectedMultiPortfolio) {
                        setSelectedPortfolioId(selectedMultiPortfolio.portfolioId);
@@ -563,7 +563,7 @@ export default function Dashboard() {
                  Add Stock
                </button>
             {/* Premium Multi-Portfolio Toggle */}
-            {user?.subscriptionTier === 'premium' && (
+            {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && (
                 <button
                   onClick={() => {
                     try {
@@ -580,7 +580,7 @@ export default function Dashboard() {
                 </button>
             )}
             {/* Portfolio Management Buttons for Premium Users (visible only in multi view) */}
-            {user?.subscriptionTier === 'premium' && showMultiPortfolio && (
+            {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio && (
               <div className="flex space-x-2">
                 <button
                   onClick={() => {
@@ -638,7 +638,7 @@ export default function Dashboard() {
         </div>
 
         {/* Portfolio Display - Multi-Portfolio for Premium, Single for Free */}
-        {user?.subscriptionTier === 'premium' && showMultiPortfolio ? (
+        {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio ? (
           <>
             <MultiPortfolioDashboard
               user={user}
@@ -769,7 +769,7 @@ export default function Dashboard() {
         )}
 
         {/* Portfolio Table and Charts - Only show in single view */}
-        {!(user?.subscriptionTier === 'premium' && showMultiPortfolio) && (
+        {!((user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio) && (
           <>
             {/* Portfolio Table */}
             <ErrorBoundary label="table">
