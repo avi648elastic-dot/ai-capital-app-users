@@ -12,6 +12,7 @@ import Image from 'next/image';
 import NotificationCenter from './NotificationCenter';
 import FeaturePreviewTooltip from './ui/FeaturePreviewTooltip';
 import { getFeatureDescription } from './ui/FeaturePreviewImages';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ResponsiveNavigationProps {
   userName?: string;
@@ -31,6 +32,7 @@ export default function ResponsiveNavigation({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true); // Default to open on mobile
   const router = useRouter();
   const { isMobile, isTablet } = useDevice();
+  const { t } = useLanguage();
   
   // Debug logging
   console.log('🔍 [RESPONSIVE NAV] Device detection:', { isMobile, isTablet, screenWidth: useDevice().screenWidth });
@@ -38,31 +40,31 @@ export default function ResponsiveNavigation({
   console.log('🔍 [RESPONSIVE NAV] Will show mobile button:', isMobile || isTablet);
 
   const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home, href: '/dashboard' },
+    { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, href: '/dashboard' },
     { 
       id: 'analytics', 
-      label: 'Analytics', 
+      label: t('navigation.analytics'), 
       icon: BarChart3,
       children: [
-        { id: 'performance', label: 'Performance', icon: TrendingUp, href: '/analytics/performance' },
-        { id: 'portfolio-analysis', label: 'Portfolio Analysis', icon: PieChart, href: '/analytics', premium: true },
-        { id: 'watchlist', label: 'Watchlist', icon: Eye, href: '/watchlist', premiumPlus: true },
-        { id: 'risk-management', label: 'Risk Management', icon: Shield, href: '/risk-management', premiumPlus: true },
-        { id: 'reports', label: 'Reports', icon: Activity, href: '/analytics/reports', premiumPlus: true }
+        { id: 'performance', label: t('navigation.performance'), icon: TrendingUp, href: '/analytics/performance' },
+        { id: 'portfolio-analysis', label: t('navigation.portfolioAnalysis'), icon: PieChart, href: '/analytics', premium: true },
+        { id: 'watchlist', label: t('navigation.watchlist'), icon: Eye, href: '/watchlist', premiumPlus: true },
+        { id: 'risk-management', label: t('navigation.riskManagement'), icon: Shield, href: '/risk-management', premiumPlus: true },
+        { id: 'reports', label: t('navigation.reports'), icon: Activity, href: '/analytics/reports', premiumPlus: true }
       ]
     },
-    { id: 'subscription', label: 'Subscription', icon: Crown, href: '/subscription' }
+    { id: 'subscription', label: t('navigation.subscription'), icon: Crown, href: '/subscription' }
   ];
 
   // Add admin navigation if user is admin
   if (isAdmin) {
     navigationItems.push({
       id: 'admin',
-      label: 'Admin Panel',
+      label: t('navigation.adminPanel'),
       icon: Shield,
       children: [
-        { id: 'admin-dashboard', label: 'Admin Dashboard', icon: Shield, href: '/admin', admin: true },
-        { id: 'admin-notifications', label: 'Notifications', icon: Settings, href: '/admin/notifications', admin: true }
+        { id: 'admin-dashboard', label: t('navigation.adminDashboard'), icon: Shield, href: '/admin', admin: true },
+        { id: 'admin-notifications', label: t('navigation.adminNotifications'), icon: Settings, href: '/admin/notifications', admin: true }
       ]
     });
   }
@@ -143,7 +145,7 @@ export default function ResponsiveNavigation({
               className="flex-1 px-3 py-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors flex items-center justify-center space-x-1"
             >
               <Settings className="w-3 h-3" />
-              <span>Settings</span>
+              <span>{t('navigation.settings')}</span>
             </button>
           </div>
         </div>
@@ -322,7 +324,7 @@ export default function ResponsiveNavigation({
                   className="flex-1 px-3 py-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors flex items-center justify-center space-x-1"
                 >
                   <Settings className="w-3 h-3" />
-                  <span>Settings</span>
+                  <span>{t('navigation.settings')}</span>
                 </button>
               </div>
             </div>

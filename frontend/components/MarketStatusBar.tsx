@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { Clock, TrendingUp, TrendingDown } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MarketStatusBarProps {
   userTimezone?: string;
 }
 
 export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) {
+  const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [marketStatus, setMarketStatus] = useState<{
     isOpen: boolean;
@@ -45,8 +47,8 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
         const daysUntilMonday = day === 0 ? 1 : 2;
         return {
           isOpen: false,
-          message: 'Market Closed - Weekend',
-          timeUntil: `Opens in ${daysUntilMonday} day${daysUntilMonday > 1 ? 's' : ''}`
+          message: `${t('dashboard.marketClosed')} - ${t('common.weekend')}`,
+          timeUntil: `${t('dashboard.opensIn')} ${daysUntilMonday} ${t('common.day')}${daysUntilMonday > 1 ? 's' : ''}`
         };
       }
 
@@ -58,8 +60,8 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
         
         return {
           isOpen: true,
-          message: 'Market is Open',
-          timeUntil: `Closes in ${hoursUntilClose}h ${minsUntilClose}m`
+          message: t('dashboard.marketOpen'),
+          timeUntil: `${t('dashboard.closesIn')} ${hoursUntilClose}h ${minsUntilClose}m`
         };
       }
 
@@ -71,8 +73,8 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
         
         return {
           isOpen: false,
-          message: 'Market Closed - Pre-Market',
-          timeUntil: `Opens in ${hoursUntilOpen}h ${minsUntilOpen}m`
+          message: `${t('dashboard.marketClosed')} - ${t('common.preMarket')}`,
+          timeUntil: `${t('dashboard.opensIn')} ${hoursUntilOpen}h ${minsUntilOpen}m`
         };
       }
 
@@ -82,8 +84,8 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
       
       return {
         isOpen: false,
-        message: 'Market Closed - After Hours',
-        timeUntil: `Opens in ${hoursUntilNextOpen}h`
+        message: `${t('dashboard.marketClosed')} - ${t('common.afterHours')}`,
+        timeUntil: `${t('dashboard.opensIn')} ${hoursUntilNextOpen}h`
       };
     };
 

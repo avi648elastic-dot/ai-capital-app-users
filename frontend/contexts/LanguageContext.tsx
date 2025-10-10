@@ -17,7 +17,36 @@ const translations = {
       reports: 'Reports',
       settings: 'Settings',
       admin: 'Admin',
-      notifications: 'Notifications'
+      notifications: 'Notifications',
+      loading: 'Loading...',
+      error: 'Error',
+      success: 'Success',
+      save: 'Save',
+      cancel: 'Cancel',
+      delete: 'Delete',
+      edit: 'Edit',
+      view: 'View',
+      back: 'Back',
+      next: 'Next',
+      previous: 'Previous',
+      close: 'Close',
+      open: 'Open',
+      refresh: 'Refresh',
+      search: 'Search',
+      filter: 'Filter',
+      sort: 'Sort',
+      export: 'Export',
+      import: 'Import',
+      addStock: 'Add Stock',
+      addPortfolio: 'Add Portfolio',
+      deletePortfolio: 'Delete Portfolio',
+      portfolios: 'Portfolios',
+      solid: 'solid',
+      risky: 'risky',
+      weekend: 'Weekend',
+      day: 'day',
+      preMarket: 'Pre-Market',
+      afterHours: 'After Hours'
     },
     auth: {
       login: 'Login',
@@ -38,6 +67,55 @@ const translations = {
       accurate: 'Accurate',
       professionalPortfolioManagement: 'Professional Portfolio Management V2',
       aiPoweredDescription: 'AI-Powered Trading Decisions & Real-Time Analytics'
+    },
+    dashboard: {
+      welcomeBack: 'Welcome Back',
+      totalPortfolioValue: 'Total Portfolio Value',
+      todaysReturn: "Today's Return",
+      totalReturn: 'Total Return',
+      portfolioOverview: 'Portfolio Overview',
+      recentActivity: 'Recent Activity',
+      marketStatus: 'Market Status',
+      marketOpen: 'Market is Open',
+      marketClosed: 'Market is Closed',
+      closesIn: 'Closes in',
+      opensIn: 'Opens in',
+      singleView: 'Single View',
+      multiPortfolio: 'Multi-Portfolio'
+    },
+    settings: {
+      title: 'Settings',
+      subtitle: 'Customize your experience',
+      language: 'Language',
+      appearance: 'Appearance',
+      theme: 'Theme',
+      dark: 'Dark',
+      light: 'Light',
+      notifications: 'Notifications',
+      pushNotifications: 'Push Notifications',
+      pushNotificationsDesc: 'Receive notifications about your portfolio',
+      emailUpdates: 'Email Updates',
+      emailUpdatesDesc: 'Receive weekly portfolio summaries',
+      manageProfile: 'Manage Profile',
+      updatePersonalInfo: 'Update your personal information',
+      subscription: 'Subscription',
+      manageSubscription: 'Manage your subscription plan',
+      signOut: 'Sign Out',
+      logoutFromAccount: 'Logout from your account'
+    },
+    navigation: {
+      dashboard: 'Dashboard',
+      analytics: 'Analytics',
+      performance: 'Performance',
+      portfolioAnalysis: 'Portfolio Analysis',
+      watchlist: 'Watchlist',
+      riskManagement: 'Risk Management',
+      reports: 'Reports',
+      subscription: 'Subscription',
+      settings: 'Settings',
+      adminPanel: 'Admin Panel',
+      adminDashboard: 'Admin Dashboard',
+      adminNotifications: 'Notifications'
     }
   },
   ar: {
@@ -83,7 +161,36 @@ const translations = {
       reports: 'דוחות',
       settings: 'הגדרות',
       admin: 'מנהל',
-      notifications: 'התראות'
+      notifications: 'התראות',
+      loading: 'טוען...',
+      error: 'שגיאה',
+      success: 'הצלחה',
+      save: 'שמור',
+      cancel: 'בטל',
+      delete: 'מחק',
+      edit: 'ערוך',
+      view: 'צפה',
+      back: 'חזור',
+      next: 'הבא',
+      previous: 'הקודם',
+      close: 'סגור',
+      open: 'פתח',
+      refresh: 'רענן',
+      search: 'חפש',
+      filter: 'סנן',
+      sort: 'מיין',
+      export: 'ייצא',
+      import: 'ייבא',
+      addStock: 'הוסף מניה',
+      addPortfolio: 'הוסף תיק',
+      deletePortfolio: 'מחק תיק',
+      portfolios: 'תיקים',
+      solid: 'יציב',
+      risky: 'מסוכן',
+      weekend: 'סוף שבוע',
+      day: 'יום',
+      preMarket: 'לפני השוק',
+      afterHours: 'אחרי השוק'
     },
     auth: {
       login: 'התחברות',
@@ -104,11 +211,65 @@ const translations = {
       accurate: 'מדויק',
       professionalPortfolioManagement: 'ניהול תיקים מקצועי V2',
       aiPoweredDescription: 'החלטות מסחר מבוססות בינה מלאכותית ואנליטיקה בזמן אמת'
+    },
+    dashboard: {
+      welcomeBack: 'ברוך הבא',
+      totalPortfolioValue: 'ערך תיק כולל',
+      todaysReturn: 'תשואה היום',
+      totalReturn: 'תשואה כוללת',
+      portfolioOverview: 'סקירת תיק',
+      recentActivity: 'פעילות אחרונה',
+      marketStatus: 'סטטוס שוק',
+      marketOpen: 'השוק פתוח',
+      marketClosed: 'השוק סגור',
+      closesIn: 'נסגר בעוד',
+      opensIn: 'נפתח בעוד',
+      singleView: 'תצוגה יחידה',
+      multiPortfolio: 'תיקים מרובים'
+    },
+    settings: {
+      title: 'הגדרות',
+      subtitle: 'התאם את החוויה שלך',
+      language: 'שפה',
+      appearance: 'מראה',
+      theme: 'ערכת נושא',
+      dark: 'כהה',
+      light: 'בהירה',
+      notifications: 'התראות',
+      pushNotifications: 'התראות דחיפה',
+      pushNotificationsDesc: 'קבל התראות על התיק שלך',
+      emailUpdates: 'עדכוני אימייל',
+      emailUpdatesDesc: 'קבל סיכומי תיק שבועיים',
+      manageProfile: 'נהל פרופיל',
+      updatePersonalInfo: 'עדכן את המידע האישי שלך',
+      subscription: 'מנוי',
+      manageSubscription: 'נהל את תוכנית המנוי שלך',
+      signOut: 'התנתק',
+      logoutFromAccount: 'התנתק מהחשבון שלך'
+    },
+    navigation: {
+      dashboard: 'לוח מחוונים',
+      analytics: 'אנליטיקה',
+      performance: 'ביצועים',
+      portfolioAnalysis: 'ניתוח תיק',
+      watchlist: 'רשימת מעקב',
+      riskManagement: 'ניהול סיכונים',
+      reports: 'דוחות',
+      subscription: 'מנוי',
+      settings: 'הגדרות',
+      adminPanel: 'לוח ניהול',
+      adminDashboard: 'לוח ניהול',
+      adminNotifications: 'התראות'
     }
   }
 };
 
-export type TranslationKeys = keyof typeof translations.en.common | keyof typeof translations.en.auth;
+export type TranslationKeys = 
+  | keyof typeof translations.en.common 
+  | keyof typeof translations.en.auth
+  | keyof typeof translations.en.dashboard
+  | keyof typeof translations.en.settings
+  | keyof typeof translations.en.navigation;
 
 interface LanguageContextType {
   locale: Locale;

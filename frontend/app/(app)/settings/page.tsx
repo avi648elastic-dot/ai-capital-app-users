@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Palette, Globe, Bell, Shield, Database } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Settings() {
+  const { t } = useLanguage();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({
@@ -68,8 +70,8 @@ export default function Settings() {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
-        <p className="text-slate-400">Customize your experience</p>
+        <h1 className="text-3xl font-bold text-white mb-2">{t('settings.title')}</h1>
+        <p className="text-slate-400">{t('settings.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
@@ -77,18 +79,18 @@ export default function Settings() {
         <div className="card p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Palette className="w-5 h-5 mr-2" />
-            Appearance
+            {t('settings.appearance')}
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Theme</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">{t('settings.theme')}</label>
               <select
                 value={settings.theme}
                 onChange={(e) => setSettings({ ...settings, theme: e.target.value })}
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <option value="dark">Dark</option>
-                <option value="light">Light</option>
+                <option value="dark">{t('settings.dark')}</option>
+                <option value="light">{t('settings.light')}</option>
               </select>
             </div>
           </div>
@@ -98,11 +100,11 @@ export default function Settings() {
         <div className="card p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Globe className="w-5 h-5 mr-2" />
-            Language
+            {t('settings.language')}
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Language</label>
+              <label className="block text-sm font-medium text-slate-300 mb-2">{t('settings.language')}</label>
               <select
                 value={settings.language}
                 onChange={(e) => setSettings({ ...settings, language: e.target.value })}
@@ -121,13 +123,13 @@ export default function Settings() {
         <div className="card p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Bell className="w-5 h-5 mr-2" />
-            Notifications
+            {t('settings.notifications')}
           </h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-white font-medium">Push Notifications</div>
-                <div className="text-slate-400 text-sm">Receive notifications about your portfolio</div>
+                <div className="text-white font-medium">{t('settings.pushNotifications')}</div>
+                <div className="text-slate-400 text-sm">{t('settings.pushNotificationsDesc')}</div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -141,8 +143,8 @@ export default function Settings() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-white font-medium">Email Updates</div>
-                <div className="text-slate-400 text-sm">Receive weekly portfolio summaries</div>
+                <div className="text-white font-medium">{t('settings.emailUpdates')}</div>
+                <div className="text-slate-400 text-sm">{t('settings.emailUpdatesDesc')}</div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -168,22 +170,22 @@ export default function Settings() {
               onClick={() => window.location.href = '/profile'}
               className="w-full text-left p-4 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
             >
-              <div className="text-white font-medium">Manage Profile</div>
-              <div className="text-slate-400 text-sm">Update your personal information</div>
+              <div className="text-white font-medium">{t('settings.manageProfile')}</div>
+              <div className="text-slate-400 text-sm">{t('settings.updatePersonalInfo')}</div>
             </button>
             <button 
               onClick={() => window.location.href = '/subscription'}
               className="w-full text-left p-4 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors"
             >
-              <div className="text-white font-medium">Subscription</div>
-              <div className="text-slate-400 text-sm">Manage your subscription plan</div>
+              <div className="text-white font-medium">{t('settings.subscription')}</div>
+              <div className="text-slate-400 text-sm">{t('settings.manageSubscription')}</div>
             </button>
             <button 
               onClick={handleLogout}
               className="w-full text-left p-4 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
             >
-              <div className="text-white font-medium">Sign Out</div>
-              <div className="text-red-200 text-sm">Logout from your account</div>
+              <div className="text-white font-medium">{t('settings.signOut')}</div>
+              <div className="text-red-200 text-sm">{t('settings.logoutFromAccount')}</div>
             </button>
           </div>
         </div>
@@ -192,7 +194,7 @@ export default function Settings() {
       {/* Save Button */}
       <div className="mt-8">
         <button onClick={handleSave} className="btn-primary">
-          Save Settings
+          {t('common.save')} {t('settings.title')}
         </button>
       </div>
     </div>

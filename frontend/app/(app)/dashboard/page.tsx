@@ -18,6 +18,7 @@ import CreatePortfolioModal from '@/components/CreatePortfolioModal';
 import DeletePortfolioModal from '@/components/DeletePortfolioModal';
 import { CardSkeleton, TableSkeleton, ChartSkeleton } from '@/components/ui/SkeletonLoader';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface User {
   id: string;
@@ -53,6 +54,7 @@ interface PortfolioTotals {
 }
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
   const [totals, setTotals] = useState<PortfolioTotals>({
@@ -417,8 +419,8 @@ export default function Dashboard() {
     <div className="w-full">
       {/* Mobile Header - Only shows on mobile */}
       <MobileHeader 
-        title="AiCapital Dashboard"
-        subtitle="Portfolio Management"
+        title={`${t('dashboard.welcomeBack')} ${user?.name || 'User'}`}
+        subtitle={t('dashboard.portfolioOverview')}
       />
       
       {/* Professional Header */}
@@ -560,7 +562,7 @@ export default function Dashboard() {
                  }}
                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-lg"
                >
-                 Add Stock
+                 {t('common.addStock')}
                </button>
             {/* Premium Multi-Portfolio Toggle */}
             {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && (
@@ -576,7 +578,7 @@ export default function Dashboard() {
                   className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-4 px-6 rounded-lg transition-all duration-200 border border-slate-600 hover:border-slate-500 flex items-center justify-center space-x-3 text-lg"
                 >
                   <span className="text-2xl">{showMultiPortfolio ? '📊' : '📈'}</span>
-                  <span>{showMultiPortfolio ? 'Single View' : 'Multi-Portfolio'}</span>
+                  <span>{showMultiPortfolio ? t('dashboard.singleView') : t('dashboard.multiPortfolio')}</span>
                 </button>
             )}
             {/* Portfolio Management Buttons for Premium Users (visible only in multi view) */}
@@ -595,14 +597,14 @@ export default function Dashboard() {
                   className="btn-primary flex items-center space-x-2"
                 >
                   <span>➕</span>
-                  <span>Add Portfolio</span>
+                  <span>{t('common.addPortfolio')}</span>
                 </button>
                 <button
                   onClick={() => setShowDeletePortfolio(true)}
                   className="btn-secondary flex items-center space-x-2 border-red-500/30 text-red-400 hover:bg-red-500/10"
                 >
                   <span>🗑️</span>
-                  <span>Delete Portfolio</span>
+                  <span>{t('common.deletePortfolio')}</span>
                 </button>
               </div>
             )}
@@ -629,7 +631,7 @@ export default function Dashboard() {
             </div>
             {user.subscriptionTier === 'premium' && (
               <div className="text-base opacity-80">
-                Portfolios: {portfolioMeta.total}/6 ({portfolioMeta.solid} solid · {portfolioMeta.risky} risky)
+                {t('common.portfolios')}: {portfolioMeta.total}/6 ({portfolioMeta.solid} {t('common.solid')} · {portfolioMeta.risky} {t('common.risky')})
               </div>
             )}
               </div>
