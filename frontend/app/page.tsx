@@ -191,8 +191,8 @@ export default function Page() {
           🚀
         </div>
 
-        {/* Animated Bubbles - Multiple Types */}
-        {[...Array(25)].map((_, i) => {
+        {/* Animated Bubbles - Multiple Types (Mobile Optimized) */}
+        {[...Array(window.innerWidth < 768 ? 12 : 25)].map((_, i) => {
           const bubbleTypes = [
             'bg-gradient-to-r from-blue-500/30 to-cyan-500/20',
             'bg-gradient-to-r from-purple-500/30 to-pink-500/20', 
@@ -205,7 +205,7 @@ export default function Page() {
           return (
             <div
               key={i}
-              className={`absolute rounded-full ${bubbleType} animate-bubble shadow-lg`}
+              className={`absolute rounded-full ${bubbleType} animate-bubble shadow-lg hidden md:block`}
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -219,16 +219,55 @@ export default function Page() {
           );
         })}
 
-        {/* Floating Particles */}
-        {[...Array(30)].map((_, i) => (
+        {/* Mobile-optimized bubbles */}
+        {[...Array(8)].map((_, i) => {
+          const bubbleTypes = [
+            'bg-gradient-to-r from-blue-500/20 to-cyan-500/15',
+            'bg-gradient-to-r from-purple-500/20 to-pink-500/15'
+          ];
+          const bubbleType = bubbleTypes[i % bubbleTypes.length];
+          
+          return (
+            <div
+              key={`mobile-bubble-${i}`}
+              className={`absolute rounded-full ${bubbleType} animate-bubble md:hidden`}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 4 + 1}rem`,
+                height: `${Math.random() * 4 + 1}rem`,
+                animationDelay: `${Math.random() * 10}s`,
+                animationDuration: `${10 + Math.random() * 5}s`,
+                filter: 'blur(0.5px)'
+              }}
+            />
+          );
+        })}
+
+        {/* Floating Particles (Mobile Optimized) */}
+        {[...Array(window.innerWidth < 768 ? 15 : 30)].map((_, i) => (
           <div
             key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-white/40 rounded-full animate-ping"
+            className="absolute w-1 h-1 bg-white/40 rounded-full animate-ping hidden md:block"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 5}s`,
               animationDuration: `${3 + Math.random() * 2}s`
+            }}
+          />
+        ))}
+
+        {/* Mobile particles */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`mobile-particle-${i}`}
+            className="absolute w-1 h-1 bg-white/30 rounded-full animate-ping md:hidden"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 1}s`
             }}
           />
         ))}

@@ -23,11 +23,16 @@
 
 @layer components {
   .card {
-    @apply bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl;
+    @apply bg-slate-800/80 backdrop-blur-sm border border-slate-700/50 rounded-xl shadow-xl;
+    /* Enhanced text contrast */
+    color: #f1f5f9;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   
   [data-theme='light'] .card {
-    @apply bg-white/80 border-gray-200 shadow-lg;
+    @apply bg-white/90 border-gray-200 shadow-lg;
+    color: #1e293b;
+    text-shadow: none;
   }
 
   .btn-primary {
@@ -39,11 +44,32 @@
   }
 
   .input-field {
-    @apply w-full px-4 py-3 bg-slate-800/50 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-3 bg-slate-800/60 border border-slate-600/50 rounded-lg text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200;
+    /* Enhanced text contrast */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   
   [data-theme='light'] .input-field {
     @apply bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500;
+    text-shadow: none;
+  }
+
+  /* Enhanced text visibility */
+  .text-slate-100, .text-white {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  [data-theme='light'] .text-slate-100, 
+  [data-theme='light'] .text-white {
+    text-shadow: none;
+  }
+  
+  .text-slate-200 {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  
+  [data-theme='light'] .text-slate-200 {
+    text-shadow: none;
   }
 }
 
@@ -200,20 +226,97 @@
   animation: gradientShift 3s ease infinite;
 }
 
-/* Mobile auto-minimize - 30% scale for better viewing */
+/* Performance optimization for low-end devices */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Enhanced Mobile Optimization */
 @media (max-width: 768px) {
+  /* Optimized mobile scaling - 40% for better usability */
   body {
-    transform: scale(0.3);
+    transform: scale(0.4);
     transform-origin: top left;
-    width: 333.33vw;
-    height: 333.33vh;
+    width: 250vw;
+    height: 250vh;
     overflow-x: auto;
     overflow-y: auto;
+  }
+  
+  /* Enhanced mobile typography */
+  html {
+    font-size: 14px;
   }
   
   /* Fix for mobile input zoom */
   input, select, textarea {
     font-size: 16px !important;
+    padding: 12px 16px;
+    min-height: 44px;
+  }
+  
+  /* Mobile-optimized cards */
+  .card {
+    margin: 0.5rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+  
+  /* Mobile table optimization */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mobile button optimization */
+  .btn-primary, .btn-secondary {
+    min-height: 44px;
+    padding: 12px 24px;
+    font-size: 16px;
+  }
+  
+  /* Mobile form optimization */
+  .input-field {
+    min-height: 44px;
+    font-size: 16px;
+  }
+}
+
+/* Tablet optimization */
+@media (max-width: 1024px) and (min-width: 769px) {
+  body {
+    transform: scale(0.7);
+    transform-origin: top left;
+    width: 142.86vw;
+    height: 142.86vh;
+  }
+  
+  .card {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+/* Large mobile optimization */
+@media (max-width: 480px) {
+  body {
+    transform: scale(0.35);
+    transform-origin: top left;
+    width: 285.71vw;
+    height: 285.71vh;
+  }
+  
+  html {
+    font-size: 13px;
+  }
+  
+  .card {
+    margin: 0.25rem;
+    padding: 0.75rem;
   }
 }
 
@@ -391,4 +494,30 @@
 
 .animate-pulse-enhanced {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* GPU Acceleration for better performance */
+.animate-bubble, .animate-bubble-drift, .animate-float, .animate-float-enhanced, .animate-ticker {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimized rendering for mobile */
+@media (max-width: 768px) {
+  .animate-bubble, .animate-bubble-drift {
+    animation-duration: 8s;
+    animation-timing-function: ease-out;
+  }
+  
+  /* Reduce blur effects on mobile for performance */
+  .animate-bubble {
+    filter: none;
+  }
+  
+  /* Simplify gradients on mobile */
+  .bg-gradient-to-r {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+  }
 }
