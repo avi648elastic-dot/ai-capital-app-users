@@ -43,144 +43,142 @@ export function TourProvider({ children }: TourProviderProps) {
 
   // Check if user has seen the tour before
   useEffect(() => {
-    const seenTour = localStorage.getItem('aicapital-tour-seen');
-    setHasSeenTour(seenTour === 'true');
+    try {
+      const seenTour = localStorage.getItem('aicapital-tour-seen');
+      setHasSeenTour(seenTour === 'true');
+    } catch (error) {
+      console.warn('Failed to check tour status:', error);
+      setHasSeenTour(false);
+    }
   }, []);
 
-  // Default tour steps
-  const defaultSteps: TourStep[] = [
-    {
-      id: 'welcome',
-      target: '.dashboard-welcome',
-      title: t('tour.welcome.title'),
-      content: t('tour.welcome.content'),
-      position: 'center',
-      highlight: true,
-      skipable: false
-    },
-    {
-      id: 'navigation',
-      target: '.navigation-sidebar',
-      title: t('tour.navigation.title'),
-      content: t('tour.navigation.content'),
-      position: 'right',
-      action: 'hover',
-      highlight: true
-    },
-    {
-      id: 'portfolio-overview',
-      target: '.portfolio-overview',
-      title: t('tour.portfolioOverview.title'),
-      content: t('tour.portfolioOverview.content'),
-      position: 'bottom',
-      highlight: true
-    },
-    {
-      id: 'market-status',
-      target: '.market-status-bar',
-      title: t('tour.marketStatus.title'),
-      content: t('tour.marketStatus.content'),
-      position: 'bottom',
-      highlight: true
-    },
-    {
-      id: 'portfolio-table',
-      target: '.portfolio-table',
-      title: t('tour.portfolioTable.title'),
-      content: t('tour.portfolioTable.content'),
-      position: 'top',
-      highlight: true
-    },
-    {
-      id: 'analytics-button',
-      target: '.analytics-nav-item',
-      title: t('tour.analyticsButton.title'),
-      content: t('tour.analyticsButton.content'),
-      position: 'right',
-      action: 'click',
-      highlight: true
-    },
-    {
-      id: 'premium-features',
-      target: '.premium-features',
-      title: t('tour.premiumFeatures.title'),
-      content: t('tour.premiumFeatures.content'),
-      position: 'left',
-      highlight: true
-    },
-    {
-      id: 'risk-management',
-      target: '.risk-management-nav',
-      title: t('tour.riskManagement.title'),
-      content: t('tour.riskManagement.content'),
-      position: 'right',
-      action: 'click',
-      highlight: true
-    },
-    {
-      id: 'notifications',
-      target: '.notification-center',
-      title: t('tour.notifications.title'),
-      content: t('tour.notifications.content'),
-      position: 'left',
-      highlight: true
-    },
-    {
-      id: 'settings',
-      target: '.settings-nav-item',
-      title: t('tour.settings.title'),
-      content: t('tour.settings.content'),
-      position: 'right',
-      highlight: true
-    },
-    {
-      id: 'upgrade-cta',
-      target: '.upgrade-banner',
-      title: t('tour.upgradeCta.title'),
-      content: t('tour.upgradeCta.content'),
-      position: 'center',
-      highlight: true,
-      skipable: false
+  // Default tour steps with error handling
+  const getDefaultSteps = (): TourStep[] => {
+    try {
+      return [
+        {
+          id: 'welcome',
+          target: '.dashboard-welcome',
+          title: 'Welcome to AI-Capital! 🚀',
+          content: 'Let me show you around our powerful AI-driven portfolio management platform. This tour will highlight all the key features that can help you make smarter investment decisions.',
+          position: 'center',
+          highlight: true,
+          skipable: false
+        },
+        {
+          id: 'navigation',
+          target: '.navigation-sidebar',
+          title: 'Navigation Menu',
+          content: 'Here you can access all the main features: Dashboard, Portfolios, Analytics, Risk Management, and more. Premium+ users get access to advanced features like Risk Management and Reports.',
+          position: 'right',
+          action: 'hover',
+          highlight: true
+        },
+        {
+          id: 'portfolio-overview',
+          target: '.portfolio-overview',
+          title: 'Portfolio Overview',
+          content: 'This shows your total portfolio value, today\'s returns, and key performance metrics. Watch how these numbers update in real-time as markets move!',
+          position: 'bottom',
+          highlight: true
+        },
+        {
+          id: 'market-status',
+          target: '.market-status-bar',
+          title: 'Live Market Status',
+          content: 'This bar shows real-time market status with your local time. The animated indicator shows market activity - green when open, gray when closed.',
+          position: 'bottom',
+          highlight: true
+        },
+        {
+          id: 'portfolio-table',
+          target: '.portfolio-table',
+          title: 'Your Portfolio Holdings',
+          content: 'Here you can see all your stocks with AI-generated BUY/SELL/HOLD recommendations. Our algorithm analyzes 90 days of data to give you the best advice!',
+          position: 'top',
+          highlight: true
+        },
+        {
+          id: 'upgrade-cta',
+          target: '.upgrade-banner',
+          title: 'Ready to Upgrade? 💎',
+          content: 'You\'ve seen the power of AI-Capital! Upgrade to Premium+ to unlock advanced analytics, risk management tools, multi-portfolio support, and priority features. Start your journey to smarter investing today!',
+          position: 'center',
+          highlight: true,
+          skipable: false
+        }
+      ];
+    } catch (error) {
+      console.warn('Failed to create tour steps:', error);
+      return [];
     }
-  ];
+  };
 
   const startTour = () => {
-    setStepsState(defaultSteps);
-    setCurrentStep(0);
-    setIsActive(true);
-    // Add body class to prevent scrolling
-    document.body.classList.add('tour-active');
+    try {
+      const defaultSteps = getDefaultSteps();
+      setStepsState(defaultSteps);
+      setCurrentStep(0);
+      setIsActive(true);
+      // Add body class to prevent scrolling
+      document.body.classList.add('tour-active');
+    } catch (error) {
+      console.error('Failed to start tour:', error);
+    }
   };
 
   const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
+    try {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        endTour();
+      }
+    } catch (error) {
+      console.error('Failed to go to next step:', error);
       endTour();
     }
   };
 
   const previousStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+    try {
+      if (currentStep > 0) {
+        setCurrentStep(currentStep - 1);
+      }
+    } catch (error) {
+      console.error('Failed to go to previous step:', error);
     }
   };
 
   const skipTour = () => {
-    endTour();
+    try {
+      endTour();
+    } catch (error) {
+      console.error('Failed to skip tour:', error);
+      endTour();
+    }
   };
 
   const endTour = () => {
-    setIsActive(false);
-    setCurrentStep(0);
-    setHasSeenTour(true);
-    localStorage.setItem('aicapital-tour-seen', 'true');
-    // Remove body class
-    document.body.classList.remove('tour-active');
+    try {
+      setIsActive(false);
+      setCurrentStep(0);
+      setHasSeenTour(true);
+      localStorage.setItem('aicapital-tour-seen', 'true');
+      // Remove body class
+      document.body.classList.remove('tour-active');
+    } catch (error) {
+      console.error('Failed to end tour:', error);
+      setIsActive(false);
+    }
   };
 
   const setSteps = (newSteps: TourStep[]) => {
-    setStepsState(newSteps);
+    try {
+      setStepsState(newSteps);
+    } catch (error) {
+      console.error('Failed to set tour steps:', error);
+    }
   };
 
   const contextValue: TourContextType = {

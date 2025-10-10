@@ -2,12 +2,10 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useTour } from '@/contexts/TourContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { X, ChevronLeft, ChevronRight, Play, SkipForward } from 'lucide-react';
 
 export default function TourOverlay() {
   const { isActive, currentStep, steps, nextStep, previousStep, skipTour, endTour } = useTour();
-  const { t } = useLanguage();
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [overlayStyle, setOverlayStyle] = useState<React.CSSProperties>({});
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
@@ -17,125 +15,154 @@ export default function TourOverlay() {
   useEffect(() => {
     if (!isActive || steps.length === 0) return;
 
-    const step = steps[currentStep];
-    const element = document.querySelector(step.target) as HTMLElement;
-    
-    if (element) {
-      setTargetElement(element);
-      updateOverlayStyles(element, step);
-      scrollToElement(element);
+    try {
+      const step = steps[currentStep];
+      const element = document.querySelector(step.target) as HTMLElement;
+      
+      if (element) {
+        setTargetElement(element);
+        updateOverlayStyles(element, step);
+        scrollToElement(element);
+      }
+    } catch (error) {
+      console.error('Tour step error:', error);
+      endTour();
     }
-  }, [isActive, currentStep, steps]);
+  }, [isActive, currentStep, steps, endTour]);
 
   const updateOverlayStyles = (element: HTMLElement, step: TourStep) => {
-    const rect = element.getBoundingClientRect();
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
+    try {
+      const rect = element.getBoundingClientRect();
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
 
-    // Create overlay that covers everything except the target element
-    setOverlayStyle({
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 9998,
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      backdropFilter: 'blur(2px)'
-    });
+      // Create overlay that covers everything except the target element
+      setOverlayStyle({
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9998,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(2px)'
+      });
 
-    // Position tooltip based on step position
-    const tooltipWidth = 320;
-    const tooltipHeight = 200;
-    const padding = 20;
+      // Position tooltip based on step position
+      const tooltipWidth = 320;
+      const tooltipHeight = 200;
+      const padding = 20;
 
-    let tooltipTop = 0;
-    let tooltipLeft = 0;
+      let tooltipTop = 0;
+      let tooltipLeft = 0;
 
-    switch (step.position) {
-      case 'top':
-        tooltipTop = rect.top + scrollY - tooltipHeight - padding;
-        tooltipLeft = rect.left + scrollX + (rect.width / 2) - (tooltipWidth / 2);
-        break;
-      case 'bottom':
-        tooltipTop = rect.bottom + scrollY + padding;
-        tooltipLeft = rect.left + scrollX + (rect.width / 2) - (tooltipWidth / 2);
-        break;
-      case 'left':
-        tooltipTop = rect.top + scrollY + (rect.height / 2) - (tooltipHeight / 2);
-        tooltipLeft = rect.left + scrollX - tooltipWidth - padding;
-        break;
-      case 'right':
-        tooltipTop = rect.top + scrollY + (rect.height / 2) - (tooltipHeight / 2);
-        tooltipLeft = rect.right + scrollX + padding;
-        break;
-      case 'center':
-      default:
-        tooltipTop = window.innerHeight / 2 - tooltipHeight / 2;
-        tooltipLeft = window.innerWidth / 2 - tooltipWidth / 2;
-        break;
+      switch (step.position) {
+        case 'top':
+          tooltipTop = rect.top + scrollY - tooltipHeight - padding;
+          tooltipLeft = rect.left + scrollX + (rect.width / 2) - (tooltipWidth / 2);
+          break;
+        case 'bottom':
+          tooltipTop = rect.bottom + scrollY + padding;
+          tooltipLeft = rect.left + scrollX + (rect.width / 2) - (tooltipWidth / 2);
+          break;
+        case 'left':
+          tooltipTop = rect.top + scrollY + (rect.height / 2) - (tooltipHeight / 2);
+          tooltipLeft = rect.left + scrollX - tooltipWidth - padding;
+          break;
+        case 'right':
+          tooltipTop = rect.top + scrollY + (rect.height / 2) - (tooltipHeight / 2);
+          tooltipLeft = rect.right + scrollX + padding;
+          break;
+        case 'center':
+        default:
+          tooltipTop = window.innerHeight / 2 - tooltipHeight / 2;
+          tooltipLeft = window.innerWidth / 2 - tooltipWidth / 2;
+          break;
+      }
+
+      // Ensure tooltip stays within viewport
+      tooltipLeft = Math.max(padding, Math.min(tooltipLeft, window.innerWidth - tooltipWidth - padding));
+      tooltipTop = Math.max(padding, Math.min(tooltipTop, window.innerHeight - tooltipHeight - padding));
+
+      setTooltipStyle({
+        position: 'fixed',
+        top: tooltipTop,
+        left: tooltipLeft,
+        width: tooltipWidth,
+        zIndex: 9999,
+        transform: 'translateY(-10px)',
+        opacity: 0,
+        transition: 'all 0.3s ease-out'
+      });
+
+      // Animate tooltip in
+      setTimeout(() => {
+        setTooltipStyle(prev => ({
+          ...prev,
+          transform: 'translateY(0)',
+          opacity: 1
+        }));
+      }, 100);
+    } catch (error) {
+      console.error('Failed to update overlay styles:', error);
     }
-
-    // Ensure tooltip stays within viewport
-    tooltipLeft = Math.max(padding, Math.min(tooltipLeft, window.innerWidth - tooltipWidth - padding));
-    tooltipTop = Math.max(padding, Math.min(tooltipTop, window.innerHeight - tooltipHeight - padding));
-
-    setTooltipStyle({
-      position: 'fixed',
-      top: tooltipTop,
-      left: tooltipLeft,
-      width: tooltipWidth,
-      zIndex: 9999,
-      transform: 'translateY(-10px)',
-      opacity: 0,
-      transition: 'all 0.3s ease-out'
-    });
-
-    // Animate tooltip in
-    setTimeout(() => {
-      setTooltipStyle(prev => ({
-        ...prev,
-        transform: 'translateY(0)',
-        opacity: 1
-      }));
-    }, 100);
   };
 
   const scrollToElement = (element: HTMLElement) => {
-    setIsAnimating(true);
-    element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
-      inline: 'center'
-    });
-    
-    setTimeout(() => {
+    try {
+      setIsAnimating(true);
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center'
+      });
+      
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 1000);
+    } catch (error) {
+      console.error('Failed to scroll to element:', error);
       setIsAnimating(false);
-    }, 1000);
+    }
   };
 
   const handleNext = () => {
-    setIsAnimating(true);
-    setTimeout(() => {
-      nextStep();
+    try {
+      setIsAnimating(true);
+      setTimeout(() => {
+        nextStep();
+        setIsAnimating(false);
+      }, 300);
+    } catch (error) {
+      console.error('Failed to go to next step:', error);
       setIsAnimating(false);
-    }, 300);
+    }
   };
 
   const handlePrevious = () => {
-    setIsAnimating(true);
-    setTimeout(() => {
-      previousStep();
+    try {
+      setIsAnimating(true);
+      setTimeout(() => {
+        previousStep();
+        setIsAnimating(false);
+      }, 300);
+    } catch (error) {
+      console.error('Failed to go to previous step:', error);
       setIsAnimating(false);
-    }, 300);
+    }
   };
 
   const handleSkip = () => {
-    setIsAnimating(true);
-    setTimeout(() => {
-      skipTour();
+    try {
+      setIsAnimating(true);
+      setTimeout(() => {
+        skipTour();
+        setIsAnimating(false);
+      }, 300);
+    } catch (error) {
+      console.error('Failed to skip tour:', error);
       setIsAnimating(false);
-    }, 300);
+    }
   };
 
   if (!isActive || steps.length === 0) return null;
@@ -210,20 +237,6 @@ export default function TourOverlay() {
             />
           </div>
 
-          {/* Action hint */}
-          {step.action && (
-            <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 mb-4">
-              <div className="flex items-center space-x-2 text-blue-300 text-sm">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
-                <span>
-                  {step.action === 'click' && t('tour.actionHint.click')}
-                  {step.action === 'hover' && t('tour.actionHint.hover')}
-                  {step.action === 'scroll' && t('tour.actionHint.scroll')}
-                </span>
-              </div>
-            </div>
-          )}
-
           {/* Navigation */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -233,7 +246,7 @@ export default function TourOverlay() {
                   className="flex items-center space-x-1 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  <span className="text-sm">{t('tour.previous')}</span>
+                  <span className="text-sm">Previous</span>
                 </button>
               )}
             </div>
@@ -245,7 +258,7 @@ export default function TourOverlay() {
                   className="flex items-center space-x-1 px-3 py-2 text-slate-400 hover:text-slate-300 transition-colors"
                 >
                   <SkipForward className="w-4 h-4" />
-                  <span className="text-sm">{t('tour.skip')}</span>
+                  <span className="text-sm">Skip</span>
                 </button>
               )}
               
@@ -254,7 +267,7 @@ export default function TourOverlay() {
                 className="flex items-center space-x-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg transition-all"
               >
                 <span className="text-sm">
-                  {currentStep === steps.length - 1 ? t('tour.finish') : t('tour.next')}
+                  {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
                 </span>
                 {currentStep < steps.length - 1 && <ChevronRight className="w-4 h-4" />}
               </button>
