@@ -6,8 +6,6 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 import MarketStatusBar from '@/components/MarketStatusBar';
-import TourTrigger from '@/components/TourTrigger';
-import { useTour } from '@/contexts/TourContext';
 
 export default function AppLayout({
   children,
@@ -16,10 +14,8 @@ export default function AppLayout({
 }) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showTourTrigger, setShowTourTrigger] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { hasSeenTour } = useTour();
 
   const handleLogout = () => {
     Cookies.remove('token');
@@ -50,16 +46,6 @@ export default function AppLayout({
     fetchUser();
   }, [router]);
 
-  // Show tour trigger for new users after a delay
-  useEffect(() => {
-    if (!loading && user && !hasSeenTour && pathname === '/dashboard') {
-      const timer = setTimeout(() => {
-        setShowTourTrigger(true);
-      }, 3000); // Show after 3 seconds
-      
-      return () => clearTimeout(timer);
-    }
-  }, [loading, user, hasSeenTour, pathname]);
 
   // Don't show layout for auth pages
   if (pathname === '/' || pathname === '/login' || pathname === '/signup') {
@@ -100,10 +86,6 @@ export default function AppLayout({
           </div>
         </div>
 
-        {/* Tour Trigger - Floating */}
-        {showTourTrigger && (
-          <TourTrigger variant="floating" />
-        )}
       </div>
     </div>
   );
