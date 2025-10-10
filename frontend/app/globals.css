@@ -68,6 +68,33 @@
   50% { stroke-opacity: 1; }
 }
 
+@keyframes tourPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes tourFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
@@ -94,6 +121,14 @@
 
 .animate-chart-pulse {
   animation: chart-pulse 2s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  animation: gradientShift 3s ease infinite;
 }
 
 /* Mobile auto-minimize */

@@ -2,10 +2,12 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useTour } from '@/contexts/TourContext';
-import { X, ChevronLeft, ChevronRight, Play, SkipForward } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { X, ChevronLeft, ChevronRight, Play, Info, Crown, Sparkles } from 'lucide-react';
 
 export default function TourOverlay() {
   const { isActive, currentStep, steps, nextStep, previousStep, skipTour, endTour } = useTour();
+  const { t } = useLanguage();
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const [overlayStyle, setOverlayStyle] = useState<React.CSSProperties>({});
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
@@ -30,13 +32,13 @@ export default function TourOverlay() {
     }
   }, [isActive, currentStep, steps, endTour]);
 
-  const updateOverlayStyles = (element: HTMLElement, step: TourStep) => {
+  const updateOverlayStyles = (element: HTMLElement, step: any) => {
     try {
       const rect = element.getBoundingClientRect();
       const scrollX = window.scrollX;
       const scrollY = window.scrollY;
 
-      // Create overlay that covers everything except the target element
+      // Much lighter overlay
       setOverlayStyle({
         position: 'fixed',
         top: 0,
@@ -44,244 +46,251 @@ export default function TourOverlay() {
         right: 0,
         bottom: 0,
         zIndex: 9998,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        backdropFilter: 'blur(2px)'
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        backdropFilter: 'blur(1px)'
       });
 
-      // Position tooltip based on step position
-      const tooltipWidth = 320;
-      const tooltipHeight = 200;
-      const padding = 20;
-
-      let tooltipTop = 0;
-      let tooltipLeft = 0;
-
-      switch (step.position) {
-        case 'top':
-          tooltipTop = rect.top + scrollY - tooltipHeight - padding;
-          tooltipLeft = rect.left + scrollX + (rect.width / 2) - (tooltipWidth / 2);
-          break;
-        case 'bottom':
-          tooltipTop = rect.bottom + scrollY + padding;
-          tooltipLeft = rect.left + scrollX + (rect.width / 2) - (tooltipWidth / 2);
-          break;
-        case 'left':
-          tooltipTop = rect.top + scrollY + (rect.height / 2) - (tooltipHeight / 2);
-          tooltipLeft = rect.left + scrollX - tooltipWidth - padding;
-          break;
-        case 'right':
-          tooltipTop = rect.top + scrollY + (rect.height / 2) - (tooltipHeight / 2);
-          tooltipLeft = rect.right + scrollX + padding;
-          break;
-        case 'center':
-        default:
-          tooltipTop = window.innerHeight / 2 - tooltipHeight / 2;
-          tooltipLeft = window.innerWidth / 2 - tooltipWidth / 2;
-          break;
-      }
-
-      // Ensure tooltip stays within viewport
-      tooltipLeft = Math.max(padding, Math.min(tooltipLeft, window.innerWidth - tooltipWidth - padding));
-      tooltipTop = Math.max(padding, Math.min(tooltipTop, window.innerHeight - tooltipHeight - padding));
-
+      // Enhanced tooltip positioning
+      let tooltipPosition = calculateTooltipPosition(rect, step);
       setTooltipStyle({
-        position: 'fixed',
-        top: tooltipTop,
-        left: tooltipLeft,
-        width: tooltipWidth,
-        zIndex: 9999,
-        transform: 'translateY(-10px)',
-        opacity: 0,
-        transition: 'all 0.3s ease-out'
+        ...tooltipPosition,
+        zIndex: 10000,
+        animation: 'tourPulse 2s infinite'
       });
 
-      // Animate tooltip in
-      setTimeout(() => {
-        setTooltipStyle(prev => ({
-          ...prev,
-          transform: 'translateY(0)',
-          opacity: 1
-        }));
-      }, 100);
     } catch (error) {
-      console.error('Failed to update overlay styles:', error);
+      console.error('Error updating overlay styles:', error);
     }
+  };
+
+  const calculateTooltipPosition = (rect: DOMRect, step: any) => {
+    const tooltipWidth = 400;
+    const tooltipHeight = 300;
+    const margin = 20;
+
+    let top = rect.bottom + margin;
+    let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+
+    // Adjust based on position preference
+    switch (step.position) {
+      case 'top':
+        top = rect.top - tooltipHeight - margin;
+        break;
+      case 'bottom':
+        top = rect.bottom + margin;
+        break;
+      case 'left':
+        left = rect.left - tooltipWidth - margin;
+        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+        break;
+      case 'right':
+        left = rect.right + margin;
+        top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+        break;
+      case 'center':
+        top = window.innerHeight / 2 - tooltipHeight / 2;
+        left = window.innerWidth / 2 - tooltipWidth / 2;
+        break;
+    }
+
+    // Keep tooltip within viewport
+    if (left < margin) left = margin;
+    if (left + tooltipWidth > window.innerWidth - margin) {
+      left = window.innerWidth - tooltipWidth - margin;
+    }
+    if (top < margin) top = margin;
+    if (top + tooltipHeight > window.innerHeight - margin) {
+      top = window.innerHeight - tooltipHeight - margin;
+    }
+
+    return { top, left };
   };
 
   const scrollToElement = (element: HTMLElement) => {
     try {
-      setIsAnimating(true);
-      element.scrollIntoView({
-        behavior: 'smooth',
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
         block: 'center',
         inline: 'center'
       });
-      
-      setTimeout(() => {
-        setIsAnimating(false);
-      }, 1000);
     } catch (error) {
-      console.error('Failed to scroll to element:', error);
-      setIsAnimating(false);
+      console.error('Error scrolling to element:', error);
     }
   };
 
   const handleNext = () => {
-    try {
-      setIsAnimating(true);
-      setTimeout(() => {
-        nextStep();
-        setIsAnimating(false);
-      }, 300);
-    } catch (error) {
-      console.error('Failed to go to next step:', error);
+    setIsAnimating(true);
+    setTimeout(() => {
+      nextStep();
       setIsAnimating(false);
-    }
+    }, 200);
   };
 
   const handlePrevious = () => {
-    try {
-      setIsAnimating(true);
-      setTimeout(() => {
-        previousStep();
-        setIsAnimating(false);
-      }, 300);
-    } catch (error) {
-      console.error('Failed to go to previous step:', error);
+    setIsAnimating(true);
+    setTimeout(() => {
+      previousStep();
       setIsAnimating(false);
-    }
+    }, 200);
   };
 
-  const handleSkip = () => {
-    try {
-      setIsAnimating(true);
-      setTimeout(() => {
-        skipTour();
-        setIsAnimating(false);
-      }, 300);
-    } catch (error) {
-      console.error('Failed to skip tour:', error);
-      setIsAnimating(false);
-    }
-  };
-
-  if (!isActive || steps.length === 0) return null;
+  if (!isActive || steps.length === 0 || currentStep >= steps.length) {
+    return null;
+  }
 
   const step = steps[currentStep];
-  const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
     <>
-      {/* Overlay */}
-      <div style={overlayStyle}>
-        {/* Spotlight effect on target element */}
-        {targetElement && (
-          <div
-            style={{
-              position: 'absolute',
-              top: targetElement.getBoundingClientRect().top - 10,
-              left: targetElement.getBoundingClientRect().left - 10,
-              width: targetElement.getBoundingClientRect().width + 20,
-              height: targetElement.getBoundingClientRect().height + 20,
-              borderRadius: '12px',
-              boxShadow: step.highlight 
-                ? '0 0 0 9999px rgba(0, 0, 0, 0.7), 0 0 0 4px #3b82f6, 0 0 20px rgba(59, 130, 246, 0.5)'
-                : '0 0 0 9999px rgba(0, 0, 0, 0.7)',
-              pointerEvents: 'none',
-              transition: 'all 0.3s ease-out'
-            }}
-          />
-        )}
-      </div>
+      {/* Minimal Overlay - Much Less Shaded */}
+      <div 
+        style={overlayStyle}
+        onClick={handleNext}
+      ></div>
 
-      {/* Tooltip */}
+      {/* Enhanced Spotlight Effect */}
+      {targetElement && (
+        <div
+          className="fixed inset-0 pointer-events-none z-[9999]"
+          style={{
+            clipPath: `polygon(
+              0% 0%,
+              0% 100%,
+              ${targetElement.getBoundingClientRect().left}px 100%,
+              ${targetElement.getBoundingClientRect().left}px ${targetElement.getBoundingClientRect().top}px,
+              ${targetElement.getBoundingClientRect().right}px ${targetElement.getBoundingClientRect().top}px,
+              ${targetElement.getBoundingClientRect().right}px ${targetElement.getBoundingClientRect().bottom}px,
+              ${targetElement.getBoundingClientRect().left}px ${targetElement.getBoundingClientRect().bottom}px,
+              ${targetElement.getBoundingClientRect().left}px 100%,
+              100% 100%,
+              100% 0%
+            )`,
+          }}
+        >
+          <div
+            className="absolute animate-pulse"
+            style={{
+              top: targetElement.getBoundingClientRect().top - 4,
+              left: targetElement.getBoundingClientRect().left - 4,
+              width: targetElement.getBoundingClientRect().width + 8,
+              height: targetElement.getBoundingClientRect().height + 8,
+              boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.3)',
+              borderRadius: '12px',
+              border: '3px solid #3b82f6',
+              background: 'rgba(59, 130, 246, 0.1)',
+            }}
+          ></div>
+        </div>
+      )}
+
+      {/* Exciting Tooltip Design */}
       <div
         ref={tooltipRef}
-        style={tooltipStyle}
-        className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl"
+        className="tour-tooltip"
+        style={{
+          ...tooltipStyle,
+          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+          border: '2px solid #3b82f6',
+          borderRadius: '16px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(59, 130, 246, 0.3)',
+          backdropFilter: 'blur(20px)',
+          maxWidth: '400px',
+          padding: '24px',
+          color: 'white',
+        }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-              <Play className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">
-                {step.title}
-              </h3>
-              <div className="text-xs text-slate-400">
-                {currentStep + 1} of {steps.length}
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={endTour}
-            className="text-slate-400 hover:text-white transition-colors"
+        {/* Header with Gradient */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            {step.title}
+          </h3>
+          <button 
+            onClick={skipTour} 
+            className="text-slate-400 hover:text-red-400 transition-colors p-1 rounded-full hover:bg-red-500/10"
           >
-            <X className="w-5 h-5" />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-4">
-          <p className="text-slate-200 text-sm leading-relaxed mb-4">
+        {/* Content with Better Typography */}
+        <div className="mb-6">
+          <p className="text-slate-200 text-base leading-relaxed">
             {step.content}
           </p>
+        </div>
 
-          {/* Progress bar */}
-          <div className="w-full bg-slate-700 rounded-full h-2 mb-4">
-            <div
-              className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+        {/* Action Indicators */}
+        {step.action && (
+          <div className="flex items-center text-blue-400 text-sm mb-4 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+            <Info size={18} className="mr-2" />
+            <span className="font-medium">
+              {step.action === 'click' && '👆 Click this element to continue'}
+              {step.action === 'hover' && '👋 Hover over this element'}
+              {step.action === 'scroll' && '📜 Scroll to see more'}
+            </span>
           </div>
+        )}
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              {currentStep > 0 && (
-                <button
-                  onClick={handlePrevious}
-                  className="flex items-center space-x-1 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span className="text-sm">Previous</span>
-                </button>
-              )}
+        {/* Premium Feature Indicator */}
+        {step.isPremiumFeature && (
+          <div className="flex items-center text-yellow-400 text-sm mb-4 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+            <Crown size={18} className="mr-2" />
+            <span className="font-medium">👑 Premium Feature</span>
+          </div>
+        )}
+
+        {/* Progress and Navigation */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <div className="w-20 bg-slate-700 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              ></div>
             </div>
-
-            <div className="flex items-center space-x-2">
-              {step.skipable !== false && (
-                <button
-                  onClick={handleSkip}
-                  className="flex items-center space-x-1 px-3 py-2 text-slate-400 hover:text-slate-300 transition-colors"
-                >
-                  <SkipForward className="w-4 h-4" />
-                  <span className="text-sm">Skip</span>
-                </button>
-              )}
-              
-              <button
-                onClick={handleNext}
-                className="flex items-center space-x-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg transition-all"
+            <span className="text-xs text-slate-400 font-medium">
+              {currentStep + 1} / {steps.length}
+            </span>
+          </div>
+          
+          <div className="flex space-x-2">
+            {currentStep > 0 && (
+              <button 
+                onClick={handlePrevious} 
+                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-all duration-200 flex items-center space-x-2"
               >
-                <span className="text-sm">
-                  {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
-                </span>
-                {currentStep < steps.length - 1 && <ChevronRight className="w-4 h-4" />}
+                <ChevronLeft size={16} />
+                <span className="text-sm font-medium">Back</span>
               </button>
-            </div>
+            )}
+            {currentStep < steps.length - 1 ? (
+              <button 
+                onClick={handleNext} 
+                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-lg"
+              >
+                <span className="text-sm font-medium">Next</span>
+                <ChevronRight size={16} />
+              </button>
+            ) : (
+              <button 
+                onClick={endTour} 
+                className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-lg"
+              >
+                <span className="text-sm font-medium">Finish Tour</span>
+                <Play size={16} />
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Animation overlay */}
-      {isAnimating && (
-        <div className="fixed inset-0 z-[10000] pointer-events-none">
-          <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
-        </div>
-      )}
+      {/* Add CSS for animations */}
+      <style jsx>{`
+        @keyframes tourPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+        }
+      `}</style>
     </>
   );
 }

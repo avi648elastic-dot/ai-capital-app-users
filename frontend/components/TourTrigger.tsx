@@ -44,18 +44,28 @@ export default function TourTrigger({
       <div className="fixed bottom-6 right-6 z-50">
         <button
           onClick={handleStartTour}
-          className={`group relative bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ${sizeClasses[size]} ${className}`}
+          className={`group relative bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 ${sizeClasses[size]} ${className} animate-bounce-slow`}
           title={t('common.startTour')}
+          style={{
+            background: 'linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899)',
+            backgroundSize: '200% 200%',
+            animation: 'gradientShift 3s ease infinite',
+          }}
         >
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 relative z-10">
             <Sparkles className={`${iconSizes[size]} group-hover:animate-spin`} />
-            <span className="hidden sm:inline">{t('common.startTour')}</span>
+            <span className="hidden sm:inline font-semibold">{t('common.startTour')}</span>
           </div>
           
-          {/* New badge */}
+          {/* Enhanced new badge */}
           {!hasSeenTour && (
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+            <div className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-red-500 to-pink-500 rounded-full animate-pulse flex items-center justify-center">
+              <span className="text-white text-xs font-bold">!</span>
+            </div>
           )}
+          
+          {/* Glow effect */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300"></div>
         </button>
       </div>
     );
