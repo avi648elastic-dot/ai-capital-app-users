@@ -31,7 +31,7 @@ interface NavItem {
 }
 
 export default function MobileNavigation({ userName, subscriptionTier, onLogout }: MobileNavigationProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true); // Default to open on mobile
   const router = useRouter();
 
   const navigationItems: NavItem[] = [

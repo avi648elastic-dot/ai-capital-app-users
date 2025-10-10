@@ -28,7 +28,7 @@ export default function ResponsiveNavigation({
   isAdmin = false,
   onLogout 
 }: ResponsiveNavigationProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true); // Default to open on mobile
   const router = useRouter();
   const { isMobile, isTablet } = useDevice();
   

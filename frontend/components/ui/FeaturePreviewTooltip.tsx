@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Crown, Lock, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
+import { FeaturePreviewImages } from './FeaturePreviewImages';
 
 interface FeaturePreviewTooltipProps {
   featureName: string;
@@ -36,6 +37,25 @@ export default function FeaturePreviewTooltip({
 
   const tierInfo = tierColors[requiredTier];
 
+  // Get preview image based on feature name
+  const getPreviewImage = (featureName: string) => {
+    const imageMap: Record<string, any> = {
+      'Portfolio Analysis': FeaturePreviewImages.analytics,
+      'Risk Management': FeaturePreviewImages.riskManagement,
+      'Reports': FeaturePreviewImages.reports,
+      'Watchlist': FeaturePreviewImages.watchlist,
+      'Multi-Portfolio': FeaturePreviewImages.multiPortfolio,
+      'Advanced Analytics': FeaturePreviewImages.analytics,
+      'Real-time Alerts': FeaturePreviewImages.watchlist,
+      'API Access': FeaturePreviewImages.analytics,
+      'Priority Support': FeaturePreviewImages.reports,
+      'Custom Reports': FeaturePreviewImages.reports,
+      'White Label': FeaturePreviewImages.multiPortfolio,
+      'Admin Dashboard': FeaturePreviewImages.analytics
+    };
+    return imageMap[featureName] || FeaturePreviewImages.analytics;
+  };
+
   return (
     <div 
       className="relative"
@@ -49,21 +69,10 @@ export default function FeaturePreviewTooltip({
         <div className="absolute left-full ml-4 top-0 z-[100] w-80 animate-fade-in">
           <div className="bg-slate-800 rounded-xl shadow-2xl border border-slate-700 overflow-hidden">
             {/* Preview Image */}
-            {previewImage ? (
-              <div className="relative h-40 bg-slate-900">
-                <Image
-                  src={previewImage}
-                  alt={featureName}
-                  fill
-                  className="object-cover opacity-80"
-                />
-                <div className={`absolute inset-0 bg-gradient-to-t ${tierInfo.bg} opacity-20`} />
-              </div>
-            ) : (
-              <div className={`h-40 bg-gradient-to-br ${tierInfo.bg} opacity-20 flex items-center justify-center`}>
-                <Lock className="w-16 h-16 text-slate-600" />
-              </div>
-            )}
+            <div className="h-40 bg-slate-900 flex items-center justify-center">
+              {getPreviewImage(featureName)}
+              <div className={`absolute inset-0 bg-gradient-to-t ${tierInfo.bg} opacity-10`} />
+            </div>
 
             {/* Content */}
             <div className="p-4">
