@@ -144,57 +144,9 @@ export default function Page() {
    * Login/Signup Form
    */
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Stock Chart Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900">
-        {/* Animated Stock Lines */}
-        <div className="absolute inset-0 opacity-20">
-          {/* Green upward trending lines */}
-          <svg className="w-full h-full" viewBox="0 0 1200 800" fill="none">
-            <defs>
-              <linearGradient id="stockGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#10B981" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#059669" stopOpacity="0.2" />
-              </linearGradient>
-              <linearGradient id="stockGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#34D399" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#10B981" stopOpacity="0.1" />
-              </linearGradient>
-            </defs>
-            
-            {/* Stock chart lines */}
-            <path d="M50,600 Q200,400 350,300 T650,200 T950,150" stroke="url(#stockGradient1)" strokeWidth="3" fill="none" className="animate-pulse">
-              <animate attributeName="stroke-dasharray" values="0,1000;1000,0;0,1000" dur="8s" repeatCount="indefinite" />
-            </path>
-            <path d="M100,650 Q300,450 500,350 T800,250 T1100,200" stroke="url(#stockGradient2)" strokeWidth="2" fill="none" className="animate-pulse" style={{animationDelay: '2s'}}>
-              <animate attributeName="stroke-dasharray" values="0,1000;1000,0;0,1000" dur="10s" repeatCount="indefinite" />
-            </path>
-            <path d="M150,700 Q400,500 650,400 T950,300" stroke="url(#stockGradient1)" strokeWidth="2" fill="none" className="animate-pulse" style={{animationDelay: '4s'}}>
-              <animate attributeName="stroke-dasharray" values="0,1000;1000,0;0,1000" dur="12s" repeatCount="indefinite" />
-            </path>
-          </svg>
-        </div>
-        
-        {/* Floating Stock Ticker */}
-        <div className="absolute top-10 left-0 right-0 overflow-hidden">
-          <div className="flex animate-scroll whitespace-nowrap text-emerald-400 text-sm font-mono opacity-30">
-            <span className="mr-8">📈 AAPL +2.5% | MSFT +1.8% | GOOGL +3.2% | TSLA +4.1% | NVDA +2.9%</span>
-            <span className="mr-8">📊 SPY +1.2% | QQQ +1.5% | DIA +0.9% | IWM +2.1% | VTI +1.3%</span>
-            <span className="mr-8">💰 Market Cap: $45.2T | Volume: 2.1B | VIX: 18.5 | DXY: 103.2</span>
-          </div>
-        </div>
-        
-        {/* Floating Elements */}
-        <div className="absolute top-20 right-10 text-6xl opacity-10 animate-bounce" style={{animationDelay: '1s'}}>📈</div>
-        <div className="absolute top-40 left-10 text-4xl opacity-10 animate-bounce" style={{animationDelay: '3s'}}>💰</div>
-        <div className="absolute bottom-20 right-20 text-5xl opacity-10 animate-bounce" style={{animationDelay: '5s'}}>📊</div>
-        <div className="absolute bottom-40 left-20 text-3xl opacity-10 animate-bounce" style={{animationDelay: '2s'}}>🎯</div>
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
