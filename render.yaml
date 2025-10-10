@@ -16,11 +16,13 @@ services:
         fromDatabase:
           name: aicapital-mongodb
           property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: aicapital-redis
-          property: connectionString
+      # REDIS_URL is OPTIONAL - App runs without Redis (no caching/distributed locks)
+      # Uncomment and create Redis service if you need caching and distributed locking
+      # - key: REDIS_URL
+      #   fromService:
+      #     type: redis
+      #     name: aicapital-redis
+      #     property: connectionString
       - key: JWT_SECRET
         generateValue: true
       - key: SESSION_SECRET
@@ -49,6 +51,7 @@ databases:
     plan: starter
     databaseName: aicapital
 
-  - name: aicapital-redis
-    plan: starter
-    type: redis
+  # Redis is OPTIONAL - Uncomment if you want caching and distributed locks
+  # - name: aicapital-redis
+  #   plan: starter
+  #   type: redis

@@ -1,21 +1,21 @@
 ## SECURITY & MIDDLEWARE (`backend/src/app.ts`)
-- [ ] Install helmet, express-rate-limit, cors, cookie-parser
-- [ ] Add helmet() and rateLimit() (300 req/min)
-- [ ] Restrict CORS to Vercel + admin domains; enable credentials
+- [x] Install helmet, express-rate-limit, cors, cookie-parser
+- [x] Add helmet() and rateLimit() (300 req/min)
+- [x] Restrict CORS to Vercel + admin domains; enable credentials
 - [ ] Add CSRF protection (csurf)
-- [ ] Secure cookies (httpOnly, sameSite=Lax, secure in prod)
-- [ ] Central error handler middleware (JSON + logging)
+- [x] Secure cookies (httpOnly, sameSite=Lax, secure in prod)
+- [x] Central error handler middleware (JSON + logging)
 
 ## REQUEST VALIDATION (`backend/src/middleware/validate.ts`)
-- [ ] Install zod
-- [ ] Build validate(schema) middleware
-- [ ] Create schemas in /schemas
-- [ ] Apply to all auth / portfolio routes
+- [x] Install zod
+- [x] Build validate(schema) middleware
+- [x] Create schemas in /schemas
+- [ ] Apply to all auth / portfolio routes (partially done, needs full coverage)
 
 ## DATA & INDEX OPTIMIZATION (`backend/src/models`)
-- [ ] Add indexes (users, portfolios, historicaldata)
+- [x] Add indexes (users, portfolios, historicaldata)
 - [ ] Pre-save hook for stock-limit per plan
-- [ ] Run ensureIndexes() on startup
+- [x] Run ensureIndexes() on startup
 
 ## MARKET-DATA SERVICE (`backend/src/services/stockDataService.ts`)
 - [ ] Add lru-cache with 20 s TTL + provider fallback + retry
@@ -23,15 +23,15 @@
 - [ ] Persist historical deltas only
 
 ## CRON & JOB STABILITY (`backend/src/services/schedulerService.ts`)
-- [ ] Connect Redis (REDIS_URL)
-- [ ] Implement distributed lock (SET NX PX)
+- [x] Connect Redis (REDIS_URL) - ⚠️ **NEEDS RENDER CONFIG FIX**
+- [x] Implement distributed lock (SET NX PX)
 - [ ] Upsert by (portfolioId,symbol,date)
 - [ ] Log "Skipped run – lock held"
 
 ## HEALTH & LOGGING
-- [ ] Use pino + requestId middleware
-- [ ] /healthz → { status, uptime }
-- [ ] Configure Render healthcheck
+- [x] Use pino + requestId middleware
+- [x] /healthz → { status, uptime }
+- [x] Configure Render healthcheck
 
 ## FRONTEND API (`frontend/lib/api.ts`)
 - [ ] Centralize fetch calls + Zod validation + error mapper

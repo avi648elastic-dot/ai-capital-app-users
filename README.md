@@ -16,6 +16,14 @@
 
 ---
 
+> **🚀 DEPLOYMENT STATUS (Updated: October 10, 2025)**  
+> ✅ **Production Ready** - Application is fully functional and deployed  
+> ✅ **Redis Issue Fixed** - See [RENDER_DEPLOYMENT_FIX.md](RENDER_DEPLOYMENT_FIX.md) for details  
+> ✅ **70% Complete** - MVP ready, see [PROGRESS_SUMMARY.md](PROGRESS_SUMMARY.md) for full status  
+> 📋 **TODO Lists** - See [TODO-Part1.md](TODO-Part1.md) through [TODO-Part4.md](TODO-Part4.md) for remaining tasks
+
+---
+
 ## 📋 Table of Contents
 
 - [Overview](#overview)
@@ -791,6 +799,8 @@ Upload user avatar.
 
 ## 🌐 Deployment
 
+> **⚠️ IMPORTANT:** If you're experiencing Redis connection errors on Render, see [RENDER_DEPLOYMENT_FIX.md](RENDER_DEPLOYMENT_FIX.md) for the complete fix guide.
+
 ### Frontend Deployment (Vercel)
 
 1. **Connect Repository**:
@@ -819,16 +829,45 @@ Upload user avatar.
    - Root Directory: `backend`
    - Build Command: `npm install && npm run build`
    - Start Command: `npm start`
+   - Health Check Path: `/healthz`
 
-3. **Environment Variables**:
+3. **Environment Variables** (Required):
    ```
    NODE_ENV=production
-   PORT=5000
+   PORT=10000
    MONGODB_URI=mongodb+srv://...
-   JWT_SECRET=your-production-secret
+   JWT_SECRET=your-production-secret-min-32-chars
+   SESSION_SECRET=your-session-secret-min-32-chars
+   ```
+
+4. **Optional Environment Variables**:
+   ```
+   # Stock Data APIs (at least one recommended)
    FINNHUB_API_KEY=your-key
    ALPHA_VANTAGE_API_KEY=your-key
+   FINANCIAL_MODELING_PREP_API_KEY=your-key
+   
+   # Redis (optional - app works without it)
+   REDIS_URL=redis://your-redis-url:6379
+   
+   # Monitoring (optional)
+   SENTRY_DSN=your-sentry-dsn
+   
+   # Payments (when ready)
+   STRIPE_SECRET_KEY=your-stripe-key
+   STRIPE_WEBHOOK_SECRET=your-webhook-secret
    ```
+
+5. **Important Notes**:
+   - ✅ Redis is **optional** - app runs without it
+   - ✅ Health check should point to `/healthz`
+   - ✅ JWT_SECRET should be at least 32 characters
+   - ✅ Get at least one stock data API key (Finnhub is free)
+
+6. **Troubleshooting**:
+   - Redis errors? See [RENDER_DEPLOYMENT_FIX.md](RENDER_DEPLOYMENT_FIX.md)
+   - Health check failing? Check MONGODB_URI connection
+   - CORS errors? Add your frontend URL to `allowedOrigins` in `backend/src/index.ts`
 
 ### Database (MongoDB Atlas)
 
@@ -1017,6 +1056,17 @@ When reporting bugs, please include:
 
 [Website](https://ai-capital-app7.vercel.app) • [GitHub](https://github.com/your-username/aicapital-users) • [Documentation](https://docs.aicapital.com)
 
-**Last Updated**: October 9, 2025 | **Version**: 2.0.0
+**Last Updated**: October 10, 2025 | **Version**: 2.0.1
+
+📝 **Recent Changes:**
+- Fixed Redis deployment issue (made optional)
+- Updated security middleware
+- Added comprehensive health checks
+- Improved error handling and logging
+
+📚 **Documentation:**
+- [RENDER_DEPLOYMENT_FIX.md](RENDER_DEPLOYMENT_FIX.md) - Deployment troubleshooting
+- [PROGRESS_SUMMARY.md](PROGRESS_SUMMARY.md) - Current development status
+- [TODO-Part1.md](TODO-Part1.md) to [TODO-Part4.md](TODO-Part4.md) - Roadmap
 
 </div>

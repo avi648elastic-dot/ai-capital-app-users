@@ -19,28 +19,51 @@ class RedisService {
    */
   private async initializeConnection(): Promise<void> {
     try {
-      const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+      const redisUrl = process.env.REDIS_URL;
+      
+      // ⚠️ If REDIS_URL is not configured, skip Redis entirely (graceful degradation)
+      if (!redisUrl) {
+        loggerService.warn('Redis not configured (REDIS_URL missing). Running without Redis cache and distributed locks.');
+        this.isConnected = false;
+        return;
+      }
       
       this.client = createClient({
         url: redisUrl,
         socket: {
           connectTimeout: 5000,
+          reconnectStrategy: (retries) => {
+            // Stop reconnecting after 3 attempts
+            if (retries > 3) {
+              loggerService.error('Redis max reconnection attempts reached. Running without Redis.');
+              return false; // Stop reconnecting
+            }
+            return Math.min(retries * 1000, 5000); // Exponential backoff
+          },
         },
       });
 
       this.client.on('error', (error) => {
-        loggerService.error('Redis client error', { error: error.message });
+        // Only log once per connection attempt to avoid spam
+        if (!this.isConnected && this.connectionAttempts === 0) {
+          loggerService.error('Redis connection failed. Running without Redis cache and distributed locks.', { 
+            error: error.message,
+            hint: 'This is non-critical. The app will function without Redis but without caching and distributed locking.'
+          });
+        }
         this.isConnected = false;
       });
 
       this.client.on('connect', () => {
-        loggerService.info('Redis client connected');
+        loggerService.info('✅ Redis client connected successfully');
         this.isConnected = true;
         this.connectionAttempts = 0;
       });
 
       this.client.on('disconnect', () => {
-        loggerService.warn('Redis client disconnected');
+        if (this.connectionAttempts === 0) {
+          loggerService.warn('Redis client disconnected');
+        }
         this.isConnected = false;
       });
 
@@ -48,16 +71,19 @@ class RedisService {
       await this.client.connect();
       
     } catch (error) {
-      loggerService.error('Failed to initialize Redis connection', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        attempt: this.connectionAttempts + 1,
-      });
-      
       this.connectionAttempts++;
-      if (this.connectionAttempts < this.maxConnectionAttempts) {
-        // Retry after 5 seconds
-        setTimeout(() => this.initializeConnection(), 5000);
+      
+      // Only log detailed error on first attempt
+      if (this.connectionAttempts === 1) {
+        loggerService.warn('Redis connection failed. Application will run without Redis caching and distributed locks.', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          hint: 'To enable Redis, set REDIS_URL environment variable with your Redis connection string.',
+        });
       }
+      
+      // Don't retry automatically - Redis is optional
+      this.isConnected = false;
+      this.client = null;
     }
   }
 
