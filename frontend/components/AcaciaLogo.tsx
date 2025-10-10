@@ -1,132 +1,74 @@
-'use client';
+import React from 'react';
 
 interface AcaciaLogoProps {
   className?: string;
-  size?: number;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export default function AcaciaLogo({ className = '', size = 48 }: AcaciaLogoProps) {
+const AcaciaLogo: React.FC<AcaciaLogoProps> = ({ className = '', size = 'md' }) => {
+  const sizeClasses = {
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-12 h-12',
+    xl: 'w-16 h-16'
+  };
+
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 200 200"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      {/* Gradient Definitions */}
-      <defs>
-        <linearGradient id="trunkGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#8B4513" />
-          <stop offset="100%" stopColor="#654321" />
-        </linearGradient>
-        <linearGradient id="canopyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#10B981" />
-          <stop offset="50%" stopColor="#059669" />
-          <stop offset="100%" stopColor="#047857" />
-        </linearGradient>
-        <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-
-      {/* Glow Effect */}
-      <circle cx="100" cy="80" r="80" fill="url(#glowGradient)" />
-
-      {/* Tree Trunk */}
-      <path
-        d="M 90 140 L 85 200 L 115 200 L 110 140 Z"
-        fill="url(#trunkGradient)"
-        stroke="#654321"
-        strokeWidth="1"
-      />
-
-      {/* Main Canopy - Flat-topped Acacia style */}
-      <ellipse
-        cx="100"
-        cy="70"
-        rx="80"
-        ry="35"
-        fill="url(#canopyGradient)"
-        opacity="0.9"
-      />
-
-      {/* Secondary Canopy Layer for depth */}
-      <ellipse
-        cx="100"
-        cy="75"
-        rx="75"
-        ry="30"
-        fill="#059669"
-        opacity="0.8"
-      />
-
-      {/* Tertiary Canopy Layer */}
-      <ellipse
-        cx="100"
-        cy="80"
-        rx="70"
-        ry="25"
-        fill="#047857"
-        opacity="0.7"
-      />
-
-      {/* Canopy Details - Branches */}
-      <path
-        d="M 40 70 Q 60 60, 80 65"
-        stroke="#047857"
-        strokeWidth="2"
-        fill="none"
-        opacity="0.6"
-      />
-      <path
-        d="M 160 70 Q 140 60, 120 65"
-        stroke="#047857"
-        strokeWidth="2"
-        fill="none"
-        opacity="0.6"
-      />
-      <path
-        d="M 70 75 Q 85 68, 100 70"
-        stroke="#047857"
-        strokeWidth="2"
-        fill="none"
-        opacity="0.6"
-      />
-      <path
-        d="M 130 75 Q 115 68, 100 70"
-        stroke="#047857"
-        strokeWidth="2"
-        fill="none"
-        opacity="0.6"
-      />
-
-      {/* Highlight on canopy */}
-      <ellipse
-        cx="100"
-        cy="65"
-        rx="60"
-        ry="15"
-        fill="#34D399"
-        opacity="0.3"
-      />
-
-      {/* Trunk Texture */}
-      <line x1="95" y1="150" x2="93" y2="190" stroke="#654321" strokeWidth="1" opacity="0.5" />
-      <line x1="105" y1="150" x2="107" y2="190" stroke="#654321" strokeWidth="1" opacity="0.5" />
-      <line x1="100" y1="160" x2="98" y2="185" stroke="#654321" strokeWidth="1" opacity="0.5" />
-
-      {/* Ground Shadow */}
-      <ellipse
-        cx="100"
-        cy="200"
-        rx="30"
-        ry="5"
-        fill="#000000"
-        opacity="0.2"
-      />
-    </svg>
+    <div className={`${sizeClasses[size]} ${className}`}>
+      <svg 
+        viewBox="0 0 100 100" 
+        className="w-full h-full"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Acacia Tree Logo */}
+        <g>
+          {/* Trunk */}
+          <rect x="45" y="60" width="10" height="25" fill="#8B4513" rx="2" />
+          
+          {/* Main Branches */}
+          <path d="M35 55 Q45 50 55 55" stroke="#8B4513" strokeWidth="2" fill="none" />
+          <path d="M35 50 Q45 45 55 50" stroke="#8B4513" strokeWidth="2" fill="none" />
+          <path d="M35 45 Q45 40 55 45" stroke="#8B4513" strokeWidth="2" fill="none" />
+          
+          {/* Left Branch System */}
+          <path d="M35 55 Q25 52 20 48" stroke="#8B4513" strokeWidth="1.5" fill="none" />
+          <path d="M35 50 Q25 47 20 43" stroke="#8B4513" strokeWidth="1.5" fill="none" />
+          <path d="M35 45 Q25 42 20 38" stroke="#8B4513" strokeWidth="1.5" fill="none" />
+          
+          {/* Right Branch System */}
+          <path d="M55 55 Q65 52 70 48" stroke="#8B4513" strokeWidth="1.5" fill="none" />
+          <path d="M55 50 Q65 47 70 43" stroke="#8B4513" strokeWidth="1.5" fill="none" />
+          <path d="M55 45 Q65 42 70 38" stroke="#8B4513" strokeWidth="1.5" fill="none" />
+          
+          {/* Foliage - Teardrop shaped leaves */}
+          {/* Left side foliage */}
+          <ellipse cx="25" cy="50" rx="4" ry="8" fill="#228B22" transform="rotate(-30 25 50)" />
+          <ellipse cx="22" cy="45" rx="3.5" ry="7" fill="#32CD32" transform="rotate(-45 22 45)" />
+          <ellipse cx="28" cy="43" rx="4" ry="6" fill="#228B22" transform="rotate(-15 28 43)" />
+          <ellipse cx="20" cy="40" rx="3" ry="6" fill="#32CD32" transform="rotate(-60 20 40)" />
+          <ellipse cx="30" cy="38" rx="3.5" ry="5" fill="#228B22" transform="rotate(-10 30 38)" />
+          
+          {/* Center foliage */}
+          <ellipse cx="40" cy="48" rx="3.5" ry="7" fill="#32CD32" transform="rotate(-20 40 48)" />
+          <ellipse cx="45" cy="45" rx="4" ry="6" fill="#228B22" transform="rotate(-10 45 45)" />
+          <ellipse cx="50" cy="48" rx="3.5" ry="7" fill="#32CD32" transform="rotate(20 50 48)" />
+          <ellipse cx="55" cy="45" rx="4" ry="6" fill="#228B22" transform="rotate(10 55 45)" />
+          
+          {/* Right side foliage */}
+          <ellipse cx="75" cy="50" rx="4" ry="8" fill="#228B22" transform="rotate(30 75 50)" />
+          <ellipse cx="78" cy="45" rx="3.5" ry="7" fill="#32CD32" transform="rotate(45 78 45)" />
+          <ellipse cx="72" cy="43" rx="4" ry="6" fill="#228B22" transform="rotate(15 72 43)" />
+          <ellipse cx="80" cy="40" rx="3" ry="6" fill="#32CD32" transform="rotate(60 80 40)" />
+          <ellipse cx="70" cy="38" rx="3.5" ry="5" fill="#228B22" transform="rotate(10 70 38)" />
+          
+          {/* Additional canopy layers for fullness */}
+          <ellipse cx="35" cy="42" rx="3" ry="5" fill="#32CD32" transform="rotate(-25 35 42)" />
+          <ellipse cx="65" cy="42" rx="3" ry="5" fill="#32CD32" transform="rotate(25 65 42)" />
+          <ellipse cx="50" cy="40" rx="2.5" ry="4" fill="#228B22" transform="rotate(0 50 40)" />
+        </g>
+      </svg>
+    </div>
   );
-}
+};
+
+export default AcaciaLogo;

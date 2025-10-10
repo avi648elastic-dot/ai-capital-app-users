@@ -144,8 +144,71 @@ export default function Page() {
    * Login/Signup Form
    */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Floating Stock Charts */}
+        <div className="absolute top-20 left-10 w-16 h-16 opacity-20 animate-pulse">
+          <svg viewBox="0 0 100 100" className="w-full h-full text-green-400">
+            <path d="M10,80 L20,60 L30,70 L40,40 L50,50 L60,30 L70,45 L80,25 L90,35" 
+                  stroke="currentColor" strokeWidth="2" fill="none" />
+            <circle cx="90" cy="35" r="3" fill="currentColor" />
+          </svg>
+        </div>
+        
+        <div className="absolute top-40 right-16 w-12 h-12 opacity-15 animate-bounce">
+          <svg viewBox="0 0 100 100" className="w-full h-full text-blue-400">
+            <path d="M10,70 L25,50 L40,60 L55,30 L70,40 L85,20" 
+                  stroke="currentColor" strokeWidth="2" fill="none" />
+            <circle cx="85" cy="20" r="2" fill="currentColor" />
+          </svg>
+        </div>
+
+        <div className="absolute bottom-32 left-20 w-14 h-14 opacity-25 animate-pulse">
+          <svg viewBox="0 0 100 100" className="w-full h-full text-purple-400">
+            <path d="M10,75 L30,55 L50,65 L70,35 L90,45" 
+                  stroke="currentColor" strokeWidth="2" fill="none" />
+            <circle cx="90" cy="45" r="3" fill="currentColor" />
+          </svg>
+        </div>
+
+        {/* Floating Financial Icons */}
+        <div className="absolute top-32 right-32 w-8 h-8 opacity-30 animate-float">
+          <div className="w-full h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-black font-bold text-sm">
+            $
+          </div>
+        </div>
+
+        <div className="absolute bottom-40 right-24 w-6 h-6 opacity-25 animate-float-delayed">
+          <div className="w-full h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+            %
+          </div>
+        </div>
+
+        <div className="absolute top-60 left-32 w-7 h-7 opacity-20 animate-float-slow">
+          <div className="w-full h-full bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+            📈
+          </div>
+        </div>
+
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="w-full h-full" style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
+          }}></div>
+        </div>
+
+        {/* Subtle Particles */}
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-emerald-400 rounded-full opacity-40 animate-ping"></div>
+        <div className="absolute top-3/4 right-1/3 w-1 h-1 bg-blue-400 rounded-full opacity-50 animate-ping" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-1.5 h-1.5 bg-purple-400 rounded-full opacity-30 animate-ping" style={{animationDelay: '2s'}}></div>
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
         <div className="bg-slate-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/50 p-8">
           {/* AI-Capital Logo and Branding */}
           <div className="text-center mb-8">
@@ -154,29 +217,59 @@ export default function Page() {
                 <AcaciaLogo size={96} className="w-full h-full" />
               </div>
             </div>
-            <h1 className="logo-text text-3xl sm:text-4xl mb-3 font-bold">AI-Capital ✨ NEW</h1>
+            <h1 className="logo-text text-3xl sm:text-4xl mb-3 font-bold bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+              AI-Capital ✨
+            </h1>
             <div className="flex items-center justify-center space-x-1 sm:space-x-2 mb-2">
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
-              <p className="text-slate-300 text-base sm:text-lg font-semibold text-center">Professional Portfolio Management V2</p>
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 animate-pulse" />
+              <p className="text-slate-200 text-base sm:text-lg font-semibold text-center">
+                Professional Portfolio Management V2
+              </p>
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 animate-pulse" />
             </div>
-            <p className="text-slate-400 text-xs sm:text-sm text-center px-2">AI-Powered Trading Decisions & Real-Time Analytics</p>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs text-slate-500">
-              <span className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span className="hidden sm:inline">Real-time Data</span>
-                <span className="sm:hidden">Real-time</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span className="hidden sm:inline">AI Analytics</span>
-                <span className="sm:hidden">AI</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                <span className="hidden sm:inline">Portfolio Management</span>
-                <span className="sm:hidden">Portfolio</span>
-              </span>
+            <p className="text-slate-300 text-sm sm:text-base text-center px-2 font-medium">
+              🚀 AI-Powered Trading Decisions & Real-Time Analytics
+            </p>
+            
+            {/* Exciting Features */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-lg border border-slate-600/30">
+              <p className="text-emerald-300 text-sm font-semibold mb-3 text-center">
+                💎 Join 1000+ Successful Traders
+              </p>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-slate-300">Real-time Data</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                  <span className="text-slate-300">AI Analytics</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                  <span className="text-slate-300">Smart Alerts</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
+                  <span className="text-slate-300">Multi-Portfolio</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Success Stats */}
+            <div className="mt-4 flex justify-center space-x-6 text-xs text-slate-400">
+              <div className="text-center">
+                <div className="text-emerald-400 font-bold text-lg">+15.3%</div>
+                <div>Avg Returns</div>
+              </div>
+              <div className="text-center">
+                <div className="text-blue-400 font-bold text-lg">24/7</div>
+                <div>Monitoring</div>
+              </div>
+              <div className="text-center">
+                <div className="text-purple-400 font-bold text-lg">98%</div>
+                <div>Accuracy</div>
+              </div>
             </div>
           </div>
 
