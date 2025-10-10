@@ -374,6 +374,13 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   const isRTL = ['ar', 'he'].includes(locale);
   const fontClass = locale === 'ar' ? 'lang-ar' : locale === 'he' ? 'lang-he' : 'lang-en';
 
+  // Apply language changes to document
+  useEffect(() => {
+    document.documentElement.setAttribute('lang', locale);
+    document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+    document.body.className = isRTL ? 'rtl' : '';
+  }, [locale, isRTL]);
+
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t, isRTL, fontClass }}>
       {children}

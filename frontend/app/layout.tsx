@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body className={inter.className}>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -29,7 +29,10 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>
             <TourProvider>
-              <div className="min-h-screen bg-slate-950">
+              <div className="min-h-screen transition-colors duration-300" style={{ 
+                backgroundColor: 'var(--bg-primary, #0f172a)',
+                color: 'var(--text-primary, #f1f5f9)'
+              }}>
                 {children}
                 {/* Tour Overlay */}
                 <TourOverlay />

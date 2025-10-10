@@ -215,6 +215,29 @@
   animation: tour-pulse 2s ease-in-out infinite;
 }
 
+/* Theme Support */
+[data-theme='light'] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+}
+
+[data-theme='dark'] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-primary: #334155;
+  --border-secondary: #475569;
+}
+
 /* RTL Support */
 .rtl {
   direction: rtl;

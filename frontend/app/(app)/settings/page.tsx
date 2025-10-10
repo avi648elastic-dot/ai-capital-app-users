@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function Settings() {
-  const { t, language, setLanguage } = useLanguage();
+  const { t, locale, setLocale } = useLanguage();
   const { theme, setTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -105,11 +105,11 @@ export default function Settings() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">{t('settings.language')}</label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as 'en' | 'ar' | 'he')}
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
+                      <select
+                        value={locale}
+                        onChange={(e) => setLocale(e.target.value as 'en' | 'ar' | 'he')}
+                        className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
                 <option value="en">English</option>
                 <option value="ar">العربية</option>
                 <option value="he">עברית</option>
