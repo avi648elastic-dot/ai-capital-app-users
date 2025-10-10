@@ -15,7 +15,7 @@ WORKDIR /app
 COPY backend/package*.json ./
 
 # Install dependencies (including dev dependencies for build)
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY backend/ ./
@@ -24,7 +24,7 @@ COPY backend/ ./
 RUN npm run build
 
 # Remove dev dependencies
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Change ownership
 RUN chown -R aicapital:nodejs /app
