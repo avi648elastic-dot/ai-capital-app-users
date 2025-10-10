@@ -18,11 +18,19 @@ router.get('/', authenticateToken, async (req, res) => {
     // Get user's portfolio
     const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
     
+    loggerService.info(`📊 [PERFORMANCE] Found ${portfolio.length} portfolio items for user ${userId}`);
+    
     if (portfolio.length === 0) {
+      loggerService.warn(`⚠️ [PERFORMANCE] No portfolio data found for user ${userId}`);
       return res.json({
         portfolioMetrics: null,
         stockMetrics: {},
-        message: 'No portfolio data available.'
+        message: 'No portfolio data available.',
+        debug: {
+          userId,
+          portfolioCount: 0,
+          timestamp: new Date().toISOString()
+        }
       });
     }
 
@@ -31,7 +39,9 @@ router.get('/', authenticateToken, async (req, res) => {
     loggerService.info(`🔍 [PERFORMANCE] Analyzing ${tickers.length} stocks: ${tickers.join(', ')}`);
     
     // Fetch 90-day data for all stocks using our Google Finance service
+    loggerService.info(`🔍 [PERFORMANCE] Fetching 90-day data for ${tickers.length} stocks...`);
     const stockMetricsMap = await googleFinanceFormulasService.getMultipleStockMetrics(tickers);
+    loggerService.info(`📊 [PERFORMANCE] Retrieved data for ${stockMetricsMap.size}/${tickers.length} stocks`);
     
     // Calculate metrics for each stock using the 90-day data
     const stockMetrics: Record<string, any> = {};
@@ -126,15 +136,29 @@ router.get('/', authenticateToken, async (req, res) => {
       stocksAnalyzed: stockMetricsMap.size
     });
     
-    res.json({
+    const response = {
       portfolioMetrics,
       stockMetrics,
       timeframe: `${days}d`,
       dataSource: 'Google Finance 90-Day Data',
       timestamp: new Date().toISOString(),
       dataPoints: Array.from(stockMetricsMap.keys()),
-      cacheStats: googleFinanceFormulasService.getCacheStats()
+      cacheStats: googleFinanceFormulasService.getCacheStats(),
+      debug: {
+        portfolioCount: portfolio.length,
+        stockDataCount: stockMetricsMap.size,
+        calculatedMetrics: Object.keys(stockMetrics).length,
+        tickers: tickers
+      }
+    };
+    
+    loggerService.info(`✅ [PERFORMANCE] Sending response with ${Object.keys(stockMetrics).length} stock metrics and portfolio metrics:`, {
+      portfolioReturn: portfolioMetrics?.totalReturn?.toFixed(2) + '%',
+      portfolioVolatility: portfolioMetrics?.volatility?.toFixed(2) + '%',
+      stockCount: Object.keys(stockMetrics).length
     });
+    
+    res.json(response);
 
   } catch (error: any) {
     loggerService.error('❌ [PERFORMANCE] Error calculating performance metrics:', error);

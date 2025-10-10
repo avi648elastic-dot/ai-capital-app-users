@@ -94,12 +94,14 @@ export default function Performance() {
       });
 
       console.log('📊 [PERFORMANCE] Received real performance data:', response.data);
+      console.log('📊 [PERFORMANCE] Debug info:', response.data.debug);
       
       if (response.data.portfolioMetrics) {
         console.log('✅ [PERFORMANCE] Portfolio metrics received:', response.data.portfolioMetrics);
         setPortfolioMetrics(response.data.portfolioMetrics);
       } else {
         console.warn('⚠️ [PERFORMANCE] No portfolio metrics in response');
+        console.warn('⚠️ [PERFORMANCE] Response data:', response.data);
       }
       
       if (response.data.stockMetrics && Object.keys(response.data.stockMetrics).length > 0) {
@@ -107,6 +109,7 @@ export default function Performance() {
         setStockMetrics(response.data.stockMetrics);
       } else {
         console.warn('⚠️ [PERFORMANCE] No stock metrics in response');
+        console.warn('⚠️ [PERFORMANCE] Stock metrics data:', response.data.stockMetrics);
       }
       
       setDataSource(response.data.dataSource || 'Google Finance API');
@@ -272,6 +275,13 @@ export default function Performance() {
               <p>{calculating ? 'Calculating performance metrics...' : 'No performance data available'}</p>
               <p className="text-xs mt-2">Portfolio has {portfolio.length} stocks: {portfolio.map(s => s.ticker).join(', ')}</p>
               <p className="text-xs mt-1">Check browser console for debug info</p>
+              <div className="mt-4 p-3 bg-slate-800 rounded-lg text-left text-xs">
+                <p className="text-yellow-400 mb-2">🔍 Debug Information:</p>
+                <p>• Portfolio stocks: {portfolio.length}</p>
+                <p>• Data source: {dataSource || 'Unknown'}</p>
+                <p>• Timeframe: {timeframe}</p>
+                <p>• Calculating: {calculating ? 'Yes' : 'No'}</p>
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
