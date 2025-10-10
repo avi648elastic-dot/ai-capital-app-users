@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { TrendingUp, BarChart3, PieChart, Activity, Building2, TrendingDown, Bot, Smile, Frown, AlertCircle, RefreshCw } from 'lucide-react';
+import { TrendingUp, BarChart3, PieChart, Activity, Building2, TrendingDown, Bot, Smile, Frown, AlertCircle } from 'lucide-react';
 
 // Real Portfolio Chart Component
 const RealPortfolioChart = ({ data }: { data: any[] }) => {
@@ -320,9 +320,7 @@ export default function PortfolioAnalysis() {
     }
   };
 
-  const handleRefresh = () => {
-    fetchAnalyticsData(true);
-  };
+  // Auto-refresh when page loads - no manual refresh button needed
 
   if (loading) {
     return (
@@ -335,19 +333,9 @@ export default function PortfolioAnalysis() {
   return (
     <div className="w-full">
         <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Analytics</h1>
-              <p className="text-sm sm:text-base text-slate-400">Detailed analysis of your portfolio performance</p>
-            </div>
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="flex items-center space-x-2 px-4 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
-            </button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Portfolio Analysis</h1>
+            <p className="text-sm sm:text-base text-slate-400">Comprehensive analysis of your portfolio performance and risk assessment</p>
           </div>
         </div>
 
