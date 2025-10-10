@@ -46,7 +46,10 @@ const translations = {
       weekend: 'Weekend',
       day: 'day',
       preMarket: 'Pre-Market',
-      afterHours: 'After Hours'
+      afterHours: 'After Hours',
+      profile: 'Profile',
+      logout: 'Logout',
+      startTour: 'Start Tour'
     },
     auth: {
       login: 'Login',
@@ -101,7 +104,8 @@ const translations = {
       subscription: 'Subscription',
       manageSubscription: 'Manage your subscription plan',
       signOut: 'Sign Out',
-      logoutFromAccount: 'Logout from your account'
+      logoutFromAccount: 'Logout from your account',
+      account: 'Account'
     },
     navigation: {
       dashboard: 'Dashboard',
@@ -190,7 +194,10 @@ const translations = {
       weekend: 'סוף שבוע',
       day: 'יום',
       preMarket: 'לפני השוק',
-      afterHours: 'אחרי השוק'
+      afterHours: 'אחרי השוק',
+      profile: 'פרופיל',
+      logout: 'התנתק',
+      startTour: 'התחל סיור'
     },
     auth: {
       login: 'התחברות',
@@ -245,7 +252,8 @@ const translations = {
       subscription: 'מנוי',
       manageSubscription: 'נהל את תוכנית המנוי שלך',
       signOut: 'התנתק',
-      logoutFromAccount: 'התנתק מהחשבון שלך'
+      logoutFromAccount: 'התנתק מהחשבון שלך',
+      account: 'חשבון'
     },
     navigation: {
       dashboard: 'לוח מחוונים',

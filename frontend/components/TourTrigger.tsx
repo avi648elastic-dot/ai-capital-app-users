@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTour } from '@/contexts/TourContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Sparkles, HelpCircle } from 'lucide-react';
 
 interface TourTriggerProps {
@@ -15,6 +16,7 @@ export default function TourTrigger({
   size = 'md',
   className = '' 
 }: TourTriggerProps) {
+  const { t } = useLanguage();
   const { startTour, hasSeenTour } = useTour();
 
   const sizeClasses = {
@@ -43,11 +45,11 @@ export default function TourTrigger({
         <button
           onClick={handleStartTour}
           className={`group relative bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ${sizeClasses[size]} ${className}`}
-          title="Start Tour"
+          title={t('common.startTour')}
         >
           <div className="flex items-center space-x-2">
             <Sparkles className={`${iconSizes[size]} group-hover:animate-spin`} />
-            <span className="hidden sm:inline">Start Tour</span>
+            <span className="hidden sm:inline">{t('common.startTour')}</span>
           </div>
           
           {/* New badge */}
@@ -64,7 +66,7 @@ export default function TourTrigger({
       <button
         onClick={handleStartTour}
         className={`text-slate-400 hover:text-blue-400 transition-colors ${className}`}
-        title="Start Tour"
+        title={t('common.startTour')}
       >
         <HelpCircle className={iconSizes[size]} />
       </button>
@@ -77,7 +79,7 @@ export default function TourTrigger({
       className={`inline-flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors ${sizeClasses[size]} ${className}`}
     >
       <Sparkles className={iconSizes[size]} />
-      <span>Start Tour</span>
+      <span>{t('common.startTour')}</span>
       {!hasSeenTour && (
         <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
       )}

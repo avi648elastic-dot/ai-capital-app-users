@@ -8,12 +8,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function Settings() {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({
-    language: 'en',
     notifications: true,
     emailUpdates: true,
   });
@@ -107,14 +106,13 @@ export default function Settings() {
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">{t('settings.language')}</label>
               <select
-                value={settings.language}
-                onChange={(e) => setSettings({ ...settings, language: e.target.value })}
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'en' | 'ar' | 'he')}
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="en">English</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
+                <option value="ar">العربية</option>
+                <option value="he">עברית</option>
               </select>
             </div>
           </div>
@@ -164,7 +162,7 @@ export default function Settings() {
         <div className="card p-6">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <Shield className="w-5 h-5 mr-2" />
-            Account
+            {t('settings.account')}
           </h3>
           <div className="space-y-4">
             <button 

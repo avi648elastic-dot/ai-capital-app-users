@@ -138,7 +138,7 @@ export default function ResponsiveNavigation({
               className="flex-1 px-3 py-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors flex items-center justify-center space-x-1"
             >
               <User className="w-3 h-3" />
-              <span>Profile</span>
+              <span>{t('common.profile')}</span>
             </button>
             <button
               onClick={() => router.push('/settings')}
@@ -232,7 +232,7 @@ export default function ResponsiveNavigation({
             className="w-full flex items-center space-x-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
           >
             <LogOut className="w-5 h-5" />
-            <span className="text-sm font-medium">Logout</span>
+            <span className="text-sm font-medium">{t('common.logout')}</span>
           </button>
         </div>
       </div>
@@ -314,7 +314,7 @@ export default function ResponsiveNavigation({
                   className="flex-1 px-3 py-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg transition-colors flex items-center justify-center space-x-1"
                 >
                   <User className="w-3 h-3" />
-                  <span>Profile</span>
+                  <span>{t('common.profile')}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -398,7 +398,7 @@ export default function ResponsiveNavigation({
               className="w-full flex items-center space-x-4 px-6 py-5 text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-red-600/20 hover:to-red-500/20 rounded-xl transition-all duration-300 border border-transparent hover:border-red-500/50 hover:shadow-lg hover:scale-[1.02]"
             >
               <LogOut className="w-5 h-5" />
-              <span className="text-sm">Logout</span>
+              <span className="text-sm">{t('common.logout')}</span>
             </button>
           </div>
         </div>
