@@ -294,11 +294,11 @@
 
 /* Font families for different languages */
 .lang-ar {
-  font-family: var(--font-cairo), var(--font-amiri), Arial, sans-serif;
+  font-family: 'Cairo', Arial, sans-serif;
 }
 
 .lang-he {
-  font-family: var(--font-heebo), var(--font-david), Arial, sans-serif;
+  font-family: 'Heebo', Arial, sans-serif;
 }
 
 .lang-en {
