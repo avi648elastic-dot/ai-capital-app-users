@@ -141,31 +141,42 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
                   ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
                   : 'bg-gradient-to-r from-red-500 to-orange-500'
               }`}>
-                {/* Professional Market Activity Indicator */}
+                {/* Professional Businessman Indicator */}
                 <div className={`absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ${
                   marketStatus.isOpen ? 'left-0' : 'left-1/2 -translate-x-1/2'
                 }`}>
                   {marketStatus.isOpen ? (
-                    // Active market indicator - clean and professional
-                    <div className="relative w-6 h-6 flex items-center justify-center">
-                      {/* Main indicator */}
-                      <div className="w-4 h-4 bg-green-500 rounded-full shadow-lg shadow-green-500/50">
-                        <div className="w-full h-full bg-green-400 rounded-full animate-pulse"></div>
-                      </div>
-                      {/* Activity pulse */}
-                      <div className="absolute w-6 h-6 bg-green-300 rounded-full animate-ping opacity-30"></div>
-                      {/* Movement indicator */}
-                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-300 rounded-full animate-bounce"></div>
+                    // Active businessman - walking/moving during market hours
+                    <div className="relative w-8 h-8 flex items-center justify-center">
+                      <svg 
+                        viewBox="0 0 24 24" 
+                        className="w-6 h-6 text-green-500 animate-walk"
+                        fill="currentColor"
+                      >
+                        {/* Professional businessman walking */}
+                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 5.5V7.5L21 9ZM3 9L9 7.5V5.5L3 7V9ZM12 7.5C14.33 7.5 19 8.84 19 11.5V16C19 16.55 18.55 17 18 17H6C5.45 17 5 16.55 5 16V11.5C5 8.84 9.67 7.5 12 7.5ZM12 9C9.5 9 7 10.25 7 11.5V15H17V11.5C17 10.25 14.5 9 12 9Z"/>
+                        {/* Walking motion indicator */}
+                        <circle cx="18" cy="18" r="1" fill="currentColor" className="animate-pulse"/>
+                        <circle cx="20" cy="19" r="0.8" fill="currentColor" className="animate-pulse" style={{animationDelay: '0.2s'}}/>
+                      </svg>
+                      {/* Activity glow */}
+                      <div className="absolute w-8 h-8 bg-green-300 rounded-full animate-ping opacity-20"></div>
                     </div>
                   ) : (
-                    // Resting market indicator - calm and still
-                    <div className="relative w-6 h-6 flex items-center justify-center">
-                      {/* Main indicator */}
-                      <div className="w-4 h-4 bg-gray-400 rounded-full shadow-lg">
-                        <div className="w-full h-full bg-gray-500 rounded-full opacity-60"></div>
-                      </div>
-                      {/* Rest indicator */}
-                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-gray-300 rounded-full"></div>
+                    // Resting businessman - still when market is closed
+                    <div className="relative w-8 h-8 flex items-center justify-center">
+                      <svg 
+                        viewBox="0 0 24 24" 
+                        className="w-6 h-6 text-gray-400"
+                        fill="currentColor"
+                      >
+                        {/* Professional businessman sitting/resting */}
+                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 5.5V7.5L21 9ZM3 9L9 7.5V5.5L3 7V9ZM12 7.5C14.33 7.5 19 8.84 19 11.5V16C19 16.55 18.55 17 18 17H6C5.45 17 5 16.55 5 16V11.5C5 8.84 9.67 7.5 12 7.5ZM12 9C9.5 9 7 10.25 7 11.5V15H17V11.5C17 10.25 14.5 9 12 9Z"/>
+                        {/* Rest indicator */}
+                        <rect x="10" y="18" width="4" height="2" rx="1" fill="currentColor"/>
+                      </svg>
+                      {/* Resting glow */}
+                      <div className="absolute w-8 h-8 bg-gray-300 rounded-full opacity-10"></div>
                     </div>
                   )}
                 </div>
@@ -204,12 +215,31 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
           50% { transform: translateY(-4px); }
         }
 
+        @keyframes walk {
+          0%, 100% { 
+            transform: translateX(0) translateY(0); 
+          }
+          25% { 
+            transform: translateX(2px) translateY(-1px); 
+          }
+          50% { 
+            transform: translateX(4px) translateY(0); 
+          }
+          75% { 
+            transform: translateX(2px) translateY(1px); 
+          }
+        }
+
         .animate-walk-line {
           animation: walk-line 4s ease-in-out infinite;
         }
 
         .animate-bounce-subtle {
           animation: bounce-subtle 0.6s ease-in-out infinite;
+        }
+
+        .animate-walk {
+          animation: walk 2s ease-in-out infinite;
         }
       `}</style>
     </div>

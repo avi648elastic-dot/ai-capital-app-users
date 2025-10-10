@@ -6,7 +6,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Crown } from 'lucide-react';
 import AcaciaLogo from '@/components/AcaciaLogo';
-// import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 
 // ✅ All requests will send cookies to other domains (cross-site)
 axios.defaults.withCredentials = true;
@@ -19,7 +20,7 @@ type MeUser = {
 };
 
 export default function Page() {
-  // const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -282,6 +283,11 @@ export default function Page() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
+        {/* Language Selector */}
+        <div className="absolute top-4 right-4 z-20">
+          <LanguageSelector />
+        </div>
+        
         <div className="bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-700/50 p-8 relative overflow-hidden">
           {/* Enhanced Glass Effect with Financial Patterns */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-slate-800/60 to-emerald-900/40 rounded-3xl"></div>
@@ -314,16 +320,16 @@ export default function Page() {
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 via-blue-400/20 to-purple-400/20 blur-xl -z-10"></div>
             </h1>
             
-            <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-3">
+            <div className={`flex items-center justify-center space-x-2 sm:space-x-3 mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
               <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 animate-pulse" />
               <p className="text-slate-100 text-lg sm:text-xl font-bold text-center bg-gradient-to-r from-slate-200 to-slate-300 bg-clip-text text-transparent">
-                Professional Portfolio Management V2
+                {t('auth.professionalPortfolioManagement')}
               </p>
               <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 animate-pulse" />
             </div>
             
             <p className="text-slate-200 text-sm sm:text-base text-center px-2 font-semibold mb-6">
-              🚀 AI-Powered Trading Decisions & Real-Time Analytics
+              🚀 {t('auth.aiPoweredDescription')}
             </p>
             
             {/* Enhanced Features Showcase */}
