@@ -141,76 +141,31 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
                   ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
                   : 'bg-gradient-to-r from-red-500 to-orange-500'
               }`}>
-                {/* Animated Businessman */}
+                {/* Professional Market Activity Indicator */}
                 <div className={`absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ${
-                  marketStatus.isOpen ? 'left-0 animate-walk-line' : 'left-1/2 -translate-x-1/2'
+                  marketStatus.isOpen ? 'left-0' : 'left-1/2 -translate-x-1/2'
                 }`}>
                   {marketStatus.isOpen ? (
-                    // Walking businessman (when market is open) - calm and professional
-                    <div className="relative w-8 h-8">
-                      <svg width="32" height="32" viewBox="0 0 32 32" className="text-blue-600">
-                        {/* Head */}
-                        <circle cx="16" cy="7" r="3.5" fill="#fbbf24" />
-                        {/* Hair */}
-                        <path d="M12.5 4 Q16 2 19.5 4" stroke="#374151" strokeWidth="1" fill="none" />
-                        
-                        {/* Suit Jacket */}
-                        <rect x="11" y="10" width="10" height="11" rx="1" fill="#1e40af" />
-                        {/* Shirt */}
-                        <rect x="13" y="10" width="6" height="8" fill="white" />
-                        {/* Tie */}
-                        <rect x="15.5" y="10" width="1" height="7" fill="#dc2626" />
-                        
-                        {/* Arms - natural walking position */}
-                        <rect x="8" y="13" width="2.5" height="6" rx="1" fill="#1e40af" />
-                        <rect x="21.5" y="13" width="2.5" height="6" rx="1" fill="#1e40af" />
-                        
-                        {/* Legs - walking stride */}
-                        <rect x="13.5" y="21" width="2" height="7" rx="1" fill="#374151" />
-                        <rect x="16.5" y="21" width="2" height="7" rx="1" fill="#374151" />
-                        
-                        {/* Professional shoes */}
-                        <ellipse cx="14.5" cy="28.5" rx="2.5" ry="1.5" fill="#1f2937" />
-                        <ellipse cx="17.5" cy="28.5" rx="2.5" ry="1.5" fill="#1f2937" />
-                        
-                        {/* Briefcase - professional */}
-                        <rect x="20" y="17" width="5" height="4" rx="0.5" fill="#92400e" />
-                        <rect x="21" y="18" width="3" height="2" fill="#a16207" />
-                        <line x1="22.5" y1="18" x2="22.5" y2="20" stroke="#92400e" strokeWidth="0.5" />
-                      </svg>
+                    // Active market indicator - clean and professional
+                    <div className="relative w-6 h-6 flex items-center justify-center">
+                      {/* Main indicator */}
+                      <div className="w-4 h-4 bg-green-500 rounded-full shadow-lg shadow-green-500/50">
+                        <div className="w-full h-full bg-green-400 rounded-full animate-pulse"></div>
+                      </div>
+                      {/* Activity pulse */}
+                      <div className="absolute w-6 h-6 bg-green-300 rounded-full animate-ping opacity-30"></div>
+                      {/* Movement indicator */}
+                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-300 rounded-full animate-bounce"></div>
                     </div>
                   ) : (
-                    // Sitting businessman (when market is closed) - relaxed
-                    <div className="relative w-8 h-8">
-                      <svg width="32" height="32" viewBox="0 0 32 32" className="text-gray-500">
-                        {/* Head */}
-                        <circle cx="16" cy="7" r="3.5" fill="#fbbf24" />
-                        {/* Hair */}
-                        <path d="M12.5 4 Q16 2 19.5 4" stroke="#374151" strokeWidth="1" fill="none" />
-                        
-                        {/* Suit Jacket */}
-                        <rect x="11" y="10" width="10" height="10" rx="1" fill="#374151" />
-                        {/* Shirt */}
-                        <rect x="13" y="10" width="6" height="7" fill="white" />
-                        {/* Tie */}
-                        <rect x="15.5" y="10" width="1" height="6" fill="#dc2626" />
-                        
-                        {/* Arms - relaxed */}
-                        <rect x="8" y="13" width="2.5" height="5" rx="1" fill="#374151" />
-                        <rect x="21.5" y="13" width="2.5" height="5" rx="1" fill="#374151" />
-                        
-                        {/* Legs - sitting position */}
-                        <rect x="13" y="20" width="2" height="5" rx="1" fill="#4b5563" />
-                        <rect x="17" y="20" width="2" height="5" rx="1" fill="#4b5563" />
-                        
-                        {/* Office chair */}
-                        <rect x="9" y="25" width="14" height="3" rx="1" fill="#6b7280" />
-                        <rect x="10" y="23" width="12" height="2" rx="1" fill="#9ca3af" />
-                        
-                        {/* Coffee cup */}
-                        <rect x="20" y="16" width="3" height="4" rx="0.5" fill="#fbbf24" />
-                        <rect x="20.5" y="16.5" width="2" height="3" fill="#92400e" />
-                      </svg>
+                    // Resting market indicator - calm and still
+                    <div className="relative w-6 h-6 flex items-center justify-center">
+                      {/* Main indicator */}
+                      <div className="w-4 h-4 bg-gray-400 rounded-full shadow-lg">
+                        <div className="w-full h-full bg-gray-500 rounded-full opacity-60"></div>
+                      </div>
+                      {/* Rest indicator */}
+                      <div className="absolute -top-1 -right-1 w-2 h-2 bg-gray-300 rounded-full"></div>
                     </div>
                   )}
                 </div>
