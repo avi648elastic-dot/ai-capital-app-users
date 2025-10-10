@@ -202,7 +202,7 @@ export default function Page() {
                 <AcaciaLogo size={96} className="w-full h-full" />
               </div>
             </div>
-            <h1 className="logo-text text-3xl sm:text-4xl mb-3 font-bold">AI-Capital</h1>
+            <h1 className="logo-text text-3xl sm:text-4xl mb-3 font-bold">AI-Capital ✨ NEW</h1>
             <div className="flex items-center justify-center space-x-1 sm:space-x-2 mb-2">
               <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
               <p className="text-slate-300 text-base sm:text-lg font-semibold text-center">Professional Portfolio Management V2</p>
