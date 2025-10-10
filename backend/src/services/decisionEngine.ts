@@ -154,18 +154,18 @@ export class DecisionEngine {
       reasons.push('Below entry price');
     }
 
-    // Decision based on score - more balanced thresholds
+    // Decision based on score - adjusted for price-only analysis
     let action: 'BUY' | 'HOLD' | 'SELL';
     let color: string;
 
-    if (score >= 3) { // Higher threshold for BUY
+    if (score >= 1) { // Lower threshold for BUY (works with price analysis)
       action = 'BUY';
       color = 'green';
-    } else if (score <= -3) { // Much lower threshold for SELL
+    } else if (score <= -1) { // Lower threshold for SELL (works with price analysis)
       action = 'SELL';
       color = 'red';
     } else {
-      action = 'HOLD'; // Default to HOLD for most cases
+      action = 'HOLD'; // Default to HOLD for neutral cases
       color = 'yellow';
     }
 
