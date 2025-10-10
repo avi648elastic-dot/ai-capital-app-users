@@ -148,12 +148,45 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
                   {marketStatus.isOpen ? (
                     // Walking businessman (when market is open)
                     <div className="relative w-8 h-8 animate-bounce-subtle">
-                      <div className="text-3xl">🚶‍♂️</div>
+                      <svg width="32" height="32" viewBox="0 0 32 32" className="text-blue-500">
+                        {/* Head */}
+                        <circle cx="16" cy="8" r="4" fill="currentColor" />
+                        {/* Body - suit */}
+                        <rect x="12" y="12" width="8" height="12" rx="2" fill="currentColor" />
+                        {/* Tie */}
+                        <rect x="15" y="12" width="2" height="8" fill="#1e40af" />
+                        {/* Arms */}
+                        <rect x="8" y="16" width="3" height="8" rx="1.5" fill="currentColor" />
+                        <rect x="21" y="16" width="3" height="8" rx="1.5" fill="currentColor" />
+                        {/* Legs */}
+                        <rect x="13" y="24" width="2.5" height="6" fill="#374151" />
+                        <rect x="16.5" y="24" width="2.5" height="6" fill="#374151" />
+                        {/* Shoes */}
+                        <ellipse cx="14" cy="31" rx="2" ry="1" fill="#1f2937" />
+                        <ellipse cx="18" cy="31" rx="2" ry="1" fill="#1f2937" />
+                        {/* Briefcase */}
+                        <rect x="22" y="20" width="4" height="3" rx="0.5" fill="#92400e" />
+                      </svg>
                     </div>
                   ) : (
                     // Sitting businessman (when market is closed)
                     <div className="relative w-8 h-8">
-                      <div className="text-3xl">🧘‍♂️</div>
+                      <svg width="32" height="32" viewBox="0 0 32 32" className="text-gray-500">
+                        {/* Head */}
+                        <circle cx="16" cy="8" r="4" fill="currentColor" />
+                        {/* Body - suit */}
+                        <rect x="12" y="12" width="8" height="10" rx="2" fill="currentColor" />
+                        {/* Tie */}
+                        <rect x="15" y="12" width="2" height="6" fill="#1e40af" />
+                        {/* Arms */}
+                        <rect x="8" y="16" width="3" height="6" rx="1.5" fill="currentColor" />
+                        <rect x="21" y="16" width="3" height="6" rx="1.5" fill="currentColor" />
+                        {/* Legs - sitting position */}
+                        <rect x="12" y="22" width="2.5" height="4" rx="1" fill="#374151" />
+                        <rect x="17.5" y="22" width="2.5" height="4" rx="1" fill="#374151" />
+                        {/* Chair base */}
+                        <rect x="10" y="26" width="12" height="2" rx="1" fill="#6b7280" />
+                      </svg>
                     </div>
                   )}
                 </div>

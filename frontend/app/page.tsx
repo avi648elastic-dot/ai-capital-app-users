@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Crown } from 'lucide-react';
+import AcaciaLogo from '@/components/AcaciaLogo';
 // import { useLanguage } from '@/contexts/LanguageContext';
 
 // ✅ כל הבקשות ישלחו קובצי cookie גם לדומיין אחר (cross-site)
@@ -150,11 +151,7 @@ export default function Page() {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-6">
               <div className="w-24 h-24 relative">
-                <img 
-                  src="/logo.png" 
-                  alt="AiCapital Logo" 
-                  className="w-full h-full object-contain" 
-                />
+                <AcaciaLogo size={96} className="w-full h-full" />
               </div>
             </div>
             <h1 className="logo-text text-4xl mb-3 font-bold">AI-Capital</h1>
