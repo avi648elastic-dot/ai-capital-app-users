@@ -57,7 +57,7 @@ class GoogleFinanceFormulasService {
    * 📊 Main method: Get stock metrics (replicates Google Sheet logic)
    * This is the equivalent of your Google Sheet formula that fetches 90 days of data
    */
-  async getStockMetrics(symbol: string): Promise<StockMetrics> {
+  async getStockMetrics(symbol: string): Promise<StockMetrics | null> {
     try {
       loggerService.info(`🔍 [GOOGLE FINANCE FORMULAS] Fetching metrics for ${symbol}`);
       
@@ -105,9 +105,10 @@ class GoogleFinanceFormulasService {
         }
       }
       
-      // If all APIs fail, throw error (as requested by user)
+      // If all APIs fail, return null (decision engine will handle fallback)
       if (!metrics) {
-        throw new Error(`❌ Failed to fetch data for ${symbol} from all providers (Alpha Vantage, Finnhub, FMP). Please check API keys and stock symbol.`);
+        loggerService.warn(`⚠️ [GOOGLE FINANCE] All APIs failed for ${symbol}, returning null for fallback handling`);
+        return null;
       }
       
       // Cache the result
@@ -370,7 +371,9 @@ class GoogleFinanceFormulasService {
     const promises = symbols.map(async (symbol) => {
       try {
         const metrics = await this.getStockMetrics(symbol);
-        results.set(symbol, metrics);
+        if (metrics) {
+          results.set(symbol, metrics);
+        }
       } catch (error) {
         const errorMsg = `${symbol}: ${error instanceof Error ? error.message : 'Unknown error'}`;
         errors.push(errorMsg);

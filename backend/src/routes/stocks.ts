@@ -26,22 +26,29 @@ router.get('/test-metrics/:symbol', async (req, res) => {
     
     const metrics = await googleFinanceFormulasService.getStockMetrics(symbol);
     
-    res.json({
-      success: true,
-      symbol: metrics.symbol,
-      metrics: {
-        current: metrics.current,
-        top30D: metrics.top30D,
-        top60D: metrics.top60D,
-        thisMonthPercent: metrics.thisMonthPercent.toFixed(2) + '%',
-        lastMonthPercent: metrics.lastMonthPercent.toFixed(2) + '%',
-        volatility: (metrics.volatility * 100).toFixed(2) + '%',
-        marketCap: `$${(metrics.marketCap / 1_000_000_000).toFixed(2)}B`
-      },
-      dataSource: metrics.dataSource,
-      timestamp: new Date(metrics.timestamp).toISOString(),
-      cacheAge: `${Math.floor((Date.now() - metrics.timestamp) / 1000)}s`
-    });
+    if (metrics) {
+      res.json({
+        success: true,
+        symbol: metrics.symbol,
+        metrics: {
+          current: metrics.current,
+          top30D: metrics.top30D,
+          top60D: metrics.top60D,
+          thisMonthPercent: metrics.thisMonthPercent.toFixed(2) + '%',
+          lastMonthPercent: metrics.lastMonthPercent.toFixed(2) + '%',
+          volatility: (metrics.volatility * 100).toFixed(2) + '%',
+          marketCap: `$${(metrics.marketCap / 1_000_000_000).toFixed(2)}B`
+        },
+        dataSource: metrics.dataSource,
+        timestamp: new Date(metrics.timestamp).toISOString(),
+        cacheAge: `${Math.floor((Date.now() - metrics.timestamp) / 1000)}s`
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: `No metrics found for ${symbol} - API failed to fetch data`
+      });
+    }
     
   } catch (error) {
     loggerService.error(`❌ [TEST] Error fetching metrics`, { error: error instanceof Error ? error.message : 'Unknown error' });
