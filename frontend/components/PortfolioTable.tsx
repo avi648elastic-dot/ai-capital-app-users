@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Edit, Trash2, Eye } from 'lucide-react';
+import Tooltip from './ui/Tooltip';
 
 interface PortfolioItem {
   _id: string;
@@ -195,17 +196,15 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     <div className="flex justify-center">
-                      <div className="relative group">
-                        <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-full ${getActionColor(item.action)} cursor-help`}>
+                      <Tooltip 
+                        content={item.reason || `${item.action} action`}
+                        position="top"
+                        disabled={!item.reason}
+                      >
+                        <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-full ${getActionColor(item.action)} ${item.reason ? 'cursor-help' : ''}`}>
                           {item.action}
                         </span>
-                        {item.reason && (
-                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 border border-slate-700">
-                            {item.reason}
-                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-800"></div>
-                          </div>
-                        )}
-                      </div>
+                      </Tooltip>
                     </div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
@@ -232,20 +231,22 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                         </>
                       ) : (
                         <>
-                          <button
-                            onClick={() => handleEdit(item)}
-                            className="text-primary-400 hover:text-primary-300"
-                            title="Edit"
-                          >
-                            <Edit className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => onDelete(item._id)}
-                            className="text-danger-400 hover:text-danger-300"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                          <Tooltip content="Edit stock details" position="top">
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className="text-primary-400 hover:text-primary-300"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </button>
+                          </Tooltip>
+                          <Tooltip content="Delete stock" position="top">
+                            <button
+                              onClick={() => onDelete(item._id)}
+                              className="text-danger-400 hover:text-danger-300"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </Tooltip>
                         </>
                       )}
                     </div>

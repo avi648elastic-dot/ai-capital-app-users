@@ -16,6 +16,8 @@ import { getSubscriptionLimits, canCreatePortfolio, canAddStock, getUpgradeMessa
 import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';
 import CreatePortfolioModal from '@/components/CreatePortfolioModal';
 import DeletePortfolioModal from '@/components/DeletePortfolioModal';
+import { CardSkeleton, TableSkeleton, ChartSkeleton } from '@/components/ui/SkeletonLoader';
+import { PageLoading } from '@/components/ui/LoadingSpinner';
 
 interface User {
   id: string;
@@ -377,11 +379,36 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading portfolio...</p>
+      <div className="w-full space-y-6">
+        {/* Mobile Header Skeleton */}
+        <div className="lg:hidden bg-slate-800 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-slate-700 rounded-full animate-pulse"></div>
+              <div className="space-y-2">
+                <div className="w-24 h-4 bg-slate-700 rounded animate-pulse"></div>
+                <div className="w-16 h-3 bg-slate-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+            <div className="w-8 h-8 bg-slate-700 rounded animate-pulse"></div>
+          </div>
         </div>
+
+        {/* Market Overview Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </div>
+
+        {/* Portfolio Summary Skeleton */}
+        <CardSkeleton />
+
+        {/* Charts Skeleton */}
+        <ChartSkeleton />
+
+        {/* Portfolio Table Skeleton */}
+        <TableSkeleton rows={5} />
       </div>
     );
   }

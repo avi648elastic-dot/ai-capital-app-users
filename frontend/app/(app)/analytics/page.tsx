@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { TrendingUp, BarChart3, PieChart, Activity, Building2, TrendingDown, Bot, Smile, Frown, AlertCircle, RefreshCw } from 'lucide-react';
+import { PremiumFeature, PremiumPlusFeature } from '@/components/ui/FeatureFlag';
 
 // Real Portfolio Chart Component
 const RealPortfolioChart = ({ data }: { data: any[] }) => {
@@ -423,11 +424,12 @@ export default function Analytics() {
           </div>
 
           {/* Performance Metrics */}
-          <div className="card p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
-              <TrendingUp className="w-5 h-5 mr-2" />
-              Performance Metrics
-            </h3>
+          <PremiumFeature currentPlan={user?.subscriptionTier || 'free'}>
+            <div className="card p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2" />
+                Performance Metrics
+              </h3>
             <div className="space-y-6">
               {/* Main Performance Grid */}
               <div className="grid grid-cols-2 gap-4">
@@ -517,13 +519,15 @@ export default function Analytics() {
               </div>
             </div>
           </div>
+          </PremiumFeature>
 
           {/* AI Capital Character Analysis */}
-          <div className="card p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
-              <Bot className="w-5 h-5 mr-2" />
-              AI-Capital Analysis
-            </h3>
+          <PremiumPlusFeature currentPlan={user?.subscriptionTier || 'free'}>
+            <div className="card p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
+                <Bot className="w-5 h-5 mr-2" />
+                AI-Capital Analysis
+              </h3>
             <div className="space-y-4">
               {aiAnalysis ? (
                 <>
@@ -588,6 +592,7 @@ export default function Analytics() {
               )}
             </div>
           </div>
+          </PremiumPlusFeature>
 
           {/* Sector Performance Summary */}
           <div className="lg:col-span-2 card p-6">
