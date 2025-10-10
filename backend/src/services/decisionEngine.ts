@@ -33,8 +33,13 @@ export class DecisionEngine {
     try {
       console.log('🔍 [DECISION ENGINE] Loading real stock data...');
       
-      // List of stocks we track
-      const symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'JNJ', 'PG', 'KO', 'AMD', 'PLTR', 'ARKK', 'GME'];
+      // List of stocks we track (including user portfolio stocks)
+      const symbols = [
+        // Tech Giants
+        'AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'JNJ', 'PG', 'KO', 'AMD', 'PLTR', 'ARKK', 'GME',
+        // User Portfolio Stocks
+        'QS', 'UEC', 'HIMX', 'ONCY', 'AQST', 'AEG', 'HST'
+      ];
       
       // Get real data from Alpha Vantage
       const realData = await stockDataService.getMultipleStockData(symbols);
@@ -61,11 +66,21 @@ export class DecisionEngine {
 
   private async loadMockData(): Promise<void> {
     const mockData: StockData[] = [
+      // Tech Giants
       { symbol: 'AAPL', current: 150, top30D: 160, top60D: 155, thisMonthPercent: 5.2, lastMonthPercent: 3.1, volatility: 0.15, marketCap: 2500000000000 },
       { symbol: 'GOOGL', current: 2800, top30D: 2900, top60D: 2850, thisMonthPercent: 2.1, lastMonthPercent: -1.2, volatility: 0.22, marketCap: 1800000000000 },
       { symbol: 'MSFT', current: 420, top30D: 440, top60D: 430, thisMonthPercent: 8.5, lastMonthPercent: 4.2, volatility: 0.18, marketCap: 3100000000000 },
       { symbol: 'TSLA', current: 250, top30D: 280, top60D: 260, thisMonthPercent: -5.2, lastMonthPercent: 12.3, volatility: 0.45, marketCap: 800000000000 },
       { symbol: 'AMZN', current: 3200, top30D: 3300, top60D: 3250, thisMonthPercent: 1.8, lastMonthPercent: -2.1, volatility: 0.25, marketCap: 1700000000000 },
+      
+      // User Portfolio Stocks (with realistic data)
+      { symbol: 'QS', current: 16.22, top30D: 18.50, top60D: 17.20, thisMonthPercent: -12.3, lastMonthPercent: 8.5, volatility: 0.65, marketCap: 7000000000 },
+      { symbol: 'UEC', current: 14.96, top30D: 16.20, top60D: 15.40, thisMonthPercent: -7.6, lastMonthPercent: 15.2, volatility: 0.45, marketCap: 3500000000 },
+      { symbol: 'HIMX', current: 8.90, top30D: 9.50, top60D: 9.20, thisMonthPercent: -6.3, lastMonthPercent: 12.8, volatility: 0.35, marketCap: 1500000000 },
+      { symbol: 'ONCY', current: 1.29, top30D: 1.45, top60D: 1.35, thisMonthPercent: -7.2, lastMonthPercent: 5.8, volatility: 0.55, marketCap: 180000000 },
+      { symbol: 'AQST', current: 6.46, top30D: 7.20, top60D: 6.80, thisMonthPercent: -10.3, lastMonthPercent: 18.5, volatility: 0.48, marketCap: 480000000 },
+      { symbol: 'AEG', current: 7.77, top30D: 8.20, top60D: 7.95, thisMonthPercent: -5.2, lastMonthPercent: 22.1, volatility: 0.42, marketCap: 1600000000 },
+      { symbol: 'HST', current: 16.15, top30D: 17.80, top60D: 16.90, thisMonthPercent: -9.3, lastMonthPercent: 25.6, volatility: 0.38, marketCap: 11000000000 },
     ];
 
     this.stockData.clear();
