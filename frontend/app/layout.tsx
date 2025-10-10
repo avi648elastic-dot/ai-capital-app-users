@@ -6,6 +6,7 @@ import { ThemeProvider } from '../contexts/ThemeContext'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { TourProvider } from '@/contexts/TourContext'
 import TourOverlay from '@/components/TourOverlay'
+import ThemeApplier from '@/components/ThemeApplier'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,12 +30,13 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>
             <TourProvider>
+              <ThemeApplier />
               <div className="min-h-screen transition-colors duration-300 bg-slate-950 text-slate-100 [data-theme='light']:bg-white [data-theme='light']:text-gray-900">
                 {children}
                 {/* Tour Overlay */}
                 <TourOverlay />
                 {/* Build/version footer for deployment verification */}
-                <div className="fixed bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-slate-800/80 text-slate-300 border border-slate-700">
+                <div className="fixed bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-slate-800/80 text-slate-300 border border-slate-700 [data-theme='light']:bg-gray-200/80 [data-theme='light']:text-gray-700 [data-theme='light']:border-gray-300">
                 </div>
               </div>
             </TourProvider>
