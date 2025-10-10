@@ -108,6 +108,23 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
     }
   };
 
+  const createTestNotification = async () => {
+    try {
+      setLoading(true);
+      const token = Cookies.get('token');
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/test`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Refresh notifications
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Error creating test notification:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'info': return <Info className="w-5 h-5" />;
@@ -175,6 +192,13 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
                   )}
                 </div>
                 <div className="flex space-x-2">
+                  <button
+                    onClick={createTestNotification}
+                    disabled={loading}
+                    className="text-xs text-green-700 hover:text-green-900 font-semibold bg-green-100 hover:bg-green-200 px-2 py-1 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {loading ? 'Testing...' : 'Test'}
+                  </button>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}

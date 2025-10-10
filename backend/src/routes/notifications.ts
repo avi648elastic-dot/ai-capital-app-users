@@ -305,4 +305,41 @@ router.post('/cleanup', authenticateAdmin, async (req, res) => {
   }
 });
 
+/**
+ * @route POST /api/notifications/test
+ * @desc Create a test notification for the current user
+ * @access Private
+ */
+router.post('/test', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user!._id.toString();
+    
+    const notification = await notificationService.createNotification({
+      userId,
+      title: 'Test Notification',
+      message: 'This is a test notification to verify the system is working correctly. The notification should display properly with all styling and functionality.',
+      type: 'info',
+      priority: 'medium',
+      category: 'system',
+      channels: {
+        dashboard: true,
+        popup: true,
+        email: false
+      }
+    });
+
+    res.json({
+      success: true,
+      data: notification,
+      message: 'Test notification created successfully'
+    });
+  } catch (error) {
+    console.error('Create test notification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create test notification'
+    });
+  }
+});
+
 export default router;
