@@ -197,11 +197,11 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     <div className="flex justify-center">
                       <Tooltip 
-                        content={item.reason || `${item.action} action`}
+                        content={item.reason || `${item.action} action - No reason available`}
                         position="top"
-                        disabled={!item.reason}
+                        disabled={false}
                       >
-                        <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-full ${getActionColor(item.action)} ${item.reason ? 'cursor-help' : ''}`}>
+                        <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-full ${getActionColor(item.action)} cursor-help`}>
                           {item.action}
                         </span>
                       </Tooltip>
