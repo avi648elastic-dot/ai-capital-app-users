@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import * as Sentry from '@sentry/node';
 import { loggerService } from './services/loggerService';
 import { requestIdMiddleware } from './middleware/requestId';
 
@@ -28,10 +29,31 @@ import { schedulerService } from './services/schedulerService';
 // Load environment variables
 dotenv.config();
 
+// Initialize Sentry
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    integrations: [
+      new Sentry.Integrations.Http({ tracing: true }),
+      new Sentry.Integrations.Express({ app: undefined }),
+      new Sentry.Integrations.Mongo({ useMongoose: true }),
+    ],
+  });
+}
+
 const app = express();
 
 // ✅ Render מחייב להשתמש ב־process.env.PORT
 const PORT = Number(process.env.PORT) || 10000;
+
+// Sentry middleware must be first
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.requestHandler());
+  app.use(Sentry.tracingHandler());
+}
 
 // 🔒 Enhanced Security Configuration
 app.use(helmet({
@@ -517,6 +539,11 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
+// Sentry error handler must be before other error handlers
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.errorHandler());
+}
+
 // 🚫 404 – לא נמצא
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
@@ -602,12 +629,18 @@ const startServer = async () => {
     // Handle uncaught exceptions
     process.on('uncaughtException', (error) => {
       console.error('❌ Uncaught Exception:', error);
+      if (process.env.SENTRY_DSN) {
+        Sentry.captureException(error);
+      }
       // Don't exit the process, just log the error
     });
 
     // Handle unhandled promise rejections
     process.on('unhandledRejection', (reason, promise) => {
       console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+      if (process.env.SENTRY_DSN) {
+        Sentry.captureException(reason);
+      }
       // Don't exit the process, just log the error
     });
 

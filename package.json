@@ -9,7 +9,12 @@
     "dev:backend": "cd backend && npm run dev",
     "build": "cd frontend && npm run build && cd ../backend && npm run build",
     "start": "cd backend && npm start",
-    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "test": "concurrently \"npm run test:backend\" \"npm run test:frontend\"",
+    "test:backend": "cd backend && npm run test:ci",
+    "test:frontend": "cd frontend && npm run test",
+    "test:watch": "cd backend && npm run test:watch",
+    "test:coverage": "cd backend && npm run test:coverage"
   },
   "keywords": ["portfolio", "trading", "stocks", "ai", "capital"],
   "author": "AiCapital Team",

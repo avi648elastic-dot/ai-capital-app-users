@@ -1,34 +1,54 @@
+# Render.com deployment configuration for AiCapital
 services:
   - type: web
     name: aicapital-backend
     env: node
-    plan: free
-    buildCommand: cd backend && npm install && npm run build
+    plan: starter
+    buildCommand: |
+      cd backend && npm ci --only=production && npm run build
+      cd ../frontend && npm ci --only=production && npm run build
     startCommand: cd backend && npm start
+    healthCheckPath: /healthz
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: MONGODB_URI
         fromDatabase:
           name: aicapital-mongodb
           property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: aicapital-redis
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
       - key: FINNHUB_API_KEY
-        value: d3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g
-      - key: FMP_API_KEY
-        value: DPQXLdd8vdBNFA1tl5HWXt8Fd7D0Lw6G
+        sync: false
+      - key: ALPHA_VANTAGE_API_KEY
+        sync: false
+      - key: FINANCIAL_MODELING_PREP_API_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
 
-  - type: web
-    name: aicapital-frontend
-    env: node
-    plan: free
-    buildCommand: cd frontend && npm install && npm run build
-    startCommand: cd frontend && npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: NEXT_PUBLIC_API_URL
-        value: https://ai-capital-app7.onrender.com
+databases:
+  - name: aicapital-mongodb
+    plan: starter
+    databaseName: aicapital
+
+  - name: aicapital-redis
+    plan: starter
+    type: redis

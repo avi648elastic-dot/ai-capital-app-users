@@ -1,17 +1,73 @@
-FROM node:18
+# Multi-stage Dockerfile for AiCapital Application
+# Stage 1: Build Frontend
+FROM node:18-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+# Copy frontend package files
+COPY frontend/package*.json ./
+
+# Install frontend dependencies
+RUN npm ci --only=production
+
+# Copy frontend source code
+COPY frontend/ ./
+
+# Build frontend
+RUN npm run build
+
+# Stage 2: Build Backend
+FROM node:18-alpine AS backend-builder
+
+WORKDIR /app/backend
+
+# Copy backend package files
+COPY backend/package*.json ./
+
+# Install backend dependencies
+RUN npm ci --only=production
+
+# Copy backend source code
+COPY backend/ ./
+
+# Build backend TypeScript
+RUN npm run build
+
+# Stage 3: Production Runtime
+FROM node:18-alpine AS production
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S aicapital -u 1001
 
 WORKDIR /app
 
-# התקנת תלויות
-COPY backend/package*.json ./ 
-RUN npm install
+# Copy built frontend from builder stage
+COPY --from=frontend-builder --chown=aicapital:nodejs /app/frontend/.next ./frontend/.next
+COPY --from=frontend-builder --chown=aicapital:nodejs /app/frontend/public ./frontend/public
+COPY --from=frontend-builder --chown=aicapital:nodejs /app/frontend/package*.json ./frontend/
 
-# העתקת קבצי הפרויקט
-COPY backend/ .
+# Copy built backend from builder stage
+COPY --from=backend-builder --chown=aicapital:nodejs /app/backend/dist ./backend/dist
+COPY --from=backend-builder --chown=aicapital:nodejs /app/backend/package*.json ./backend/
 
-# בניית TypeScript ל-JS
-RUN npm run build
+# Install production dependencies
+WORKDIR /app/backend
+RUN npm ci --only=production && npm cache clean --force
 
-EXPOSE 5000
+# Switch to non-root user
+USER aicapital
 
-CMD ["npm", "start"]
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/healthz', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Start the application with dumb-init
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/index.js"]
