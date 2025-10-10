@@ -36,21 +36,31 @@ export class DecisionEngine {
       loggerService.info(`🔍 [DECISION ENGINE] Analyzing ${ticker}`);
       let stockData = await googleFinanceFormulasService.getStockMetrics(ticker);
 
-      // Fallback: If no stock data available, use basic price analysis
+      // Fallback: If no stock data available, use PRICE-BASED analysis (like your legacy system)
       if (!stockData) {
-        loggerService.warn(`⚠️ [DECISION ENGINE] No stock data for ${ticker}, using price-only analysis`);
+        loggerService.warn(`⚠️ [DECISION ENGINE] No stock data for ${ticker}, using price-based analysis`);
+        
+        // Calculate actual performance from entry price
+        const performancePercent = ((currentPrice - entryPrice) / entryPrice) * 100;
+        
         stockData = {
           symbol: ticker,
           current: currentPrice,
-          top30D: currentPrice * 1.1, // Estimate 10% higher
-          top60D: currentPrice * 1.2, // Estimate 20% higher
-          thisMonthPercent: 0,
-          lastMonthPercent: 0,
-          volatility: 0.2,
+          top30D: currentPrice * 1.15, // Conservative estimate
+          top60D: currentPrice * 1.25, // Conservative estimate  
+          thisMonthPercent: performancePercent, // Use actual performance
+          lastMonthPercent: performancePercent * 0.8, // Estimate slightly less
+          volatility: Math.abs(performancePercent) / 10, // Estimate based on performance
           marketCap: 1000000000,
           timestamp: Date.now(),
           dataSource: 'alpha_vantage' // Use existing type
         };
+        
+        loggerService.info(`📊 [DECISION ENGINE] Fallback data for ${ticker}:`, {
+          performance: `${performancePercent.toFixed(2)}%`,
+          top60D: stockData.top60D,
+          thisMonthPercent: stockData.thisMonthPercent
+        });
       }
 
       // Rule 1: Stop Loss / Take Profit (absolute rules)
@@ -113,13 +123,20 @@ export class DecisionEngine {
         reasons.push('Poor last month (-10%-)');
       }
 
-      // 30% price vs entry (EXACT LEGACY LOGIC)
+      // 30% price vs entry (EXACT LEGACY LOGIC + STRONGER RULES)
       if (currentPrice > entryPrice) {
         score += 1;
         reasons.push('Above entry price');
       } else if (currentPrice < entryPrice * 0.90) {
         score -= 1;
         reasons.push('Below entry price (90%-)');
+      }
+      
+      // ADDITIONAL LEGACY RULE: Strong sell signal for significant losses
+      const performancePercent = ((currentPrice - entryPrice) / entryPrice) * 100;
+      if (performancePercent <= -8) {
+        score -= 1;
+        reasons.push(`Significant loss (${performancePercent.toFixed(1)}%)`);
       }
 
       // Decision based on score (MORE SENSITIVE: 2/-2)
