@@ -8,6 +8,7 @@ import { Crown } from 'lucide-react';
 import AcaciaLogo from '@/components/AcaciaLogo';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 // ✅ All requests will send cookies to other domains (cross-site)
 axios.defaults.withCredentials = true;
@@ -311,6 +312,16 @@ export default function Page() {
                   )}
                 </button>
               </form>
+
+              {/* Google Login */}
+              <GoogleLoginButton 
+                onSuccess={() => {
+                  // Success handled in GoogleLoginButton component
+                }}
+                onError={(error) => {
+                  setError(error);
+                }}
+              />
 
               {/* Footer */}
               <div className="mt-6 text-center">

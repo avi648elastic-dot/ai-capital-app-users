@@ -4,11 +4,13 @@ export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
   email: string;
-  password: string;
+  password?: string; // Optional for Google OAuth users
+  googleId?: string; // Google OAuth ID
   subscriptionActive: boolean;
   subscriptionTier: 'free' | 'premium' | 'premium+'; // Updated to include premium+
   onboardingCompleted: boolean;
   isAdmin?: boolean;
+  isEmailVerified?: boolean; // Email verification status
   featuredTickers?: string[];
   portfolioType?: string;
   portfolioSource?: string;
@@ -16,7 +18,7 @@ export interface IUser extends Document {
   riskTolerance?: number;
   language?: string;
   theme?: string;
-  avatarUrl?: string; // New field for avatar
+  avatar?: string; // Renamed from avatarUrl for consistency
   createdAt: Date;
 
   apiKey?: string;
@@ -28,11 +30,13 @@ const UserSchema: Schema<IUser> = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { type: String, required: false }, // Optional for Google OAuth users
+    googleId: { type: String, unique: true, sparse: true }, // Google OAuth ID
     subscriptionActive: { type: Boolean, default: false },
     subscriptionTier: { type: String, enum: ['free', 'premium', 'premium+'], default: 'free' },
     onboardingCompleted: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
+    isEmailVerified: { type: Boolean, default: false }, // Email verification status
     featuredTickers: { type: [String], default: undefined },
     portfolioType: { type: String },
     portfolioSource: { type: String },
@@ -40,7 +44,7 @@ const UserSchema: Schema<IUser> = new Schema(
     riskTolerance: { type: Number, default: 0 },
     language: { type: String, default: 'en' },
     theme: { type: String, default: 'dark' },
-    avatarUrl: { type: String }, // New field for avatar
+    avatar: { type: String }, // Avatar URL from Google or uploaded
 
     apiKey: { type: String },
     apiSecret: { type: String },

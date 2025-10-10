@@ -11,6 +11,7 @@ import { loggerService } from './services/loggerService';
 import { requestIdMiddleware } from './middleware/requestId';
 
 import authRoutes from './routes/auth';
+import googleAuthRoutes from './routes/googleAuth';
 import portfolioRoutes from './routes/portfolio';
 import shopifyRoutes from './routes/shopify';
 import onboardingRoutes from './routes/onboarding';
@@ -134,6 +135,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // ✅ מסלולים ראשיים
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/shopify', shopifyRoutes);
 app.use('/api/onboarding', onboardingRoutes);
