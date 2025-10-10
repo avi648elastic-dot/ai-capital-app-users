@@ -100,31 +100,29 @@ const RealPortfolioChart = ({ data }: { data: any[] }) => {
         ${(chartMax / 1000).toFixed(0)}k
       </text>
       <text x="5" y="75" fill="#9ca3af" fontSize="10" fontWeight="500">
-        ${((chartMin + chartMax) / 2000).toFixed(0)}k
+        ${((chartMax + chartMin) / 2 / 1000).toFixed(0)}k
       </text>
       <text x="5" y="125" fill="#9ca3af" fontSize="10" fontWeight="500">
         ${(chartMin / 1000).toFixed(0)}k
       </text>
       
-      {/* X-axis labels */}
-      {data.map((point, index) => {
-        const x = getX(index);
-        if (index % Math.ceil(data.length / 5) === 0) {
-          return (
-            <text
-              key={index}
-              x={x}
-              y="155"
-              fill="#9ca3af"
-              fontSize="10"
-              textAnchor="middle"
-            >
-              {new Date(point.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </text>
-          );
-        }
-        return null;
-      })}
+      {/* Current value indicator */}
+      {data.length > 0 && (
+        <>
+          <text x="345" y="15" fill="#10b981" fontSize="11" fontWeight="bold">
+            ${(data[data.length - 1].totalValue / 1000).toFixed(1)}k
+          </text>
+          <line 
+            x1={getX(data.length - 1)} 
+            y1={getY(data[data.length - 1].totalValue)} 
+            x2="380" 
+            y2={getY(data[data.length - 1].totalValue)} 
+            stroke="#10b981" 
+            strokeWidth="2" 
+            strokeDasharray="3,3"
+          />
+        </>
+      )}
     </svg>
   );
 };
@@ -139,6 +137,12 @@ export default function PortfolioAnalysis() {
   const [sectorPerformance, setSectorPerformance] = useState<any[]>([]);
   const [riskAssessment, setRiskAssessment] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  const handleLogout = () => {
+    Cookies.remove('token');
+    window.location.href = '/';
+  };
 
   // AI Character Analysis
   const generateAiAnalysis = () => {
@@ -154,48 +158,50 @@ export default function PortfolioAnalysis() {
 
     // Calculate portfolio metrics
     const totalValue = portfolio.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
-    const totalCost = portfolio.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
-    const totalPnLPercent = totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0;
-
-    // Calculate volatility
-    const returns = portfolio.map(stock => {
-      const stockReturn = (stock.currentPrice - stock.entryPrice) / stock.entryPrice;
-      return stockReturn;
-    });
-    const avgReturn = returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
-    const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - avgReturn, 2), 0) / returns.length;
-    const avgVolatility = Math.sqrt(variance) * 100;
+    const totalInitial = portfolio.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
+    const totalPnL = totalValue - totalInitial;
+    const totalPnLPercent = totalInitial > 0 ? (totalPnL / totalInitial) * 100 : 0;
+    
+    // Calculate volatility (simplified)
+    const avgVolatility = portfolio.reduce((sum, stock) => {
+      const stockVolatility = Math.abs(stock.currentPrice - stock.entryPrice) / stock.entryPrice * 100;
+      return sum + stockVolatility;
+    }, 0) / portfolio.length;
 
     // Count positive vs negative performers
     const positiveStocks = portfolio.filter(stock => stock.currentPrice > stock.entryPrice).length;
     const negativeStocks = portfolio.filter(stock => stock.currentPrice < stock.entryPrice).length;
-
-    // Calculate tech concentration
+    
+    // Analyze sector concentration
     const techStocks = portfolio.filter(stock => 
-      stock.ticker.includes('AAPL') || stock.ticker.includes('MSFT') || 
-      stock.ticker.includes('GOOGL') || stock.ticker.includes('TSLA')
+      ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META'].includes(stock.ticker)
     ).length;
     const techConcentration = (techStocks / portfolio.length) * 100;
 
-    let mood, icon, message, recommendation, color;
+    // Determine overall sentiment
+    let mood = 'neutral';
+    let icon = Bot;
+    let message = '';
+    let recommendation = '';
+    let color = 'text-blue-400';
 
-    if (totalPnLPercent > 15 && avgVolatility < 20) {
+    if (totalPnLPercent > 10 && positiveStocks > negativeStocks && avgVolatility < 20) {
       // Excellent performance
       mood = 'excellent';
       icon = Smile;
-      message = "Excellent work! Your portfolio is performing exceptionally well with strong returns and low volatility.";
-      recommendation = "Consider taking some profits on your best performers and diversifying into other sectors to maintain this momentum.";
+      message = "Outstanding performance! Your portfolio is showing strong gains with good diversification.";
+      recommendation = "Your solid investment strategy is paying off. Consider taking some profits on your best performers and reinvesting in undervalued opportunities.";
       color = 'text-green-400';
-    } else if (totalPnLPercent > 5 && avgVolatility < 30) {
+    } else if (totalPnLPercent > 5 && positiveStocks >= negativeStocks) {
       // Good performance
       mood = 'good';
       icon = Smile;
-      message = "Good work! Your portfolio is performing well with positive momentum. Keep monitoring your positions.";
-      recommendation = "Consider rebalancing if any single stock becomes too dominant in your portfolio.";
-      color = 'text-green-400';
-    } else if (totalPnLPercent < -10 || negativeStocks > positiveStocks) {
+      message = "Good work! Your portfolio is performing well with positive momentum.";
+      recommendation = "Keep monitoring your positions. Consider rebalancing if any single stock becomes too dominant in your portfolio.";
+      color = 'text-green-300';
+    } else if (totalPnLPercent < -10 || negativeStocks > positiveStocks * 1.5) {
       // Poor performance
-      mood = 'concerned';
+      mood = 'poor';
       icon = Frown;
       message = "I'm concerned about your portfolio's recent performance. Several positions are underperforming.";
       recommendation = "Consider reviewing your stop-loss levels and cutting losses on consistently declining positions. Look for opportunities to rebalance into more stable sectors.";
@@ -252,8 +258,16 @@ export default function PortfolioAnalysis() {
 
   const fetchPortfolio = async () => {
     try {
+      const token = Cookies.get('token');
+      
+      // Fetch user data
+      const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(userResponse.data.user);
+
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       setPortfolio(response.data.portfolio || []);
     } catch (error) {
@@ -299,43 +313,6 @@ export default function PortfolioAnalysis() {
         status: error.response?.status,
         data: error.response?.data
       });
-      
-      // Fallback to mock data for development
-      console.log('🔄 [ANALYTICS] Using fallback mock data...');
-      
-      // Generate mock sector data
-      const mockSectorData = [
-        { sector: 'Technology', percentage: 35.2, value: 12500, count: 3, stocks: ['AAPL', 'MSFT', 'GOOGL'], change: 2.4 },
-        { sector: 'Healthcare', percentage: 28.7, value: 10200, count: 2, stocks: ['JNJ', 'PFE'], change: 0.7 },
-        { sector: 'Finance', percentage: 22.1, value: 7800, count: 2, stocks: ['JPM', 'BAC'], change: -1.2 },
-        { sector: 'Consumer', percentage: 14.0, value: 5000, count: 1, stocks: ['AMZN'], change: 1.8 }
-      ];
-      setSectorData(mockSectorData);
-      
-      // Generate mock performance data
-      const mockPerformance = Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString(),
-        totalValue: 50000 + Math.random() * 10000 + i * 200,
-        dailyChangePercent: (Math.random() - 0.5) * 4
-      }));
-      setPortfolioPerformance(mockPerformance);
-      
-      // Generate mock sector performance
-      const mockSectorPerformance = [
-        { sector: 'Technology', percentage: 35.2, value: 12500, stocks: ['AAPL', 'MSFT', 'GOOGL'], performance90d: 12.4 },
-        { sector: 'Healthcare', percentage: 28.7, value: 10200, stocks: ['JNJ', 'PFE'], performance90d: 8.7 },
-        { sector: 'Finance', percentage: 22.1, value: 7800, stocks: ['JPM', 'BAC'], performance90d: -2.3 },
-        { sector: 'Consumer', percentage: 14.0, value: 5000, stocks: ['AMZN'], performance90d: 5.2 }
-      ];
-      setSectorPerformance(mockSectorPerformance);
-      
-      setRiskAssessment({
-        overallRisk: 'Low',
-        volatility: 15.3,
-        sharpeRatio: 1.24,
-        maxDrawdown: -8.2,
-        diversification: 6
-      });
     } finally {
       if (isRefresh) {
         setRefreshing(false);
@@ -357,16 +334,16 @@ export default function PortfolioAnalysis() {
 
   return (
     <div className="w-full">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Portfolio Analysis</h1>
-              <p className="text-slate-400">Deep dive into your portfolio composition and performance</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Analytics</h1>
+              <p className="text-sm sm:text-base text-slate-400">Detailed analysis of your portfolio performance</p>
             </div>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white rounded-lg transition-colors"
+              className="flex items-center space-x-2 px-4 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white rounded-lg transition-colors text-sm sm:text-base w-full sm:w-auto justify-center"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
@@ -374,10 +351,10 @@ export default function PortfolioAnalysis() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Portfolio Allocation */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+          {/* Portfolio Overview */}
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
               <PieChart className="w-5 h-5 mr-2" />
               Portfolio Allocation
             </h3>
@@ -386,9 +363,9 @@ export default function PortfolioAnalysis() {
                 <p className="text-slate-400 text-center py-8">No stocks in portfolio</p>
               ) : (
                 portfolio.map((stock, index) => {
+                  const value = stock.currentPrice * stock.shares;
                   const totalValue = portfolio.reduce((sum, s) => sum + (s.currentPrice * s.shares), 0);
-                  const stockValue = stock.currentPrice * stock.shares;
-                  const percentage = totalValue > 0 ? (stockValue / totalValue) * 100 : 0;
+                  const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0;
                   
                   return (
                     <div key={index} className="flex items-center justify-between">
@@ -397,8 +374,8 @@ export default function PortfolioAnalysis() {
                         <span className="text-white font-medium">{stock.ticker}</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-white font-semibold">{percentage.toFixed(1)}%</div>
-                        <div className="text-slate-400 text-sm">${stockValue.toFixed(2)}</div>
+                        <div className="text-white">{percentage.toFixed(1)}%</div>
+                        <div className="text-sm text-slate-400">${value.toFixed(2)}</div>
                       </div>
                     </div>
                   );
@@ -408,217 +385,406 @@ export default function PortfolioAnalysis() {
           </div>
 
           {/* Sector Segmentation */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
               <Building2 className="w-5 h-5 mr-2" />
               Sector Segmentation
             </h3>
             <div className="space-y-4">
-              {sectorData.length === 0 ? (
-                <p className="text-slate-400 text-center py-8">No sector data available</p>
-              ) : (
-                sectorData.map((sector, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-4 h-4 rounded-full bg-primary-500"></div>
-                        <span className="text-white font-medium">{sector.sector}</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-white font-semibold">{sector.percentage.toFixed(1)}%</div>
-                        <div className="text-slate-400 text-sm">${sector.value.toLocaleString()}</div>
-                      </div>
+              {sectorData.map((sector, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
+                      <span className="text-white font-medium">{sector.sector}</span>
                     </div>
-                    <div className="w-full bg-slate-700 rounded-full h-2">
-                      <div 
-                        className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${sector.percentage}%` }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-400">
-                      <span>Stocks: {sector.stocks?.join(', ')}</span>
-                      <span className={`${sector.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {sector.change >= 0 ? '+' : ''}{sector.change.toFixed(1)}%
-                      </span>
+                    <div className="text-right">
+                      <div className="text-white font-semibold">{sector.percentage}%</div>
+                      <div className="text-sm text-slate-400">${sector.value.toLocaleString()}</div>
                     </div>
                   </div>
-                ))
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${sector.color}`}
+                      style={{ width: `${sector.percentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-400">Stocks: {sector.stocks.join(', ')}</span>
+                    <div className={`flex items-center space-x-1 ${
+                      sector.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {sector.performance90D >= 0 ? (
+                        <TrendingUp className="w-3 h-3" />
+                      ) : (
+                        <TrendingDown className="w-3 h-3" />
+                      )}
+                      <span>{sector.performance90D >= 0 ? '+' : ''}{sector.performance90D}%</span>
+                      <span className="text-slate-500">90D</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Performance Metrics */}
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2" />
+              Performance Metrics
+            </h3>
+            <div className="space-y-6">
+              {/* Main Performance Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-green-400">+12.5%</div>
+                  <div className="text-sm text-slate-400">30 Day Return</div>
+                </div>
+                <div className="text-center p-4 bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-400">+8.2%</div>
+                  <div className="text-sm text-slate-400">60 Day Return</div>
+                </div>
+                <div className="text-center p-4 bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-400">15.3%</div>
+                  <div className="text-sm text-slate-400">Volatility</div>
+                </div>
+                <div className="text-center p-4 bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-yellow-400">1.24</div>
+                  <div className="text-sm text-slate-400">Sharpe Ratio</div>
+                </div>
+              </div>
+              
+              {/* Additional Metrics Row */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center p-3 bg-slate-800/70 rounded-lg">
+                  <div className="text-lg font-bold text-emerald-400">$58.2k</div>
+                  <div className="text-xs text-slate-400">Current Value</div>
+                </div>
+                <div className="text-center p-3 bg-slate-800/70 rounded-lg">
+                  <div className="text-lg font-bold text-cyan-400">4</div>
+                  <div className="text-xs text-slate-400">Winning Stocks</div>
+                </div>
+                <div className="text-center p-3 bg-slate-800/70 rounded-lg">
+                  <div className="text-lg font-bold text-orange-400">2.8%</div>
+                  <div className="text-xs text-slate-400">Avg Daily Change</div>
+                </div>
+              </div>
+              
+              {/* Risk Indicators */}
+              <div className="bg-slate-800/50 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-white mb-3 flex items-center">
+                  <Activity className="w-4 h-4 mr-2 text-blue-400" />
+                  Risk Assessment
+                </h4>
+                {riskAssessment ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${
+                          riskAssessment.overallRisk === 'High' 
+                            ? 'bg-red-400' 
+                            : riskAssessment.overallRisk === 'Medium' 
+                              ? 'bg-yellow-400' 
+                              : 'bg-green-400'
+                        }`}></div>
+                        <span className="text-sm text-slate-300">{riskAssessment.overallRisk} Risk</span>
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        Diversified across {sectorData.length} sectors
+                      </div>
+                    </div>
+                    <div className="mt-2 w-full bg-slate-700 rounded-full h-2">
+                      <div className={`h-2 rounded-full ${
+                        riskAssessment.overallRisk === 'High' 
+                          ? 'bg-red-400' 
+                          : riskAssessment.overallRisk === 'Medium' 
+                            ? 'bg-yellow-400' 
+                            : 'bg-green-400'
+                      }`} style={{ width: `${riskAssessment.riskScore * 10}%` }}></div>
+                    </div>
+                    {riskAssessment.recommendations.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-xs text-slate-400 mb-1">Recommendations:</div>
+                        <ul className="text-xs text-slate-300 space-y-1">
+                          {riskAssessment.recommendations.slice(0, 2).map((rec: string, index: number) => (
+                            <li key={index} className="flex items-start">
+                              <span className="text-blue-400 mr-1">•</span>
+                              {rec}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-slate-400 text-sm">Loading risk assessment...</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* AI Capital Character Analysis */}
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
+              <Bot className="w-5 h-5 mr-2" />
+              AI-Capital Analysis
+            </h3>
+            <div className="space-y-4">
+              {aiAnalysis ? (
+                <>
+                  {/* AI Character Icon and Message */}
+                  <div className="text-center p-4 bg-slate-800 rounded-lg">
+                    <div className={`w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-3 ${
+                      aiAnalysis.mood === 'excellent' ? 'bg-green-500/20' :
+                      aiAnalysis.mood === 'good' ? 'bg-green-400/20' :
+                      aiAnalysis.mood === 'poor' ? 'bg-red-500/20' :
+                      aiAnalysis.mood === 'warning' ? 'bg-yellow-500/20' :
+                      'bg-blue-500/20'
+                    }`}>
+                      <aiAnalysis.icon className={`w-6 h-6 ${aiAnalysis.color}`} />
+                    </div>
+                    <p className={`text-sm font-semibold ${aiAnalysis.color} mb-2`}>
+                      {aiAnalysis.message}
+                    </p>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                      {aiAnalysis.recommendation}
+                    </p>
+                  </div>
+
+                  {/* Portfolio Metrics Grid */}
+                  {aiAnalysis.metrics && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center p-3 bg-slate-800 rounded-lg">
+                        <div className="text-xs text-slate-400 mb-1">P&L</div>
+                        <div className={`text-lg font-bold ${
+                          parseFloat(aiAnalysis.metrics.totalPnLPercent) >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {aiAnalysis.metrics.totalPnLPercent}%
+                        </div>
+                      </div>
+                      <div className="text-center p-3 bg-slate-800 rounded-lg">
+                        <div className="text-xs text-slate-400 mb-1">Volatility</div>
+                        <div className="text-lg font-bold text-white">
+                          {aiAnalysis.metrics.avgVolatility}%
+                        </div>
+                      </div>
+                      <div className="text-center p-3 bg-slate-800 rounded-lg">
+                        <div className="text-xs text-slate-400 mb-1">Winners</div>
+                        <div className="text-lg font-bold text-green-400">
+                          {aiAnalysis.metrics.positiveStocks}
+                        </div>
+                      </div>
+                      <div className="text-center p-3 bg-slate-800 rounded-lg">
+                        <div className="text-xs text-slate-400 mb-1">Losers</div>
+                        <div className="text-lg font-bold text-red-400">
+                          {aiAnalysis.metrics.negativeStocks}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="flex h-32 items-center justify-center">
+                  <div className="text-center">
+                    <Bot className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                    <p className="text-slate-400 text-sm">Loading AI analysis...</p>
+                  </div>
+                </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Performance Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-          <div className="card p-6 text-center">
-            <div className="text-2xl font-bold text-green-400">+12.5%</div>
-            <div className="text-slate-400 text-sm mt-1">30 Day Return</div>
-          </div>
-          <div className="card p-6 text-center">
-            <div className="text-2xl font-bold text-green-400">+8.2%</div>
-            <div className="text-slate-400 text-sm mt-1">60 Day Return</div>
-          </div>
-          <div className="card p-6 text-center">
-            <div className="text-2xl font-bold text-blue-400">15.3%</div>
-            <div className="text-slate-400 text-sm mt-1">Volatility</div>
-          </div>
-          <div className="card p-6 text-center">
-            <div className="text-2xl font-bold text-blue-400">1.24</div>
-            <div className="text-slate-400 text-sm mt-1">Sharpe Ratio</div>
-          </div>
-        </div>
-
-        {/* Additional Metrics */}
-        <div className="grid grid-cols-3 gap-6 mt-6">
-          <div className="card p-6 text-center">
-            <div className="text-2xl font-bold text-white">$58.2k</div>
-            <div className="text-slate-400 text-sm mt-1">Current Value</div>
-          </div>
-          <div className="card p-6 text-center">
-            <div className="text-2xl font-bold text-green-400">4</div>
-            <div className="text-slate-400 text-sm mt-1">Winning Stocks</div>
-          </div>
-          <div className="card p-6 text-center">
-            <div className="text-2xl font-bold text-blue-400">2.8%</div>
-            <div className="text-slate-400 text-sm mt-1">Avg Daily Change</div>
-          </div>
-        </div>
-
-        {/* AI-Capital Analysis */}
-        <div className="card p-6 mt-8">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <Bot className="w-5 h-5 mr-2" />
-            AI-Capital Analysis
-          </h3>
-          {aiAnalysis && (
-            <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-lg p-6">
-              <div className="flex items-start space-x-4">
-                <div className={`p-3 rounded-full bg-slate-600 ${aiAnalysis.color}`}>
-                  <aiAnalysis.icon className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-white mb-3 leading-relaxed">{aiAnalysis.message}</p>
-                  <p className="text-slate-300 text-sm leading-relaxed">{aiAnalysis.recommendation}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4 mt-6">
-                <div className="text-center">
-                  <div className={`text-2xl font-bold ${aiAnalysis.color}`}>
-                    {aiAnalysis.metrics.totalPnLPercent}%
-                  </div>
-                  <div className="text-slate-400 text-sm">Winners</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-300">
-                    {aiAnalysis.metrics.avgVolatility}%
-                  </div>
-                  <div className="text-slate-400 text-sm">Losers</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-400">
-                    {aiAnalysis.metrics.positiveStocks}
-                  </div>
-                  <div className="text-slate-400 text-sm">Winners</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-400">
-                    {aiAnalysis.metrics.negativeStocks}
-                  </div>
-                  <div className="text-slate-400 text-sm">Losers</div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Risk Assessment */}
-        <div className="card p-6 mt-8">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <AlertCircle className="w-5 h-5 mr-2" />
-            Risk Assessment
-          </h3>
-          {riskAssessment ? (
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-400">{riskAssessment.overallRisk}</div>
-                <div className="text-slate-400 text-sm">Overall Risk</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">{riskAssessment.diversification}</div>
-                <div className="text-slate-400 text-sm">Diversified across {riskAssessment.diversification} sectors</div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-3xl font-bold text-green-400">Low Risk</div>
-              <div className="text-slate-400 text-sm">Diversified across 6 sectors</div>
-            </div>
-          )}
-        </div>
-
-        {/* Sector Performance Summary (90 Days) */}
-        <div className="card p-6 mt-8">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2" />
-            Sector Performance Summary (90 Days)
-          </h3>
-          <div className="space-y-4">
-            {sectorPerformance.length === 0 ? (
-              <p className="text-slate-400 text-center py-8">No sector performance data available</p>
-            ) : (
-              sectorPerformance.map((sector, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-4 h-4 rounded-full bg-primary-500"></div>
-                    <div>
-                      <div className="text-white font-medium">{sector.sector}</div>
-                      <div className="text-slate-400 text-sm">Stocks: {sector.stocks?.join(', ')}</div>
+          {/* Sector Performance Summary */}
+          <div className="lg:col-span-2 card p-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2" />
+              Sector Performance Summary (90 Days)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sectorPerformance.length > 0 ? (
+                sectorPerformance.map((sector, index) => (
+                  <div key={index} className="bg-slate-800 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
+                        <span className="text-white font-medium text-sm">{sector.sector}</span>
+                      </div>
+                      <div className={`text-sm font-semibold ${
+                        sector.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        {sector.performance90D >= 0 ? '+' : ''}{sector.performance90D}%
+                      </div>
+                    </div>
+                    <div className="text-xs text-slate-400 mb-2">
+                      {sector.percentage}% of portfolio • ${sector.value.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Stocks: {sector.stocks.join(', ')}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-white font-semibold">{sector.percentage.toFixed(1)}%</div>
-                    <div className="text-slate-400 text-sm">${sector.value.toLocaleString()}</div>
-                    <div className={`text-sm ${sector.performance90d >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {sector.performance90d >= 0 ? '+' : ''}{sector.performance90d.toFixed(1)}%
+                ))
+              ) : (
+                <div className="col-span-full text-center text-slate-400 py-8">
+                  <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>Loading sector performance data...</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Portfolio Performance Chart */}
+          <div className="lg:col-span-2 card p-6">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2" />
+              Portfolio Performance Chart
+            </h3>
+            <div className="h-80 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-slate-700 p-6">
+              <div className="flex h-full">
+                {/* Chart Area */}
+                <div className="flex-1 flex flex-col justify-center">
+                  <div className="bg-slate-700/30 rounded-lg p-6 h-full">
+                    <div className="text-center mb-4">
+                      <h4 className="text-lg font-semibold text-white mb-1">Portfolio Value Over Time</h4>
+                      <p className="text-sm text-slate-400">Last 30 Days Performance</p>
+                    </div>
+                    
+                    {/* Real Data Chart */}
+                    <div className="relative h-40 mb-4">
+                      {portfolioPerformance.length > 0 ? (
+                        <RealPortfolioChart data={portfolioPerformance} />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-slate-400">
+                          <div className="text-center">
+                            <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">Loading performance data...</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Real performance indicators */}
+                    <div className="flex justify-between text-sm">
+                      {portfolioPerformance.length > 0 ? (
+                        portfolioPerformance.slice(-4).map((week, index) => (
+                          <div key={index} className="text-center">
+                            <div className="text-slate-300 font-medium">Week {index + 1}</div>
+                            <div className="text-xs text-slate-500">${(week.totalValue / 1000).toFixed(1)}k</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center text-slate-400 text-sm">Loading performance data...</div>
+                      )}
                     </div>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-        </div>
 
-        {/* Portfolio Performance Chart */}
-        <div className="card p-6 mt-8">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <Activity className="w-5 h-5 mr-2" />
-            Portfolio Value Over Time
-          </h3>
-          <div className="text-slate-400 text-sm mb-4">Last 30 Days Performance</div>
-          <div className="h-64 bg-slate-800 rounded-lg p-4">
-            <RealPortfolioChart data={portfolioPerformance} />
-          </div>
-          <div className="grid grid-cols-2 gap-6 mt-6">
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-400">+2.2%</div>
-              <div className="text-slate-400 text-sm">Best Day</div>
+                {/* Compact Chart Legend & Stats */}
+                <div className="w-48 ml-6 flex flex-col justify-center space-y-3">
+                  <div className="bg-slate-700/50 rounded-lg p-3">
+                    <h5 className="text-xs font-semibold text-white mb-2 flex items-center">
+                      <TrendingUp className="w-3 h-3 mr-1 text-green-400" />
+                      Performance Summary
+                    </h5>
+                    <div className="space-y-2 text-xs">
+                      {portfolioPerformance.length > 0 ? (
+                        <>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Best Day</span>
+                            <span className="text-green-400 font-bold">
+                              +{Math.max(...portfolioPerformance.map(p => p.dailyChangePercent)).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Worst Day</span>
+                            <span className="text-red-400 font-bold">
+                              {Math.min(...portfolioPerformance.map(p => p.dailyChangePercent)).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400">Total Return</span>
+                            <span className={`font-bold ${
+                              portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent > 0 
+                                ? 'text-emerald-400' 
+                                : 'text-red-400'
+                            }`}>
+                              {portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent > 0 ? '+' : ''}
+                              {portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent.toFixed(1)}%
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-slate-400 text-xs">Loading...</div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-slate-700/50 rounded-lg p-3">
+                    <h5 className="text-xs font-semibold text-white mb-2 flex items-center">
+                      <Activity className="w-3 h-3 mr-1 text-blue-400" />
+                      Trend Analysis
+                    </h5>
+                    <div className="space-y-1">
+                      {portfolioPerformance.length > 0 ? (
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-400">Trend</span>
+                            <div className="flex items-center space-x-1">
+                              {portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent > 0 ? (
+                                <TrendingUp className="w-2 h-2 text-green-400" />
+                              ) : (
+                                <TrendingDown className="w-2 h-2 text-red-400" />
+                              )}
+                              <span className={`text-xs font-semibold ${
+                                portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent > 0 
+                                  ? 'text-green-400' 
+                                  : 'text-red-400'
+                              }`}>
+                                {portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent > 5 
+                                  ? 'Strong' 
+                                  : portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent > 0 
+                                    ? 'Positive' 
+                                    : 'Declining'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-400">Volatility</span>
+                            <span className={`text-xs font-semibold ${
+                              riskAssessment?.avgVolatility > 20 
+                                ? 'text-red-400' 
+                                : riskAssessment?.avgVolatility > 10 
+                                  ? 'text-yellow-400' 
+                                  : 'text-green-400'
+                            }`}>
+                              {riskAssessment?.avgVolatility > 20 
+                                ? 'High' 
+                                : riskAssessment?.avgVolatility > 10 
+                                  ? 'Moderate' 
+                                  : 'Low'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-slate-400">Risk Level</span>
+                            <span className={`text-xs font-semibold ${
+                              riskAssessment?.overallRisk === 'High' 
+                                ? 'text-red-400' 
+                                : riskAssessment?.overallRisk === 'Medium' 
+                                  ? 'text-yellow-400' 
+                                  : 'text-green-400'
+                            }`}>
+                              {riskAssessment?.overallRisk || 'Unknown'}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-slate-400 text-xs">Loading...</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-red-400">-1.8%</div>
-              <div className="text-slate-400 text-sm">Worst Day</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-blue-400">+10.0%</div>
-              <div className="text-slate-400 text-sm">Total Return</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-yellow-400">Strong</div>
-              <div className="text-slate-400 text-sm">Trend</div>
-            </div>
-          </div>
-          <div className="mt-4 text-center">
-            <div className="text-lg font-bold text-blue-400">Moderate</div>
-            <div className="text-slate-400 text-sm">Volatility</div>
           </div>
         </div>
     </div>

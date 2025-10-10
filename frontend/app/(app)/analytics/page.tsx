@@ -137,12 +137,6 @@ export default function Analytics() {
   const [sectorPerformance, setSectorPerformance] = useState<any[]>([]);
   const [riskAssessment, setRiskAssessment] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [user, setUser] = useState<any>(null);
-
-  const handleLogout = () => {
-    Cookies.remove('token');
-    window.location.href = '/';
-  };
 
   // AI Character Analysis
   const generateAiAnalysis = () => {
