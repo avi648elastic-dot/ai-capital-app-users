@@ -6,6 +6,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Crown } from 'lucide-react';
 import AcaciaLogo from '@/components/AcaciaLogo';
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSelector from '@/components/LanguageSelector';
 
 // ✅ All requests will send cookies to other domains (cross-site)
 axios.defaults.withCredentials = true;
@@ -18,6 +20,7 @@ type MeUser = {
 };
 
 export default function Page() {
+  const { t, isRTL } = useLanguage();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -180,17 +183,22 @@ export default function Page() {
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">
+            <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <AcaciaLogo size={48} className="text-white" />
+              <div className="flex items-center space-x-4">
+                <LanguageSelector />
+              </div>
+            </div>
             <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-3">
-              <AcaciaLogo size={48} className="text-white animate-sparkle" />
               <h1 className="text-2xl sm:text-3xl font-bold text-white bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
                 AI-Capital
               </h1>
             </div>
             <p className="text-lg text-slate-300 mb-2">
-              Professional Portfolio Management V2
+              {t('auth.professionalPortfolioManagement')}
             </p>
             <p className="text-sm text-slate-400">
-              🚀 AI-Powered Trading Decisions & Real-Time Analytics
+              🚀 {t('auth.aiPoweredDescription')}
             </p>
           </div>
 
@@ -221,7 +229,7 @@ export default function Page() {
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Login
+                  {t('auth.login')}
                 </button>
                 <button
                   onClick={() => setIsLogin(false)}
@@ -231,7 +239,7 @@ export default function Page() {
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Sign Up
+                  {t('auth.signup')}
                 </button>
               </div>
 
@@ -247,7 +255,7 @@ export default function Page() {
                 {!isLogin && (
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">
-                      Full Name
+                      {t('auth.fullName')}
                     </label>
                     <input
                       type="text"
@@ -255,14 +263,14 @@ export default function Page() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="input-field"
-                      placeholder="Enter your full name"
+                      placeholder={t('auth.fullName')}
                     />
                   </div>
                 )}
 
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Email
+                    {t('auth.email')}
                   </label>
                   <input
                     type="email"
@@ -270,13 +278,13 @@ export default function Page() {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="input-field"
-                    placeholder="Enter your email"
+                    placeholder={t('auth.email')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Password
+                    {t('auth.password')}
                   </label>
                   <input
                     type="password"
@@ -284,7 +292,7 @@ export default function Page() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="input-field"
-                    placeholder="Enter your password"
+                    placeholder={t('auth.password')}
                   />
                 </div>
 
@@ -299,7 +307,7 @@ export default function Page() {
                       <span>Processing...</span>
                     </>
                   ) : (
-                    <span>{isLogin ? 'Login' : 'Create Account'}</span>
+                    <span>{isLogin ? t('auth.login') : t('auth.createAccount')}</span>
                   )}
                 </button>
               </form>
@@ -307,12 +315,12 @@ export default function Page() {
               {/* Footer */}
               <div className="mt-6 text-center">
                 <p className="text-xs text-slate-500">
-                  {isLogin ? "Don't have an account? " : "Already have an account? "}
+                  {isLogin ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}
                   <button
                     onClick={() => setIsLogin(!isLogin)}
                     className="text-blue-400 hover:text-blue-300 font-medium"
                   >
-                    {isLogin ? 'Sign Up' : 'Login'}
+                    {isLogin ? t('auth.signup') : t('auth.login')}
                   </button>
                 </p>
               </div>
@@ -323,15 +331,15 @@ export default function Page() {
           <div className="mt-8 flex justify-center space-x-6 text-xs text-slate-400">
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Secure</span>
+              <span>{t('auth.secure')}</span>
             </div>
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span>Fast</span>
+              <span>{t('auth.fast')}</span>
             </div>
             <div className="flex items-center space-x-1">
               <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-              <span>Accurate</span>
+              <span>{t('auth.accurate')}</span>
             </div>
           </div>
         </div>
