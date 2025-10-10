@@ -151,7 +151,17 @@ router.get('/', authenticateToken, async (req, res) => {
     // Calculate portfolio-level volatility metrics
     const portfolioVolatilityMetrics = await volatilityService.calculatePortfolioVolatility(tickers);
 
-    const portfolioMetrics = {
+    let portfolioMetrics: {
+      totalReturn: number;
+      volatility: number;
+      volatilityMetrics: any;
+      sharpeRatio: number;
+      maxDrawdown: number;
+      currentValue: number;
+      totalStocks: number;
+      dataPoints: number;
+      isFallbackData?: boolean;
+    } = {
       totalReturn: totalPortfolioReturn,
       volatility: totalWeightedVolatility,
       volatilityMetrics: portfolioVolatilityMetrics, // Include detailed portfolio volatility
@@ -159,7 +169,8 @@ router.get('/', authenticateToken, async (req, res) => {
       maxDrawdown: portfolioMaxDrawdown,
       currentValue: totalPortfolioValue,
       totalStocks: portfolio.length,
-      dataPoints: stockMetricsMap.size
+      dataPoints: stockMetricsMap.size,
+      isFallbackData: false
     };
 
     loggerService.info(`✅ [PERFORMANCE] Portfolio metrics calculated from 90-day data:`, {
