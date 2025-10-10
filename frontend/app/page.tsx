@@ -142,15 +142,32 @@ export default function Page() {
         {['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'BTC', 'ETH'].map((symbol, index) => (
           <div
             key={symbol}
-            className="absolute text-xs font-mono text-slate-400 opacity-30 animate-float"
+            className="absolute text-xs font-mono text-slate-400/60 opacity-40 animate-float-enhanced bg-slate-800/20 px-2 py-1 rounded backdrop-blur-sm"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${index * 0.5}s`,
-              animationDuration: `${10 + Math.random() * 10}s`
+              animationDuration: `${10 + Math.random() * 10}s`,
+              border: '1px solid rgba(59, 130, 246, 0.2)'
             }}
           >
             {symbol}
+          </div>
+        ))}
+
+        {/* Additional Floating Numbers */}
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={`number-${i}`}
+            className="absolute text-sm font-mono text-emerald-400/50 animate-float"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${8 + Math.random() * 6}s`
+            }}
+          >
+            {`${(Math.random() * 100).toFixed(1)}%`}
           </div>
         ))}
 
@@ -174,18 +191,96 @@ export default function Page() {
           🚀
         </div>
 
-        {/* Animated Bubbles */}
-        {[...Array(15)].map((_, i) => (
+        {/* Animated Bubbles - Multiple Types */}
+        {[...Array(25)].map((_, i) => {
+          const bubbleTypes = [
+            'bg-gradient-to-r from-blue-500/30 to-cyan-500/20',
+            'bg-gradient-to-r from-purple-500/30 to-pink-500/20', 
+            'bg-gradient-to-r from-emerald-500/30 to-green-500/20',
+            'bg-gradient-to-r from-orange-500/30 to-red-500/20',
+            'bg-gradient-to-r from-indigo-500/30 to-blue-500/20'
+          ];
+          const bubbleType = bubbleTypes[i % bubbleTypes.length];
+          
+          return (
+            <div
+              key={i}
+              className={`absolute rounded-full ${bubbleType} animate-bubble shadow-lg`}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 6 + 2}rem`,
+                height: `${Math.random() * 6 + 2}rem`,
+                animationDelay: `${Math.random() * 15}s`,
+                animationDuration: `${12 + Math.random() * 8}s`,
+                filter: 'blur(1px)'
+              }}
+            />
+          );
+        })}
+
+        {/* Floating Particles */}
+        {[...Array(30)].map((_, i) => (
           <div
-            key={i}
-            className="absolute rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 animate-bubble"
+            key={`particle-${i}`}
+            className="absolute w-1 h-1 bg-white/40 rounded-full animate-ping"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 4 + 1}rem`,
-              height: `${Math.random() * 4 + 1}rem`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${3 + Math.random() * 2}s`
+            }}
+          />
+        ))}
+
+        {/* Glowing Orbs */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`orb-${i}`}
+            className="absolute rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 animate-float"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 8 + 4}rem`,
+              height: `${Math.random() * 8 + 4}rem`,
               animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${15 + Math.random() * 10}s`
+              animationDuration: `${20 + Math.random() * 10}s`,
+              filter: 'blur(2px)',
+              boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)'
+            }}
+          />
+        ))}
+
+        {/* Small Drifting Bubbles */}
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={`drift-${i}`}
+            className="absolute rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 animate-bubble-drift"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 3 + 1}rem`,
+              height: `${Math.random() * 3 + 1}rem`,
+              animationDelay: `${Math.random() * 12}s`,
+              animationDuration: `${10 + Math.random() * 8}s`,
+              filter: 'blur(0.5px)'
+            }}
+          />
+        ))}
+
+        {/* Large Floating Circles */}
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={`circle-${i}`}
+            className="absolute rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 animate-float-slow border border-purple-500/20"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              width: `${Math.random() * 12 + 8}rem`,
+              height: `${Math.random() * 12 + 8}rem`,
+              animationDelay: `${Math.random() * 15}s`,
+              animationDuration: `${25 + Math.random() * 15}s`,
+              filter: 'blur(3px)'
             }}
           />
         ))}
