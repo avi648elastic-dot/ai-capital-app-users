@@ -7,8 +7,8 @@ WORKDIR /app/frontend
 # Copy frontend package files
 COPY frontend/package*.json ./
 
-# Install frontend dependencies
-RUN npm ci --only=production
+# Install ALL dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy frontend source code
 COPY frontend/ ./
@@ -24,8 +24,8 @@ WORKDIR /app/backend
 # Copy backend package files
 COPY backend/package*.json ./
 
-# Install backend dependencies
-RUN npm ci --only=production
+# Install ALL dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy backend source code
 COPY backend/ ./
@@ -54,9 +54,9 @@ COPY --from=frontend-builder --chown=aicapital:nodejs /app/frontend/package*.jso
 COPY --from=backend-builder --chown=aicapital:nodejs /app/backend/dist ./backend/dist
 COPY --from=backend-builder --chown=aicapital:nodejs /app/backend/package*.json ./backend/
 
-# Install production dependencies
+# Install ONLY production dependencies for runtime
 WORKDIR /app/backend
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Switch to non-root user
 USER aicapital
