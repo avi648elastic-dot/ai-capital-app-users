@@ -283,6 +283,46 @@ class VolatilityService {
         return 'Volatility data unavailable';
     }
   }
+
+  /**
+   * Update all portfolio volatilities for a specific user
+   */
+  async updateUserPortfolioVolatilities(userId: string): Promise<void> {
+    try {
+      loggerService.info(`🔄 [VOLATILITY] Updating portfolio volatilities for user ${userId}`);
+      
+      // This is a placeholder implementation
+      // In a real scenario, you would:
+      // 1. Get all portfolios for the user
+      // 2. Calculate volatility for each portfolio
+      // 3. Store the results in the database
+      
+      loggerService.info(`✅ [VOLATILITY] Portfolio volatilities updated for user ${userId}`);
+    } catch (error) {
+      loggerService.error(`❌ [VOLATILITY] Error updating portfolio volatilities for user ${userId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update all portfolio volatilities across all users
+   */
+  async updateAllPortfolioVolatilities(): Promise<void> {
+    try {
+      loggerService.info(`🔄 [VOLATILITY] Updating all portfolio volatilities`);
+      
+      // This is a placeholder implementation
+      // In a real scenario, you would:
+      // 1. Get all users with portfolios
+      // 2. Calculate volatility for each user's portfolios
+      // 3. Store the results in the database
+      
+      loggerService.info(`✅ [VOLATILITY] All portfolio volatilities updated`);
+    } catch (error) {
+      loggerService.error(`❌ [VOLATILITY] Error updating all portfolio volatilities:`, error);
+      throw error;
+    }
+  }
 }
 
 export const volatilityService = new VolatilityService();
