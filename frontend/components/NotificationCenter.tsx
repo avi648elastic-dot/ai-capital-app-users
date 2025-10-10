@@ -162,42 +162,51 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border-2 border-gray-300 z-50 max-h-96 overflow-hidden">
-            <div className="p-4 border-b-2 border-gray-300 bg-gray-50">
+          <div className="absolute right-0 mt-2 w-[420px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[500px] overflow-hidden">
+            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
+                <div className="flex items-center space-x-2">
+                  <Bell className="w-5 h-5 text-blue-600" />
+                  <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
+                  {unreadCount > 0 && (
+                    <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
                 <div className="flex space-x-2">
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="text-sm text-blue-700 hover:text-blue-900 font-semibold bg-blue-100 px-3 py-1 rounded-md"
+                      className="text-sm text-blue-700 hover:text-blue-900 font-semibold bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-lg transition-colors"
                     >
                       Mark all read
                     </button>
                   )}
                   <button
                     onClick={() => setIsOpen(false)}
-                    className="text-gray-600 hover:text-gray-800 bg-gray-200 p-1 rounded-md"
+                    className="text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="max-h-80 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="p-8 text-center">
                   <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-600 font-medium">No notifications yet</p>
+                  <p className="text-sm text-gray-500 mt-1">We'll notify you about portfolio updates and market changes</p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-gray-100">
                   {notifications.map((notification) => (
                     <div
                       key={notification._id}
-                      className={`p-4 hover:bg-gray-50 transition-colors border-l-4 ${
-                        !notification.readAt ? 'bg-blue-50 border-blue-400' : 'bg-white border-transparent'
+                      className={`p-4 hover:bg-gray-50 transition-all duration-200 border-l-4 ${
+                        !notification.readAt ? 'bg-blue-50 border-blue-500 shadow-sm' : 'bg-white border-transparent hover:border-gray-200'
                       }`}
                     >
                       <div className="flex items-start space-x-3">
@@ -217,25 +226,36 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className={`text-sm font-bold ${
+                          <div className="flex items-center justify-between mb-2">
+                            <p className={`text-base font-bold ${
                               !notification.readAt ? 'text-gray-900' : 'text-gray-700'
                             }`}>
-                              {notification.title}
+                              {notification.title || 'System Notification'}
                             </p>
                             <div className="flex items-center space-x-2">
-                              <span className="text-xs font-semibold text-gray-700 bg-gray-200 px-2 py-1 rounded-md">
+                              <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
                                 {formatTimeAgo(notification.createdAt)}
                               </span>
                               {!notification.readAt && (
-                                <div className="w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
+                                <div className="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-sm"></div>
                               )}
                             </div>
                           </div>
                           
-                          <p className="text-sm font-medium text-gray-800 mt-2 leading-relaxed">
-                            {notification.message}
-                          </p>
+                          <div className="mb-3">
+                            {notification.message ? (
+                              <p className="text-sm font-medium text-gray-800 leading-relaxed">
+                                {notification.message}
+                              </p>
+                            ) : (
+                              <div className="text-sm text-gray-600 italic">
+                                {notification.actionData ? 
+                                  `Portfolio action: ${notification.actionData.action} ${notification.actionData.ticker}` :
+                                  'Notification details not available'
+                                }
+                              </div>
+                            )}
+                          </div>
 
                           {notification.actionData && (
                             <div className="mt-2 p-2 bg-purple-50 rounded-md">
@@ -259,11 +279,11 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
                             </div>
                           )}
 
-                          <div className="flex items-center space-x-4 mt-3">
+                          <div className="flex items-center space-x-3 mt-4">
                             {!notification.readAt && (
                               <button
                                 onClick={() => markAsRead(notification._id)}
-                                className="flex items-center space-x-1 text-xs font-semibold text-blue-700 hover:text-blue-900 bg-blue-100 px-3 py-1 rounded-md"
+                                className="flex items-center space-x-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors"
                               >
                                 <Check className="w-3 h-3" />
                                 <span>Mark read</span>
@@ -271,7 +291,7 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
                             )}
                             <button
                               onClick={() => deleteNotification(notification._id)}
-                              className="flex items-center space-x-1 text-xs font-semibold text-red-700 hover:text-red-900 bg-red-100 px-3 py-1 rounded-md"
+                              className="flex items-center space-x-1.5 text-xs font-semibold text-red-700 hover:text-red-800 bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg transition-colors"
                             >
                               <X className="w-3 h-3" />
                               <span>Delete</span>
@@ -286,12 +306,13 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
             </div>
 
             {notifications.length > 0 && (
-              <div className="p-4 border-t-2 border-gray-300 text-center bg-gray-50">
+              <div className="p-4 border-t border-gray-200 text-center bg-gradient-to-r from-gray-50 to-blue-50">
                 <a
                   href="/dashboard/notifications"
-                  className="text-sm text-blue-700 hover:text-blue-900 font-semibold bg-blue-100 px-4 py-2 rounded-md inline-block"
+                  className="inline-flex items-center space-x-2 text-sm text-blue-700 hover:text-blue-900 font-semibold bg-blue-100 hover:bg-blue-200 px-4 py-2 rounded-lg transition-colors"
                 >
-                  View all notifications
+                  <Bell className="w-4 h-4" />
+                  <span>View all notifications</span>
                 </a>
               </div>
             )}
