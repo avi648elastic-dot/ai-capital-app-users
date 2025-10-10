@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import { ThemeProvider } from '../contexts/ThemeContext'
@@ -11,7 +12,6 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'AI-Capital | Professional Portfolio Management',
   description: 'AI-powered stock portfolio management with real-time market analysis and intelligent trading decisions',
-  // Force rebuild to apply design changes
 }
 
 export default function RootLayout({
@@ -21,12 +21,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <head>
+      <body className={inter.className}>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className={inter.className}>
+        
         <ThemeProvider>
           <LanguageProvider>
             <TourProvider>
