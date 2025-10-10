@@ -106,7 +106,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-slate-800/50 [data-theme='light']:bg-gray-100">
-            <tr className="keep-ltr">
+            <tr>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.exchange')}</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.ticker')}</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-700">{t('portfolio.shares')}</th>
@@ -129,7 +129,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
               const value = item.currentPrice * item.shares;
 
               return (
-                <tr key={item._id} className="table-row keep-ltr hover:bg-slate-800/30 [data-theme='light']:hover:bg-gray-50">
+                <tr key={item._id} className="table-row hover:bg-slate-800/30 [data-theme='light']:hover:bg-gray-50">
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     <div className="text-xs text-slate-400 [data-theme='light']:text-gray-600">{item.exchange || '—'}</div>
                   </td>

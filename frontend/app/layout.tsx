@@ -29,10 +29,7 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>
             <TourProvider>
-              <div className="min-h-screen transition-colors duration-300" style={{ 
-                backgroundColor: 'var(--bg-primary, #0f172a)',
-                color: 'var(--text-primary, #f1f5f9)'
-              }}>
+              <div className="min-h-screen transition-colors duration-300 bg-slate-950 text-slate-100 [data-theme='light']:bg-white [data-theme='light']:text-gray-900">
                 {children}
                 {/* Tour Overlay */}
                 <TourOverlay />

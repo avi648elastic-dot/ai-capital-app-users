@@ -506,13 +506,17 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   // Apply language changes to document
   useEffect(() => {
     document.documentElement.setAttribute('lang', locale);
-    document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+    // Keep LTR direction for all languages to maintain English texture
+    document.documentElement.setAttribute('dir', 'ltr');
     
-    // Apply consistent font class and RTL without changing texture/styling
-    const classes = [fontClass];
-    if (isRTL) classes.push('rtl');
+    // Apply font class but preserve existing body classes (like theme classes)
+    // Don't add RTL class to keep English layout
+    const existingClasses = document.body.className.split(' ').filter(cls => 
+      !cls.startsWith('lang-') && cls !== 'rtl'
+    );
+    const classes = [...existingClasses, fontClass];
     document.body.className = classes.join(' ');
-  }, [locale, isRTL, fontClass]);
+  }, [locale, fontClass]);
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t, isRTL, fontClass }}>
