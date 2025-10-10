@@ -58,7 +58,7 @@ export function TourProvider({ children }: TourProviderProps) {
       return [
         {
           id: 'welcome',
-          target: '.dashboard-welcome',
+          target: 'body',
           title: 'Welcome to AI-Capital! 🚀',
           content: 'Let me show you around our powerful AI-driven portfolio management platform. This tour will highlight all the key features that can help you make smarter investment decisions.',
           position: 'center',
@@ -67,7 +67,7 @@ export function TourProvider({ children }: TourProviderProps) {
         },
         {
           id: 'navigation',
-          target: '.navigation-sidebar',
+          target: 'nav',
           title: 'Navigation Menu',
           content: 'Here you can access all the main features: Dashboard, Portfolios, Analytics, Risk Management, and more. Premium+ users get access to advanced features like Risk Management and Reports.',
           position: 'right',
@@ -76,7 +76,7 @@ export function TourProvider({ children }: TourProviderProps) {
         },
         {
           id: 'portfolio-overview',
-          target: '.portfolio-overview',
+          target: '.financial-metric',
           title: 'Portfolio Overview',
           content: 'This shows your total portfolio value, today\'s returns, and key performance metrics. Watch how these numbers update in real-time as markets move!',
           position: 'bottom',
@@ -84,7 +84,7 @@ export function TourProvider({ children }: TourProviderProps) {
         },
         {
           id: 'market-status',
-          target: '.market-status-bar',
+          target: '.bg-slate-900',
           title: 'Live Market Status',
           content: 'This bar shows real-time market status with your local time. The animated indicator shows market activity - green when open, gray when closed.',
           position: 'bottom',
@@ -92,7 +92,7 @@ export function TourProvider({ children }: TourProviderProps) {
         },
         {
           id: 'portfolio-table',
-          target: '.portfolio-table',
+          target: '.card',
           title: 'Your Portfolio Holdings',
           content: 'Here you can see all your stocks with AI-generated BUY/SELL/HOLD recommendations. Our algorithm analyzes 90 days of data to give you the best advice!',
           position: 'top',
@@ -100,7 +100,7 @@ export function TourProvider({ children }: TourProviderProps) {
         },
         {
           id: 'upgrade-cta',
-          target: '.upgrade-banner',
+          target: 'body',
           title: 'Ready to Upgrade? 💎',
           content: 'You\'ve seen the power of AI-Capital! Upgrade to Premium+ to unlock advanced analytics, risk management tools, multi-portfolio support, and priority features. Start your journey to smarter investing today!',
           position: 'center',

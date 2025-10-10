@@ -186,7 +186,7 @@
   text-align: right;
 }
 
-.rtl .flex {
+.rtl .flex:not(.keep-ltr) {
   flex-direction: row-reverse;
 }
 

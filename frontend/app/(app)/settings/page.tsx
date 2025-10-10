@@ -5,13 +5,14 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Palette, Globe, Bell, Shield, Database } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function Settings() {
   const { t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState({
-    theme: 'dark',
     language: 'en',
     notifications: true,
     emailUpdates: true,
@@ -85,8 +86,8 @@ export default function Settings() {
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">{t('settings.theme')}</label>
               <select
-                value={settings.theme}
-                onChange={(e) => setSettings({ ...settings, theme: e.target.value })}
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as 'light' | 'dark')}
                 className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="dark">{t('settings.dark')}</option>
