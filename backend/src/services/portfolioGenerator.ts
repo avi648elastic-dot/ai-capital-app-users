@@ -296,10 +296,11 @@ export class PortfolioGenerator {
    * 🤖 חיבור למנוע החלטות - קבלת החלטות BUY / HOLD / SELL
    */
   async validateAndEnhancePortfolio(portfolio: any[]): Promise<any[]> {
-    await decisionEngine.loadStockData();
+    // Note: Decision engine now fetches data dynamically with 10-minute cache
+    // No need to pre-load stock data anymore
 
-    return portfolio.map((item) => {
-      const decision = decisionEngine.decideActionEnhanced({
+    return Promise.all(portfolio.map(async (item) => {
+      const decision = await decisionEngine.decideActionEnhanced({
         ticker: item.ticker,
         entryPrice: item.entryPrice,
         currentPrice: item.currentPrice,
@@ -313,7 +314,7 @@ export class PortfolioGenerator {
         reason: decision.reason,
         color: decision.color,
       };
-    });
+    }));
   }
 }
 

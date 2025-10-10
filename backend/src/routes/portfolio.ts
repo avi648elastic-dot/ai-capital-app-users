@@ -40,7 +40,7 @@ router.get('/', authenticateToken, async (req, res) => {
       console.log(`🔍 [PORTFOLIO] ${item.ticker}: Entry=${item.entryPrice}, Current=${currentPrice}, StopLoss=${item.stopLoss}, RealTime=${realTimeStock?.current || 'N/A'}`);
       
       // Recalculate decision with real-time data
-      const decision = decisionEngine.decideActionEnhanced({
+      const decision = await decisionEngine.decideActionEnhanced({
         ticker: item.ticker,
         entryPrice: item.entryPrice,
         currentPrice: currentPrice,
@@ -272,7 +272,7 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
 
     // Get decision for this stock with error handling
     try {
-      const decision = decisionEngine.decideActionEnhanced({
+      const decision = await decisionEngine.decideActionEnhanced({
         ticker: portfolioItem.ticker,
         entryPrice: portfolioItem.entryPrice,
         currentPrice: portfolioItem.currentPrice,
@@ -348,7 +348,7 @@ router.put('/:id', authenticateToken, requireSubscription, async (req, res) => {
     });
 
     // Recalculate decision
-    const decision = decisionEngine.decideActionEnhanced({
+    const decision = await decisionEngine.decideActionEnhanced({
       ticker: portfolioItem.ticker,
       entryPrice: portfolioItem.entryPrice,
       currentPrice: portfolioItem.currentPrice,
@@ -414,7 +414,7 @@ router.get('/decisions', authenticateToken, requireSubscription, async (req, res
         item.currentPrice = currentPrice;
         
         // Get decision based on real-time data
-        const decision = decisionEngine.decideActionEnhanced({
+        const decision = await decisionEngine.decideActionEnhanced({
           ticker: item.ticker,
           entryPrice: item.entryPrice,
           currentPrice: currentPrice,

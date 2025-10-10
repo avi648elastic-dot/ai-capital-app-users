@@ -99,11 +99,11 @@ export class SchedulerService {
     try {
       console.log('🔄 [SCHEDULER] Updating stock data...');
       
-      // Reload stock data in decision engine
-      await decisionEngine.loadStockData();
+      // Note: Decision engine now fetches data dynamically with 10-minute cache
+      // No need to pre-load stock data anymore
       
       const duration = Date.now() - startTime;
-      console.log(`✅ [SCHEDULER] Stock data updated in ${duration}ms`);
+      console.log(`✅ [SCHEDULER] Stock data cache ready (${duration}ms)`);
       
     } catch (error) {
       console.error('❌ [SCHEDULER] Error updating stock data:', error);
@@ -156,7 +156,7 @@ export class SchedulerService {
             const newCurrentPrice = realTimeStock?.current || portfolioItem.currentPrice;
             
             // Calculate decision with real-time price
-            const decision = decisionEngine.decideActionEnhanced({
+            const decision = await decisionEngine.decideActionEnhanced({
               ticker: portfolioItem.ticker,
               entryPrice: portfolioItem.entryPrice,
               currentPrice: newCurrentPrice,
