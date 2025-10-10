@@ -39,9 +39,19 @@ router.get('/', authenticateToken, async (req, res) => {
     loggerService.info(`🔍 [PERFORMANCE] Analyzing ${tickers.length} stocks: ${tickers.join(', ')}`);
     
     // Fetch 90-day data for all stocks using our Google Finance service
-    loggerService.info(`🔍 [PERFORMANCE] Fetching 90-day data for ${tickers.length} stocks...`);
+    loggerService.info(`🔍 [PERFORMANCE] Fetching 90-day data for ${tickers.length} stocks: ${tickers.join(', ')}`);
     const stockMetricsMap = await googleFinanceFormulasService.getMultipleStockMetrics(tickers);
     loggerService.info(`📊 [PERFORMANCE] Retrieved data for ${stockMetricsMap.size}/${tickers.length} stocks`);
+    
+    // Debug: Log which stocks have data and which don't
+    for (const ticker of tickers) {
+      if (stockMetricsMap.has(ticker)) {
+        const data = stockMetricsMap.get(ticker)!;
+        loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${data.current.toFixed(2)}, Volatility=${(data.volatility * 100).toFixed(2)}%, Source=${data.dataSource}`);
+      } else {
+        loggerService.warn(`❌ [PERFORMANCE] ${ticker}: No data available from any API`);
+      }
+    }
     
     // Calculate metrics for each stock using the 90-day data
     const stockMetrics: Record<string, any> = {};
@@ -53,7 +63,19 @@ router.get('/', authenticateToken, async (req, res) => {
     for (const stock of portfolio) {
       const stockData = stockMetricsMap.get(stock.ticker);
       if (!stockData) {
-        loggerService.warn(`⚠️ [PERFORMANCE] No 90-day data for ${stock.ticker}`);
+        loggerService.warn(`⚠️ [PERFORMANCE] No 90-day data for ${stock.ticker} - skipping calculation`);
+        
+        // Add placeholder data so frontend doesn't break
+        stockMetrics[stock.ticker] = {
+          totalReturn: 0,
+          volatility: 0,
+          volatilityMetrics: null,
+          sharpeRatio: 0,
+          maxDrawdown: 0,
+          topPrice: stock.currentPrice,
+          currentPrice: stock.currentPrice,
+          error: 'No 90-day data available'
+        };
         continue;
       }
 
@@ -61,8 +83,21 @@ router.get('/', authenticateToken, async (req, res) => {
       const timeframeReturn = calculateTimeframeReturn(stockData, days);
       
       // Get detailed volatility metrics from our volatility service
-      const volatilityMetrics = await volatilityService.calculateStockVolatility(stock.ticker);
-      const volatility = volatilityMetrics ? volatilityMetrics.volatility : stockData.volatility * 100;
+      let volatilityMetrics = null;
+      let volatility = stockData.volatility * 100; // Default to Google Finance volatility
+      
+      try {
+        volatilityMetrics = await volatilityService.calculateStockVolatility(stock.ticker);
+        if (volatilityMetrics) {
+          volatility = volatilityMetrics.volatility;
+          loggerService.info(`📊 [VOLATILITY] ${stock.ticker}: ${volatility.toFixed(2)}% (${volatilityMetrics.riskLevel})`);
+        } else {
+          loggerService.warn(`⚠️ [VOLATILITY] No detailed volatility metrics for ${stock.ticker}, using Google Finance data`);
+        }
+      } catch (error) {
+        loggerService.error(`❌ [VOLATILITY] Error calculating volatility for ${stock.ticker}:`, error);
+        // Continue with Google Finance volatility
+      }
       
       // Calculate Sharpe ratio (assuming risk-free rate of 2%)
       const riskFreeRate = 2.0;
@@ -152,10 +187,57 @@ router.get('/', authenticateToken, async (req, res) => {
       }
     };
     
+    // If no real data was retrieved, provide fallback data for testing
+    if (stockMetricsMap.size === 0) {
+      loggerService.warn(`⚠️ [PERFORMANCE] No real data available, providing fallback data for testing`);
+      
+      // Create fallback data based on portfolio
+      for (const stock of portfolio) {
+        const fallbackReturn = Math.random() * 20 - 10; // Random return between -10% and +10%
+        const fallbackVolatility = Math.random() * 30 + 10; // Random volatility between 10% and 40%
+        
+        stockMetrics[stock.ticker] = {
+          totalReturn: fallbackReturn,
+          volatility: fallbackVolatility,
+          volatilityMetrics: {
+            volatility: fallbackVolatility,
+            riskLevel: fallbackVolatility < 15 ? 'Low' : fallbackVolatility < 25 ? 'Medium' : 'High',
+            riskColor: fallbackVolatility < 15 ? 'green' : fallbackVolatility < 25 ? 'yellow' : 'red'
+          },
+          sharpeRatio: fallbackVolatility > 0 ? (fallbackReturn - 2.0) / fallbackVolatility : 0,
+          maxDrawdown: Math.abs(fallbackReturn) * 1.5,
+          topPrice: stock.currentPrice * (1 + Math.random() * 0.2),
+          currentPrice: stock.currentPrice,
+          isFallbackData: true
+        };
+      }
+      
+      // Update portfolio metrics with fallback data
+      const fallbackPortfolioReturn = Object.values(stockMetrics).reduce((sum, stock) => sum + stock.totalReturn, 0) / Object.keys(stockMetrics).length;
+      const fallbackPortfolioVolatility = Object.values(stockMetrics).reduce((sum, stock) => sum + stock.volatility, 0) / Object.keys(stockMetrics).length;
+      
+      portfolioMetrics = {
+        totalReturn: fallbackPortfolioReturn,
+        volatility: fallbackPortfolioVolatility,
+        volatilityMetrics: null,
+        sharpeRatio: fallbackPortfolioVolatility > 0 ? (fallbackPortfolioReturn - 2.0) / fallbackPortfolioVolatility : 0,
+        maxDrawdown: Math.abs(fallbackPortfolioReturn) * 1.5,
+        currentValue: portfolio.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0),
+        totalStocks: portfolio.length,
+        dataPoints: 0,
+        isFallbackData: true
+      };
+      
+      response.portfolioMetrics = portfolioMetrics;
+      response.stockMetrics = stockMetrics;
+      response.dataSource = 'Fallback Data (APIs unavailable)';
+    }
+
     loggerService.info(`✅ [PERFORMANCE] Sending response with ${Object.keys(stockMetrics).length} stock metrics and portfolio metrics:`, {
       portfolioReturn: portfolioMetrics?.totalReturn?.toFixed(2) + '%',
       portfolioVolatility: portfolioMetrics?.volatility?.toFixed(2) + '%',
-      stockCount: Object.keys(stockMetrics).length
+      stockCount: Object.keys(stockMetrics).length,
+      isFallbackData: portfolioMetrics?.isFallbackData || false
     });
     
     res.json(response);

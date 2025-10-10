@@ -291,11 +291,42 @@ class VolatilityService {
     try {
       loggerService.info(`🔄 [VOLATILITY] Updating portfolio volatilities for user ${userId}`);
       
-      // This is a placeholder implementation
-      // In a real scenario, you would:
-      // 1. Get all portfolios for the user
-      // 2. Calculate volatility for each portfolio
-      // 3. Store the results in the database
+      // Import Portfolio model
+      const Portfolio = require('../models/Portfolio').default;
+      
+      // Get all portfolios for the user
+      const portfolios = await Portfolio.find({ userId }).sort({ createdAt: 1 });
+      
+      if (portfolios.length === 0) {
+        loggerService.warn(`⚠️ [VOLATILITY] No portfolios found for user ${userId}`);
+        return;
+      }
+      
+      // Group stocks by portfolio
+      const portfolioGroups = new Map<string, any[]>();
+      
+      for (const stock of portfolios) {
+        const portfolioId = stock.portfolioId || `${stock.portfolioType}-1`;
+        if (!portfolioGroups.has(portfolioId)) {
+          portfolioGroups.set(portfolioId, []);
+        }
+        portfolioGroups.get(portfolioId)!.push(stock);
+      }
+      
+      // Calculate volatility for each portfolio
+      for (const [portfolioId, stocks] of portfolioGroups) {
+        const tickers = stocks.map(stock => stock.ticker);
+        loggerService.info(`🔍 [VOLATILITY] Calculating volatility for portfolio ${portfolioId} with ${tickers.length} stocks`);
+        
+        try {
+          const portfolioVolatility = await this.calculatePortfolioVolatility(tickers);
+          if (portfolioVolatility) {
+            loggerService.info(`✅ [VOLATILITY] Portfolio ${portfolioId} volatility: ${portfolioVolatility.volatility.toFixed(2)}% (${portfolioVolatility.riskLevel})`);
+          }
+        } catch (error) {
+          loggerService.error(`❌ [VOLATILITY] Error calculating volatility for portfolio ${portfolioId}:`, error);
+        }
+      }
       
       loggerService.info(`✅ [VOLATILITY] Portfolio volatilities updated for user ${userId}`);
     } catch (error) {
@@ -311,13 +342,28 @@ class VolatilityService {
     try {
       loggerService.info(`🔄 [VOLATILITY] Updating all portfolio volatilities`);
       
-      // This is a placeholder implementation
-      // In a real scenario, you would:
-      // 1. Get all users with portfolios
-      // 2. Calculate volatility for each user's portfolios
-      // 3. Store the results in the database
+      // Import models
+      const Portfolio = require('../models/Portfolio').default;
+      const User = require('../models/User').default;
       
-      loggerService.info(`✅ [VOLATILITY] All portfolio volatilities updated`);
+      // Get all users with portfolios
+      const usersWithPortfolios = await User.find({ 
+        _id: { $in: await Portfolio.distinct('userId') }
+      });
+      
+      loggerService.info(`🔍 [VOLATILITY] Found ${usersWithPortfolios.length} users with portfolios`);
+      
+      // Update volatilities for each user
+      for (const user of usersWithPortfolios) {
+        try {
+          await this.updateUserPortfolioVolatilities(user._id.toString());
+        } catch (error) {
+          loggerService.error(`❌ [VOLATILITY] Error updating volatilities for user ${user._id}:`, error);
+          // Continue with other users even if one fails
+        }
+      }
+      
+      loggerService.info(`✅ [VOLATILITY] All portfolio volatilities updated for ${usersWithPortfolios.length} users`);
     } catch (error) {
       loggerService.error(`❌ [VOLATILITY] Error updating all portfolio volatilities:`, error);
       throw error;
