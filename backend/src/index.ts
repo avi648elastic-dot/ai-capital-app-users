@@ -29,25 +29,25 @@ import { schedulerService } from './services/schedulerService';
 // Load environment variables
 dotenv.config();
 
-// Initialize Sentry - Temporarily disabled for deployment compatibility
-// if (process.env.SENTRY_DSN) {
-//   Sentry.init({
-//     dsn: process.env.SENTRY_DSN,
-//     environment: process.env.NODE_ENV || 'development',
-//     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-//   });
-// }
+// Initialize Sentry
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  });
+}
 
 const app = express();
 
 // ✅ Render מחייב להשתמש ב־process.env.PORT
 const PORT = Number(process.env.PORT) || 10000;
 
-// Sentry middleware must be first - Temporarily disabled
-// if (process.env.SENTRY_DSN) {
-//   app.use(Sentry.requestHandler());
-//   app.use(Sentry.tracingHandler());
-// }
+// Sentry middleware must be first
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.requestHandler());
+  app.use(Sentry.tracingHandler());
+}
 
 // 🔒 Enhanced Security Configuration
 app.use(helmet({
@@ -533,10 +533,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-// Sentry error handler must be before other error handlers - Temporarily disabled
-// if (process.env.SENTRY_DSN) {
-//   app.use(Sentry.errorHandler());
-// }
+// Sentry error handler must be before other error handlers
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.errorHandler());
+}
 
 // 🚫 404 – לא נמצא
 app.use('*', (req, res) => {
