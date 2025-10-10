@@ -131,13 +131,13 @@
   animation: gradientShift 3s ease infinite;
 }
 
-/* Mobile auto-minimize */
+/* Mobile auto-minimize - 30% scale for better viewing */
 @media (max-width: 768px) {
   body {
-    transform: scale(0.5);
+    transform: scale(0.3);
     transform-origin: top left;
-    width: 200vw;
-    height: 200vh;
+    width: 333.33vw;
+    height: 333.33vh;
     overflow-x: auto;
     overflow-y: auto;
   }
@@ -277,10 +277,23 @@
   margin-right: 1rem;
 }
 
+/* Language-specific fonts - maintaining consistent styling */
+.lang-en {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
 .lang-ar {
-  font-family: 'Cairo', Arial, sans-serif;
+  font-family: 'Cairo', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Maintain consistent font weight and size */
+  font-weight: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .lang-he {
-  font-family: 'Heebo', Arial, sans-serif;
+  font-family: 'Heebo', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Maintain consistent font weight and size */
+  font-weight: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }

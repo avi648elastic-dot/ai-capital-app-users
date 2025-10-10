@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Edit, Trash2, Eye } from 'lucide-react';
 import Tooltip from './ui/Tooltip';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PortfolioItem {
   _id: string;
@@ -27,6 +28,7 @@ interface PortfolioTableProps {
 }
 
 export default function PortfolioTable({ portfolio, onUpdate, onDelete }: PortfolioTableProps) {
+  const { t } = useLanguage();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<PortfolioItem>>({});
 
@@ -93,8 +95,8 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-300 mb-2">No stocks in this portfolio</h3>
-        <p className="text-gray-400">Add some stocks to get started with AI-powered portfolio management.</p>
+        <h3 className="text-lg font-medium text-gray-300 mb-2">{t('portfolio.noStocks')}</h3>
+        <p className="text-gray-400">{t('portfolio.addStocksPrompt')}</p>
       </div>
     );
   }
@@ -105,19 +107,19 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
         <table className="w-full">
           <thead className="table-header">
             <tr className="keep-ltr">
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">Exchange</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">Ticker</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">Shares</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Entry</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Current</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Cost</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Value</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-24">P&L</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Stop Loss</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Take Profit</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Action</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">Date</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">Actions</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">{t('portfolio.exchange')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">{t('portfolio.ticker')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">{t('portfolio.shares')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">{t('portfolio.entry')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">{t('portfolio.current')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">{t('portfolio.cost')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">{t('portfolio.value')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-24">{t('portfolio.pnl')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">{t('portfolio.stopLoss')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">{t('portfolio.takeProfit')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">{t('portfolio.action')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20">{t('portfolio.date')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16">{t('portfolio.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -220,18 +222,18 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                             onClick={handleSave}
                             className="text-success-400 hover:text-success-300 text-xs"
                           >
-                            Save
+                            {t('common.save')}
                           </button>
                           <button
                             onClick={handleCancel}
                             className="text-gray-400 hover:text-gray-300 text-xs"
                           >
-                            Cancel
+                            {t('common.cancel')}
                           </button>
                         </>
                       ) : (
                         <>
-                          <Tooltip content="Edit stock details" position="top">
+                          <Tooltip content={t('portfolio.editStockDetails')} position="top">
                             <button
                               onClick={() => handleEdit(item)}
                               className="text-primary-400 hover:text-primary-300"
@@ -239,7 +241,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                               <Edit className="w-3 h-3" />
                             </button>
                           </Tooltip>
-                          <Tooltip content="Delete stock" position="top">
+                          <Tooltip content={t('portfolio.deleteStock')} position="top">
                             <button
                               onClick={() => onDelete(item._id)}
                               className="text-danger-400 hover:text-danger-300"

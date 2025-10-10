@@ -120,6 +120,25 @@ const translations = {
       adminPanel: 'Admin Panel',
       adminDashboard: 'Admin Dashboard',
       adminNotifications: 'Notifications'
+    },
+    portfolio: {
+      exchange: 'Exchange',
+      ticker: 'Ticker',
+      shares: 'Shares',
+      entry: 'Entry',
+      current: 'Current',
+      cost: 'Cost',
+      value: 'Value',
+      pnl: 'P&L',
+      stopLoss: 'Stop Loss',
+      takeProfit: 'Take Profit',
+      action: 'Action',
+      date: 'Date',
+      actions: 'Actions',
+      noStocks: 'No stocks in this portfolio',
+      addStocksPrompt: 'Add some stocks to get started with AI-powered portfolio management',
+      editStockDetails: 'Edit stock details',
+      deleteStock: 'Delete stock'
     }
   },
   ar: {
@@ -132,7 +151,39 @@ const translations = {
       reports: 'التقارير',
       settings: 'الإعدادات',
       admin: 'الإدارة',
-      notifications: 'الإشعارات'
+      notifications: 'الإشعارات',
+      loading: 'جار التحميل...',
+      error: 'خطأ',
+      success: 'نجاح',
+      save: 'حفظ',
+      cancel: 'إلغاء',
+      delete: 'حذف',
+      edit: 'تعديل',
+      view: 'عرض',
+      back: 'رجوع',
+      next: 'التالي',
+      previous: 'السابق',
+      close: 'إغلاق',
+      open: 'فتح',
+      refresh: 'تحديث',
+      search: 'بحث',
+      filter: 'تصفية',
+      sort: 'ترتيب',
+      export: 'تصدير',
+      import: 'استيراد',
+      addStock: 'إضافة سهم',
+      addPortfolio: 'إضافة محفظة',
+      deletePortfolio: 'حذف محفظة',
+      portfolios: 'المحافظ',
+      solid: 'صلب',
+      risky: 'محفوف بالمخاطر',
+      weekend: 'عطلة نهاية الأسبوع',
+      day: 'يوم',
+      preMarket: 'قبل السوق',
+      afterHours: 'بعد ساعات التداول',
+      profile: 'الملف الشخصي',
+      logout: 'تسجيل الخروج',
+      startTour: 'بدء الجولة'
     },
     auth: {
       login: 'تسجيل الدخول',
@@ -153,6 +204,75 @@ const translations = {
       accurate: 'دقيق',
       professionalPortfolioManagement: 'إدارة المحافظ المهنية V2',
       aiPoweredDescription: 'قرارات تداول مدعومة بالذكاء الاصطناعي وتحليلات في الوقت الفعلي'
+    },
+    dashboard: {
+      welcomeBack: 'مرحباً بعودتك',
+      totalPortfolioValue: 'إجمالي قيمة المحفظة',
+      todaysReturn: 'عائد اليوم',
+      totalReturn: 'إجمالي العائد',
+      portfolioOverview: 'نظرة عامة على المحفظة',
+      recentActivity: 'النشاط الأخير',
+      marketStatus: 'حالة السوق',
+      marketOpen: 'السوق مفتوح',
+      marketClosed: 'السوق مغلق',
+      closesIn: 'يغلق في',
+      opensIn: 'يفتح في',
+      singleView: 'عرض فردي',
+      multiPortfolio: 'متعدد المحافظ'
+    },
+    settings: {
+      title: 'الإعدادات',
+      subtitle: 'تخصيص تجربتك',
+      language: 'اللغة',
+      appearance: 'المظهر',
+      theme: 'السمة',
+      dark: 'داكن',
+      light: 'فاتح',
+      notifications: 'الإشعارات',
+      pushNotifications: 'إشعارات الدفع',
+      pushNotificationsDesc: 'تلقي إشعارات حول محفظتك',
+      emailUpdates: 'تحديثات البريد الإلكتروني',
+      emailUpdatesDesc: 'تلقي ملخصات المحفظة الأسبوعية',
+      manageProfile: 'إدارة الملف الشخصي',
+      updatePersonalInfo: 'تحديث معلوماتك الشخصية',
+      subscription: 'الاشتراك',
+      manageSubscription: 'إدارة خطة اشتراكك',
+      signOut: 'تسجيل الخروج',
+      logoutFromAccount: 'تسجيل الخروج من حسابك',
+      account: 'الحساب'
+    },
+    navigation: {
+      dashboard: 'لوحة القيادة',
+      analytics: 'التحليلات',
+      performance: 'الأداء',
+      portfolioAnalysis: 'تحليل المحفظة',
+      watchlist: 'قائمة المراقبة',
+      riskManagement: 'إدارة المخاطر',
+      reports: 'التقارير',
+      subscription: 'الاشتراك',
+      settings: 'الإعدادات',
+      adminPanel: 'لوحة الإدارة',
+      adminDashboard: 'لوحة الإدارة',
+      adminNotifications: 'الإشعارات'
+    },
+    portfolio: {
+      exchange: 'البورصة',
+      ticker: 'الرمز',
+      shares: 'الأسهم',
+      entry: 'الدخول',
+      current: 'الحالي',
+      cost: 'التكلفة',
+      value: 'القيمة',
+      pnl: 'الربح/الخسارة',
+      stopLoss: 'وقف الخسارة',
+      takeProfit: 'جني الأرباح',
+      action: 'الإجراء',
+      date: 'التاريخ',
+      actions: 'الإجراءات',
+      noStocks: 'لا توجد أسهم في هذه المحفظة',
+      addStocksPrompt: 'أضف بعض الأسهم للبدء في إدارة المحفظة بالذكاء الاصطناعي',
+      editStockDetails: 'تعديل تفاصيل السهم',
+      deleteStock: 'حذف السهم'
     }
   },
   he: {
@@ -268,16 +388,37 @@ const translations = {
       adminPanel: 'לוח ניהול',
       adminDashboard: 'לוח ניהול',
       adminNotifications: 'התראות'
+    },
+    portfolio: {
+      exchange: 'בורסה',
+      ticker: 'סימול',
+      shares: 'מניות',
+      entry: 'כניסה',
+      current: 'נוכחי',
+      cost: 'עלות',
+      value: 'ערך',
+      pnl: 'רווח/הפסד',
+      stopLoss: 'סטופ לוס',
+      takeProfit: 'טייק פרופיט',
+      action: 'פעולה',
+      date: 'תאריך',
+      actions: 'פעולות',
+      noStocks: 'אין מניות בתיק זה',
+      addStocksPrompt: 'הוסף מניות כדי להתחיל בניהול תיק מבוסס בינה מלאכותית',
+      editStockDetails: 'ערוך פרטי מניה',
+      deleteStock: 'מחק מניה'
     }
   }
 };
 
+// Translation keys type
 export type TranslationKeys = 
-  | keyof typeof translations.en.common 
-  | keyof typeof translations.en.auth
-  | keyof typeof translations.en.dashboard
-  | keyof typeof translations.en.settings
-  | keyof typeof translations.en.navigation;
+  | `common.${keyof typeof translations.en.common}`
+  | `auth.${keyof typeof translations.en.auth}`
+  | `dashboard.${keyof typeof translations.en.dashboard}`
+  | `settings.${keyof typeof translations.en.settings}`
+  | `navigation.${keyof typeof translations.en.navigation}`
+  | `portfolio.${keyof typeof translations.en.portfolio}`;
 
 interface LanguageContextType {
   locale: Locale;
@@ -296,48 +437,28 @@ interface LanguageProviderProps {
 export function LanguageProvider({ children }: LanguageProviderProps) {
   const [locale, setLocaleState] = useState<Locale>('en');
 
+  // Load locale from localStorage on mount
   useEffect(() => {
     try {
-      // Try to get locale from localStorage, otherwise detect from browser or default to 'en'
       const savedLocale = localStorage.getItem('locale') as Locale;
       if (savedLocale && ['en', 'ar', 'he'].includes(savedLocale)) {
         setLocaleState(savedLocale);
-      } else {
-        const browserLanguage = navigator.language.split('-')[0];
-        if (['ar', 'he'].includes(browserLanguage)) {
-          setLocaleState(browserLanguage as Locale);
-        }
       }
     } catch (error) {
-      console.warn('Failed to load language preference, using English:', error);
-      setLocaleState('en');
+      console.warn('Failed to load locale from localStorage:', error);
     }
   }, []);
-
-  useEffect(() => {
-    try {
-      // Update localStorage and HTML attributes when locale changes
-      localStorage.setItem('locale', locale);
-      document.documentElement.lang = locale;
-      document.documentElement.dir = ['ar', 'he'].includes(locale) ? 'rtl' : 'ltr';
-      
-      // Apply font class to body
-      const fontClass = locale === 'ar' ? 'lang-ar' : locale === 'he' ? 'lang-he' : 'lang-en';
-      document.body.className = fontClass;
-    } catch (error) {
-      console.warn('Failed to apply language styles:', error);
-    }
-  }, [locale]);
 
   const setLocale = (newLocale: Locale) => {
     try {
       setLocaleState(newLocale);
+      localStorage.setItem('locale', newLocale);
     } catch (error) {
-      console.warn('Failed to set locale:', error);
+      console.error('Failed to save locale:', error);
     }
   };
 
-  const t = (key: TranslationKeys, params?: Record<string, string>) => {
+  const t = (key: TranslationKeys, params?: Record<string, string>): string => {
     try {
       const keys = key.split('.');
       let text: any = translations[locale];
@@ -346,8 +467,16 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
         if (text && typeof text === 'object' && k in text) {
           text = text[k];
         } else {
-          // Fallback to English if key not found in current locale
-          text = (translations.en as any)[k] || key; 
+          // Fallback to English
+          text = translations.en;
+          for (const fallbackKey of keys) {
+            if (text && typeof text === 'object' && fallbackKey in text) {
+              text = text[fallbackKey];
+            } else {
+              text = key;
+              break;
+            }
+          }
           break;
         }
       }
@@ -378,8 +507,12 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   useEffect(() => {
     document.documentElement.setAttribute('lang', locale);
     document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
-    document.body.className = isRTL ? 'rtl' : '';
-  }, [locale, isRTL]);
+    
+    // Apply consistent font class and RTL without changing texture/styling
+    const classes = [fontClass];
+    if (isRTL) classes.push('rtl');
+    document.body.className = classes.join(' ');
+  }, [locale, isRTL, fontClass]);
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t, isRTL, fontClass }}>
@@ -395,3 +528,4 @@ export function useLanguage(): LanguageContextType {
   }
   return context;
 }
+
