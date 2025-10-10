@@ -334,23 +334,6 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Custom CSS for animations */}
-      <style jsx>{`
-        @keyframes scroll {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
-        }
-        
-        .animate-scroll {
-          animation: scroll 30s linear infinite;
-        }
-        
-        @media (max-width: 768px) {
-          .animate-scroll {
-            animation: scroll 20s linear infinite;
-          }
-        }
-      `}</style>
     </div>
   );
 }
