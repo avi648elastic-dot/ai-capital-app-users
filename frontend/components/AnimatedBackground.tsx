@@ -100,18 +100,18 @@ export default function AnimatedBackground() {
         }}
       />
 
-      {/* Diagonal Trend Lines */}
-      {[...Array(intensity === 'full' ? 15 : intensity === 'medium' ? 10 : 6)].map((_, i) => {
-        const pos = positions[`trend-${i}`] || { left: Math.random() * 100, top: Math.random() * 100 };
+      {/* Enhanced Diagonal Trend Lines */}
+      {[...Array(intensity === 'full' ? 12 : intensity === 'medium' ? 8 : 5)].map((_, i) => {
+        const pos = positions[`trend-${i}`] || { left: Math.random() * 90, top: Math.random() * 90 };
         const isUpTrend = i % 3 !== 0; // 2/3 up trends, 1/3 down trends
-        const angle = isUpTrend ? (15 + Math.random() * 30) : -(15 + Math.random() * 30);
+        const angle = isUpTrend ? (20 + Math.random() * 25) : -(20 + Math.random() * 25);
         const color = isUpTrend ? '#10b981' : '#ef4444';
-        const length = 60 + Math.random() * 40;
+        const length = 80 + Math.random() * 60;
         
-        const opacity = intensity === 'full' ? 0.3 : 
-                       intensity === 'medium' ? 0.2 : 0.15;
+        const opacity = intensity === 'full' ? 0.6 : 
+                       intensity === 'medium' ? 0.5 : 0.4;
         
-        const animationSpeed = `${8 + Math.random() * 4}s`;
+        const animationSpeed = `${6 + Math.random() * 3}s`;
         
         return (
           <div
@@ -121,61 +121,154 @@ export default function AnimatedBackground() {
               left: `${pos.left}%`,
               top: `${pos.top}%`,
               width: `${length}px`,
-              height: '2px',
-              background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+              height: '3px',
+              background: `linear-gradient(90deg, ${color} 0%, ${color}80 50%, transparent 100%)`,
               opacity: opacity,
               transform: `rotate(${angle}deg)`,
               transformOrigin: 'left center',
               animation: `trendPulse ${animationSpeed} ease-in-out infinite`,
-              animationDelay: `${i * 0.5}s`,
-            }}
-          />
-        );
-      })}
-
-      {/* Candlestick Charts */}
-      {[...Array(intensity === 'full' ? 8 : intensity === 'medium' ? 6 : 4)].map((_, i) => {
-        const pos = positions[`candle-${i}`] || { left: Math.random() * 100, top: Math.random() * 100 };
-        const isGreen = Math.random() > 0.5;
-        const color = isGreen ? '#10b981' : '#ef4444';
-        const height = 20 + Math.random() * 30;
-        const width = 4 + Math.random() * 2;
-        
-        const opacity = intensity === 'full' ? 0.4 : 
-                       intensity === 'medium' ? 0.3 : 0.2;
-        
-        const animationSpeed = `${6 + Math.random() * 3}s`;
-        
-        return (
-          <div
-            key={`candle-${i}`}
-            className="absolute"
-            style={{
-              left: `${pos.left}%`,
-              top: `${pos.top}%`,
-              width: `${width}px`,
-              height: `${height}px`,
-              background: color,
-              opacity: opacity,
+              animationDelay: `${i * 0.4}s`,
               borderRadius: '2px',
-              animation: `candlePulse ${animationSpeed} ease-in-out infinite`,
-              animationDelay: `${i * 0.7}s`,
-              boxShadow: `0 0 ${height/2}px ${color}40`,
+              boxShadow: `0 0 8px ${color}60`,
             }}
           />
         );
       })}
 
-      {/* Lightning Trend Indicators */}
+      {/* Realistic Candlestick Chart Patterns */}
       {[...Array(intensity === 'full' ? 6 : intensity === 'medium' ? 4 : 3)].map((_, i) => {
-        const pos = positions[`lightning-${i}`] || { left: Math.random() * 100, top: Math.random() * 100 };
-        const isUpLightning = Math.random() > 0.5;
-        const color = isUpLightning ? '#10b981' : '#ef4444';
+        const pos = positions[`chart-${i}`] || { left: Math.random() * 80, top: Math.random() * 80 };
+        const chartType = i % 3; // 0: Cup & Handle, 1: Head & Shoulders, 2: Ascending Triangle
         
         const opacity = intensity === 'full' ? 0.5 : 
                        intensity === 'medium' ? 0.4 : 0.3;
         
-        const animationSpeed = `${4 + Math.random() * 2}s`;
+        const animationSpeed = `${8 + Math.random() * 4}s`;
+        
+        return (
+          <div
+            key={`chart-${i}`}
+            className="absolute"
+            style={{
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              opacity: opacity,
+              animation: `chartPulse ${animationSpeed} ease-in-out infinite`,
+              animationDelay: `${i * 1.2}s`,
+            }}
+          >
+            {chartType === 0 && (
+              // Cup & Handle Pattern
+              <div className="relative">
+                {/* Cup */}
+                {[...Array(5)].map((_, j) => {
+                  const height = j === 2 ? 25 : j === 1 || j === 3 ? 15 : 8;
+                  const color = j <= 2 ? '#ef4444' : '#10b981';
+                  return (
+                    <div
+                      key={j}
+                      className="absolute"
+                      style={{
+                        left: `${j * 8}px`,
+                        bottom: '0px',
+                        width: '6px',
+                        height: `${height}px`,
+                        background: color,
+                        borderRadius: '3px',
+                        boxShadow: `0 0 8px ${color}60`,
+                      }}
+                    />
+                  );
+                })}
+                {/* Handle */}
+                {[...Array(3)].map((_, j) => {
+                  const height = j === 1 ? 12 : 8;
+                  return (
+                    <div
+                      key={j + 5}
+                      className="absolute"
+                      style={{
+                        left: `${40 + j * 6}px`,
+                        bottom: '0px',
+                        width: '4px',
+                        height: `${height}px`,
+                        background: '#ef4444',
+                        borderRadius: '2px',
+                        boxShadow: '0 0 6px #ef444460',
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+            
+            {chartType === 1 && (
+              // Head & Shoulders Pattern
+              <div className="relative">
+                {[...Array(7)].map((_, j) => {
+                  let height;
+                  if (j === 3) height = 35; // Head
+                  else if (j === 1 || j === 5) height = 20; // Shoulders
+                  else height = 12; // Others
+                  
+                  const color = j === 3 ? '#ef4444' : j === 1 || j === 5 ? '#ef4444' : '#10b981';
+                  return (
+                    <div
+                      key={j}
+                      className="absolute"
+                      style={{
+                        left: `${j * 7}px`,
+                        bottom: '0px',
+                        width: '5px',
+                        height: `${height}px`,
+                        background: color,
+                        borderRadius: '2px',
+                        boxShadow: `0 0 6px ${color}60`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+            
+            {chartType === 2 && (
+              // Ascending Triangle Pattern
+              <div className="relative">
+                {[...Array(6)].map((_, j) => {
+                  const height = 15 + (j * 3); // Increasing height
+                  const color = '#10b981';
+                  return (
+                    <div
+                      key={j}
+                      className="absolute"
+                      style={{
+                        left: `${j * 8}px`,
+                        bottom: '0px',
+                        width: '6px',
+                        height: `${height}px`,
+                        background: color,
+                        borderRadius: '3px',
+                        boxShadow: `0 0 8px ${color}60`,
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Enhanced Lightning Trend Indicators */}
+      {[...Array(intensity === 'full' ? 8 : intensity === 'medium' ? 6 : 4)].map((_, i) => {
+        const pos = positions[`lightning-${i}`] || { left: Math.random() * 90, top: Math.random() * 90 };
+        const isUpLightning = Math.random() > 0.5;
+        const color = isUpLightning ? '#10b981' : '#ef4444';
+        
+        const opacity = intensity === 'full' ? 0.7 : 
+                       intensity === 'medium' ? 0.6 : 0.5;
+        
+        const animationSpeed = `${3 + Math.random() * 2}s`;
         
         return (
           <div
@@ -184,19 +277,19 @@ export default function AnimatedBackground() {
             style={{
               left: `${pos.left}%`,
               top: `${pos.top}%`,
-              width: '20px',
-              height: '20px',
+              width: '24px',
+              height: '24px',
               opacity: opacity,
               animation: `lightningFlash ${animationSpeed} ease-in-out infinite`,
-              animationDelay: `${i * 0.8}s`,
+              animationDelay: `${i * 0.6}s`,
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path
-                d="M10 2L6 8H10L8 18L14 12H10L12 2Z"
+                d="M12 2L8 10H12L10 22L16 14H12L14 2Z"
                 fill={color}
                 style={{
-                  filter: `drop-shadow(0 0 4px ${color})`,
+                  filter: `drop-shadow(0 0 8px ${color}) drop-shadow(0 0 16px ${color}80)`,
                 }}
               />
             </svg>

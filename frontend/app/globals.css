@@ -216,6 +216,47 @@
   }
 }
 
+/* Portfolio Action Colors */
+.action-buy {
+  @apply bg-emerald-600 text-white;
+}
+
+.action-sell {
+  @apply bg-red-600 text-white;
+}
+
+.action-hold {
+  @apply bg-yellow-600 text-white;
+}
+
+[data-theme='light'] .action-buy {
+  @apply bg-emerald-500 text-white;
+}
+
+[data-theme='light'] .action-sell {
+  @apply bg-red-500 text-white;
+}
+
+[data-theme='light'] .action-hold {
+  @apply bg-yellow-500 text-white;
+}
+
+/* Chart Pattern Animation */
+@keyframes chartPulse {
+  0% { 
+    opacity: 0.3; 
+    transform: scale(0.9); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.05); 
+  }
+  100% { 
+    opacity: 0.3; 
+    transform: scale(0.9); 
+  }
+}
+
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
