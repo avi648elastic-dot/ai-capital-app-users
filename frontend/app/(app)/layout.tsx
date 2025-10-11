@@ -50,16 +50,17 @@ export default function AppLayout({
     fetchUser();
   }, [router]);
 
-  // Show tour trigger for new users after a delay
+  // Show tour trigger for ALL users on ALL pages (removed restrictions)
   useEffect(() => {
-    if (!loading && user && !hasSeenTour && pathname === '/dashboard') {
+    if (!loading && user) {
+      // Always show the floating tour trigger after a short delay
       const timer = setTimeout(() => {
         setShowTourTrigger(true);
-      }, 3000); // Show after 3 seconds
+      }, 2000); // Show after 2 seconds
       
       return () => clearTimeout(timer);
     }
-  }, [loading, user, hasSeenTour, pathname]);
+  }, [loading, user]);
 
 
   // Don't show layout for auth pages

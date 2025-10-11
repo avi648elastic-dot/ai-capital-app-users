@@ -64,9 +64,11 @@ export default function TourOverlay() {
   };
 
   const calculateTooltipPosition = (rect: DOMRect, step: any) => {
-    const tooltipWidth = 400;
-    const tooltipHeight = 300;
-    const margin = 20;
+    // Responsive tooltip dimensions
+    const isMobile = window.innerWidth < 768;
+    const tooltipWidth = isMobile ? Math.min(320, window.innerWidth - 40) : 400;
+    const tooltipHeight = isMobile ? Math.min(400, window.innerHeight - 100) : 300;
+    const margin = isMobile ? 10 : 20;
 
     let top = rect.bottom + margin;
     let left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
@@ -93,14 +95,19 @@ export default function TourOverlay() {
         break;
     }
 
-    // Keep tooltip within viewport
+    // Keep tooltip within viewport - strict bounds for mobile
+    const maxLeft = window.innerWidth - tooltipWidth - margin;
+    const maxTop = window.innerHeight - tooltipHeight - margin;
+    
     if (left < margin) left = margin;
-    if (left + tooltipWidth > window.innerWidth - margin) {
-      left = window.innerWidth - tooltipWidth - margin;
-    }
+    if (left > maxLeft) left = maxLeft;
     if (top < margin) top = margin;
-    if (top + tooltipHeight > window.innerHeight - margin) {
-      top = window.innerHeight - tooltipHeight - margin;
+    if (top > maxTop) top = maxTop;
+    
+    // On mobile, prefer center positioning if element is not visible
+    if (isMobile && (rect.top < 0 || rect.bottom > window.innerHeight)) {
+      top = margin;
+      left = margin;
     }
 
     return { top, left };
@@ -194,9 +201,12 @@ export default function TourOverlay() {
           borderRadius: '16px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(59, 130, 246, 0.3)',
           backdropFilter: 'blur(20px)',
-          maxWidth: '400px',
-          padding: '24px',
+          maxWidth: window.innerWidth < 768 ? `${window.innerWidth - 40}px` : '400px',
+          width: window.innerWidth < 768 ? `${window.innerWidth - 40}px` : 'auto',
+          padding: window.innerWidth < 768 ? '16px' : '24px',
           color: 'white',
+          maxHeight: window.innerWidth < 768 ? `${window.innerHeight - 100}px` : 'auto',
+          overflowY: window.innerWidth < 768 ? 'auto' : 'visible',
         }}
       >
         {/* Header with Gradient */}

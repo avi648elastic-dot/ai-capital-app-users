@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   BarChart3, Home, TrendingUp, Target, Shield, 
   Crown, Menu, X, LogOut, Eye, PieChart,
-  Activity, AlertTriangle, Star, User, Settings
+  Activity, AlertTriangle, Star, User, Settings, Sparkles
 } from 'lucide-react';
 import { useDevice } from '@/hooks/useDevice';
 import Image from 'next/image';
@@ -13,6 +13,7 @@ import NotificationCenter from './NotificationCenter';
 import FeaturePreviewTooltip from './ui/FeaturePreviewTooltip';
 import { getFeatureDescription } from './ui/FeaturePreviewImages';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTour } from '@/contexts/TourContext';
 
 interface ResponsiveNavigationProps {
   userName?: string;
@@ -33,6 +34,7 @@ export default function ResponsiveNavigation({
   const router = useRouter();
   const { isMobile, isTablet } = useDevice();
   const { t } = useLanguage();
+  const { startTour } = useTour();
   
   // Debug logging
   console.log('🔍 [RESPONSIVE NAV] Device detection:', { isMobile, isTablet, screenWidth: useDevice().screenWidth });
@@ -225,8 +227,20 @@ export default function ResponsiveNavigation({
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-slate-700">
+        {/* Tour & Logout */}
+        <div className="p-4 border-t border-slate-700 space-y-2">
+          {/* Tour Button - Always visible */}
+          <button
+            onClick={() => startTour()}
+            className="w-full flex items-center space-x-3 px-3 py-2 text-purple-400 hover:text-purple-300 hover:bg-slate-700/50 rounded-lg transition-colors group"
+            title={t('common.startTour')}
+          >
+            <Sparkles className="w-5 h-5 group-hover:animate-spin" />
+            <span className="text-sm font-medium">{t('common.startTour')}</span>
+            <div className="ml-auto w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+          </button>
+          
+          {/* Logout Button */}
           <button
             onClick={onLogout}
             className="w-full flex items-center space-x-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
@@ -389,17 +403,33 @@ export default function ResponsiveNavigation({
               })}
             </nav>
 
-            {/* Logout Button */}
-            <button
-              onClick={() => {
-                onLogout();
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center space-x-4 px-6 py-5 text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-red-600/20 hover:to-red-500/20 rounded-xl transition-all duration-300 border border-transparent hover:border-red-500/50 hover:shadow-lg hover:scale-[1.02]"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="text-sm">{t('common.logout')}</span>
-            </button>
+            {/* Tour & Logout Buttons */}
+            <div className="space-y-2">
+              {/* Tour Button - Always visible */}
+              <button
+                onClick={() => {
+                  startTour();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center space-x-4 px-6 py-5 text-purple-400 hover:text-purple-300 hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-pink-600/20 rounded-xl transition-all duration-300 border border-transparent hover:border-purple-500/50 hover:shadow-lg hover:scale-[1.02] group"
+              >
+                <Sparkles className="w-5 h-5 group-hover:animate-spin" />
+                <span className="text-sm font-medium">{t('common.startTour')}</span>
+                <div className="ml-auto w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+              </button>
+              
+              {/* Logout Button */}
+              <button
+                onClick={() => {
+                  onLogout();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full flex items-center space-x-4 px-6 py-5 text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-red-600/20 hover:to-red-500/20 rounded-xl transition-all duration-300 border border-transparent hover:border-red-500/50 hover:shadow-lg hover:scale-[1.02]"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="text-sm">{t('common.logout')}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
