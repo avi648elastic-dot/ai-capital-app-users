@@ -318,50 +318,53 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <header className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 sm:h-20">
-            <div className="flex items-center">
-              <h1 className="text-xl sm:text-2xl font-bold text-white">AiCapital Admin</h1>
-              <span className="ml-2 px-3 py-1 bg-danger-600 text-sm rounded-full">ADMIN</span>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center space-x-2">
+              <h1 className="text-base sm:text-xl font-bold text-white">AiCapital Admin</h1>
+              <span className="px-2 py-0.5 sm:px-3 sm:py-1 bg-danger-600 text-xs sm:text-sm rounded-full font-bold">ADMIN</span>
             </div>
             <button
               onClick={() => router.push('/dashboard')}
-              className="text-gray-400 hover:text-white transition-colors text-base sm:text-lg"
+              className="text-gray-400 hover:text-white transition-colors text-xs sm:text-base"
             >
-              Back to Dashboard
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">←</span>
             </button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Tab Navigation */}
-        <div className="mb-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
+        {/* Tab Navigation - Mobile Optimized */}
+        <div className="mb-4 sm:mb-8">
           <div className="border-b border-gray-700">
-            <nav className="-mb-px flex space-x-8">
+            <nav className="-mb-px flex space-x-4 sm:space-x-8">
               <button
                 onClick={() => setActiveTab('users')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm ${
                   activeTab === 'users'
                     ? 'border-primary-500 text-primary-400'
                     : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
                 }`}
               >
-                <Users className="w-5 h-5 inline mr-2" />
-                User Management
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">User Management</span>
+                <span className="sm:hidden">Users</span>
               </button>
               <button
                 onClick={() => setActiveTab('notifications')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-2 px-1 border-b-2 font-medium text-xs sm:text-sm ${
                   activeTab === 'notifications'
                     ? 'border-primary-500 text-primary-400'
                     : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300'
                 }`}
               >
-                <Activity className="w-5 h-5 inline mr-2" />
-                Notifications
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 inline mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Notifications</span>
+                <span className="sm:hidden">Notifs</span>
               </button>
             </nav>
           </div>
@@ -370,63 +373,63 @@ export default function AdminDashboard() {
         {/* Users Tab Content */}
         {activeTab === 'users' && (
           <>
-            {/* System Stats */}
+            {/* System Stats - Mobile Optimized */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="card p-6 sm:p-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
+            <div className="card p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-base font-medium text-gray-400">Total Users</p>
-                  <p className="text-3xl font-bold text-white">{stats.users.total}</p>
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-400">Total Users</p>
+                  <p className="text-lg sm:text-2xl font-bold text-white">{stats.users.total}</p>
                 </div>
-                <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
               </div>
             </div>
 
-            <div className="card p-6">
+            <div className="card p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Active Users</p>
-                  <p className="text-2xl font-bold text-white">{stats.users.active}</p>
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-400">Active</p>
+                  <p className="text-lg sm:text-2xl font-bold text-white">{stats.users.active}</p>
                 </div>
-                <div className="w-12 h-12 bg-success-600 rounded-lg flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-success-600 rounded-lg flex items-center justify-center">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
               </div>
             </div>
 
-            <div className="card p-6">
+            <div className="card p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Total Capital</p>
-                  <p className="text-2xl font-bold text-white">{formatCurrency(stats.capital.totalCapital)}</p>
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-400">Capital</p>
+                  <p className="text-base sm:text-lg font-bold text-white">{formatCurrency(stats.capital.totalCapital)}</p>
                 </div>
-                <div className="w-12 h-12 bg-warning-600 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-warning-600 rounded-lg flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
               </div>
             </div>
 
-            <div className="card p-6">
+            <div className="card p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-400">Portfolios</p>
-                  <p className="text-2xl font-bold text-white">{stats.portfolios.total}</p>
+                  <p className="text-[10px] sm:text-xs font-medium text-gray-400">Portfolios</p>
+                  <p className="text-lg sm:text-2xl font-bold text-white">{stats.portfolios.total}</p>
                 </div>
-                <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Users Table */}
+        {/* Users Table - Mobile Optimized */}
         <div className="card overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-700 flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-white">All Users</h2>
+          <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-700 flex justify-between items-center">
+            <h2 className="text-base sm:text-lg font-semibold text-white">All Users</h2>
             <button
               onClick={async () => {
                 try {
@@ -442,7 +445,7 @@ export default function AdminDashboard() {
                   alert('❌ Error updating all prices. Please try again.');
                 }
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Update All Prices</span>

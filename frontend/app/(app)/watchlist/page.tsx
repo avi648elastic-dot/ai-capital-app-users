@@ -174,16 +174,26 @@ export default function Watchlist() {
   };
 
   const openAlertModal = (stock: WatchlistItem) => {
+    console.log('🔔 Opening alert modal for', stock.ticker, 'with alert:', stock.priceAlert);
     setSelectedStock(stock);
-    if (stock.priceAlert) {
+    if (stock.priceAlert && stock.priceAlert.enabled) {
+      // Load existing alert values
       setAlertType(stock.priceAlert.type);
       setHighPrice(stock.priceAlert.highPrice?.toString() || '');
       setLowPrice(stock.priceAlert.lowPrice?.toString() || '');
+      console.log('✅ Loaded existing alert:', {
+        type: stock.priceAlert.type,
+        high: stock.priceAlert.highPrice,
+        low: stock.priceAlert.lowPrice
+      });
     } else {
+      // No alert set - use suggested prices
       setAlertType('both');
-      // Set suggested prices
-      setHighPrice((stock.currentPrice * 1.1).toFixed(2));
-      setLowPrice((stock.currentPrice * 0.9).toFixed(2));
+      const suggestedHigh = (stock.currentPrice * 1.1).toFixed(2);
+      const suggestedLow = (stock.currentPrice * 0.9).toFixed(2);
+      setHighPrice(suggestedHigh);
+      setLowPrice(suggestedLow);
+      console.log('💡 Setting suggested prices:', { high: suggestedHigh, low: suggestedLow });
     }
     setShowAlertModal(true);
   };
@@ -360,6 +370,80 @@ export default function Watchlist() {
                 </div>
               </div>
 
+              {/* Quick Alert Setup - Simple & Direct */}
+              <div className="mb-4 p-3 bg-slate-700/30 [data-theme='light']:bg-gray-100 rounded-lg border border-slate-600/30 [data-theme='light']:border-gray-300">
+                <div className="text-xs font-semibold text-slate-300 [data-theme='light']:text-gray-700 mb-2 flex items-center">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  Quick Price Alerts
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-400 [data-theme='light']:text-gray-600 block mb-1">High Price ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder={(item.currentPrice * 1.1).toFixed(2)}
+                      defaultValue={item.priceAlert?.highPrice?.toString() || ''}
+                      onBlur={async (e) => {
+                        const value = parseFloat(e.target.value);
+                        if (value > 0 && value > item.currentPrice) {
+                          try {
+                            const token = Cookies.get('token');
+                            await axios.patch(
+                              `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${item.id}/alert`,
+                              {
+                                type: item.priceAlert?.lowPrice ? 'both' : 'high',
+                                highPrice: value,
+                                lowPrice: item.priceAlert?.lowPrice,
+                                enabled: true
+                              },
+                              { headers: { Authorization: `Bearer ${token}` } }
+                            );
+                            await fetchUserAndWatchlist();
+                            showToast('success', `✅ High alert set at $${value.toFixed(2)}`);
+                          } catch (error) {
+                            showToast('error', '❌ Failed to set alert');
+                          }
+                        }
+                      }}
+                      className="w-full px-2 py-1.5 text-xs bg-slate-800 [data-theme='light']:bg-white border border-slate-600 [data-theme='light']:border-gray-300 rounded text-white [data-theme='light']:text-gray-900 focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 [data-theme='light']:text-gray-600 block mb-1">Low Price ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder={(item.currentPrice * 0.9).toFixed(2)}
+                      defaultValue={item.priceAlert?.lowPrice?.toString() || ''}
+                      onBlur={async (e) => {
+                        const value = parseFloat(e.target.value);
+                        if (value > 0 && value < item.currentPrice) {
+                          try {
+                            const token = Cookies.get('token');
+                            await axios.patch(
+                              `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${item.id}/alert`,
+                              {
+                                type: item.priceAlert?.highPrice ? 'both' : 'low',
+                                highPrice: item.priceAlert?.highPrice,
+                                lowPrice: value,
+                                enabled: true
+                              },
+                              { headers: { Authorization: `Bearer ${token}` } }
+                            );
+                            await fetchUserAndWatchlist();
+                            showToast('success', `✅ Low alert set at $${value.toFixed(2)}`);
+                          } catch (error) {
+                            showToast('error', '❌ Failed to set alert');
+                          }
+                        }
+                      }}
+                      className="w-full px-2 py-1.5 text-xs bg-slate-800 [data-theme='light']:bg-white border border-slate-600 [data-theme='light']:border-gray-300 rounded text-white [data-theme='light']:text-gray-900 focus:ring-1 focus:ring-red-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* Action Buttons - Clear and User-Friendly */}
               <div className="flex items-center space-x-2 mb-4">
                 <button
@@ -378,7 +462,7 @@ export default function Watchlist() {
                   className="flex-1 py-2.5 px-3 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 transition-all shadow-md font-medium text-sm flex items-center justify-center space-x-2"
                 >
                   <AlertCircle className="w-4 h-4" />
-                  <span>Set Alert</span>
+                  <span>Advanced</span>
                 </button>
               </div>
 
