@@ -154,6 +154,68 @@
   }
 }
 
+/* New Financial Trend Animations */
+@keyframes trendPulse {
+  0% { 
+    opacity: 0.2; 
+    transform: scaleX(0.8); 
+  }
+  50% { 
+    opacity: 0.6; 
+    transform: scaleX(1.2); 
+  }
+  100% { 
+    opacity: 0.2; 
+    transform: scaleX(0.8); 
+  }
+}
+
+@keyframes candlePulse {
+  0% { 
+    opacity: 0.3; 
+    transform: scaleY(0.8); 
+    box-shadow: 0 0 5px currentColor;
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scaleY(1.2); 
+    box-shadow: 0 0 15px currentColor;
+  }
+  100% { 
+    opacity: 0.3; 
+    transform: scaleY(0.8); 
+    box-shadow: 0 0 5px currentColor;
+  }
+}
+
+@keyframes lightningFlash {
+  0% { 
+    opacity: 0.2; 
+    transform: scale(0.8) rotate(0deg); 
+    filter: brightness(1);
+  }
+  25% { 
+    opacity: 0.8; 
+    transform: scale(1.1) rotate(5deg); 
+    filter: brightness(1.5);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.3) rotate(-3deg); 
+    filter: brightness(2);
+  }
+  75% { 
+    opacity: 0.6; 
+    transform: scale(1.1) rotate(2deg); 
+    filter: brightness(1.3);
+  }
+  100% { 
+    opacity: 0.2; 
+    transform: scale(0.8) rotate(0deg); 
+    filter: brightness(1);
+  }
+}
+
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }

@@ -100,6 +100,110 @@ export default function AnimatedBackground() {
         }}
       />
 
+      {/* Diagonal Trend Lines */}
+      {[...Array(intensity === 'full' ? 15 : intensity === 'medium' ? 10 : 6)].map((_, i) => {
+        const pos = positions[`trend-${i}`] || { left: Math.random() * 100, top: Math.random() * 100 };
+        const isUpTrend = i % 3 !== 0; // 2/3 up trends, 1/3 down trends
+        const angle = isUpTrend ? (15 + Math.random() * 30) : -(15 + Math.random() * 30);
+        const color = isUpTrend ? '#10b981' : '#ef4444';
+        const length = 60 + Math.random() * 40;
+        
+        const opacity = intensity === 'full' ? 0.3 : 
+                       intensity === 'medium' ? 0.2 : 0.15;
+        
+        const animationSpeed = `${8 + Math.random() * 4}s`;
+        
+        return (
+          <div
+            key={`trend-${i}`}
+            className="absolute"
+            style={{
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              width: `${length}px`,
+              height: '2px',
+              background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+              opacity: opacity,
+              transform: `rotate(${angle}deg)`,
+              transformOrigin: 'left center',
+              animation: `trendPulse ${animationSpeed} ease-in-out infinite`,
+              animationDelay: `${i * 0.5}s`,
+            }}
+          />
+        );
+      })}
+
+      {/* Candlestick Charts */}
+      {[...Array(intensity === 'full' ? 8 : intensity === 'medium' ? 6 : 4)].map((_, i) => {
+        const pos = positions[`candle-${i}`] || { left: Math.random() * 100, top: Math.random() * 100 };
+        const isGreen = Math.random() > 0.5;
+        const color = isGreen ? '#10b981' : '#ef4444';
+        const height = 20 + Math.random() * 30;
+        const width = 4 + Math.random() * 2;
+        
+        const opacity = intensity === 'full' ? 0.4 : 
+                       intensity === 'medium' ? 0.3 : 0.2;
+        
+        const animationSpeed = `${6 + Math.random() * 3}s`;
+        
+        return (
+          <div
+            key={`candle-${i}`}
+            className="absolute"
+            style={{
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              width: `${width}px`,
+              height: `${height}px`,
+              background: color,
+              opacity: opacity,
+              borderRadius: '2px',
+              animation: `candlePulse ${animationSpeed} ease-in-out infinite`,
+              animationDelay: `${i * 0.7}s`,
+              boxShadow: `0 0 ${height/2}px ${color}40`,
+            }}
+          />
+        );
+      })}
+
+      {/* Lightning Trend Indicators */}
+      {[...Array(intensity === 'full' ? 6 : intensity === 'medium' ? 4 : 3)].map((_, i) => {
+        const pos = positions[`lightning-${i}`] || { left: Math.random() * 100, top: Math.random() * 100 };
+        const isUpLightning = Math.random() > 0.5;
+        const color = isUpLightning ? '#10b981' : '#ef4444';
+        
+        const opacity = intensity === 'full' ? 0.5 : 
+                       intensity === 'medium' ? 0.4 : 0.3;
+        
+        const animationSpeed = `${4 + Math.random() * 2}s`;
+        
+        return (
+          <div
+            key={`lightning-${i}`}
+            className="absolute"
+            style={{
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              width: '20px',
+              height: '20px',
+              opacity: opacity,
+              animation: `lightningFlash ${animationSpeed} ease-in-out infinite`,
+              animationDelay: `${i * 0.8}s`,
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M10 2L6 8H10L8 18L14 12H10L12 2Z"
+                fill={color}
+                style={{
+                  filter: `drop-shadow(0 0 4px ${color})`,
+                }}
+              />
+            </svg>
+          </div>
+        );
+      })}
+
       {/* Professional Subtle Bubbles */}
       {[...Array(intensity === 'full' ? 20 : intensity === 'medium' ? 12 : 8)].map((_, i) => {
         const bubbleType = bubbleGradients[i % bubbleGradients.length];
