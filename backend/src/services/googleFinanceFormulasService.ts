@@ -48,7 +48,7 @@ class GoogleFinanceFormulasService {
   private readonly BLACKLIST_DURATION = 5 * 60 * 1000; // 5 minutes blacklist
 
   constructor() {
-    // 🔑 Multiple Alpha Vantage API Keys for rotation
+    // 🔑 MAJOR'S SMART ENGINE - Multiple API Keys with aggressive rotation
     this.alphaVantageKeys = [
       process.env.ALPHA_VANTAGE_API_KEY_1 || '1A7DIQSD5MV44PWM',
       process.env.ALPHA_VANTAGE_API_KEY_2 || 'YY3YQ3UYVJHNPOIY', 
@@ -56,18 +56,22 @@ class GoogleFinanceFormulasService {
       process.env.ALPHA_VANTAGE_API_KEY_4 || 'WR0EI5H42PWWAUJ0'
     ].filter(key => key && key !== 'demo'); // Remove any invalid keys
     
-    // Multiple Finnhub keys for rotation
+    // Multiple Finnhub keys for rotation - MAJOR'S ADDITIONS
     this.finnhubApiKeys = [
       process.env.FINNHUB_API_KEY_1 || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g',
-      process.env.FINNHUB_API_KEY_2 || 'd3l2ggpr01qp3ucq6850d3l2ggpr01qp3ucq685g'
-    ];
+      process.env.FINNHUB_API_KEY_2 || 'd3l2ggpr01qp3ucq6850d3l2ggpr01qp3ucq685g',
+      process.env.FINNHUB_API_KEY_3 || 'ctpf30pr01qil9oedjr0ctpf30pr01qil9oedjrg',
+      process.env.FINNHUB_API_KEY_4 || 'cqm8uf9r01qj5qsj2nkgcqm8uf9r01qj5qsj2nl0'
+    ].filter(key => key && key.length > 10); // Filter out invalid keys
     this.currentFinnhubIndex = 0;
     
-    // Multiple FMP keys for rotation  
+    // Multiple FMP keys for rotation - MAJOR'S ADDITIONS
     this.fmpApiKeys = [
       process.env.FMP_API_KEY_1 || 'DPQXLdd8vdBNFA1tl5HWXt8Fd7D0Lw6G',
-      process.env.FMP_API_KEY_2 || 'dly9ZAPDVSkLZ9173zNLPuTIfDpKDtFi'
-    ];
+      process.env.FMP_API_KEY_2 || 'dly9ZAPDVSkLZ9173zNLPuTIfDpKDtFi',
+      process.env.FMP_API_KEY_3 || 'AKoWLqwNXQKqmJg5Z4wXvlmn96C3DDKB',
+      process.env.FMP_API_KEY_4 || 'OkSKxQHHjXKRE9fQLVa2XgvnTh7lGHvf'
+    ].filter(key => key && key.length > 10); // Filter out invalid keys
     this.currentFmpIndex = 0;
     
     // Log which keys are being used
@@ -204,51 +208,64 @@ class GoogleFinanceFormulasService {
         return cachedData;
       }
 
-      // Try Alpha Vantage first with smart key rotation (most reliable for historical data)
+      // 🚀 MAJOR'S SMART ENGINE - Try ALL APIs with ALL keys aggressively
       let metrics: StockMetrics | null = null;
       
-      // Try multiple Alpha Vantage keys if needed
+      // TRY ALL ALPHA VANTAGE KEYS (Primary source - best historical data)
       for (let attempt = 0; attempt < this.alphaVantageKeys.length && !metrics; attempt++) {
         try {
           metrics = await this.fetchFromAlphaVantage(symbol);
           if (metrics) {
-            loggerService.info(`✅ [ALPHA VANTAGE] Got metrics for ${symbol} on attempt ${attempt + 1}`);
+            loggerService.info(`✅ [ALPHA VANTAGE] SUCCESS on attempt ${attempt + 1}/${this.alphaVantageKeys.length} for ${symbol}`);
             break;
           }
         } catch (error) {
           const errorMsg = (error as Error).message || 'Unknown error';
-          loggerService.warn(`⚠️ [ALPHA VANTAGE] Attempt ${attempt + 1} failed for ${symbol}: ${errorMsg}`);
+          loggerService.warn(`⚠️ [ALPHA VANTAGE] Attempt ${attempt + 1}/${this.alphaVantageKeys.length} failed: ${errorMsg}`);
           
-          // If it's a rate limit error, try next key
-          if (errorMsg.includes('rate limit') || errorMsg.includes('429') || errorMsg.includes('quota')) {
-            continue; // Try next key
-          } else {
-            break; // Other errors, don't retry with Alpha Vantage
+          // Always continue to next key on Alpha Vantage failure
+          if (attempt < this.alphaVantageKeys.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay between retries
+            continue;
           }
         }
       }
       
-      // Fallback to Finnhub if Alpha Vantage fails
+      // TRY ALL FINNHUB KEYS (Fallback 1)
       if (!metrics) {
-        try {
-          metrics = await this.fetchFromFinnhub(symbol);
-          if (metrics) {
-            loggerService.info(`✅ [FINNHUB] Got metrics for ${symbol}`);
+        for (let attempt = 0; attempt < this.finnhubApiKeys.length && !metrics; attempt++) {
+          try {
+            metrics = await this.fetchFromFinnhub(symbol);
+            if (metrics) {
+              loggerService.info(`✅ [FINNHUB] SUCCESS on attempt ${attempt + 1}/${this.finnhubApiKeys.length} for ${symbol}`);
+              break;
+            }
+          } catch (error) {
+            loggerService.warn(`⚠️ [FINNHUB] Attempt ${attempt + 1}/${this.finnhubApiKeys.length} failed: ${(error as Error).message}`);
+            if (attempt < this.finnhubApiKeys.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
+              continue;
+            }
           }
-        } catch (error) {
-          loggerService.warn(`⚠️ [FINNHUB] Failed for ${symbol}: ${(error as Error).message || 'Unknown error'}`);
         }
       }
       
-      // Fallback to FMP if both fail
+      // TRY ALL FMP KEYS (Fallback 2)
       if (!metrics) {
-        try {
-          metrics = await this.fetchFromFMP(symbol);
-          if (metrics) {
-            loggerService.info(`✅ [FMP] Got metrics for ${symbol}`);
+        for (let attempt = 0; attempt < this.fmpApiKeys.length && !metrics; attempt++) {
+          try {
+            metrics = await this.fetchFromFMP(symbol);
+            if (metrics) {
+              loggerService.info(`✅ [FMP] SUCCESS on attempt ${attempt + 1}/${this.fmpApiKeys.length} for ${symbol}`);
+              break;
+            }
+          } catch (error) {
+            loggerService.warn(`⚠️ [FMP] Attempt ${attempt + 1}/${this.fmpApiKeys.length} failed: ${(error as Error).message}`);
+            if (attempt < this.fmpApiKeys.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
+              continue;
+            }
           }
-        } catch (error) {
-          loggerService.warn(`⚠️ [FMP] Failed for ${symbol}: ${(error as Error).message || 'Unknown error'}`);
         }
       }
       
