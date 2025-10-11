@@ -2,7 +2,7 @@ import express from 'express';
 import Watchlist, { IWatchlistItem, IPriceAlert } from '../models/Watchlist';
 import { authenticateToken } from '../middleware/auth';
 import { loggerService } from '../services/loggerService';
-import axios from 'axios';
+import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 
 const router = express.Router();
 
@@ -17,15 +17,10 @@ router.get('/', authenticateToken, async (req, res) => {
     const watchlistWithPrices = await Promise.all(
       watchlist.map(async (item) => {
         try {
-          // Fetch current price from your stock data service
-          const priceResponse = await axios.get(
-            `${process.env.API_URL || 'http://localhost:5000'}/api/stocks/price/${item.ticker}`,
-            {
-              headers: { Authorization: req.headers.authorization }
-            }
-          );
+          // Fetch current price from Google Finance service
+          const metrics = await googleFinanceFormulasService.getStockMetrics(item.ticker);
           
-          const currentPrice = priceResponse.data.price || item.lastPrice || 0;
+          const currentPrice = metrics?.current || item.lastPrice || 0;
           const change = item.lastPrice ? currentPrice - item.lastPrice : 0;
           const changePercent = item.lastPrice ? ((currentPrice - item.lastPrice) / item.lastPrice) * 100 : 0;
           
@@ -98,13 +93,8 @@ router.post('/add', authenticateToken, async (req, res) => {
     // Fetch current price
     let currentPrice = 0;
     try {
-      const priceResponse = await axios.get(
-        `${process.env.API_URL || 'http://localhost:5000'}/api/stocks/price/${ticker}`,
-        {
-          headers: { Authorization: req.headers.authorization }
-        }
-      );
-      currentPrice = priceResponse.data.price || 0;
+      const metrics = await googleFinanceFormulasService.getStockMetrics(ticker);
+      currentPrice = metrics?.current || 0;
     } catch (error) {
       loggerService.warn(`⚠️ [WATCHLIST] Could not fetch price for ${ticker}`, { error });
     }

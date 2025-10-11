@@ -177,17 +177,22 @@ class WatchlistMonitorService {
   ): Promise<void> {
     try {
       const notification = new Notification({
-        userId,
-        type: 'price_alert',
+        userId: userId.toString(),
+        type: 'success',
         title: `Price Alert: ${ticker}`,
         message,
-        data: {
+        priority: 'high',
+        category: 'market',
+        actionData: {
           ticker,
-          currentPrice,
-          alertType,
-          timestamp: new Date().toISOString()
+          action: alertType === 'high' ? 'SELL' : 'BUY' as 'BUY' | 'SELL' | 'HOLD'
         },
-        read: false
+        channels: {
+          dashboard: true,
+          popup: true,
+          email: false
+        },
+        status: 'pending'
       });
       
       await notification.save();
