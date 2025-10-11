@@ -410,6 +410,110 @@
   --border-secondary: #475569;
 }
 
+/* Comprehensive Light Theme Overrides */
+[data-theme='light'] {
+  /* Body and main backgrounds */
+  body {
+    background: #ffffff !important;
+    color: #1e293b !important;
+  }
+  
+  /* All slate backgrounds become white/light */
+  .bg-slate-950, .bg-slate-900, .bg-slate-800 {
+    background-color: #ffffff !important;
+  }
+  
+  /* Cards and containers */
+  .card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: #e2e8f0 !important;
+    color: #1e293b !important;
+  }
+  
+  /* Input fields */
+  .input-field {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
+  }
+  
+  /* Tables */
+  table, .table-container {
+    background: #ffffff !important;
+    color: #1e293b !important;
+  }
+  
+  th, td {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border-color: #e2e8f0 !important;
+  }
+  
+  /* Text colors */
+  .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400 {
+    color: #1e293b !important;
+  }
+  
+  .text-slate-500, .text-slate-600 {
+    color: #475569 !important;
+  }
+  
+  .text-slate-700, .text-slate-800, .text-slate-900 {
+    color: #1e293b !important;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    background: linear-gradient(to right, #3b82f6, #8b5cf6) !important;
+    color: #ffffff !important;
+  }
+  
+  .btn-secondary {
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+    border-color: #cbd5e1 !important;
+  }
+  
+  /* Borders */
+  .border-slate-700, .border-slate-600, .border-slate-500 {
+    border-color: #e2e8f0 !important;
+  }
+  
+  /* Hover states */
+  .hover\\:bg-slate-700:hover, .hover\\:bg-slate-600:hover {
+    background-color: #f1f5f9 !important;
+  }
+  
+  /* Navigation */
+  nav, .nav-container {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-color: #e2e8f0 !important;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+  }
+  
+  /* Modals and overlays */
+  .modal, .overlay {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #1e293b !important;
+  }
+  
+  /* Charts and graphs */
+  .chart-container, .graph-container {
+    background: #ffffff !important;
+    color: #1e293b !important;
+  }
+  
+  /* Remove text shadows in light mode */
+  .text-slate-100, .text-slate-200, .text-white {
+    text-shadow: none !important;
+  }
+}
+
 /* Action Color Classes */
 .action-buy {
   background-color: rgba(16, 185, 129, 0.2);

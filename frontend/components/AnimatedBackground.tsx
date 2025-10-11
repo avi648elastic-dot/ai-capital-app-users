@@ -1,12 +1,48 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function AnimatedBackground() {
   const [isClient, setIsClient] = useState(false);
+  const [positions, setPositions] = useState<{[key: string]: {left: number, top: number}}>({});
+  const { theme } = useTheme();
 
   useEffect(() => {
     setIsClient(true);
+    
+    // Generate stable positions for animations
+    const generatePositions = () => {
+      const newPositions: {[key: string]: {left: number, top: number}} = {};
+      
+      // Generate positions for stock symbols
+      ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'BTC', 'ETH', 'SPY', 'QQQ', 'IWM', 'VIX', 'GOLD', 'OIL', 'EUR/USD', 'GBP/USD'].forEach(symbol => {
+        newPositions[symbol] = {
+          left: Math.random() * 100,
+          top: Math.random() * 100
+        };
+      });
+      
+      // Generate positions for exchanges
+      ['NYSE', 'NASDAQ', 'TSX', 'LSE', 'HKEX', 'TSE', 'SSE', 'BSE'].forEach(exchange => {
+        newPositions[`exchange-${exchange}`] = {
+          left: Math.random() * 100,
+          top: Math.random() * 100
+        };
+      });
+      
+      // Generate positions for bubbles
+      for (let i = 0; i < 25; i++) {
+        newPositions[`bubble-${i}`] = {
+          left: Math.random() * 100,
+          top: Math.random() * 100
+        };
+      }
+      
+      setPositions(newPositions);
+    };
+    
+    generatePositions();
   }, []);
 
   if (!isClient) {
@@ -14,7 +50,7 @@ export default function AnimatedBackground() {
   }
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-10">
       {/* Circuit Board Pattern */}
       <div 
         className="absolute inset-0 opacity-10"
@@ -28,21 +64,33 @@ export default function AnimatedBackground() {
       />
       
       {/* Floating Stock Symbols & Market Markers - SHARP AND CLEAR */}
-      {['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'BTC', 'ETH', 'SPY', 'QQQ', 'IWM', 'VIX', 'GOLD', 'OIL', 'EUR/USD', 'GBP/USD'].map((symbol, index) => (
-        <div
-          key={symbol}
-          className="absolute text-xs font-mono text-slate-400/70 opacity-50 animate-float-enhanced bg-slate-800/30 px-2 py-1 rounded backdrop-blur-sm border border-blue-500/30"
-          style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${index * 0.5}s`,
-            animationDuration: `${10 + Math.random() * 10}s`,
-            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)'
-          }}
-        >
-          {symbol}
-        </div>
-      ))}
+      {['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'BTC', 'ETH', 'SPY', 'QQQ', 'IWM', 'VIX', 'GOLD', 'OIL', 'EUR/USD', 'GBP/USD'].map((symbol, index) => {
+        const pos = positions[symbol];
+        if (!pos) return null;
+        
+        const bgColor = theme === 'light' ? 'bg-white/70' : 'bg-slate-800/50';
+        const textColor = theme === 'light' ? 'text-slate-700/80' : 'text-slate-400/80';
+        const borderColor = theme === 'light' ? 'border-blue-400/50' : 'border-blue-500/50';
+        
+        return (
+          <div
+            key={symbol}
+            className={`absolute text-xs font-mono ${textColor} opacity-70 animate-float-enhanced ${bgColor} px-2 py-1 rounded backdrop-blur-sm border ${borderColor} shadow-lg`}
+            style={{
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              animationDelay: `${index * 0.5}s`,
+              animationDuration: `${10 + (index % 5) * 2}s`,
+              boxShadow: theme === 'light' 
+                ? '0 2px 8px rgba(59, 130, 246, 0.2)' 
+                : '0 2px 8px rgba(59, 130, 246, 0.4)',
+              zIndex: 1
+            }}
+          >
+            {symbol}
+          </div>
+        );
+      })}
 
       {/* Market Exchange Symbols */}
       {['NYSE', 'NASDAQ', 'TSX', 'LSE', 'HKEX', 'TSE', 'SSE', 'BSE'].map((exchange, index) => (
@@ -177,27 +225,36 @@ export default function AnimatedBackground() {
 
       {/* Animated Bubbles - SMALL AND CLEAR */}
       {[...Array(25)].map((_, i) => {
-        const bubbleTypes = [
-          'bg-gradient-to-r from-blue-500/30 to-cyan-500/20',
-          'bg-gradient-to-r from-purple-500/30 to-pink-500/20', 
-          'bg-gradient-to-r from-emerald-500/30 to-green-500/20',
-          'bg-gradient-to-r from-orange-500/30 to-red-500/20',
-          'bg-gradient-to-r from-indigo-500/30 to-blue-500/20'
+        const bubbleTypes = theme === 'light' ? [
+          'bg-gradient-to-r from-blue-400/30 to-cyan-400/20',
+          'bg-gradient-to-r from-purple-400/30 to-pink-400/20', 
+          'bg-gradient-to-r from-emerald-400/30 to-green-400/20',
+          'bg-gradient-to-r from-orange-400/30 to-red-400/20',
+          'bg-gradient-to-r from-indigo-400/30 to-blue-400/20'
+        ] : [
+          'bg-gradient-to-r from-blue-500/40 to-cyan-500/30',
+          'bg-gradient-to-r from-purple-500/40 to-pink-500/30', 
+          'bg-gradient-to-r from-emerald-500/40 to-green-500/30',
+          'bg-gradient-to-r from-orange-500/40 to-red-500/30',
+          'bg-gradient-to-r from-indigo-500/40 to-blue-500/30'
         ];
         const bubbleType = bubbleTypes[i % bubbleTypes.length];
+        const pos = positions[`bubble-${i}`];
+        if (!pos) return null;
         
         return (
           <div
             key={i}
             className={`absolute rounded-full ${bubbleType} animate-bubble shadow-lg`}
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${Math.random() * 4 + 1}rem`, // Smaller bubbles
-              height: `${Math.random() * 4 + 1}rem`,
-              animationDelay: `${Math.random() * 15}s`,
-              animationDuration: `${12 + Math.random() * 8}s`,
-              filter: 'blur(0.5px)' // Less blur for sharper appearance
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              width: `${2 + (i % 3)}rem`, // Consistent sizes: 2rem, 3rem, 4rem
+              height: `${2 + (i % 3)}rem`,
+              animationDelay: `${i * 0.8}s`,
+              animationDuration: `${12 + (i % 4) * 2}s`,
+              filter: 'blur(0.3px)', // Very sharp
+              zIndex: 1
             }}
           />
         );
