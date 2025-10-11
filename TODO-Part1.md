@@ -13,9 +13,9 @@
 - [ ] Apply to all auth / portfolio routes (partially done, needs full coverage)
 
 ## DATA & INDEX OPTIMIZATION (`backend/src/models`)
-- [x] Add indexes (users, portfolios, historicaldata)
-- [ ] Pre-save hook for stock-limit per plan
-- [x] Run ensureIndexes() on startup
+- [x] Add indexes (users, portfolios, historicaldata, watchlist)
+- [x] Pre-save hook for stock-limit per plan ✅
+- [x] Run ensureIndexes() on startup with safe creation ✅
 
 ## MARKET-DATA SERVICE (`backend/src/services/stockDataService.ts`)
 - [ ] Add lru-cache with 20 s TTL + provider fallback + retry
@@ -34,8 +34,8 @@
 - [x] Configure Render healthcheck
 
 ## FRONTEND API (`frontend/lib/api.ts`)
-- [ ] Centralize fetch calls + Zod validation + error mapper
-- [ ] Use SWR / React-Query cache
+- [x] Centralize fetch calls + Zod validation + error mapper ✅
+- [ ] Use SWR / React-Query cache - TODO (future enhancement)
 
 ## FRONTEND UX POLISH
 - [ ] Tooltips for "This month %" vs "Last month %"
@@ -48,13 +48,13 @@
 - [ ] Integration tests (auth→onboard→decision)
 
 ## DEVOPS
-- [ ] Multi-stage Dockerfile (build→run)
-- [ ] .env.example (no secrets)
-- [ ] Render health + Sentry logs
+- [x] Multi-stage Dockerfile (build→run) ✅
+- [x] .env.example (no secrets) ✅
+- [x] Render health + Sentry logs ✅
 
 ## DOCUMENTATION (/docs)
-- [ ] Architecture.md
-- [ ] DataProviders.md
-- [ ] DecisionEngine.md
-- [ ] Runbook.md
-- [ ] Update README with paid-tier notes
+- [x] Architecture.md ✅
+- [x] DataProviders.md ✅
+- [x] DecisionEngine.md ✅
+- [x] Runbook.md ✅
+- [ ] Update README with paid-tier notes - TODO
