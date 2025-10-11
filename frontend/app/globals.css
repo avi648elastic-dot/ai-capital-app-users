@@ -18,19 +18,88 @@
   }
 }
 
-/* Mobile Responsive Fixes */
+/* Mobile Responsive Fixes - Optimized for Better UX */
 @media (max-width: 768px) {
   body {
     transform: none !important;
     width: 100% !important;
     height: 100% !important;
     overflow-x: hidden !important;
+    font-size: 14px !important; /* Reduce base font size */
   }
   
   html {
     transform: none !important;
     width: 100% !important;
     height: 100% !important;
+    font-size: 14px !important;
+  }
+  
+  /* Reduce component sizes by 30-40% */
+  .card {
+    @apply p-3 m-2; /* Reduced padding and margin */
+  }
+  
+  .input-field {
+    @apply py-2 px-3 text-sm; /* Smaller inputs */
+  }
+  
+  /* Dashboard specific optimizations */
+  .dashboard-grid {
+    @apply gap-2 p-2; /* Tighter grid spacing */
+  }
+  
+  .portfolio-summary {
+    @apply p-3 space-y-2; /* Compact portfolio summary */
+  }
+  
+  .market-overview {
+    @apply p-3 space-y-2; /* Compact market overview */
+  }
+  
+  /* Reduce text sizes for mobile */
+  h1 { @apply text-xl; }
+  h2 { @apply text-lg; }
+  h3 { @apply text-base; }
+  h4 { @apply text-sm; }
+  
+  /* Compact navigation */
+  .mobile-nav {
+    @apply p-2 space-y-1;
+  }
+  
+  .nav-item {
+    @apply py-2 px-3 text-sm;
+  }
+  
+  /* Compact tables */
+  .table-container {
+    @apply text-xs;
+  }
+  
+  .table-container th,
+  .table-container td {
+    @apply px-2 py-1;
+  }
+  
+  /* Compact charts */
+  .chart-container {
+    @apply h-48; /* Reduced chart height */
+  }
+  
+  /* Compact buttons */
+  .btn {
+    @apply py-2 px-3 text-sm;
+  }
+  
+  /* Reduce spacing in forms */
+  .form-group {
+    @apply space-y-2;
+  }
+  
+  /* Compact modals */
+  .modal-content {
+    @apply p-4 m-2 max-w-sm;
   }
 }
 

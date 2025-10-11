@@ -37,14 +37,14 @@ export default function MarketOverview() {
   const pct = (n?: number) => (n == null ? '' : `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`);
 
   return (
-    <div className="card p-6 [data-theme='light']:bg-white [data-theme='light']:border-gray-200 bg-gradient-to-br from-slate-900/80 to-slate-800/80">
-      <div className="flex flex-col mb-6 space-y-3">
-        <h3 className="text-2xl font-bold text-white tracking-wide [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">Markets Overview</h3>
+    <div className="card p-3 sm:p-6 [data-theme='light']:bg-white [data-theme='light']:border-gray-200 bg-gradient-to-br from-slate-900/80 to-slate-800/80 market-overview">
+      <div className="flex flex-col mb-4 sm:mb-6 space-y-2 sm:space-y-3">
+        <h3 className="text-lg sm:text-2xl font-bold text-white tracking-wide [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">Markets Overview</h3>
         <div className="flex items-center space-x-3">
           {data?.updatedAt && <span className="text-sm text-slate-400 [data-theme='light']:text-gray-600 [data-theme='light']:!text-gray-600">Updated {new Date(data.updatedAt).toLocaleTimeString()}</span>}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
         {[
           { symbol: 'SPY', name: 'S&P 500' },
           { symbol: 'QQQ', name: 'NASDAQ' },
