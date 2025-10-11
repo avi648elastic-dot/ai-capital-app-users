@@ -53,14 +53,11 @@ export default function AnimatedBackground() {
     return null;
   }
 
-  // Stock symbols with clear markers
-  const stockSymbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'AMD', 'CRM', 'ADBE', 'PYPL', 'INTC', 'ORCL', 'CSCO', 'IBM', 'QCOM', 'AVGO'];
+  // Game-like stock symbols with up/down indicators
+  const stockSymbols = ['↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️'];
 
-  // Exchange symbols
-  const exchangeSymbols = ['NYSE', 'NASDAQ', 'S&P500', 'DOW', 'FTSE', 'DAX', 'NIKKEI', 'HANG SENG'];
-
-  // Financial icons
-  const financialIcons = ['$', '€', '¥', '£', '₿', '💎', '📈', '📊', '💰', '🏦', '💼', '📉'];
+  // Simple financial icons (no text)
+  const financialIcons = ['💎', '💰', '🏦', '💼', '🎯', '⚡', '🔥', '⭐', '🌟', '💫', '✨', '🎪'];
 
   // Theme-aware bubble gradients
   const bubbleGradients = theme === 'light' ? [
@@ -93,8 +90,8 @@ export default function AnimatedBackground() {
         }}
       />
 
-      {/* Beautiful Bubbles with Markers */}
-      {[...Array(25)].map((_, i) => {
+      {/* Crystal Clear Bubbles with Game-like Presence */}
+      {[...Array(30)].map((_, i) => {
         const bubbleType = bubbleGradients[i % bubbleGradients.length];
         const pos = positions[`bubble-${i}`];
         if (!pos) return null;
@@ -102,97 +99,81 @@ export default function AnimatedBackground() {
         return (
           <div
             key={i}
-            className={`absolute rounded-full ${bubbleType} animate-bubble shadow-lg border border-white/20`}
+            className={`absolute rounded-full ${bubbleType} animate-bubble`}
             style={{
               left: `${pos.left}%`,
               top: `${pos.top}%`,
-              width: `${3 + (i % 3)}rem`, // 3rem, 4rem, 5rem
-              height: `${3 + (i % 3)}rem`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${8 + (i % 4) * 2}s`,
+              width: `${4 + (i % 4)}rem`, // 4rem, 5rem, 6rem, 7rem
+              height: `${4 + (i % 4)}rem`,
+              animationDelay: `${i * 0.3}s`,
+              animationDuration: `${6 + (i % 3) * 2}s`,
               filter: 'blur(0px)',
-              opacity: 0.8
+              opacity: 0.9,
+              boxShadow: `
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 4px 16px rgba(0, 0, 0, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1)
+              `,
+              border: '2px solid rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(2px)'
             }}
-          >
-            {/* Marker inside bubble */}
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-lg">
-              {i % 3 === 0 ? '$' : i % 3 === 1 ? '📈' : '💰'}
-            </div>
-          </div>
+          />
         );
       })}
 
-      {/* Stock Symbols with Clear Text */}
-      {stockSymbols.map((symbol, i) => {
+      {/* Game-like Stock Direction Indicators */}
+      {stockSymbols.map((direction, i) => {
         const pos = positions[`stock-${i}`];
         if (!pos) return null;
         
-        const bgColor = theme === 'light' ? 'bg-blue-100/80' : 'bg-blue-900/80';
-        const textColor = theme === 'light' ? 'text-blue-800' : 'text-blue-200';
-        const borderColor = theme === 'light' ? 'border-blue-300' : 'border-blue-600';
+        const isUp = direction === '↗️';
+        const bgColor = isUp 
+          ? (theme === 'light' ? 'bg-green-100/90' : 'bg-green-900/90')
+          : (theme === 'light' ? 'bg-red-100/90' : 'bg-red-900/90');
+        const borderColor = isUp 
+          ? (theme === 'light' ? 'border-green-400' : 'border-green-500')
+          : (theme === 'light' ? 'border-red-400' : 'border-red-500');
         
         return (
           <div
             key={`stock-${i}`}
-            className={`absolute ${bgColor} ${textColor} ${borderColor} border-2 rounded-lg px-2 py-1 text-xs font-bold animate-float shadow-lg backdrop-blur-sm`}
-            style={{
-              left: `${pos.left}%`,
-              top: `${pos.top}%`,
-              animationDelay: `${i * 0.3}s`,
-              animationDuration: `${6 + (i % 3)}s`,
-              opacity: 0.9
-            }}
-          >
-            {symbol}
-          </div>
-        );
-      })}
-
-      {/* Exchange Symbols */}
-      {exchangeSymbols.map((exchange, i) => {
-        const pos = positions[`exchange-${i}`];
-        if (!pos) return null;
-        
-        const bgColor = theme === 'light' ? 'bg-green-100/80' : 'bg-green-900/80';
-        const textColor = theme === 'light' ? 'text-green-800' : 'text-green-200';
-        const borderColor = theme === 'light' ? 'border-green-300' : 'border-green-600';
-        
-        return (
-          <div
-            key={`exchange-${i}`}
-            className={`absolute ${bgColor} ${textColor} ${borderColor} border-2 rounded-lg px-2 py-1 text-xs font-bold animate-float-delayed shadow-lg backdrop-blur-sm`}
-            style={{
-              left: `${pos.left}%`,
-              top: `${pos.top}%`,
-              animationDelay: `${i * 0.4}s`,
-              animationDuration: `${8 + (i % 2)}s`,
-              opacity: 0.9
-            }}
-          >
-            {exchange}
-          </div>
-        );
-      })}
-
-      {/* Financial Icons */}
-      {financialIcons.map((icon, i) => {
-        const pos = positions[`financial-${i}`];
-        if (!pos) return null;
-        
-        const bgColor = theme === 'light' ? 'bg-purple-100/80' : 'bg-purple-900/80';
-        const textColor = theme === 'light' ? 'text-purple-800' : 'text-purple-200';
-        const borderColor = theme === 'light' ? 'border-purple-300' : 'border-purple-600';
-        
-        return (
-          <div
-            key={`financial-${i}`}
-            className={`absolute ${bgColor} ${textColor} ${borderColor} border-2 rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold animate-sparkle shadow-lg backdrop-blur-sm`}
+            className={`absolute ${bgColor} ${borderColor} border-2 rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold ${isUp ? 'animate-stock-up' : 'animate-stock-down'} shadow-2xl backdrop-blur-sm`}
             style={{
               left: `${pos.left}%`,
               top: `${pos.top}%`,
               animationDelay: `${i * 0.2}s`,
-              animationDuration: `${4 + (i % 3)}s`,
-              opacity: 0.9
+              animationDuration: `${3 + (i % 2)}s`,
+              opacity: 0.95,
+              boxShadow: isUp 
+                ? '0 4px 20px rgba(34, 197, 94, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
+                : '0 4px 20px rgba(239, 68, 68, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
+            }}
+          >
+            {direction}
+          </div>
+        );
+      })}
+
+      {/* Game-like Financial Icons */}
+      {financialIcons.map((icon, i) => {
+        const pos = positions[`financial-${i}`];
+        if (!pos) return null;
+        
+        const bgColor = theme === 'light' ? 'bg-yellow-100/90' : 'bg-yellow-900/90';
+        const borderColor = theme === 'light' ? 'border-yellow-400' : 'border-yellow-500';
+        
+        return (
+          <div
+            key={`financial-${i}`}
+            className={`absolute ${bgColor} ${borderColor} border-2 rounded-full w-10 h-10 flex items-center justify-center text-lg animate-sparkle shadow-2xl backdrop-blur-sm`}
+            style={{
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              animationDelay: `${i * 0.15}s`,
+              animationDuration: `${3 + (i % 2)}s`,
+              opacity: 0.95,
+              boxShadow: '0 4px 20px rgba(234, 179, 8, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
             }}
           >
             {icon}
@@ -200,50 +181,37 @@ export default function AnimatedBackground() {
         );
       })}
 
-      {/* Market Data Streams */}
+      {/* Enhanced Market Data Streams */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(6)].map((_, i) => (
+        {[...Array(8)].map((_, i) => (
           <div
             key={`stream-${i}`}
-            className="absolute w-1 h-20 bg-gradient-to-b from-transparent via-blue-400 to-transparent animate-data-stream opacity-60"
+            className="absolute w-2 h-24 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent animate-data-stream opacity-70"
             style={{
-              left: `${20 + i * 15}%`,
-              top: `${10 + i * 15}%`,
-              animationDelay: `${i * 2}s`,
-              animationDuration: '15s'
+              left: `${15 + i * 12}%`,
+              top: `${5 + i * 12}%`,
+              animationDelay: `${i * 1.5}s`,
+              animationDuration: '12s',
+              boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
             }}
           />
         ))}
       </div>
 
-      {/* Glowing Orbs */}
+      {/* Enhanced Glowing Orbs */}
       <div className="absolute inset-0">
-        {[...Array(4)].map((_, i) => (
+        {[...Array(6)].map((_, i) => (
           <div
             key={`orb-${i}`}
-            className="absolute w-32 h-32 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 animate-financial-glow blur-xl"
+            className="absolute w-40 h-40 rounded-full bg-gradient-to-r from-blue-400/30 to-purple-400/30 animate-financial-glow blur-2xl"
             style={{
-              left: `${25 + i * 25}%`,
-              top: `${20 + i * 20}%`,
-              animationDelay: `${i * 1.5}s`,
-              animationDuration: '6s'
+              left: `${20 + i * 20}%`,
+              top: `${15 + i * 15}%`,
+              animationDelay: `${i * 2}s`,
+              animationDuration: '8s'
             }}
           />
         ))}
-      </div>
-
-      {/* Price Ticker */}
-      <div className="absolute top-10 left-0 right-0 overflow-hidden h-8 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-blue-600/10 backdrop-blur-sm">
-        <div className="flex animate-ticker text-sm font-mono text-blue-300 whitespace-nowrap">
-          <span className="mx-8">AAPL $245.27 ↗️</span>
-          <span className="mx-8">GOOGL $142.85 ↗️</span>
-          <span className="mx-8">MSFT $378.91 ↗️</span>
-          <span className="mx-8">TSLA $248.50 ↘️</span>
-          <span className="mx-8">AMZN $155.20 ↗️</span>
-          <span className="mx-8">META $498.30 ↗️</span>
-          <span className="mx-8">NVDA $875.60 ↗️</span>
-          <span className="mx-8">NFLX $485.90 ↘️</span>
-        </div>
       </div>
 
       {/* Gradient Overlays */}
