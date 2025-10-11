@@ -581,8 +581,19 @@ const connectDB = async () => {
   attemptConnect();
 };
 
-// 📊 Ensure MongoDB indexes are created for optimal performance
+// 📊 Ensure MongoDB indexes are created for optimal performance - MAJOR'S FIX
 const ensureIndexes = async () => {
+  const createIndexSafely = async (collection: any, indexSpec: any, options: any = {}) => {
+    try {
+      await collection.createIndex(indexSpec, options);
+    } catch (error: any) {
+      // Ignore index already exists errors (code 86)
+      if (error.code !== 86 && error.codeName !== 'IndexKeySpecsConflict') {
+        throw error;
+      }
+    }
+  };
+
   try {
     console.log('📊 [INDEXES] Ensuring MongoDB indexes...');
     
@@ -590,32 +601,41 @@ const ensureIndexes = async () => {
     await import('./models/User');
     await import('./models/Portfolio');
     await import('./models/Notification');
+    await import('./models/Watchlist');
     
-    // Create indexes explicitly
+    // Get model collections
     const User = mongoose.model('User');
     const Portfolio = mongoose.model('Portfolio');
     const Notification = mongoose.model('Notification');
+    const Watchlist = mongoose.model('Watchlist');
     
-    // User indexes
-    await User.collection.createIndex({ email: 1 }, { unique: true });
-    await User.collection.createIndex({ subscriptionTier: 1 });
-    await User.collection.createIndex({ subscriptionActive: 1 });
-    await User.collection.createIndex({ createdAt: -1 });
+    // User indexes (with safe creation)
+    await createIndexSafely(User.collection, { email: 1 }, { unique: true });
+    await createIndexSafely(User.collection, { subscriptionTier: 1 });
+    await createIndexSafely(User.collection, { subscriptionActive: 1 });
+    await createIndexSafely(User.collection, { createdAt: -1 });
     
-    // Portfolio indexes
-    await Portfolio.collection.createIndex({ userId: 1, portfolioType: 1 });
-    await Portfolio.collection.createIndex({ userId: 1, portfolioId: 1 });
-    await Portfolio.collection.createIndex({ ticker: 1 });
-    await Portfolio.collection.createIndex({ action: 1 });
-    await Portfolio.collection.createIndex({ createdAt: -1 });
-    await Portfolio.collection.createIndex({ updatedAt: -1 });
-    await Portfolio.collection.createIndex({ userId: 1, ticker: 1 }, { unique: true });
+    // Portfolio indexes (with safe creation)
+    await createIndexSafely(Portfolio.collection, { userId: 1, portfolioType: 1 });
+    await createIndexSafely(Portfolio.collection, { userId: 1, portfolioId: 1 });
+    await createIndexSafely(Portfolio.collection, { ticker: 1 });
+    await createIndexSafely(Portfolio.collection, { action: 1 });
+    await createIndexSafely(Portfolio.collection, { createdAt: -1 });
+    await createIndexSafely(Portfolio.collection, { updatedAt: -1 });
+    await createIndexSafely(Portfolio.collection, { userId: 1, ticker: 1 }, { unique: true });
     
-    // Notification indexes
-    await Notification.collection.createIndex({ userId: 1, isRead: 1 });
-    await Notification.collection.createIndex({ type: 1 });
-    await Notification.collection.createIndex({ priority: 1 });
-    await Notification.collection.createIndex({ createdAt: -1 });
+    // Notification indexes (with safe creation)
+    await createIndexSafely(Notification.collection, { userId: 1, readAt: 1 });
+    await createIndexSafely(Notification.collection, { type: 1 });
+    await createIndexSafely(Notification.collection, { priority: 1 });
+    await createIndexSafely(Notification.collection, { createdAt: -1 });
+    
+    // Watchlist indexes (with safe creation)
+    await createIndexSafely(Watchlist.collection, { userId: 1 });
+    await createIndexSafely(Watchlist.collection, { ticker: 1 });
+    await createIndexSafely(Watchlist.collection, { userId: 1, ticker: 1 }, { unique: true });
+    await createIndexSafely(Watchlist.collection, { 'priceAlert.enabled': 1 });
+    await createIndexSafely(Watchlist.collection, { addedAt: -1 });
     
     console.log('✅ [INDEXES] All MongoDB indexes ensured successfully');
   } catch (error) {
