@@ -189,17 +189,30 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       
       // Test the Google Finance service first
       try {
+        console.log('🧪 [TEST] Testing Google Finance service with AAPL...');
         const testResult = await googleFinanceFormulasService.getStockMetrics('AAPL');
-        console.log('🧪 [TEST] Google Finance service test result:', testResult);
+        console.log('✅ [TEST] Google Finance service test result:', testResult);
+        
+        // Get API key stats
+        const apiStats = await googleFinanceFormulasService.getApiKeyStats();
+        console.log('📊 [TEST] API Key Stats:', apiStats);
+        
       } catch (testError) {
         console.error('❌ [TEST] Google Finance service test failed:', testError);
+        console.error('❌ [TEST] Error details:', {
+          message: testError.message,
+          stack: testError.stack,
+          name: testError.name
+        });
       }
       
       // Use our new Google Finance formulas service with multiple API keys
       const portfolioData = await Promise.all(
         portfolio.map(async (stock) => {
           try {
+            console.log(`🔍 [ANALYTICS] Fetching data for ${stock.ticker}...`);
             const data = await googleFinanceFormulasService.getStockMetrics(stock.ticker);
+            console.log(`✅ [ANALYTICS] Got data for ${stock.ticker}:`, data);
             return {
               ticker: stock.ticker,
               shares: stock.shares,
