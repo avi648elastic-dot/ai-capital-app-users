@@ -34,7 +34,7 @@ export default function RootLayout({
               <ThemeApplier />
               <div className="min-h-screen transition-colors duration-300 bg-slate-950 text-slate-100 [data-theme='light']:bg-white [data-theme='light']:text-gray-900 relative">
                 {/* Global Animated Background - appears on all pages */}
-                <AnimatedBackground intensity="medium" />
+                <AnimatedBackground />
                 <div className="relative z-10">
                   {children}
                 </div>
