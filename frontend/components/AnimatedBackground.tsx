@@ -58,7 +58,8 @@ export default function AnimatedBackground() {
   // Determine intensity based on page
   const isLoginPage = pathname === '/';
   const isDashboard = pathname === '/dashboard';
-  const intensity = isLoginPage ? 'full' : isDashboard ? 'medium' : 'subtle';
+  // Reduce login page intensity for faster loading
+  const intensity = isLoginPage ? 'medium' : isDashboard ? 'medium' : 'subtle';
 
   // Professional financial symbols (subtle, text-based)
   const stockSymbols = ['$', '€', '₿', '¥', '£', '₹', '₽', '₩', '₪', '₨', '₦', '₡', '₵', '₴', '₸', '₼', '₾', '₿'];

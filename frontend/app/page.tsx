@@ -40,11 +40,7 @@ export default function Page() {
     // ✅ Test token validity
     (async () => {
       try {
-        // First test basic connectivity
-        const testResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/test`);
-        console.log('✅ Backend connectivity test passed:', testResponse.data);
-
-        // Then test user profile with token
+        // Test user profile with token (no need for separate connectivity test)
         const { data } = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`,
           { headers: { Authorization: `Bearer ${token}` } }

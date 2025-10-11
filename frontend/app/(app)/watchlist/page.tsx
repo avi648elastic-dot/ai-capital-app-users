@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Eye, Plus, Trash2, TrendingUp, TrendingDown, Bell, BellOff, AlertCircle, Settings, X, Loader2 } from 'lucide-react';
+import { Eye, Plus, Trash2, TrendingUp, TrendingDown, Bell, BellOff, AlertCircle, Settings, X, Loader2, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Toast from '@/components/ui/Toast';
@@ -345,26 +345,28 @@ export default function Watchlist() {
                   <h3 className="text-lg sm:text-xl font-bold text-white [data-theme='light']:text-gray-900">{item.ticker}</h3>
                   <p className="text-xs sm:text-sm text-slate-400 [data-theme='light']:text-gray-600 truncate">{item.name}</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => toggleNotifications(item.id, item.ticker, item.notifications)}
-                    className={`p-2 rounded-lg transition-all transform hover:scale-110 ${
-                      item.notifications 
-                        ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-500/50' 
-                        : 'bg-slate-700 text-slate-300 hover:bg-slate-600 [data-theme="light"]:bg-gray-200 [data-theme="light"]:text-gray-600 [data-theme="light"]:hover:bg-gray-300'
-                    }`}
-                    title={item.notifications ? t('watchlist.notificationsEnabled') : t('watchlist.notificationsDisabled')}
-                  >
-                    {item.notifications ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
-                  </button>
-                  <button
-                    onClick={() => openAlertModal(item)}
-                    className="p-2 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/50 transform hover:scale-110"
-                    title={t('watchlist.setPriceAlert')}
-                  >
-                    <Settings className="w-4 h-4" />
-                  </button>
-                </div>
+              </div>
+
+              {/* Action Buttons - Clear and User-Friendly */}
+              <div className="flex items-center space-x-2 mb-4">
+                <button
+                  onClick={() => toggleNotifications(item.id, item.ticker, item.notifications)}
+                  className={`flex-1 py-2.5 px-3 rounded-lg transition-all font-medium text-sm flex items-center justify-center space-x-2 ${
+                    item.notifications 
+                      ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md' 
+                      : 'bg-slate-700 text-slate-300 hover:bg-slate-600 [data-theme="light"]:bg-gray-200 [data-theme="light"]:text-gray-700 [data-theme="light"]:hover:bg-gray-300'
+                  }`}
+                >
+                  {item.notifications ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+                  <span>{item.notifications ? 'Notifications ON' : 'Notifications OFF'}</span>
+                </button>
+                <button
+                  onClick={() => openAlertModal(item)}
+                  className="flex-1 py-2.5 px-3 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 transition-all shadow-md font-medium text-sm flex items-center justify-center space-x-2"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  <span>Set Alert</span>
+                </button>
               </div>
 
               {/* Price Display */}
