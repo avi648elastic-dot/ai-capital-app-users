@@ -40,6 +40,26 @@ router.get('/', authenticateToken, async (req, res) => {
     
     // Fetch 90-day data for all stocks using our Google Finance service
     loggerService.info(`🔍 [PERFORMANCE] Fetching 90-day data for ${tickers.length} stocks: ${tickers.join(', ')}`);
+    
+    // Test with a single stock first to debug
+    loggerService.info(`🧪 [PERFORMANCE] Testing with AAPL first...`);
+    try {
+      const testResult = await googleFinanceFormulasService.getStockMetrics('AAPL');
+      loggerService.info(`✅ [PERFORMANCE] AAPL test result:`, testResult);
+      
+      // Get API key stats
+      const apiStats = await googleFinanceFormulasService.getApiKeyStats();
+      loggerService.info(`📊 [PERFORMANCE] API Key Stats:`, apiStats);
+    } catch (testError) {
+      const error = testError as Error;
+      loggerService.error(`❌ [PERFORMANCE] AAPL test failed:`, error.message);
+      loggerService.error(`❌ [PERFORMANCE] Error details:`, {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+    
     const stockMetricsMap = await googleFinanceFormulasService.getMultipleStockMetrics(tickers);
     loggerService.info(`📊 [PERFORMANCE] Retrieved data for ${stockMetricsMap.size}/${tickers.length} stocks`);
     
