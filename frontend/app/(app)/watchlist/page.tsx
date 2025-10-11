@@ -218,26 +218,39 @@ export default function Watchlist() {
     setSavingAlert(true);
     try {
       const token = Cookies.get('token');
-      await axios.patch(
+      if (!token) {
+        showToast('error', '❌ Please login to set price alerts');
+        return;
+      }
+
+      const alertData = {
+        type: alertType,
+        highPrice: (alertType === 'high' || alertType === 'both') ? parseFloat(highPrice) : undefined,
+        lowPrice: (alertType === 'low' || alertType === 'both') ? parseFloat(lowPrice) : undefined,
+        enabled: true
+      };
+
+      console.log('🔔 Setting price alert for', selectedStock.ticker, ':', alertData);
+
+      const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${selectedStock.id}/alert`,
-        {
-          type: alertType,
-          highPrice: (alertType === 'high' || alertType === 'both') ? parseFloat(highPrice) : undefined,
-          lowPrice: (alertType === 'low' || alertType === 'both') ? parseFloat(lowPrice) : undefined,
-          enabled: true
-        },
+        alertData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      console.log('✅ Price alert set successfully:', response.data);
 
       await fetchUserAndWatchlist();
       closeAlertModal();
       showToast('success', `✅ ${t('watchlist.alertSetSuccess')}`);
     } catch (error) {
-      console.error('Error setting price alert:', error);
+      console.error('❌ Error setting price alert:', error);
       if (axios.isAxiosError(error)) {
-        showToast('error', error.response?.data?.error || t('watchlist.failedToSetAlert'));
+        const errorMsg = error.response?.data?.error || error.message || t('watchlist.failedToSetAlert');
+        console.error('❌ Backend error:', error.response?.data);
+        showToast('error', `❌ ${errorMsg}`);
       } else {
-        showToast('error', t('watchlist.failedToSetAlert'));
+        showToast('error', `❌ ${t('watchlist.failedToSetAlert')}`);
       }
     } finally {
       setSavingAlert(false);
@@ -371,8 +384,32 @@ export default function Watchlist() {
 
               {/* Price Display */}
               <div className="mb-4">
-                <div className="text-xl sm:text-2xl font-bold text-white [data-theme='light']:text-gray-900 mb-1">
-                  ${item.currentPrice?.toFixed(2) || 'N/A'}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xl sm:text-2xl font-bold text-white [data-theme='light']:text-gray-900">
+                    ${item.currentPrice?.toFixed(2) || 'N/A'}
+                  </div>
+                  {/* Simple Price Targets Display */}
+                  {item.priceAlert && item.priceAlert.enabled ? (
+                    <div className="flex flex-col items-end space-y-1">
+                      {(item.priceAlert.type === 'high' || item.priceAlert.type === 'both') && item.priceAlert.highPrice && (
+                        <div className="flex items-center text-xs bg-emerald-900/30 [data-theme='light']:bg-emerald-100 text-emerald-300 [data-theme='light']:text-emerald-700 px-2 py-1 rounded-full border border-emerald-500/30">
+                          <TrendingUp className="w-3 h-3 mr-1" />
+                          ${item.priceAlert.highPrice.toFixed(2)}
+                        </div>
+                      )}
+                      {(item.priceAlert.type === 'low' || item.priceAlert.type === 'both') && item.priceAlert.lowPrice && (
+                        <div className="flex items-center text-xs bg-red-900/30 [data-theme='light']:bg-red-100 text-red-300 [data-theme='light']:text-red-700 px-2 py-1 rounded-full border border-red-500/30">
+                          <TrendingDown className="w-3 h-3 mr-1" />
+                          ${item.priceAlert.lowPrice.toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center text-xs bg-slate-700/50 [data-theme='light']:bg-gray-200 text-slate-400 [data-theme='light']:text-gray-500 px-2 py-1 rounded-full border border-slate-600/30 [data-theme='light']:border-gray-300">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      No alerts
+                    </div>
+                  )}
                 </div>
                 <div className={`flex items-center text-xs sm:text-sm font-medium ${
                   item.change >= 0 ? 'text-emerald-400 [data-theme="light"]:text-emerald-600' : 'text-red-400 [data-theme="light"]:text-red-600'

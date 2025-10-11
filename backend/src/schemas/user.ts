@@ -54,11 +54,12 @@ export const userSettingsSchema = z.object({
     .optional()
     .default('dark'),
   
-  notifications: z.object({
-    email: z.boolean().optional().default(true),
-    push: z.boolean().optional().default(true),
-    dashboard: z.boolean().optional().default(true),
-  }).optional(),
+  language: z.enum(['en', 'ar', 'he'])
+    .optional()
+    .default('en'),
+  
+  notifications: z.boolean().optional().default(true),
+  emailUpdates: z.boolean().optional().default(true),
   
   privacy: z.object({
     profileVisibility: z.enum(['public', 'private'])

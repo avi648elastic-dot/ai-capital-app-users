@@ -18,6 +18,8 @@ export interface IUser extends Document {
   riskTolerance?: number;
   language?: string;
   theme?: string;
+  notifications?: boolean; // User notification preference
+  emailUpdates?: boolean; // User email update preference
   avatar?: string; // Renamed from avatarUrl for consistency
   createdAt: Date;
 
@@ -44,6 +46,8 @@ const UserSchema: Schema<IUser> = new Schema(
     riskTolerance: { type: Number, default: 0 },
     language: { type: String, default: 'en' },
     theme: { type: String, default: 'dark' },
+    notifications: { type: Boolean, default: true },
+    emailUpdates: { type: Boolean, default: true },
     avatar: { type: String }, // Avatar URL from Google or uploaded
 
     apiKey: { type: String },

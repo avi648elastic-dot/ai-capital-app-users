@@ -193,10 +193,14 @@ router.put('/settings', authenticateToken, validate({ body: userSettingsSchema }
     const userId = (req as any).user._id;
     const { theme, language, notifications, emailUpdates } = req.body;
 
+    console.log(`🔧 [USER] Updating settings for user ${userId}:`, { theme, language, notifications, emailUpdates });
+
     const updateData: any = {};
-    if (theme) updateData.theme = theme;
-    if (language) updateData.language = language;
-    // Note: notifications and emailUpdates would need to be added to User schema if needed
+    if (theme !== undefined) updateData.theme = theme;
+    if (language !== undefined) updateData.language = language;
+    // Store notification preferences (we'll add these fields to User schema if needed)
+    if (notifications !== undefined) updateData.notifications = notifications;
+    if (emailUpdates !== undefined) updateData.emailUpdates = emailUpdates;
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -204,7 +208,14 @@ router.put('/settings', authenticateToken, validate({ body: userSettingsSchema }
       { new: true, select: '-password' }
     );
 
-    console.log(`✅ [USER] Settings updated for user ${userId}`);
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    console.log(`✅ [USER] Settings updated successfully for user ${userId}`);
 
     res.json({
       success: true,

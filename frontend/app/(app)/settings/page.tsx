@@ -16,6 +16,8 @@ export default function Settings() {
     notifications: true,
     emailUpdates: true,
   });
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
 
   const fetchUser = async () => {
     try {
@@ -27,6 +29,13 @@ export default function Settings() {
       });
 
       setUser(response.data.user);
+      // Load user's saved settings
+      if (response.data.user) {
+        setSettings({
+          notifications: response.data.user.notifications ?? true,
+          emailUpdates: response.data.user.emailUpdates ?? true,
+        });
+      }
     } catch (error) {
       console.error('Error fetching user:', error);
     } finally {
@@ -39,12 +48,17 @@ export default function Settings() {
   }, []);
 
   const handleSave = async () => {
+    setSaving(true);
+    setSaveMessage('');
+    
     try {
       const token = Cookies.get('token');
       if (!token) {
-        alert('Please login to save settings');
+        setSaveMessage('❌ Please login to save settings');
         return;
       }
+
+      console.log('💾 Saving settings:', { ...settings, theme, language: locale });
 
       // Save all settings including theme and language
       const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/user/settings`, {
@@ -57,14 +71,20 @@ export default function Settings() {
 
       // Check if response is successful
       if (response.data.success) {
-        alert(t('settings.saveSuccess') || '✅ Settings saved successfully!');
+        setSaveMessage('✅ Settings saved successfully!');
+        // Refresh user data to get updated settings
+        await fetchUser();
       } else {
-        alert(t('settings.saveError') || '❌ Failed to save settings. Please try again.');
+        setSaveMessage('❌ Failed to save settings. Please try again.');
       }
     } catch (error: any) {
       console.error('Error saving settings:', error);
       const errorMessage = error.response?.data?.error || error.message || 'Unknown error occurred';
-      alert(`${t('settings.saveError') || 'Failed to save settings'}: ${errorMessage}`);
+      setSaveMessage(`❌ Failed to save settings: ${errorMessage}`);
+    } finally {
+      setSaving(false);
+      // Clear message after 3 seconds
+      setTimeout(() => setSaveMessage(''), 3000);
     }
   };
 
@@ -204,10 +224,23 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Save Button */}
+      {/* Save Button & Message */}
       <div className="mt-8">
-        <button onClick={handleSave} className="btn-primary">
-          {t('common.save')} {t('settings.title')}
+        {saveMessage && (
+          <div className={`mb-4 p-4 rounded-lg text-center font-medium ${
+            saveMessage.includes('✅') 
+              ? 'bg-green-900/20 text-green-400 border border-green-500/30' 
+              : 'bg-red-900/20 text-red-400 border border-red-500/30'
+          }`}>
+            {saveMessage}
+          </div>
+        )}
+        <button 
+          onClick={handleSave} 
+          disabled={saving}
+          className={`btn-primary ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {saving ? '💾 Saving...' : `${t('common.save')} ${t('settings.title')}`}
         </button>
       </div>
     </div>
