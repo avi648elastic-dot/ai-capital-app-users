@@ -87,7 +87,7 @@ export default function AnimatedBackground() {
   ];
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -1 }}>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
       {/* Circuit Board Pattern */}
       <div 
         className="absolute inset-0 opacity-10"

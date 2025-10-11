@@ -43,14 +43,19 @@ export default function Settings() {
       const token = Cookies.get('token');
       if (!token) return;
 
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/user/settings`, settings, {
+      // Save all settings including theme and language
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/user/settings`, {
+        ...settings,
+        theme,
+        language: locale
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      alert('Settings saved successfully!');
+      alert(t('settings.saveSuccess') || 'Settings saved successfully!');
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('Failed to save settings. Please try again.');
+      alert(t('settings.saveError') || 'Failed to save settings. Please try again.');
     }
   };
 
