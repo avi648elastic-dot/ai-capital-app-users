@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { usePathname } from 'next/navigation';
 
 export default function AnimatedBackground() {
   const [isClient, setIsClient] = useState(false);
   const [positions, setPositions] = useState<Record<string, { left: number; top: number }>>({});
   const { theme } = useTheme();
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsClient(true);
@@ -53,11 +55,19 @@ export default function AnimatedBackground() {
     return null;
   }
 
-  // Game-like stock symbols with up/down indicators
-  const stockSymbols = ['↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️', '↗️', '↘️'];
+  // Determine intensity based on page
+  const isLoginPage = pathname === '/';
+  const isDashboard = pathname === '/dashboard';
+  const intensity = isLoginPage ? 'full' : isDashboard ? 'medium' : 'subtle';
 
-  // Simple financial icons (no text)
-  const financialIcons = ['💎', '💰', '🏦', '💼', '🎯', '⚡', '🔥', '⭐', '🌟', '💫', '✨', '🎪'];
+  // Stock market focused symbols
+  const stockSymbols = ['$', '€', '₿', '💎', '📈', '📊', '💰', '🏆', '⚡', '🔥', '💵', '💎', '📈', '💰', '⚡', '🔥', '💎', '📊'];
+  
+  // Money-making focused icons
+  const financialIcons = ['💸', '💳', '🏦', '💼', '🎯', '⭐', '🌟', '💫', '✨', '🎪', '🚀', '💎'];
+
+  // Stock market indices
+  const marketIndices = ['📊', '📈', '💹', '📉', '💹', '📊', '📈', '📉'];
 
   // Theme-aware bubble gradients
   const bubbleGradients = theme === 'light' ? [
@@ -90,11 +100,22 @@ export default function AnimatedBackground() {
         }}
       />
 
-      {/* Crystal Clear Bubbles with Game-like Presence */}
-      {[...Array(30)].map((_, i) => {
+      {/* Stock Market Bubbles with Intensity Control */}
+      {[...Array(intensity === 'full' ? 40 : intensity === 'medium' ? 25 : 15)].map((_, i) => {
         const bubbleType = bubbleGradients[i % bubbleGradients.length];
         const pos = positions[`bubble-${i}`];
         if (!pos) return null;
+        
+        const size = intensity === 'full' ? `${3 + (i % 5)}rem` : 
+                    intensity === 'medium' ? `${2.5 + (i % 4)}rem` : 
+                    `${2 + (i % 3)}rem`;
+        
+        const opacity = intensity === 'full' ? 0.9 : 
+                       intensity === 'medium' ? 0.7 : 0.5;
+        
+        const animationSpeed = intensity === 'full' ? `${6 + (i % 3) * 2}s` :
+                              intensity === 'medium' ? `${8 + (i % 2) * 3}s` :
+                              `${12 + i * 2}s`;
         
         return (
           <div
@@ -103,77 +124,96 @@ export default function AnimatedBackground() {
             style={{
               left: `${pos.left}%`,
               top: `${pos.top}%`,
-              width: `${4 + (i % 4)}rem`, // 4rem, 5rem, 6rem, 7rem
-              height: `${4 + (i % 4)}rem`,
-              animationDelay: `${i * 0.3}s`,
-              animationDuration: `${6 + (i % 3) * 2}s`,
+              width: size,
+              height: size,
+              animationDelay: `${i * 0.4}s`,
+              animationDuration: animationSpeed,
               filter: 'blur(0px)',
-              opacity: 0.9,
+              opacity: opacity,
               boxShadow: `
-                0 8px 32px rgba(0, 0, 0, 0.3),
-                0 4px 16px rgba(0, 0, 0, 0.2),
+                0 8px 32px rgba(0, 0, 0, ${intensity === 'full' ? 0.3 : intensity === 'medium' ? 0.2 : 0.1}),
+                0 4px 16px rgba(0, 0, 0, ${intensity === 'full' ? 0.2 : intensity === 'medium' ? 0.15 : 0.08}),
                 inset 0 2px 4px rgba(255, 255, 255, 0.3),
                 inset 0 -2px 4px rgba(0, 0, 0, 0.1)
               `,
-              border: '2px solid rgba(255, 255, 255, 0.4)',
+              border: `2px solid rgba(255, 255, 255, ${intensity === 'full' ? 0.4 : intensity === 'medium' ? 0.3 : 0.2})`,
               backdropFilter: 'blur(2px)'
             }}
           />
         );
       })}
 
-      {/* Game-like Stock Direction Indicators */}
-      {stockSymbols.map((direction, i) => {
+      {/* Stock Market Symbols with Intensity Control */}
+      {(intensity === 'full' ? stockSymbols : intensity === 'medium' ? stockSymbols.slice(0, 12) : stockSymbols.slice(0, 8)).map((symbol, i) => {
         const pos = positions[`stock-${i}`];
         if (!pos) return null;
         
-        const isUp = direction === '↗️';
-        const bgColor = isUp 
+        const isMoneySymbol = symbol === '$' || symbol === '€' || symbol === '₿' || symbol === '💎' || symbol === '💰';
+        const bgColor = isMoneySymbol 
           ? (theme === 'light' ? 'bg-green-100/90' : 'bg-green-900/90')
-          : (theme === 'light' ? 'bg-red-100/90' : 'bg-red-900/90');
-        const borderColor = isUp 
+          : (theme === 'light' ? 'bg-blue-100/90' : 'bg-blue-900/90');
+        const borderColor = isMoneySymbol 
           ? (theme === 'light' ? 'border-green-400' : 'border-green-500')
-          : (theme === 'light' ? 'border-red-400' : 'border-red-500');
+          : (theme === 'light' ? 'border-blue-400' : 'border-blue-500');
+        
+        const size = intensity === 'full' ? 'w-12 h-12' : 
+                    intensity === 'medium' ? 'w-10 h-10' : 'w-8 h-8';
+        
+        const opacity = intensity === 'full' ? 0.95 : 
+                       intensity === 'medium' ? 0.8 : 0.6;
         
         return (
           <div
             key={`stock-${i}`}
-            className={`absolute ${bgColor} ${borderColor} border-2 rounded-full w-12 h-12 flex items-center justify-center text-lg font-bold ${isUp ? 'animate-stock-up' : 'animate-stock-down'} shadow-2xl backdrop-blur-sm`}
+            className={`absolute ${bgColor} ${borderColor} border-2 rounded-full ${size} flex items-center justify-center text-lg font-bold animate-float shadow-2xl backdrop-blur-sm`}
+            style={{
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              animationDelay: `${i * 0.3}s`,
+              animationDuration: `${4 + (i % 3)}s`,
+              opacity: opacity,
+              boxShadow: isMoneySymbol 
+                ? '0 4px 20px rgba(34, 197, 94, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
+                : '0 4px 20px rgba(59, 130, 246, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
+            }}
+          >
+            {symbol}
+          </div>
+        );
+      })}
+
+      {/* Money-Making Financial Icons */}
+      {(intensity === 'full' ? financialIcons : intensity === 'medium' ? financialIcons.slice(0, 8) : financialIcons.slice(0, 6)).map((icon, i) => {
+        const pos = positions[`financial-${i}`];
+        if (!pos) return null;
+        
+        const isHighValue = icon === '💎' || icon === '💰' || icon === '🚀' || icon === '💸';
+        const bgColor = isHighValue 
+          ? (theme === 'light' ? 'bg-purple-100/90' : 'bg-purple-900/90')
+          : (theme === 'light' ? 'bg-yellow-100/90' : 'bg-yellow-900/90');
+        const borderColor = isHighValue 
+          ? (theme === 'light' ? 'border-purple-400' : 'border-purple-500')
+          : (theme === 'light' ? 'border-yellow-400' : 'border-yellow-500');
+        
+        const size = intensity === 'full' ? 'w-10 h-10' : 
+                    intensity === 'medium' ? 'w-8 h-8' : 'w-6 h-6';
+        
+        const opacity = intensity === 'full' ? 0.95 : 
+                       intensity === 'medium' ? 0.8 : 0.6;
+        
+        return (
+          <div
+            key={`financial-${i}`}
+            className={`absolute ${bgColor} ${borderColor} border-2 rounded-full ${size} flex items-center justify-center text-lg animate-sparkle shadow-2xl backdrop-blur-sm`}
             style={{
               left: `${pos.left}%`,
               top: `${pos.top}%`,
               animationDelay: `${i * 0.2}s`,
               animationDuration: `${3 + (i % 2)}s`,
-              opacity: 0.95,
-              boxShadow: isUp 
-                ? '0 4px 20px rgba(34, 197, 94, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
-                : '0 4px 20px rgba(239, 68, 68, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
-            }}
-          >
-            {direction}
-          </div>
-        );
-      })}
-
-      {/* Game-like Financial Icons */}
-      {financialIcons.map((icon, i) => {
-        const pos = positions[`financial-${i}`];
-        if (!pos) return null;
-        
-        const bgColor = theme === 'light' ? 'bg-yellow-100/90' : 'bg-yellow-900/90';
-        const borderColor = theme === 'light' ? 'border-yellow-400' : 'border-yellow-500';
-        
-        return (
-          <div
-            key={`financial-${i}`}
-            className={`absolute ${bgColor} ${borderColor} border-2 rounded-full w-10 h-10 flex items-center justify-center text-lg animate-sparkle shadow-2xl backdrop-blur-sm`}
-            style={{
-              left: `${pos.left}%`,
-              top: `${pos.top}%`,
-              animationDelay: `${i * 0.15}s`,
-              animationDuration: `${3 + (i % 2)}s`,
-              opacity: 0.95,
-              boxShadow: '0 4px 20px rgba(234, 179, 8, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
+              opacity: opacity,
+              boxShadow: isHighValue 
+                ? '0 4px 20px rgba(147, 51, 234, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
+                : '0 4px 20px rgba(234, 179, 8, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
             }}
           >
             {icon}
@@ -181,34 +221,70 @@ export default function AnimatedBackground() {
         );
       })}
 
-      {/* Enhanced Market Data Streams */}
+      {/* Market Index Indicators */}
+      {(intensity === 'full' ? marketIndices : intensity === 'medium' ? marketIndices.slice(0, 6) : marketIndices.slice(0, 4)).map((index, i) => {
+        const pos = positions[`exchange-${i}`];
+        if (!pos) return null;
+        
+        const bgColor = theme === 'light' ? 'bg-emerald-100/90' : 'bg-emerald-900/90';
+        const borderColor = theme === 'light' ? 'border-emerald-400' : 'border-emerald-500';
+        
+        const size = intensity === 'full' ? 'w-8 h-8' : 
+                    intensity === 'medium' ? 'w-6 h-6' : 'w-5 h-5';
+        
+        const opacity = intensity === 'full' ? 0.9 : 
+                       intensity === 'medium' ? 0.7 : 0.5;
+        
+        return (
+          <div
+            key={`index-${i}`}
+            className={`absolute ${bgColor} ${borderColor} border-2 rounded-full ${size} flex items-center justify-center text-sm animate-float-delayed shadow-xl backdrop-blur-sm`}
+            style={{
+              left: `${pos.left}%`,
+              top: `${pos.top}%`,
+              animationDelay: `${i * 0.4}s`,
+              animationDuration: `${6 + (i % 2)}s`,
+              opacity: opacity,
+              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3), inset 0 1px 2px rgba(255, 255, 255, 0.3)'
+            }}
+          >
+            {index}
+          </div>
+        );
+      })}
+
+      {/* Market Data Streams with Intensity Control */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(intensity === 'full' ? 10 : intensity === 'medium' ? 6 : 4)].map((_, i) => (
           <div
             key={`stream-${i}`}
-            className="absolute w-2 h-24 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent animate-data-stream opacity-70"
+            className="absolute w-2 h-24 bg-gradient-to-b from-transparent via-blue-400/60 to-transparent animate-data-stream"
             style={{
               left: `${15 + i * 12}%`,
               top: `${5 + i * 12}%`,
               animationDelay: `${i * 1.5}s`,
-              animationDuration: '12s',
+              animationDuration: intensity === 'full' ? '12s' : intensity === 'medium' ? '15s' : '20s',
+              opacity: intensity === 'full' ? 0.7 : intensity === 'medium' ? 0.5 : 0.3,
               boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
             }}
           />
         ))}
       </div>
 
-      {/* Enhanced Glowing Orbs */}
+      {/* Money-Making Glowing Orbs */}
       <div className="absolute inset-0">
-        {[...Array(6)].map((_, i) => (
+        {[...Array(intensity === 'full' ? 8 : intensity === 'medium' ? 5 : 3)].map((_, i) => (
           <div
             key={`orb-${i}`}
-            className="absolute w-40 h-40 rounded-full bg-gradient-to-r from-blue-400/30 to-purple-400/30 animate-financial-glow blur-2xl"
+            className="absolute rounded-full bg-gradient-to-r from-green-400/30 to-blue-400/30 animate-financial-glow blur-2xl"
             style={{
               left: `${20 + i * 20}%`,
               top: `${15 + i * 15}%`,
               animationDelay: `${i * 2}s`,
-              animationDuration: '8s'
+              animationDuration: intensity === 'full' ? '8s' : intensity === 'medium' ? '10s' : '12s',
+              width: intensity === 'full' ? '160px' : intensity === 'medium' ? '120px' : '80px',
+              height: intensity === 'full' ? '160px' : intensity === 'medium' ? '120px' : '80px',
+              opacity: intensity === 'full' ? 0.3 : intensity === 'medium' ? 0.2 : 0.1
             }}
           />
         ))}
