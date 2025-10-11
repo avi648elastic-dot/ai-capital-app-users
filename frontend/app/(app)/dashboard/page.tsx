@@ -19,6 +19,7 @@ import DeletePortfolioModal from '@/components/DeletePortfolioModal';
 import { CardSkeleton, TableSkeleton, ChartSkeleton } from '@/components/ui/SkeletonLoader';
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
 
 interface User {
   id: string;
@@ -256,6 +257,56 @@ export default function Dashboard() {
       fetchAnalyticsData();
     }
   }, [portfolio]);
+
+  // ⚡ REAL-TIME PRICE UPDATES - MAJOR'S REQUIREMENT
+  useEffect(() => {
+    if (portfolio.length === 0) return;
+
+    const tickers = [...new Set(portfolio.map(item => item.ticker))];
+    console.log(`📊 [DASHBOARD] Starting real-time updates for ${tickers.length} stocks`);
+
+    realtimePriceService.startUpdates(tickers, (updates: PriceUpdate[]) => {
+      console.log(`📈 [DASHBOARD] Received ${updates.length} price updates`);
+      
+      setPortfolio(prevPortfolio => 
+        prevPortfolio.map(item => {
+          const update = updates.find(u => u.ticker === item.ticker);
+          if (update) {
+            console.log(`💹 [DASHBOARD] Updated ${item.ticker}: $${item.currentPrice} → $${update.currentPrice}`);
+            return { ...item, currentPrice: update.currentPrice };
+          }
+          return item;
+        })
+      );
+
+      // Recalculate totals after price updates
+      const newTotals = portfolio.reduce((acc, item) => {
+        const update = updates.find(u => u.ticker === item.ticker);
+        const currentPrice = update?.currentPrice || item.currentPrice;
+        const currentValue = currentPrice * item.shares;
+        const initialValue = item.entryPrice * item.shares;
+        const pnl = currentValue - initialValue;
+        
+        return {
+          initial: acc.initial + initialValue,
+          current: acc.current + currentValue,
+          totalPnL: acc.totalPnL + pnl,
+          totalPnLPercent: 0 // Will calculate after
+        };
+      }, { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
+
+      newTotals.totalPnLPercent = newTotals.initial > 0 
+        ? (newTotals.totalPnL / newTotals.initial) * 100 
+        : 0;
+
+      setTotals(newTotals);
+    });
+
+    return () => {
+      console.log('📊 [DASHBOARD] Stopping real-time price updates');
+      realtimePriceService.stopUpdates();
+    };
+  }, [portfolio.length]);
 
   const handleAddStock = async (stockData: any) => {
     try {
