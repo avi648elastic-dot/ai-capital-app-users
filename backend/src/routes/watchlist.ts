@@ -224,6 +224,8 @@ router.patch('/:id/alert', authenticateToken, validate({ body: priceAlertSchema 
       triggeredCount: 0
     };
     
+    loggerService.info(`🔍 [WATCHLIST] Looking for item with ID: ${id}, UserID: ${userId}`);
+    
     const watchlistItem = await Watchlist.findOneAndUpdate(
       { _id: id, userId },
       { priceAlert },
@@ -231,8 +233,11 @@ router.patch('/:id/alert', authenticateToken, validate({ body: priceAlertSchema 
     );
     
     if (!watchlistItem) {
+      loggerService.warn(`❌ [WATCHLIST] Item not found - ID: ${id}, UserID: ${userId}`);
       return res.status(404).json({ error: 'Watchlist item not found' });
     }
+    
+    loggerService.info(`✅ [WATCHLIST] Item found and updated: ${watchlistItem.ticker}`);
     
     loggerService.info(`✅ [WATCHLIST] Set price alert for ${watchlistItem.ticker}`, { 
       type, 

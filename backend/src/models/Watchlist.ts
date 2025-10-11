@@ -33,15 +33,11 @@ const PriceAlertSchema = new Schema({
   },
   highPrice: {
     type: Number,
-    required: function() {
-      return this.type === 'high' || this.type === 'both';
-    }
+    default: undefined
   },
   lowPrice: {
     type: Number,
-    required: function() {
-      return this.type === 'low' || this.type === 'both';
-    }
+    default: undefined
   },
   enabled: {
     type: Boolean,
