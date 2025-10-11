@@ -2,6 +2,14 @@ import express from 'express';
 import Watchlist, { IWatchlistItem, IPriceAlert } from '../models/Watchlist';
 import User from '../models/User';
 import { authenticateToken } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { 
+  addWatchlistStockSchema, 
+  updateNotificationsSchema, 
+  priceAlertSchema,
+  toggleAlertSchema,
+  watchlistQuerySchema
+} from '../schemas/watchlist';
 import { loggerService } from '../services/loggerService';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 
@@ -74,17 +82,12 @@ router.get('/', authenticateToken, async (req, res) => {
 });
 
 // Add stock to watchlist
-router.post('/add', authenticateToken, async (req, res) => {
+router.post('/add', authenticateToken, validate({ body: addWatchlistStockSchema }), async (req, res) => {
   try {
     const userId = (req as any).user._id || (req as any).user.id;
-    const { ticker, name, priceAlert } = req.body;
+    const { ticker, name, notifications } = req.body;
     
     loggerService.info(`📊 [WATCHLIST] Add stock request`, { userId, ticker, name });
-    
-    if (!ticker) {
-      loggerService.warn(`⚠️ [WATCHLIST] Ticker required`);
-      return res.status(400).json({ error: 'Ticker is required' });
-    }
     
     // Check if already exists
     const existing = await Watchlist.findOne({ userId, ticker: ticker.toUpperCase() });
@@ -117,8 +120,8 @@ router.post('/add', authenticateToken, async (req, res) => {
       userId,
       ticker: ticker.toUpperCase(),
       name: name || ticker.toUpperCase(),
-      notifications: true,
-      priceAlert: priceAlert || null,
+      notifications: notifications !== undefined ? notifications : true,
+      priceAlert: null, // Price alerts are set separately via PATCH /alert
       lastPrice: currentPrice,
       lastChecked: new Date()
     });
@@ -170,11 +173,12 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // Toggle notifications for a stock
-router.patch('/:id/notifications', authenticateToken, async (req, res) => {
+router.patch('/:id/notifications', authenticateToken, validate({ body: updateNotificationsSchema }), async (req, res) => {
   try {
     const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
-    const { notifications } = req.body;
+    const { enabled } = req.body;
+    const notifications = enabled;
     
     const watchlistItem = await Watchlist.findOneAndUpdate(
       { _id: id, userId },
@@ -199,28 +203,11 @@ router.patch('/:id/notifications', authenticateToken, async (req, res) => {
 });
 
 // Set price alert for a stock
-router.patch('/:id/alert', authenticateToken, async (req, res) => {
+router.patch('/:id/alert', authenticateToken, validate({ body: priceAlertSchema }), async (req, res) => {
   try {
     const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
     const { type, highPrice, lowPrice, enabled } = req.body;
-    
-    // Validate price alert
-    if (!type || !['high', 'low', 'both'].includes(type)) {
-      return res.status(400).json({ error: 'Invalid alert type. Must be "high", "low", or "both"' });
-    }
-    
-    if ((type === 'high' || type === 'both') && (!highPrice || highPrice <= 0)) {
-      return res.status(400).json({ error: 'High price must be greater than 0' });
-    }
-    
-    if ((type === 'low' || type === 'both') && (!lowPrice || lowPrice <= 0)) {
-      return res.status(400).json({ error: 'Low price must be greater than 0' });
-    }
-    
-    if (type === 'both' && highPrice && lowPrice && lowPrice >= highPrice) {
-      return res.status(400).json({ error: 'Low price must be less than high price' });
-    }
     
     const priceAlert: IPriceAlert = {
       type,

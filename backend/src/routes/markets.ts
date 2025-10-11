@@ -1,17 +1,16 @@
 import express from 'express';
 import { authenticateToken } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { featuredTickersSchema } from '../schemas/markets';
 import User from '../models/User';
 
 const router = express.Router();
 
 // Save featured tickers for premium users
-router.post('/featured', authenticateToken, async (req: any, res) => {
+router.post('/featured', authenticateToken, validate({ body: featuredTickersSchema }), async (req: any, res) => {
   try {
-    const { featuredTickers } = req.body as { featuredTickers: string[] };
-    if (!Array.isArray(featuredTickers) || featuredTickers.length !== 4) {
-      return res.status(400).json({ message: 'Provide exactly 4 tickers' });
-    }
-    const normalized = featuredTickers.map((t) => String(t).trim().toUpperCase());
+    const { featuredTickers } = req.body;
+    const normalized = featuredTickers.map((t: string) => t.trim().toUpperCase());
 
     // Require premium
     if (req.user?.subscriptionTier !== 'premium') {
