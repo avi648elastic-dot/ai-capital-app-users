@@ -7,6 +7,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext'
 import { TourProvider } from '@/contexts/TourContext'
 import TourOverlay from '@/components/TourOverlay'
 import ThemeApplier from '@/components/ThemeApplier'
+import AnimatedBackground from '@/components/AnimatedBackground'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -31,8 +32,12 @@ export default function RootLayout({
           <LanguageProvider>
             <TourProvider>
               <ThemeApplier />
-              <div className="min-h-screen transition-colors duration-300 bg-slate-950 text-slate-100 [data-theme='light']:bg-white [data-theme='light']:text-gray-900">
-                {children}
+              <div className="min-h-screen transition-colors duration-300 bg-slate-950 text-slate-100 [data-theme='light']:bg-white [data-theme='light']:text-gray-900 relative">
+                {/* Global Animated Background - appears on all pages */}
+                <AnimatedBackground intensity="medium" />
+                <div className="relative z-10">
+                  {children}
+                </div>
                 {/* Tour Overlay */}
                 <TourOverlay />
                 {/* Build/version footer for deployment verification */}
