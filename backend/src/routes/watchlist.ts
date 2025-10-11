@@ -1,5 +1,6 @@
 import express from 'express';
 import Watchlist, { IWatchlistItem, IPriceAlert } from '../models/Watchlist';
+import User from '../models/User';
 import { authenticateToken } from '../middleware/auth';
 import { loggerService } from '../services/loggerService';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
@@ -9,7 +10,9 @@ const router = express.Router();
 // Get user's watchlist
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user._id || (req as any).user.id;
+    
+    loggerService.info(`📊 [WATCHLIST] Fetching watchlist for user ${userId}`);
     
     const watchlist = await Watchlist.find({ userId }).sort({ addedAt: -1 });
     
@@ -66,10 +69,13 @@ router.get('/', authenticateToken, async (req, res) => {
 // Add stock to watchlist
 router.post('/add', authenticateToken, async (req, res) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user._id || (req as any).user.id;
     const { ticker, name, priceAlert } = req.body;
     
+    loggerService.info(`📊 [WATCHLIST] Add stock request`, { userId, ticker, name });
+    
     if (!ticker) {
+      loggerService.warn(`⚠️ [WATCHLIST] Ticker required`);
       return res.status(400).json({ error: 'Ticker is required' });
     }
     
@@ -80,13 +86,13 @@ router.post('/add', authenticateToken, async (req, res) => {
     }
     
     // Check subscription limits
-    const user = (req as any).user;
+    const userData = await User.findById(userId);
     const watchlistCount = await Watchlist.countDocuments({ userId });
-    const maxStocks = user.subscriptionTier === 'premium' || user.subscriptionTier === 'premium+' ? 20 : 5;
+    const maxStocks = userData?.subscriptionTier === 'premium' || userData?.subscriptionTier === 'premium+' ? 20 : 5;
     
     if (watchlistCount >= maxStocks) {
       return res.status(403).json({ 
-        error: `You've reached your limit of ${maxStocks} stocks. ${user.subscriptionTier === 'free' ? 'Upgrade to Premium+ for up to 20 stocks.' : ''}` 
+        error: `You've reached your limit of ${maxStocks} stocks. ${userData?.subscriptionTier === 'free' ? 'Upgrade to Premium+ for up to 20 stocks.' : ''}` 
       });
     }
     
@@ -135,7 +141,7 @@ router.post('/add', authenticateToken, async (req, res) => {
 // Remove stock from watchlist
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
     
     const watchlistItem = await Watchlist.findOneAndDelete({ 
@@ -159,7 +165,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 // Toggle notifications for a stock
 router.patch('/:id/notifications', authenticateToken, async (req, res) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
     const { notifications } = req.body;
     
@@ -188,7 +194,7 @@ router.patch('/:id/notifications', authenticateToken, async (req, res) => {
 // Set price alert for a stock
 router.patch('/:id/alert', authenticateToken, async (req, res) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
     const { type, highPrice, lowPrice, enabled } = req.body;
     
@@ -246,7 +252,7 @@ router.patch('/:id/alert', authenticateToken, async (req, res) => {
 // Remove price alert for a stock
 router.delete('/:id/alert', authenticateToken, async (req, res) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
     
     const watchlistItem = await Watchlist.findOneAndUpdate(
@@ -271,7 +277,7 @@ router.delete('/:id/alert', authenticateToken, async (req, res) => {
 // Toggle price alert enabled/disabled
 router.patch('/:id/alert/toggle', authenticateToken, async (req, res) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
     
     const watchlistItem = await Watchlist.findOne({ _id: id, userId });
