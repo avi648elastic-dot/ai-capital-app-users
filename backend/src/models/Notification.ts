@@ -21,6 +21,7 @@ export interface INotification extends Document {
     dashboard: boolean;
     popup: boolean;
     email: boolean;
+    push: boolean;
   };
   
   // Status tracking
@@ -29,6 +30,8 @@ export interface INotification extends Document {
     dashboard: 'pending' | 'delivered' | 'read' | 'failed';
     popup: 'pending' | 'delivered' | 'dismissed' | 'failed';
     email: 'pending' | 'sent' | 'delivered' | 'failed';
+    push: 'pending' | 'sent' | 'delivered' | 'failed';
+    pushDetails?: any;
   };
   
   // Timestamps
@@ -92,6 +95,10 @@ const NotificationSchema = new Schema<INotification>({
     email: {
       type: Boolean,
       default: false
+    },
+    push: {
+      type: Boolean,
+      default: false
     }
   },
   status: {
@@ -114,7 +121,13 @@ const NotificationSchema = new Schema<INotification>({
       type: String,
       enum: ['pending', 'sent', 'delivered', 'failed'],
       default: 'pending'
-    }
+    },
+    push: {
+      type: String,
+      enum: ['pending', 'sent', 'delivered', 'failed'],
+      default: 'pending'
+    },
+    pushDetails: Schema.Types.Mixed
   },
   scheduledFor: Date,
   expiresAt: Date,

@@ -296,7 +296,7 @@ class NotificationService {
         badge: '/logo.png',
         tag: `aicapital-${notification.category}`,
         data: {
-          notificationId: notification._id.toString(),
+          notificationId: (notification._id as any).toString(),
           type: notification.type,
           category: notification.category,
           priority: notification.priority,
