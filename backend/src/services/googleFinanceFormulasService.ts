@@ -34,8 +34,10 @@ class GoogleFinanceFormulasService {
   private keyLastUsed: Map<string, number> = new Map();
   private keyBlacklist: Set<string> = new Set(); // Temporarily blacklist failed keys
   
-  private finnhubApiKey: string;
-  private fmpApiKey: string;
+  private finnhubApiKeys: string[];
+  private currentFinnhubIndex: number;
+  private fmpApiKeys: string[];
+  private currentFmpIndex: number;
   
   // 📊 LRU Cache with 10 minute TTL (as requested by user)
   private cache: LRUCache<string, StockMetrics>;
@@ -54,8 +56,19 @@ class GoogleFinanceFormulasService {
       process.env.ALPHA_VANTAGE_API_KEY_4 || 'WR0EI5H42PWWAUJ0'
     ].filter(key => key && key !== 'demo'); // Remove any invalid keys
     
-    this.finnhubApiKey = process.env.FINNHUB_API_KEY || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g';
-    this.fmpApiKey = process.env.FMP_API_KEY || 'DPQXLdd8vdBNFA1tl5HWXt8Fd7D0Lw6G';
+    // Multiple Finnhub keys for rotation
+    this.finnhubApiKeys = [
+      process.env.FINNHUB_API_KEY_1 || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g',
+      process.env.FINNHUB_API_KEY_2 || 'd3l2ggpr01qp3ucq6850d3l2ggpr01qp3ucq685g'
+    ];
+    this.currentFinnhubIndex = 0;
+    
+    // Multiple FMP keys for rotation  
+    this.fmpApiKeys = [
+      process.env.FMP_API_KEY_1 || 'DPQXLdd8vdBNFA1tl5HWXt8Fd7D0Lw6G',
+      process.env.FMP_API_KEY_2 || 'dly9ZAPDVSkLZ9173zNLPuTIfDpKDtFi'
+    ];
+    this.currentFmpIndex = 0;
     
     // Initialize LRU Cache with 10 minute TTL
     this.cache = new LRUCache<string, StockMetrics>({
@@ -148,6 +161,24 @@ class GoogleFinanceFormulasService {
     this.keyBlacklist.add(key);
     this.keyLastUsed.set(key, Date.now());
     loggerService.warn(`🚫 [API KEYS] Blacklisted key ${key.substring(0, 8)}... for ${this.BLACKLIST_DURATION / 1000}s: ${reason}`);
+  }
+
+  /**
+   * 🔄 Get next Finnhub API key
+   */
+  private getNextFinnhubKey(): string {
+    const key = this.finnhubApiKeys[this.currentFinnhubIndex];
+    this.currentFinnhubIndex = (this.currentFinnhubIndex + 1) % this.finnhubApiKeys.length;
+    return key;
+  }
+
+  /**
+   * 🔄 Get next FMP API key
+   */
+  private getNextFmpKey(): string {
+    const key = this.fmpApiKeys[this.currentFmpIndex];
+    this.currentFmpIndex = (this.currentFmpIndex + 1) % this.fmpApiKeys.length;
+    return key;
   }
 
   /**
@@ -319,10 +350,14 @@ class GoogleFinanceFormulasService {
   }
 
   /**
-   * 📊 Fetch from Finnhub (Fallback 1)
+   * 📊 Fetch from Finnhub (Fallback 1) - with key rotation
    */
   private async fetchFromFinnhub(symbol: string): Promise<StockMetrics | null> {
+    const apiKey = this.getNextFinnhubKey();
+    
     try {
+      loggerService.info(`🔍 [FINNHUB] Fetching ${symbol} with key ${apiKey.substring(0, 8)}...`);
+      
       // Get current time and 90 days ago
       const endDate = Math.floor(Date.now() / 1000);
       const startDate = endDate - (this.DAYS_TO_FETCH * 24 * 60 * 60);
@@ -333,7 +368,7 @@ class GoogleFinanceFormulasService {
           resolution: 'D', // Daily data
           from: startDate,
           to: endDate,
-          token: this.finnhubApiKey
+          token: apiKey
         },
         timeout: 10000
       });
@@ -365,13 +400,17 @@ class GoogleFinanceFormulasService {
   }
 
   /**
-   * 📊 Fetch from FMP (Fallback 2)
+   * 📊 Fetch from FMP (Fallback 2) - with key rotation
    */
   private async fetchFromFMP(symbol: string): Promise<StockMetrics | null> {
+    const apiKey = this.getNextFmpKey();
+    
     try {
+      loggerService.info(`🔍 [FMP] Fetching ${symbol} with key ${apiKey.substring(0, 8)}...`);
+      
       const response = await axios.get(`https://financialmodelingprep.com/api/v3/historical-price-full/${symbol}`, {
         params: {
-          apikey: this.fmpApiKey
+          apikey: apiKey
         },
         timeout: 10000
       });

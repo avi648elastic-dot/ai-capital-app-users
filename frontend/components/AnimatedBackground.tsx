@@ -50,7 +50,7 @@ export default function AnimatedBackground() {
   }
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-10">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {/* Circuit Board Pattern */}
       <div 
         className="absolute inset-0 opacity-10"
@@ -68,14 +68,14 @@ export default function AnimatedBackground() {
         const pos = positions[symbol];
         if (!pos) return null;
         
-        const bgColor = theme === 'light' ? 'bg-white/70' : 'bg-slate-800/50';
-        const textColor = theme === 'light' ? 'text-slate-700/80' : 'text-slate-400/80';
-        const borderColor = theme === 'light' ? 'border-blue-400/50' : 'border-blue-500/50';
+        const bgColor = theme === 'light' ? 'bg-white/90' : 'bg-slate-800/80';
+        const textColor = theme === 'light' ? 'text-slate-800' : 'text-slate-200';
+        const borderColor = theme === 'light' ? 'border-blue-500/70' : 'border-blue-400/70';
         
         return (
           <div
             key={symbol}
-            className={`absolute text-xs font-mono ${textColor} opacity-70 animate-float-enhanced ${bgColor} px-2 py-1 rounded backdrop-blur-sm border ${borderColor} shadow-lg`}
+            className={`absolute text-xs font-mono ${textColor} opacity-90 animate-float-enhanced ${bgColor} px-2 py-1 rounded backdrop-blur-sm border ${borderColor} shadow-lg`}
             style={{
               left: `${pos.left}%`,
               top: `${pos.top}%`,
@@ -226,17 +226,17 @@ export default function AnimatedBackground() {
       {/* Animated Bubbles - SMALL AND CLEAR */}
       {[...Array(25)].map((_, i) => {
         const bubbleTypes = theme === 'light' ? [
-          'bg-gradient-to-r from-blue-400/30 to-cyan-400/20',
-          'bg-gradient-to-r from-purple-400/30 to-pink-400/20', 
-          'bg-gradient-to-r from-emerald-400/30 to-green-400/20',
-          'bg-gradient-to-r from-orange-400/30 to-red-400/20',
-          'bg-gradient-to-r from-indigo-400/30 to-blue-400/20'
+          'bg-gradient-to-r from-blue-500/60 to-cyan-500/40',
+          'bg-gradient-to-r from-purple-500/60 to-pink-500/40', 
+          'bg-gradient-to-r from-emerald-500/60 to-green-500/40',
+          'bg-gradient-to-r from-orange-500/60 to-red-500/40',
+          'bg-gradient-to-r from-indigo-500/60 to-blue-500/40'
         ] : [
-          'bg-gradient-to-r from-blue-500/40 to-cyan-500/30',
-          'bg-gradient-to-r from-purple-500/40 to-pink-500/30', 
-          'bg-gradient-to-r from-emerald-500/40 to-green-500/30',
-          'bg-gradient-to-r from-orange-500/40 to-red-500/30',
-          'bg-gradient-to-r from-indigo-500/40 to-blue-500/30'
+          'bg-gradient-to-r from-blue-500/60 to-cyan-500/40',
+          'bg-gradient-to-r from-purple-500/60 to-pink-500/40', 
+          'bg-gradient-to-r from-emerald-500/60 to-green-500/40',
+          'bg-gradient-to-r from-orange-500/60 to-red-500/40',
+          'bg-gradient-to-r from-indigo-500/60 to-blue-500/40'
         ];
         const bubbleType = bubbleTypes[i % bubbleTypes.length];
         const pos = positions[`bubble-${i}`];
@@ -245,16 +245,17 @@ export default function AnimatedBackground() {
         return (
           <div
             key={i}
-            className={`absolute rounded-full ${bubbleType} animate-bubble shadow-lg`}
+            className={`absolute rounded-full ${bubbleType} animate-bubble shadow-lg border border-white/20`}
             style={{
               left: `${pos.left}%`,
               top: `${pos.top}%`,
-              width: `${2 + (i % 3)}rem`, // Consistent sizes: 2rem, 3rem, 4rem
-              height: `${2 + (i % 3)}rem`,
-              animationDelay: `${i * 0.8}s`,
-              animationDuration: `${12 + (i % 4) * 2}s`,
-              filter: 'blur(0.3px)', // Very sharp
-              zIndex: 1
+              width: `${3 + (i % 3)}rem`, // Larger sizes: 3rem, 4rem, 5rem
+              height: `${3 + (i % 3)}rem`,
+              animationDelay: `${i * 0.5}s`,
+              animationDuration: `${8 + (i % 4) * 2}s`, // Faster animation
+              filter: 'blur(0px)', // No blur for maximum visibility
+              zIndex: 1,
+              opacity: 0.8 // Higher opacity
             }}
           />
         );
