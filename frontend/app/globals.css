@@ -261,6 +261,21 @@
   }
 }
 
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-toast-slide-in {
+  animation: toast-slide-in 0.3s ease-out;
+}
+
 /* New Financial Trend Animations */
 @keyframes trendPulse {
   0% { 
