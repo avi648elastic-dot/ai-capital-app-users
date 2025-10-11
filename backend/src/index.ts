@@ -25,7 +25,9 @@ import performanceRoutes from './routes/performance';
 import subscriptionRoutes from './routes/subscription';
 import userRoutes from './routes/user';
 import notificationRoutes from './routes/notifications';
+import watchlistRoutes from './routes/watchlist';
 import { schedulerService } from './services/schedulerService';
+import { watchlistMonitorService } from './services/watchlistMonitorService';
 
 // Load environment variables
 dotenv.config();
@@ -149,6 +151,7 @@ app.use('/api/performance', performanceRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/watchlist', watchlistRoutes);
 
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {
@@ -652,6 +655,10 @@ const startServer = async () => {
       
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      
+      // Start watchlist monitoring service
+      watchlistMonitorService.startMonitoring();
+      loggerService.info('✅ [WATCHLIST MONITOR] Service initialized');
     });
 
     // Handle server errors

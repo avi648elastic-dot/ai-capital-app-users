@@ -6,6 +6,39 @@ import { loggerService } from '../services/loggerService';
 const router = express.Router();
 
 /**
+ * Get current stock price
+ * GET /api/stocks/price/:symbol
+ */
+router.get('/price/:symbol', async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    
+    const metrics = await googleFinanceFormulasService.getStockMetrics(symbol);
+    
+    if (metrics) {
+      res.json({
+        success: true,
+        symbol: metrics.symbol,
+        price: metrics.current,
+        dataSource: metrics.dataSource,
+        timestamp: new Date(metrics.timestamp).toISOString()
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: `No price found for ${symbol}`
+      });
+    }
+  } catch (error) {
+    loggerService.error(`❌ [STOCKS] Error fetching price`, { error: error instanceof Error ? error.message : 'Unknown error' });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
  * 🧪 TEST ENDPOINT: Get stock metrics
  * GET /api/stocks/test-metrics/:symbol
  * 
