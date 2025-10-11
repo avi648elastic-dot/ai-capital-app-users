@@ -134,18 +134,39 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
+      const portfolioValue = data.value;
+      const totalCost = data.cost;
+      const pnl = data.pnl;
+      const pnlPercent = totalCost > 0 ? ((portfolioValue - totalCost) / totalCost) * 100 : 0;
+      
       return (
-        <div className="bg-slate-800 border border-slate-700 rounded-lg p-4 shadow-xl">
-          <p className="text-white font-semibold mb-2">{`Date: ${label}`}</p>
-          <div className="space-y-1">
-            <p className="text-emerald-400 font-medium">{`Portfolio Value: $${data.value?.toLocaleString() || '0'}`}</p>
-            <p className="text-blue-400">{`Total Cost: $${data.cost?.toLocaleString() || '0'}`}</p>
-            <p className={`font-semibold ${data.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {`P&L: ${data.pnl >= 0 ? '+' : ''}$${data.pnl?.toLocaleString() || '0'} (${data.pnlPercent >= 0 ? '+' : ''}${data.pnlPercent?.toFixed(2) || '0'}%)`}
-            </p>
-            {data.ticker && (
-              <p className="text-slate-300 text-sm">{`Latest: ${data.ticker}`}</p>
-            )}
+        <div className="bg-slate-900/95 backdrop-blur-sm border border-slate-600 rounded-xl p-4 shadow-2xl min-w-[200px]">
+          <div className="text-center mb-3">
+            <p className="text-white font-semibold text-sm">{label}</p>
+          </div>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300 text-xs">Portfolio Value</span>
+              <span className="text-emerald-400 font-medium text-sm">${portfolioValue?.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-300 text-xs">Total Cost</span>
+              <span className="text-blue-400 font-medium text-sm">${totalCost?.toLocaleString()}</span>
+            </div>
+            <div className="border-t border-slate-600 pt-2 mt-2">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-300 text-xs">P&L</span>
+                <span className={`font-bold text-sm ${pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {pnl >= 0 ? '+' : ''}${pnl?.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center mt-1">
+                <span className="text-slate-400 text-xs">Return</span>
+                <span className={`font-medium text-xs ${pnlPercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {pnlPercent >= 0 ? '+' : ''}{pnlPercent?.toFixed(2)}%
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       );
@@ -217,53 +238,120 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
             </div>
           </div>
         </div>
-        <div className="h-64 sm:h-80 lg:h-96">
+        <div className="h-64 sm:h-80 lg:h-96 relative">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.05}/>
+                </linearGradient>
+                <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05}/>
+                </linearGradient>
+                <linearGradient id="pnlGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4}/>
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="#374151" 
+                strokeOpacity={0.3}
+                vertical={false}
+              />
               <XAxis 
                 dataKey="date" 
-                stroke="#9ca3af"
-                fontSize={10}
-                tick={{ fill: '#9ca3af' }}
+                stroke="#6b7280"
+                fontSize={11}
+                fontWeight={500}
+                tick={{ fill: '#6b7280' }}
+                axisLine={{ stroke: '#4b5563' }}
+                tickLine={{ stroke: '#4b5563' }}
               />
               <YAxis 
-                stroke="#9ca3af"
-                fontSize={10}
-                tick={{ fill: '#9ca3af' }}
+                stroke="#6b7280"
+                fontSize={11}
+                fontWeight={500}
+                tick={{ fill: '#6b7280' }}
+                axisLine={{ stroke: '#4b5563' }}
+                tickLine={{ stroke: '#4b5563' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
               />
-              <Tooltip content={<CustomTooltip />} />
-              {/* Portfolio value line */}
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke="#10b981" 
+              <Tooltip 
+                content={<CustomTooltip />}
+                cursor={{ stroke: '#6b7280', strokeWidth: 1, strokeDasharray: '5 5' }}
+              />
+              {/* Portfolio Value Area */}
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke="#10b981"
+                fill="url(#portfolioGradient)"
                 strokeWidth={3}
-                dot={{ fill: '#10b981', strokeWidth: 2, r: 5 }}
-                activeDot={{ r: 8, stroke: '#10b981', strokeWidth: 3 }}
+                dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                activeDot={{ 
+                  r: 8, 
+                  stroke: '#10b981', 
+                  strokeWidth: 3,
+                  fill: '#ffffff',
+                  filter: 'drop-shadow(0 0 6px #10b981)'
+                }}
               />
-              {/* Total cost line */}
-              <Line 
-                type="monotone" 
-                dataKey="cost" 
-                stroke="#3b82f6" 
+              {/* Total Cost Area */}
+              <Area
+                type="monotone"
+                dataKey="cost"
+                stroke="#3b82f6"
+                fill="url(#costGradient)"
                 strokeWidth={2}
-                strokeDasharray="5 5"
-                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                strokeDasharray="8 4"
+                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
+                activeDot={{ 
+                  r: 6, 
+                  stroke: '#3b82f6', 
+                  strokeWidth: 2,
+                  fill: '#ffffff',
+                  filter: 'drop-shadow(0 0 4px #3b82f6)'
+                }}
               />
-              {/* P&L area */}
+              {/* P&L Area */}
               <Area
                 type="monotone"
                 dataKey="pnl"
                 stroke="#8b5cf6"
-                fill="#8b5cf6"
-                fillOpacity={0.1}
-                strokeWidth={1}
+                fill="url(#pnlGradient)"
+                strokeWidth={2}
+                dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 3 }}
+                activeDot={{ 
+                  r: 6, 
+                  stroke: '#8b5cf6', 
+                  strokeWidth: 2,
+                  fill: '#ffffff',
+                  filter: 'drop-shadow(0 0 4px #8b5cf6)'
+                }}
               />
-            </ComposedChart>
+            </AreaChart>
           </ResponsiveContainer>
+          
+          {/* Chart overlay with performance indicators */}
+          <div className="absolute top-4 right-4 bg-black/20 backdrop-blur-sm rounded-lg p-2">
+            <div className="text-xs text-slate-300 space-y-1">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                <span>Portfolio Value</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span>Total Cost</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span>P&L</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
