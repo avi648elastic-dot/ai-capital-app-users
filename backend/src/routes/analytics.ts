@@ -190,43 +190,44 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       const portfolioData = await Promise.all(
         portfolio.map(async (stock) => {
           try {
-            const data = await googleFinanceFormulasService.getStockData(stock.ticker);
+            const data = await googleFinanceFormulasService.getStockMetrics(stock.ticker);
             return {
               ticker: stock.ticker,
               shares: stock.shares,
               entryPrice: stock.entryPrice,
-              currentPrice: data.currentPrice || stock.entryPrice,
-              priceChange: data.priceChange || 0,
-              priceChangePercent: data.priceChangePercent || 0,
-              volume: data.volume || 0,
-              marketCap: data.marketCap || 0,
-              pe: data.pe || 0,
-              pb: data.pb || 0,
-              debtToEquity: data.debtToEquity || 0,
-              roe: data.roe || 0,
-              roa: data.roa || 0,
-              grossMargin: data.grossMargin || 0,
-              operatingMargin: data.operatingMargin || 0,
-              netMargin: data.netMargin || 0,
-              revenueGrowth: data.revenueGrowth || 0,
-              earningsGrowth: data.earningsGrowth || 0,
-              dividendYield: data.dividendYield || 0,
-              beta: data.beta || 1,
-              volatility: data.volatility || 0,
-              sharpeRatio: data.sharpeRatio || 0,
-              maxDrawdown: data.maxDrawdown || 0,
-              rsi: data.rsi || 50,
-              macd: data.macd || 0,
-              sma20: data.sma20 || stock.entryPrice,
-              sma50: data.sma50 || stock.entryPrice,
-              sma200: data.sma200 || stock.entryPrice,
-              top30D: data.top30D || stock.entryPrice,
-              top60D: data.top60D || stock.entryPrice,
-              top90D: data.top90D || stock.entryPrice,
-              low30D: data.low30D || stock.entryPrice,
-              low60D: data.low60D || stock.entryPrice,
-              low90D: data.low90D || stock.entryPrice,
-              lastUpdated: new Date().toISOString()
+              currentPrice: data?.current || stock.entryPrice,
+              priceChange: data ? (data.current - stock.entryPrice) : 0,
+              priceChangePercent: data ? (((data.current - stock.entryPrice) / stock.entryPrice) * 100) : 0,
+              volume: 0, // Not available in current interface
+              marketCap: data?.marketCap || 0,
+              pe: 0, // Not available in current interface
+              pb: 0, // Not available in current interface
+              debtToEquity: 0, // Not available in current interface
+              roe: 0, // Not available in current interface
+              roa: 0, // Not available in current interface
+              grossMargin: 0, // Not available in current interface
+              operatingMargin: 0, // Not available in current interface
+              netMargin: 0, // Not available in current interface
+              revenueGrowth: 0, // Not available in current interface
+              earningsGrowth: 0, // Not available in current interface
+              dividendYield: 0, // Not available in current interface
+              beta: 1, // Not available in current interface
+              volatility: data?.volatility || 0,
+              sharpeRatio: 0, // Not available in current interface
+              maxDrawdown: 0, // Not available in current interface
+              rsi: 50, // Not available in current interface
+              macd: 0, // Not available in current interface
+              sma20: stock.entryPrice, // Not available in current interface
+              sma50: stock.entryPrice, // Not available in current interface
+              sma200: stock.entryPrice, // Not available in current interface
+              top30D: data?.top30D || stock.entryPrice,
+              top60D: data?.top60D || stock.entryPrice,
+              top90D: stock.entryPrice, // Not available in current interface
+              low30D: stock.entryPrice, // Not available in current interface
+              low60D: stock.entryPrice, // Not available in current interface
+              low90D: stock.entryPrice, // Not available in current interface
+              lastUpdated: data ? new Date(data.timestamp).toISOString() : new Date().toISOString(),
+              dataSource: data?.dataSource || 'unknown'
             };
           } catch (error) {
             console.error(`❌ [ANALYTICS] Failed to fetch data for ${stock.ticker}:`, error);
