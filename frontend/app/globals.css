@@ -22,33 +22,186 @@
   }
 }
 
-/* Basic animations */
+/* Beautiful Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-20px); }
 }
 
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(180deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-10px) scale(1.1); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
+  50% { opacity: 0.8; transform: scale(1.2) rotate(180deg); }
+}
+
+@keyframes data-stream {
+  0% { transform: translateX(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes financial-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3); }
+}
+
+@keyframes chart-pulse {
+  0%, 100% { stroke-opacity: 0.6; }
+  50% { stroke-opacity: 1; }
+}
+
+@keyframes tourPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
 @keyframes bubble {
   0% { 
     transform: translateY(0px) scale(0.8) translateX(0px); 
-    opacity: 0.6;
+    opacity: 0.8;
+  }
+  25% { 
+    transform: translateY(-15px) scale(1) translateX(5px); 
+    opacity: 1;
   }
   50% { 
-    transform: translateY(-20px) scale(1) translateX(10px); 
+    transform: translateY(-25px) scale(1.1) translateX(-5px); 
     opacity: 0.9;
+  }
+  75% { 
+    transform: translateY(-15px) scale(0.9) translateX(3px); 
+    opacity: 1;
   }
   100% { 
     transform: translateY(0px) scale(0.8) translateX(0px); 
-    opacity: 0.6;
+    opacity: 0.8;
   }
 }
 
+@keyframes bubble-drift {
+  0% { 
+    transform: translateY(0px) translateX(0px) scale(1); 
+    opacity: 0.7;
+  }
+  25% { 
+    transform: translateY(-10px) translateX(8px) scale(1.05); 
+    opacity: 0.9;
+  }
+  50% { 
+    transform: translateY(-20px) translateX(-5px) scale(0.95); 
+    opacity: 1;
+  }
+  75% { 
+    transform: translateY(-10px) translateX(-8px) scale(1.02); 
+    opacity: 0.8;
+  }
+  100% { 
+    transform: translateY(0px) translateX(0px) scale(1); 
+    opacity: 0.7;
+  }
+}
+
+@keyframes ticker {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes tourFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Animation Classes */
 .animate-bubble {
   animation: bubble 8s ease-in-out infinite;
 }
 
+.animate-bubble-drift {
+  animation: bubble-drift 12s ease-in-out infinite;
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 10s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 4s ease-in-out infinite;
+}
+
+.animate-data-stream {
+  animation: data-stream 15s linear infinite;
+}
+
+.animate-financial-glow {
+  animation: financial-glow 3s ease-in-out infinite;
+}
+
+.animate-chart-pulse {
+  animation: chart-pulse 2s ease-in-out infinite;
+}
+
+.animate-tour-pulse {
+  animation: tourPulse 2s ease-in-out infinite;
+}
+
+.animate-ticker {
+  animation: ticker 20s linear infinite;
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+}
+
+.animate-gradient-shift {
+  animation: gradientShift 3s ease infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+.animate-tour-fade-in {
+  animation: tourFadeIn 0.5s ease-out;
 }
 
 /* Theme Support */
@@ -62,4 +215,13 @@
 
 [data-theme='light'] .input-field {
   @apply bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500;
+}
+
+[data-theme='light'] .text-slate-100, 
+[data-theme='light'] .text-white {
+  text-shadow: none;
+}
+
+[data-theme='light'] .text-slate-200 {
+  text-shadow: none;
 }
