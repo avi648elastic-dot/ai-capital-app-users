@@ -37,11 +37,11 @@ export default function MarketOverview() {
   const pct = (n?: number) => (n == null ? '' : `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`);
 
   return (
-    <div className="card p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/80">
+    <div className="card p-6 bg-gradient-to-br from-slate-900/80 to-slate-800/80 [data-theme='light']:from-white [data-theme='light']:to-gray-50 [data-theme='light']:border-gray-200">
       <div className="flex flex-col mb-6 space-y-3">
-        <h3 className="text-2xl font-bold text-white tracking-wide">Markets Overview</h3>
+        <h3 className="text-2xl font-bold text-white tracking-wide [data-theme='light']:text-gray-900">Markets Overview</h3>
         <div className="flex items-center space-x-3">
-          {data?.updatedAt && <span className="text-sm text-slate-400">Updated {new Date(data.updatedAt).toLocaleTimeString()}</span>}
+          {data?.updatedAt && <span className="text-sm text-slate-400 [data-theme='light']:text-gray-600">Updated {new Date(data.updatedAt).toLocaleTimeString()}</span>}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
@@ -52,16 +52,16 @@ export default function MarketOverview() {
         ].map(({ symbol, name }) => {
           const item = data!.indexes[symbol];
           return (
-            <div key={symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">
+            <div key={symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner [data-theme='light']:bg-white [data-theme='light']:border-gray-200 [data-theme='light']:shadow-sm">
               <div className="flex flex-col">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <div className="text-slate-300 text-lg font-medium">{symbol}</div>
-                    <div className="text-slate-400 text-sm">{name}</div>
+                    <div className="text-slate-300 text-lg font-medium [data-theme='light']:text-gray-900">{symbol}</div>
+                    <div className="text-slate-400 text-sm [data-theme='light']:text-gray-600">{name}</div>
                   </div>
-                  <span className={`text-sm px-2 py-1 rounded-full ${item?.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(item?.thisMonthPercent)}</span>
+                  <span className={`text-sm px-2 py-1 rounded-full ${item?.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300 [data-theme="light"]:bg-emerald-100 [data-theme="light"]:text-emerald-700' : 'bg-red-900/40 text-red-300 [data-theme="light"]:bg-red-100 [data-theme="light"]:text-red-700'}`}>{pct(item?.thisMonthPercent)}</span>
                 </div>
-                <div className="text-white text-xl font-bold">{fmt(item?.price)}</div>
+                <div className="text-white text-xl font-bold [data-theme='light']:text-gray-900">{fmt(item?.price)}</div>
               </div>
             </div>
           );
@@ -86,15 +86,15 @@ export default function MarketOverview() {
           };
           
           return (
-            <div key={f.symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner">
+            <div key={f.symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner [data-theme='light']:bg-white [data-theme='light']:border-gray-200 [data-theme='light']:shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-slate-300 text-base font-medium">{f.symbol}</div>
-                  <div className="text-slate-400 text-sm">{getCompanyName(f.symbol)}</div>
+                  <div className="text-slate-300 text-base font-medium [data-theme='light']:text-gray-900">{f.symbol}</div>
+                  <div className="text-slate-400 text-sm [data-theme='light']:text-gray-600">{getCompanyName(f.symbol)}</div>
                 </div>
-                <span className={`text-sm px-2 py-1 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300' : 'bg-red-900/40 text-red-300'}`}>{pct(f.thisMonthPercent)}</span>
+                <span className={`text-sm px-2 py-1 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300 [data-theme="light"]:bg-emerald-100 [data-theme="light"]:text-emerald-700' : 'bg-red-900/40 text-red-300 [data-theme="light"]:bg-red-100 [data-theme="light"]:text-red-700'}`}>{pct(f.thisMonthPercent)}</span>
               </div>
-              <div className="text-white text-xl font-bold mt-2">{fmt(f.price)}</div>
+              <div className="text-white text-xl font-bold mt-2 [data-theme='light']:text-gray-900">{fmt(f.price)}</div>
             </div>
           );
         })}
