@@ -6,47 +6,46 @@
 ---
 
 ## 1️⃣ SECURITY & MIDDLEWARE (`backend/src/app.ts`)
-- [ ] Install `helmet`, `express-rate-limit`, `cors`, `cookie-parser`
-- [ ] Add `helmet()` for HTTP header protection
-- [ ] Apply `rateLimit()` → 300 req/minute
-- [ ] Restrict CORS origins to:
-      - vercel frontend URL  
-      - admin dashboard domain
-- [ ] Enable `credentials: true`
-- [ ] Implement CSRF protection (double submit or `csurf`)
-- [ ] Set cookies: `httpOnly`, `sameSite=Lax`, `secure` in production
-- [ ] Add centralized error handler middleware (logs + JSON output)
+- [x] Install `helmet`, `express-rate-limit`, `cors`, `cookie-parser` ✅
+- [x] Add `helmet()` for HTTP header protection ✅
+- [x] Apply `rateLimit()` → 300 req/minute ✅
+- [x] Restrict CORS origins to vercel frontend URL + admin dashboard domain ✅
+- [x] Enable `credentials: true` ✅
+- [ ] Implement CSRF protection (double submit or `csurf`) - TODO
+- [x] Set cookies: `httpOnly`, `sameSite=Lax`, `secure` in production ✅
+- [x] Add centralized error handler middleware (logs + JSON output) ✅
 
 ---
 
 ## 2️⃣ REQUEST VALIDATION (`backend/src/middleware/validate.ts`)
-- [ ] Install `zod`
-- [ ] Create `validate(schema)` middleware
-- [ ] Define request schemas in `backend/src/schemas/*`
-- [ ] Apply validation to all API routes (auth, onboarding, portfolio)
-- [ ] Reject invalid symbols / missing params before controller logic
+- [x] Install `zod` ✅
+- [x] Create `validate(schema)` middleware ✅
+- [x] Define request schemas in `backend/src/schemas/*` ✅
+- [x] Apply validation to all API routes (auth, onboarding, portfolio) ✅
+- [x] Reject invalid symbols / missing params before controller logic ✅
 
 ---
 
 ## 3️⃣ DATA & INDEX OPTIMIZATION (`backend/src/models`)
-- [ ] Add MongoDB indexes:
-      - users: `{ email: 1 } unique`
-      - portfolios: `{ userId: 1, type: 1 }`
-      - historicaldata: `{ symbol: 1, date: -1 }`
-- [ ] Add pre-save hook to enforce stock limit per plan
-- [ ] Run `Model.ensureIndexes()` on startup
-- [ ] Benchmark heavy queries with `.explain()`
+- [x] Add MongoDB indexes: ✅
+      - users: `{ email: 1 } unique` ✅
+      - portfolios: `{ userId: 1, type: 1 }` ✅
+      - historicaldata: `{ symbol: 1, date: -1 }` ✅
+      - watchlist: `{ userId: 1, ticker: 1 }` ✅
+- [ ] Add pre-save hook to enforce stock limit per plan - TODO
+- [x] Run `Model.ensureIndexes()` on startup ✅
+- [ ] Benchmark heavy queries with `.explain()` - TODO
 
 ---
 
 ## 4️⃣ MARKET-DATA SERVICE (`backend/src/services/stockDataService.ts`)
-- [ ] Install `lru-cache`
-- [ ] Implement symbol-scoped LRU cache (max 2000, ttl 20s)
-- [ ] Add retry/backoff logic (3 tries, 500ms delay)
-- [ ] Build provider fallback chain: [finnhub, alphaVantage, yahoo]
-- [ ] Add circuit breaker (disable provider on repeated errors)
-- [ ] Cache historical data; only request deltas
-- [ ] Log provider latency and cache hit rate
+- [x] Install `lru-cache` ✅
+- [x] Implement symbol-scoped LRU cache (max 1000, ttl 10min) ✅
+- [x] Add retry/backoff logic with 12 API keys and aggressive retries ✅
+- [x] Build provider fallback chain: [AlphaVantage x4, Finnhub x4, FMP x4] ✅
+- [x] Add smart key rotation and blacklisting ✅
+- [x] Cache historical data with 10-minute TTL ✅
+- [x] Log provider latency and cache hit rate ✅
 
 ---
 
@@ -61,12 +60,12 @@
 ---
 
 ## 6️⃣ HEALTH & LOGGING
-- [ ] Install `pino` + `pino-http`
-- [ ] Add `requestId` middleware (uuid)
-- [ ] Log method, path, duration, and requestId
-- [ ] Implement `/healthz` endpoint returning `{ status, uptime }`
-- [ ] Configure Render health check to `/healthz`
-- [ ] Integrate optional Sentry or Logtail transport
+- [x] Install `pino` + `pino-http` ✅
+- [x] Add `requestId` middleware (uuid) ✅
+- [x] Log method, path, duration, and requestId ✅
+- [x] Implement `/healthz` endpoint returning `{ status, uptime }` ✅
+- [x] Configure Render health check to `/healthz` ✅
+- [x] Integrate Sentry transport ✅
 
 ---
 
