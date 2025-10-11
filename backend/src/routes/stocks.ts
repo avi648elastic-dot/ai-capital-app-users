@@ -2,6 +2,7 @@ import express from 'express';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 import { decisionEngine } from '../services/decisionEngine';
 import { loggerService } from '../services/loggerService';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -233,6 +234,88 @@ router.post('/clear-cache', (req, res) => {
     success: true,
     message: 'Cache cleared successfully'
   });
+});
+
+/**
+ * Get batch stock prices for real-time updates
+ * POST /api/stocks/batch-prices
+ * Body: { tickers: string[] }
+ */
+router.post('/batch-prices', authenticateToken, async (req, res) => {
+  try {
+    const { tickers } = req.body;
+    
+    if (!tickers || !Array.isArray(tickers) || tickers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Tickers array is required'
+      });
+    }
+
+    if (tickers.length > 20) {
+      return res.status(400).json({
+        success: false,
+        error: 'Maximum 20 tickers allowed per request'
+      });
+    }
+
+    loggerService.info(`📊 [BATCH PRICES] Fetching prices for ${tickers.length} tickers`, { tickers });
+
+    const pricePromises = tickers.map(async (ticker: string) => {
+      try {
+        const metrics = await googleFinanceFormulasService.getStockMetrics(ticker);
+        
+        if (metrics) {
+          return {
+            ticker: ticker.toUpperCase(),
+            currentPrice: metrics.current,
+            change: metrics.change || 0,
+            changePercent: metrics.changePercent || 0,
+            dataSource: metrics.dataSource,
+            timestamp: new Date(metrics.timestamp).toISOString()
+          };
+        } else {
+          return {
+            ticker: ticker.toUpperCase(),
+            currentPrice: 0,
+            change: 0,
+            changePercent: 0,
+            dataSource: 'none',
+            timestamp: new Date().toISOString(),
+            error: 'No data available'
+          };
+        }
+      } catch (error) {
+        loggerService.warn(`⚠️ [BATCH PRICES] Failed to fetch ${ticker}`, { error });
+        return {
+          ticker: ticker.toUpperCase(),
+          currentPrice: 0,
+          change: 0,
+          changePercent: 0,
+          dataSource: 'error',
+          timestamp: new Date().toISOString(),
+          error: error instanceof Error ? error.message : 'Unknown error'
+        };
+      }
+    });
+
+    const prices = await Promise.all(pricePromises);
+    
+    loggerService.info(`✅ [BATCH PRICES] Successfully fetched ${prices.length} prices`);
+
+    res.json({
+      success: true,
+      prices,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    loggerService.error(`❌ [BATCH PRICES] Error fetching batch prices`, { error });
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 });
 
 export default router;

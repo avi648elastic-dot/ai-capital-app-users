@@ -1,14 +1,17 @@
 'use client';
 
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Bell } from 'lucide-react';
 import { useDevice } from '@/hooks/useDevice';
+import { useState } from 'react';
 
 interface MobileHeaderProps {
   title: string;
   subtitle?: string;
+  unreadCount?: number;
+  onNotificationClick?: () => void;
 }
 
-export default function MobileHeader({ title, subtitle }: MobileHeaderProps) {
+export default function MobileHeader({ title, subtitle, unreadCount = 0, onNotificationClick }: MobileHeaderProps) {
   const { isMobile } = useDevice();
 
   // Only show on mobile devices
@@ -28,6 +31,19 @@ export default function MobileHeader({ title, subtitle }: MobileHeaderProps) {
             {subtitle && <p className="text-xs text-blue-100">{subtitle}</p>}
           </div>
         </div>
+        
+        {/* MOBILE NOTIFICATION BELL - BIG & CLICKABLE */}
+        <button
+          onClick={onNotificationClick}
+          className="relative w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all active:scale-95"
+        >
+          <Bell className="w-6 h-6 text-white" />
+          {unreadCount > 0 && (
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+              <span className="text-white text-xs font-black">{unreadCount > 9 ? '9+' : unreadCount}</span>
+            </div>
+          )}
+        </button>
       </div>
     </div>
   );

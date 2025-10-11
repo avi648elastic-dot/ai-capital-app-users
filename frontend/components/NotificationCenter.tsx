@@ -164,12 +164,20 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
     return date.toLocaleDateString();
   };
 
+  const handleNotificationClick = () => {
+    // VIBRATE on open (Major's requirement!)
+    if ('vibrate' in navigator) {
+      navigator.vibrate(200); // 200ms buzz, godamt!
+    }
+    setIsOpen(!isOpen);
+  };
+
   return (
     <>
-      {/* Notification Bell */}
-      <div className="relative">
+      {/* Notification Bell - DESKTOP */}
+      <div className="relative hidden sm:block">
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleNotificationClick}
           className="relative p-2 text-slate-300 hover:text-white transition-colors"
         >
           <Bell className="w-6 h-6" />
@@ -180,9 +188,9 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
           )}
         </button>
 
-        {/* Dropdown */}
+        {/* Dropdown - DESKTOP */}
         {isOpen && (
-          <div className="absolute right-0 mt-2 w-[240px] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[280px] overflow-hidden">
+          <div className="absolute right-0 mt-2 w-[400px] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[500px] overflow-hidden">
             <div className="p-3 border-b border-gray-200 bg-slate-50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -347,10 +355,150 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
         )}
       </div>
 
-      {/* Click outside to close */}
+      {/* MOBILE FULL SCREEN PANEL - MAJOR'S REQUIREMENT */}
+      {isOpen && (
+        <div className="block sm:hidden fixed inset-0 z-[9999] bg-slate-900">
+          {/* Mobile Header */}
+          <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 p-4 flex items-center justify-between shadow-lg">
+            <div className="flex items-center space-x-3">
+              <Bell className="w-6 h-6 text-white" />
+              <div>
+                <h2 className="text-lg font-black text-white">NOTIFICATIONS</h2>
+                {unreadCount > 0 && (
+                  <p className="text-xs text-white/80">{unreadCount} unread</p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              {unreadCount > 0 && (
+                <button
+                  onClick={markAllAsRead}
+                  className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-white text-xs font-bold"
+                >
+                  Mark All Read
+                </button>
+              )}
+              <button
+                onClick={() => setIsOpen(false)}
+                className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Notifications List */}
+          <div className="overflow-y-auto h-[calc(100vh-80px)] p-4">
+            {loading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="text-center py-12">
+                <Bell className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-400 text-lg">No notifications yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification._id}
+                    className={`p-4 rounded-xl border-2 ${
+                      notification.readAt 
+                        ? 'bg-slate-800/50 border-slate-700' 
+                        : 'bg-gradient-to-br from-blue-900/40 to-purple-900/40 border-blue-500 shadow-lg shadow-blue-500/20'
+                    }`}
+                    onClick={() => {
+                      // VIBRATE when tapping notification
+                      if ('vibrate' in navigator) {
+                        navigator.vibrate([100, 50, 100]); // Pattern: buzz-pause-buzz
+                      }
+                      if (!notification.readAt) {
+                        markAsRead(notification._id);
+                      }
+                    }}
+                  >
+                    {/* Icon & Priority */}
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        {getNotificationIcon(notification.type)}
+                        {notification.priority === 'urgent' && (
+                          <span className="px-2 py-0.5 bg-red-500 text-white text-[10px] font-black rounded-full animate-pulse">
+                            URGENT
+                          </span>
+                        )}
+                      </div>
+                      {!notification.readAt && (
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <h4 className={`text-sm font-bold mb-1 ${
+                      notification.readAt ? 'text-slate-400' : 'text-white'
+                    }`}>
+                      {notification.title}
+                    </h4>
+                    <p className={`text-xs mb-2 ${
+                      notification.readAt ? 'text-slate-500' : 'text-slate-300'
+                    }`}>
+                      {notification.message}
+                    </p>
+
+                    {/* Action Data */}
+                    {notification.actionData && (
+                      <div className="mt-2 p-2 bg-slate-700/50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white">
+                            {notification.actionData.ticker}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-xs font-black ${
+                            notification.actionData.action === 'BUY' ? 'bg-emerald-600 text-white' :
+                            notification.actionData.action === 'SELL' ? 'bg-red-600 text-white' :
+                            'bg-yellow-600 text-white'
+                          }`}>
+                            {notification.actionData.action}
+                          </span>
+                        </div>
+                        {notification.actionData.reason && (
+                          <p className="text-xs text-slate-400 mt-1">
+                            {notification.actionData.reason}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-700">
+                      <span className="text-xs text-slate-500">
+                        {formatTimeAgo(notification.createdAt)}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(notification._id);
+                          // VIBRATE on delete
+                          if ('vibrate' in navigator) {
+                            navigator.vibrate(50);
+                          }
+                        }}
+                        className="text-red-400 hover:text-red-300 p-1"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Click outside to close - DESKTOP ONLY */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40"
+          className="hidden sm:block fixed inset-0 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}

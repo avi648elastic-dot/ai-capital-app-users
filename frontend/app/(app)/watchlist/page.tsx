@@ -7,6 +7,7 @@ import { Eye, Plus, Trash2, TrendingUp, TrendingDown, Bell, BellOff, AlertCircle
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Toast from '@/components/ui/Toast';
+import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
 
 interface PriceAlert {
   type: 'high' | 'low' | 'both';
@@ -44,12 +45,7 @@ export default function Watchlist() {
   const [user, setUser] = useState<any>(null);
   const [newTicker, setNewTicker] = useState('');
   const [addingStock, setAddingStock] = useState(false);
-  const [showAlertModal, setShowAlertModal] = useState(false);
-  const [selectedStock, setSelectedStock] = useState<WatchlistItem | null>(null);
-  const [alertType, setAlertType] = useState<'high' | 'low' | 'both'>('both');
-  const [highPrice, setHighPrice] = useState<string>('');
-  const [lowPrice, setLowPrice] = useState<string>('');
-  const [savingAlert, setSavingAlert] = useState(false);
+  // REMOVED COMPLEX MODAL - MAJOR'S REQUEST
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [quickAlerts, setQuickAlerts] = useState<Record<string, { high: string; low: string }>>({});
 
@@ -68,6 +64,37 @@ export default function Watchlist() {
     const interval = setInterval(fetchUserAndWatchlist, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Real-time price updates - MAJOR'S REQUIREMENT
+  useEffect(() => {
+    if (watchlist.length > 0) {
+      const tickers = watchlist.map(item => item.ticker);
+      
+      const handlePriceUpdate = (updates: PriceUpdate[]) => {
+        console.log('📊 Real-time price updates received:', updates);
+        
+        setWatchlist(prev => prev.map(item => {
+          const update = updates.find(u => u.ticker === item.ticker);
+          if (update) {
+            return {
+              ...item,
+              currentPrice: update.currentPrice,
+              change: update.change,
+              changePercent: update.changePercent,
+              lastChecked: update.lastUpdated
+            };
+          }
+          return item;
+        }));
+      };
+
+      realtimePriceService.startUpdates(tickers, handlePriceUpdate);
+    }
+
+    return () => {
+      realtimePriceService.stopUpdates();
+    };
+  }, [watchlist.length]); // Only restart when watchlist length changes
 
   const fetchUserAndWatchlist = async () => {
     try {
@@ -174,123 +201,9 @@ export default function Watchlist() {
     }
   };
 
-  const openAlertModal = (stock: WatchlistItem) => {
-    console.log('🔔 Opening alert modal for', stock.ticker, 'with alert:', stock.priceAlert);
-    setSelectedStock(stock);
-    if (stock.priceAlert && stock.priceAlert.enabled) {
-      // Load existing alert values
-      setAlertType(stock.priceAlert.type);
-      setHighPrice(stock.priceAlert.highPrice?.toString() || '');
-      setLowPrice(stock.priceAlert.lowPrice?.toString() || '');
-      console.log('✅ Loaded existing alert:', {
-        type: stock.priceAlert.type,
-        high: stock.priceAlert.highPrice,
-        low: stock.priceAlert.lowPrice
-      });
-    } else {
-      // No alert set - use suggested prices
-      setAlertType('both');
-      const suggestedHigh = (stock.currentPrice * 1.1).toFixed(2);
-      const suggestedLow = (stock.currentPrice * 0.9).toFixed(2);
-      setHighPrice(suggestedHigh);
-      setLowPrice(suggestedLow);
-      console.log('💡 Setting suggested prices:', { high: suggestedHigh, low: suggestedLow });
-    }
-    setShowAlertModal(true);
-  };
+  // REMOVED COMPLEX MODAL FUNCTIONS - MAJOR'S REQUEST
 
-  const closeAlertModal = () => {
-    setShowAlertModal(false);
-    setSelectedStock(null);
-    setAlertType('both');
-    setHighPrice('');
-    setLowPrice('');
-  };
-
-  const savePriceAlert = async () => {
-    if (!selectedStock) {
-      console.error('❌ No stock selected!');
-      showToast('error', '❌ No stock selected');
-      return;
-    }
-
-    console.log('💾 STARTING SAVE - Stock:', selectedStock.ticker, 'Type:', alertType, 'High:', highPrice, 'Low:', lowPrice);
-
-    // Validation
-    if ((alertType === 'high' || alertType === 'both') && (!highPrice || parseFloat(highPrice) <= 0)) {
-      console.warn('⚠️ Invalid high price:', highPrice);
-      showToast('warning', '⚠️ Enter a valid HIGH price');
-      return;
-    }
-
-    if ((alertType === 'low' || alertType === 'both') && (!lowPrice || parseFloat(lowPrice) <= 0)) {
-      console.warn('⚠️ Invalid low price:', lowPrice);
-      showToast('warning', '⚠️ Enter a valid LOW price');
-      return;
-    }
-
-    if (alertType === 'both' && parseFloat(lowPrice) >= parseFloat(highPrice)) {
-      console.warn('⚠️ Low price must be less than high price');
-      showToast('warning', '⚠️ Low price must be LESS than high price');
-      return;
-    }
-
-    setSavingAlert(true);
-    try {
-      const token = Cookies.get('token');
-      if (!token) {
-        console.error('❌ No auth token found!');
-        showToast('error', '❌ Please login to set price alerts');
-        setSavingAlert(false);
-        return;
-      }
-
-      const alertData = {
-        type: alertType,
-        highPrice: (alertType === 'high' || alertType === 'both') ? parseFloat(highPrice) : undefined,
-        lowPrice: (alertType === 'low' || alertType === 'both') ? parseFloat(lowPrice) : undefined,
-        enabled: true
-      };
-
-      console.log('📤 SENDING REQUEST to backend:', {
-        url: `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${selectedStock.id}/alert`,
-        stockId: selectedStock.id,
-        ticker: selectedStock.ticker,
-        alertData
-      });
-
-      const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${selectedStock.id}/alert`,
-        alertData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      console.log('✅ BACKEND RESPONSE:', response.status, response.data);
-
-      console.log('🔄 Refreshing watchlist data...');
-      await fetchUserAndWatchlist();
-      
-      console.log('✅ SAVE COMPLETE! Closing modal...');
-      closeAlertModal();
-      showToast('success', `🎉 ALERT SAVED! ${alertType === 'high' ? `High: $${parseFloat(highPrice).toFixed(2)}` : alertType === 'low' ? `Low: $${parseFloat(lowPrice).toFixed(2)}` : `High: $${parseFloat(highPrice).toFixed(2)} / Low: $${parseFloat(lowPrice).toFixed(2)}`}`);
-    } catch (error) {
-      console.error('❌ ERROR SAVING ALERT:', error);
-      if (axios.isAxiosError(error)) {
-        const errorMsg = error.response?.data?.error || error.message || 'Failed to save alert';
-        console.error('❌ Backend error details:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          headers: error.response?.headers
-        });
-        showToast('error', `❌ ERROR: ${errorMsg}`);
-      } else {
-        console.error('❌ Non-Axios error:', error);
-        showToast('error', `❌ FAILED TO SAVE ALERT`);
-      }
-    } finally {
-      setSavingAlert(false);
-    }
-  };
+  // REMOVED COMPLEX MODAL SAVE FUNCTION - MAJOR'S REQUEST
 
   const removePriceAlert = async (id: string, ticker: string) => {
     try {
@@ -438,26 +351,44 @@ export default function Watchlist() {
                           return;
                         }
                         try {
-                          console.log('🔔 Saving HIGH alert:', value, 'for', item.ticker);
+                          console.log('🔔 Saving HIGH alert:', value, 'for', item.ticker, 'ID:', item.id);
                           const token = Cookies.get('token');
+                          console.log('🔑 Token exists:', !!token);
+                          console.log('🌐 API URL:', process.env.NEXT_PUBLIC_API_URL);
+                          
                           const currentLow = parseFloat(quickAlerts[item.id]?.low || item.priceAlert?.lowPrice?.toString() || '0');
+                          const requestData = {
+                            type: currentLow > 0 ? 'both' : 'high',
+                            highPrice: value,
+                            lowPrice: currentLow > 0 ? currentLow : undefined,
+                            enabled: true
+                          };
+                          console.log('📤 Request data:', requestData);
+                          
                           const response = await axios.patch(
                             `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${item.id}/alert`,
-                            {
-                              type: currentLow > 0 ? 'both' : 'high',
-                              highPrice: value,
-                              lowPrice: currentLow > 0 ? currentLow : undefined,
-                              enabled: true
-                            },
-                            { headers: { Authorization: `Bearer ${token}` } }
+                            requestData,
+                            { 
+                              headers: { 
+                                Authorization: `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                              } 
+                            }
                           );
-                          console.log('✅ HIGH Alert saved successfully:', response.data);
+                          console.log('✅ HIGH Alert saved successfully:', response.status, response.data);
                           await fetchUserAndWatchlist();
                           showToast('success', `✅ HIGH ALERT SET: $${value.toFixed(2)}`);
                           setQuickAlerts(prev => ({ ...prev, [item.id]: { ...prev[item.id], high: '' } }));
                         } catch (error: any) {
                           console.error('❌ Failed to save HIGH alert:', error);
-                          showToast('error', '❌ ' + (error.response?.data?.error || 'Failed to save'));
+                          console.error('❌ Error details:', {
+                            message: error.message,
+                            status: error.response?.status,
+                            statusText: error.response?.statusText,
+                            data: error.response?.data,
+                            url: error.config?.url
+                          });
+                          showToast('error', '❌ ' + (error.response?.data?.error || error.message || 'Failed to save'));
                         }
                       }}
                       className="px-3 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-xs font-black rounded-lg transition-all shadow-lg"
@@ -492,26 +423,43 @@ export default function Watchlist() {
                           return;
                         }
                         try {
-                          console.log('🔔 Saving LOW alert:', value, 'for', item.ticker);
+                          console.log('🔔 Saving LOW alert:', value, 'for', item.ticker, 'ID:', item.id);
                           const token = Cookies.get('token');
+                          console.log('🔑 Token exists:', !!token);
+                          
                           const currentHigh = parseFloat(quickAlerts[item.id]?.high || item.priceAlert?.highPrice?.toString() || '0');
+                          const requestData = {
+                            type: currentHigh > 0 ? 'both' : 'low',
+                            highPrice: currentHigh > 0 ? currentHigh : undefined,
+                            lowPrice: value,
+                            enabled: true
+                          };
+                          console.log('📤 Request data:', requestData);
+                          
                           const response = await axios.patch(
                             `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${item.id}/alert`,
-                            {
-                              type: currentHigh > 0 ? 'both' : 'low',
-                              highPrice: currentHigh > 0 ? currentHigh : undefined,
-                              lowPrice: value,
-                              enabled: true
-                            },
-                            { headers: { Authorization: `Bearer ${token}` } }
+                            requestData,
+                            { 
+                              headers: { 
+                                Authorization: `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                              } 
+                            }
                           );
-                          console.log('✅ LOW Alert saved successfully:', response.data);
+                          console.log('✅ LOW Alert saved successfully:', response.status, response.data);
                           await fetchUserAndWatchlist();
                           showToast('success', `✅ LOW ALERT SET: $${value.toFixed(2)}`);
                           setQuickAlerts(prev => ({ ...prev, [item.id]: { ...prev[item.id], low: '' } }));
                         } catch (error: any) {
                           console.error('❌ Failed to save LOW alert:', error);
-                          showToast('error', '❌ ' + (error.response?.data?.error || 'Failed to save'));
+                          console.error('❌ Error details:', {
+                            message: error.message,
+                            status: error.response?.status,
+                            statusText: error.response?.statusText,
+                            data: error.response?.data,
+                            url: error.config?.url
+                          });
+                          showToast('error', '❌ ' + (error.response?.data?.error || error.message || 'Failed to save'));
                         }
                       }}
                       className="px-3 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white text-xs font-black rounded-lg transition-all shadow-lg"
@@ -522,11 +470,11 @@ export default function Watchlist() {
                 </div>
               </div>
 
-              {/* Action Buttons - Clear and User-Friendly */}
-              <div className="flex items-center space-x-2 mb-4">
+              {/* Action Buttons - Clear and User-Friendly - REMOVED COMPLEX MODAL */}
+              <div className="mb-4">
                 <button
                   onClick={() => toggleNotifications(item.id, item.ticker, item.notifications)}
-                  className={`flex-1 py-2.5 px-3 rounded-lg transition-all font-medium text-sm flex items-center justify-center space-x-2 ${
+                  className={`w-full py-2.5 px-3 rounded-lg transition-all font-medium text-sm flex items-center justify-center space-x-2 ${
                     item.notifications 
                       ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md' 
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600 [data-theme="light"]:bg-gray-200 [data-theme="light"]:text-gray-700 [data-theme="light"]:hover:bg-gray-300'
@@ -534,13 +482,6 @@ export default function Watchlist() {
                 >
                   {item.notifications ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
                   <span>{item.notifications ? 'Notifications ON' : 'Notifications OFF'}</span>
-                </button>
-                <button
-                  onClick={() => openAlertModal(item)}
-                  className="flex-1 py-2.5 px-3 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 transition-all shadow-md font-medium text-sm flex items-center justify-center space-x-2"
-                >
-                  <AlertCircle className="w-4 h-4" />
-                  <span>Advanced</span>
                 </button>
               </div>
 
@@ -660,8 +601,8 @@ export default function Watchlist() {
         </div>
       )}
 
-      {/* Price Alert Modal - IMPROVED UX */}
-      {showAlertModal && selectedStock && (
+      {/* REMOVED COMPLEX MODAL - MAJOR'S REQUEST */}
+      {false && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[9999] p-2 sm:p-4">
           <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 [data-theme='light']:from-yellow-300 [data-theme='light']:via-orange-400 [data-theme='light']:to-red-400 rounded-3xl shadow-2xl border-4 border-white/20 [data-theme='light']:border-gray-200 w-full max-w-sm sm:max-w-lg max-h-[90vh] overflow-y-auto transform scale-100 animate-in zoom-in-95 duration-300">
             {/* ULTRA PROMINENT HEADER */}

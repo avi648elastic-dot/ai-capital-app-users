@@ -28,6 +28,7 @@ import notificationRoutes from './routes/notifications';
 import watchlistRoutes from './routes/watchlist';
 import { schedulerService } from './services/schedulerService';
 import { watchlistMonitorService } from './services/watchlistMonitorService';
+import { watchlistAlertService } from './services/watchlistAlertService';
 
 // Load environment variables
 dotenv.config();
@@ -659,6 +660,10 @@ const startServer = async () => {
       // Start watchlist monitoring service
       watchlistMonitorService.startMonitoring();
       loggerService.info('✅ [WATCHLIST MONITOR] Service initialized');
+      
+      // Start watchlist alert service - MAJOR'S REQUIREMENT
+      watchlistAlertService.startMonitoring();
+      loggerService.info('✅ [WATCHLIST ALERTS] Service initialized');
     });
 
     // Handle server errors

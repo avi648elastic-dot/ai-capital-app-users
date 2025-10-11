@@ -1,6 +1,8 @@
 import express from 'express';
 import Portfolio from '../models/Portfolio';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { analyticsQuerySchema } from '../schemas/analytics';
 import { sectorService } from '../services/sectorService';
 import { historicalDataService } from '../services/historicalDataService';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';

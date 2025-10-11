@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticateToken, authenticateAdmin } from '../middleware/auth';
+import { validate } from '../middleware/validate';
 import notificationService from '../services/notificationService';
 import { z } from 'zod';
 
@@ -43,10 +44,10 @@ const getNotificationsSchema = z.object({
  * @desc Get user's notifications
  * @access Private
  */
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateToken, validate({ query: getNotificationsSchema }), async (req, res) => {
   try {
     const userId = req.user!._id.toString();
-    const filters = getNotificationsSchema.parse(req.query);
+    const filters = req.query;
     
     const result = await notificationService.getUserNotifications({
       userId,
@@ -71,9 +72,9 @@ router.get('/', authenticateToken, async (req, res) => {
  * @desc Create a new notification (Admin only)
  * @access Admin
  */
-router.post('/', authenticateAdmin, async (req, res) => {
+router.post('/', authenticateAdmin, validate({ body: createNotificationSchema }), async (req, res) => {
   try {
-    const data = createNotificationSchema.parse(req.body);
+    const data = req.body;
     
     const notification = await notificationService.createNotification({
       ...data,
@@ -95,21 +96,22 @@ router.post('/', authenticateAdmin, async (req, res) => {
   }
 });
 
+// Global notification schema
+const globalNotificationSchema = z.object({
+  title: z.string().min(1).max(200),
+  message: z.string().min(1).max(1000),
+  type: z.enum(['info', 'warning', 'success', 'error']).optional(),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional()
+});
+
 /**
  * @route POST /api/notifications/global
  * @desc Create a global notification for all users (Admin only)
  * @access Admin
  */
-router.post('/global', authenticateAdmin, async (req, res) => {
+router.post('/global', authenticateAdmin, validate({ body: globalNotificationSchema }), async (req, res) => {
   try {
     const { title, message, type, priority } = req.body;
-    
-    if (!title || !message) {
-      return res.status(400).json({
-        success: false,
-        message: 'Title and message are required'
-      });
-    }
 
     const notification = await notificationService.createGlobalNotification(
       title,
@@ -132,21 +134,23 @@ router.post('/global', authenticateAdmin, async (req, res) => {
   }
 });
 
+// Stock action notification schema
+const stockActionNotificationSchema = z.object({
+  userId: z.string().min(1),
+  ticker: z.string().min(1).max(10),
+  action: z.enum(['BUY', 'HOLD', 'SELL']),
+  reason: z.string().min(1).max(500),
+  portfolioId: z.string().optional()
+});
+
 /**
  * @route POST /api/notifications/stock-action
  * @desc Create notification for stock action (Admin only)
  * @access Admin
  */
-router.post('/stock-action', authenticateAdmin, async (req, res) => {
+router.post('/stock-action', authenticateAdmin, validate({ body: stockActionNotificationSchema }), async (req, res) => {
   try {
     const { userId, ticker, action, reason, portfolioId } = req.body;
-    
-    if (!userId || !ticker || !action || !reason) {
-      return res.status(400).json({
-        success: false,
-        message: 'userId, ticker, action, and reason are required'
-      });
-    }
 
     const notification = await notificationService.createStockActionNotification(
       userId,

@@ -46,6 +46,26 @@ export default function RootLayout({
                 </div>
                 {/* Tour Overlay */}
                 <TourOverlay />
+                {/* Service Worker Registration */}
+                <Script
+                  id="sw-registration"
+                  strategy="afterInteractive"
+                  dangerouslySetInnerHTML={{
+                    __html: `
+                      if ('serviceWorker' in navigator) {
+                        window.addEventListener('load', function() {
+                          navigator.serviceWorker.register('/sw.js')
+                            .then(function(registration) {
+                              console.log('🎯 Service Worker registered successfully:', registration.scope);
+                            })
+                            .catch(function(error) {
+                              console.error('❌ Service Worker registration failed:', error);
+                            });
+                        });
+                      }
+                    `
+                  }}
+                />
                 {/* Build/version footer for deployment verification */}
                 <div className="fixed bottom-2 right-2 text-[10px] px-2 py-1 rounded bg-slate-800/80 text-slate-300 border border-slate-700 [data-theme='light']:bg-gray-200/80 [data-theme='light']:text-gray-700 [data-theme='light']:border-gray-300">
                 </div>
