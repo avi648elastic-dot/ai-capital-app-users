@@ -75,14 +75,14 @@ export default function AppLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center relative z-10">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
+    <div className="min-h-screen flex relative">
       <ResponsiveNavigation 
         userName={user?.name || 'User'} 
         subscriptionTier={user?.subscriptionTier || 'free'}
@@ -91,7 +91,7 @@ export default function AppLayout({
         onLogout={handleLogout}
       />
       
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative z-10">
         {/* Market Status Bar - positioned at the top */}
         <MarketStatusBar />
         
