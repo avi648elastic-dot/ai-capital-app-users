@@ -6,6 +6,7 @@ import { authenticateToken } from '../middleware/auth';
 import User from '../models/User';
 import { validate, validatePartial } from '../middleware/validate';
 import { updateProfileSchema, userSettingsSchema, userQuerySchema } from '../schemas/user';
+import pushNotificationService from '../services/pushNotificationService';
 
 const router = express.Router();
 
@@ -216,6 +217,115 @@ router.put('/settings', authenticateToken, validate({ body: userSettingsSchema }
     res.status(500).json({
       success: false,
       error: 'Failed to update settings'
+    });
+  }
+});
+
+// 📱 Push Notification Routes
+router.post('/push/subscribe', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user._id || (req as any).user.id;
+    const { subscription, userAgent } = req.body;
+
+    if (!subscription || !subscription.endpoint || !subscription.keys) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid subscription data'
+      });
+    }
+
+    const success = await pushNotificationService.registerSubscription(
+      userId,
+      subscription,
+      userAgent
+    );
+
+    res.json({
+      success,
+      message: success ? 'Push subscription registered' : 'Failed to register push subscription'
+    });
+
+  } catch (error: any) {
+    console.error('❌ [PUSH] Subscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to register push subscription'
+    });
+  }
+});
+
+router.delete('/push/unsubscribe', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user._id || (req as any).user.id;
+    const { endpoint } = req.body;
+
+    if (!endpoint) {
+      return res.status(400).json({
+        success: false,
+        error: 'Endpoint required'
+      });
+    }
+
+    const success = await pushNotificationService.removeSubscription(userId, endpoint);
+
+    res.json({
+      success,
+      message: success ? 'Push subscription removed' : 'Subscription not found'
+    });
+
+  } catch (error: any) {
+    console.error('❌ [PUSH] Unsubscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to remove push subscription'
+    });
+  }
+});
+
+router.get('/push/subscriptions', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user._id || (req as any).user.id;
+    const subscriptions = pushNotificationService.getUserSubscriptions(userId);
+
+    res.json({
+      success: true,
+      subscriptions: subscriptions.map(sub => ({
+        endpoint: sub.endpoint.substring(0, 50) + '...',
+        createdAt: sub.createdAt,
+        userAgent: sub.userAgent
+      }))
+    });
+
+  } catch (error: any) {
+    console.error('❌ [PUSH] Get subscriptions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get push subscriptions'
+    });
+  }
+});
+
+router.get('/push/vapid-key', (req, res) => {
+  try {
+    const publicKey = process.env.VAPID_PUBLIC_KEY || '';
+
+    if (!publicKey) {
+      return res.status(500).json({
+        success: false,
+        error: 'VAPID keys not configured'
+      });
+    }
+
+    res.json({
+      success: true,
+      publicKey
+    });
+
+  } catch (error: any) {
+    console.error('❌ [PUSH] VAPID key error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get VAPID key'
     });
   }
 });

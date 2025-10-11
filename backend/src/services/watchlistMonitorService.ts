@@ -2,6 +2,7 @@ import Watchlist from '../models/Watchlist';
 import Notification from '../models/Notification';
 import { googleFinanceFormulasService } from './googleFinanceFormulasService';
 import { loggerService } from './loggerService';
+import notificationService from './notificationService';
 
 class WatchlistMonitorService {
   private monitoringInterval: NodeJS.Timeout | null = null;
@@ -184,35 +185,39 @@ class WatchlistMonitorService {
     message: string
   ): Promise<void> {
     try {
-      const notification = new Notification({
+      // Use the global notification service for better integration
+      await notificationService.createNotification({
         userId: userId.toString(),
-        type: 'success',
-        title: `Price Alert: ${ticker}`,
-        message,
-        priority: 'high',
+        title: `🚨 ${alertType === 'high' ? 'PRICE SURGE' : 'PRICE DROP'}: ${ticker}`,
+        message: `${message}\n\nCurrent Price: $${currentPrice.toFixed(2)}`,
+        type: alertType === 'high' ? 'success' : 'warning',
+        priority: 'urgent', // Make watchlist alerts URGENT priority
         category: 'market',
         actionData: {
           ticker,
-          action: alertType === 'high' ? 'SELL' : 'BUY' as 'BUY' | 'SELL' | 'HOLD'
+          action: alertType === 'high' ? 'SELL' : 'BUY',
+          reason: `Price ${alertType === 'high' ? 'surged above' : 'dropped below'} your target`
         },
         channels: {
           dashboard: true,
-          popup: true,
-          email: false
-        },
-        status: 'pending'
+          popup: true, // Force popup for urgent alerts
+          email: true, // Send email for urgent alerts
+          push: true   // Send push notifications for urgent alerts
+        }
       });
       
-      await notification.save();
-      
-      loggerService.info(`📬 [WATCHLIST MONITOR] Notification created for user ${userId}`, {
+      loggerService.info(`📬 [WATCHLIST MONITOR] Enhanced notification created for user ${userId}`, {
         ticker,
         alertType,
-        currentPrice
+        currentPrice,
+        priority: 'urgent'
       });
       
     } catch (error) {
-      loggerService.error('❌ [WATCHLIST MONITOR] Error creating notification', {
+      loggerService.error('❌ [WATCHLIST MONITOR] Failed to create enhanced notification', {
+        ticker,
+        alertType,
+        currentPrice,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }

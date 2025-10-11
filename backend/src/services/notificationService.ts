@@ -1,6 +1,7 @@
 import Notification, { INotification } from '../models/Notification';
 import User from '../models/User';
 import nodemailer from 'nodemailer';
+import pushNotificationService from './pushNotificationService';
 
 interface CreateNotificationData {
   userId?: string;
@@ -19,6 +20,7 @@ interface CreateNotificationData {
     dashboard?: boolean;
     popup?: boolean;
     email?: boolean;
+    push?: boolean;
   };
   scheduledFor?: Date;
   expiresAt?: Date;
@@ -67,6 +69,7 @@ class NotificationService {
         dashboard: true,
         popup: true,
         email: false,
+        push: false,
         ...data.channels
       }
     });
@@ -116,7 +119,8 @@ class NotificationService {
       channels: {
         dashboard: true,
         popup: true,
-        email: true // Always email for SELL actions
+        email: true, // Always email for SELL actions
+        push: true   // Always push for SELL actions
       }
     });
   }
@@ -139,7 +143,8 @@ class NotificationService {
       channels: {
         dashboard: true,
         popup: priority === 'urgent' || priority === 'high',
-        email: priority === 'urgent'
+        email: priority === 'urgent',
+        push: priority === 'urgent' || priority === 'high'
       }
     });
   }
@@ -271,7 +276,79 @@ class NotificationService {
       promises.push(this.sendEmailNotification(notification));
     }
 
+    // Push notification delivery (if enabled)
+    if (notification.channels.push && notification.userId) {
+      promises.push(this.sendPushNotification(notification));
+    }
+
     await Promise.all(promises);
+  }
+
+  /**
+   * Send push notification
+   */
+  private async sendPushNotification(notification: INotification): Promise<void> {
+    try {
+      const pushData = {
+        title: notification.title,
+        body: notification.message,
+        icon: '/logo.png',
+        badge: '/logo.png',
+        tag: `aicapital-${notification.category}`,
+        data: {
+          notificationId: notification._id.toString(),
+          type: notification.type,
+          category: notification.category,
+          priority: notification.priority,
+          actionData: notification.actionData,
+          url: notification.actionData?.ticker 
+            ? `${process.env.FRONTEND_URL}/watchlist` 
+            : `${process.env.FRONTEND_URL}/dashboard`
+        },
+        actions: [
+          {
+            action: 'view',
+            title: 'View Details',
+            icon: '/icons/view.png'
+          },
+          {
+            action: 'dismiss',
+            title: 'Dismiss',
+            icon: '/icons/dismiss.png'
+          }
+        ],
+        requireInteraction: notification.priority === 'urgent',
+        silent: notification.priority === 'low',
+        vibrate: notification.priority === 'urgent' ? [200, 100, 200, 100, 200] : [200, 100, 200]
+      };
+
+      const result = await pushNotificationService.sendToUser(
+        notification.userId!.toString(),
+        pushData
+      );
+
+      await Notification.updateOne(
+        { _id: notification._id },
+        { 
+          'deliveryStatus.push': result.sent > 0 ? 'sent' : 'failed',
+          'deliveryStatus.pushDetails': result
+        }
+      );
+
+      console.log(`📱 Push notification sent:`, {
+        notificationId: notification._id,
+        userId: notification.userId,
+        sent: result.sent,
+        failed: result.failed
+      });
+    } catch (error) {
+      console.error('❌ Failed to send push notification:', error);
+      
+      await Notification.updateOne(
+        { _id: notification._id },
+        { 'deliveryStatus.push': 'failed' }
+      );
+    }
   }
 
   /**
