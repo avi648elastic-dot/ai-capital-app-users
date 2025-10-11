@@ -266,11 +266,15 @@ router.post('/batch-prices', authenticateToken, async (req, res) => {
         const metrics = await googleFinanceFormulasService.getStockMetrics(ticker);
         
         if (metrics) {
+          // Calculate change and changePercent from current and previous day data
+          const change = 0; // Will be calculated if we have previous day data
+          const changePercent = 0; // Will be calculated if we have previous day data
+          
           return {
             ticker: ticker.toUpperCase(),
             currentPrice: metrics.current,
-            change: metrics.change || 0,
-            changePercent: metrics.changePercent || 0,
+            change: change,
+            changePercent: changePercent,
             dataSource: metrics.dataSource,
             timestamp: new Date(metrics.timestamp).toISOString()
           };

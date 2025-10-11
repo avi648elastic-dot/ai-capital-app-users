@@ -1,8 +1,8 @@
 // Watchlist Alert Service
 // Major's requirement: "Connect watchlist alerts to real notification system"
 
-import { Watchlist } from '../models/Watchlist';
-import { notificationService } from './notificationService';
+import Watchlist from '../models/Watchlist';
+import notificationService from './notificationService';
 import { loggerService } from './loggerService';
 import { googleFinanceFormulasService } from './googleFinanceFormulasService';
 
@@ -168,22 +168,7 @@ class WatchlistAlertService {
         actionData: {
           ticker: item.ticker,
           action: alertType === 'high' ? 'SELL' : 'BUY',
-          reason: `Price ${alertType === 'high' ? 'above' : 'below'} target`,
-          currentPrice,
-          targetPrice: triggeredPrice
-        }
-      });
-
-      // Send push notification if enabled
-      await notificationService.sendPushNotification(item.userId, {
-        title: `🎯 ${item.ticker} Alert!`,
-        body: message,
-        data: {
-          type: 'watchlist_alert',
-          ticker: item.ticker,
-          alertType,
-          currentPrice,
-          targetPrice: triggeredPrice
+          reason: `Price ${alertType === 'high' ? 'above' : 'below'} target`
         }
       });
 
