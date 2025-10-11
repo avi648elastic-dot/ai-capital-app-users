@@ -41,10 +41,13 @@ export default function Settings() {
   const handleSave = async () => {
     try {
       const token = Cookies.get('token');
-      if (!token) return;
+      if (!token) {
+        alert('Please login to save settings');
+        return;
+      }
 
       // Save all settings including theme and language
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/user/settings`, {
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/user/settings`, {
         ...settings,
         theme,
         language: locale
@@ -52,10 +55,16 @@ export default function Settings() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      alert(t('settings.saveSuccess') || 'Settings saved successfully!');
-    } catch (error) {
+      // Check if response is successful
+      if (response.data.success) {
+        alert(t('settings.saveSuccess') || '✅ Settings saved successfully!');
+      } else {
+        alert(t('settings.saveError') || '❌ Failed to save settings. Please try again.');
+      }
+    } catch (error: any) {
       console.error('Error saving settings:', error);
-      alert(t('settings.saveError') || 'Failed to save settings. Please try again.');
+      const errorMessage = error.response?.data?.error || error.message || 'Unknown error occurred';
+      alert(`${t('settings.saveError') || 'Failed to save settings'}: ${errorMessage}`);
     }
   };
 
