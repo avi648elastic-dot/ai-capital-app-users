@@ -55,6 +55,244 @@ export function TourProvider({ children }: TourProviderProps) {
     }
   }, []);
 
+  // Page-specific tour steps based on current URL
+  const getPageSpecificSteps = (pathname: string): TourStep[] => {
+    if (pathname === '/dashboard') {
+      return getDashboardSteps();
+    } else if (pathname === '/analytics/portfolio-analysis') {
+      return getPortfolioAnalysisSteps();
+    } else if (pathname === '/analytics/performance') {
+      return getPerformanceSteps();
+    } else if (pathname === '/watchlist') {
+      return getWatchlistSteps();
+    } else if (pathname === '/risk-management') {
+      return getRiskManagementSteps();
+    } else if (pathname === '/subscription') {
+      return getSubscriptionSteps();
+    } else {
+      return getDefaultSteps();
+    }
+  };
+
+  // Dashboard tour steps
+  const getDashboardSteps = (): TourStep[] => {
+    return [
+      {
+        id: 'dashboard-welcome',
+        target: 'body',
+        title: '🏠 Dashboard Overview',
+        content: 'Welcome to your AI-Capital Dashboard! This is your command center where you can see your portfolio performance, add new investments, and get AI-powered recommendations.',
+        position: 'center',
+        highlight: true,
+        skipable: false
+      },
+      {
+        id: 'portfolio-metrics',
+        target: '.financial-metric',
+        title: '💰 Portfolio Performance',
+        content: 'These cards show your real-time portfolio metrics: Total Value, P&L, and Performance. These numbers update automatically as stock prices change throughout the day.',
+        position: 'bottom',
+        highlight: true
+      },
+      {
+        id: 'add-stock-button',
+        target: '.btn-primary',
+        title: '➕ Add New Stock',
+        content: 'Click here to add new stocks to your portfolio. Our intelligent form will help you set entry prices, stop-losses, and take-profit levels with AI recommendations.',
+        position: 'top',
+        highlight: true,
+        action: 'click'
+      },
+      {
+        id: 'portfolio-table',
+        target: 'table',
+        title: '📊 Your Holdings & AI Recommendations',
+        content: 'This table shows all your stock holdings with AI-generated BUY/SELL/HOLD recommendations. Each recommendation is based on 90 days of market data analysis.',
+        position: 'top',
+        highlight: true
+      },
+      {
+        id: 'navigation',
+        target: 'nav',
+        title: '🧭 Navigation Menu',
+        content: 'Use this sidebar to navigate between different features: Analytics, Performance Analysis, Watchlist, Risk Management, and more.',
+        position: 'right',
+        highlight: true
+      }
+    ];
+  };
+
+  // Portfolio Analysis tour steps
+  const getPortfolioAnalysisSteps = (): TourStep[] => {
+    return [
+      {
+        id: 'portfolio-analysis-welcome',
+        target: 'body',
+        title: '📈 Portfolio Analysis Dashboard',
+        content: 'This is your comprehensive portfolio analysis page! Here you can see detailed performance metrics, sector allocation, risk assessment, and AI-powered insights.',
+        position: 'center',
+        highlight: true,
+        skipable: false
+      },
+      {
+        id: 'performance-metrics',
+        target: '.card',
+        title: '📊 Performance Metrics',
+        content: 'These cards show key performance indicators: Total Return, Volatility, Sharpe Ratio, and Max Drawdown. All calculated using 90-day Google Finance data.',
+        position: 'bottom',
+        highlight: true
+      },
+      {
+        id: 'time-period-selector',
+        target: 'select',
+        title: '⏰ Time Period Analysis',
+        content: 'Use this dropdown to analyze your portfolio performance over different time periods: 7 days, 30 days, 60 days, or 90 days.',
+        position: 'top',
+        highlight: true
+      },
+      {
+        id: 'individual-stocks',
+        target: 'table',
+        title: '📋 Individual Stock Performance',
+        content: 'This table shows detailed performance for each stock in your portfolio, including returns, volatility, and AI recommendations based on recent market data.',
+        position: 'top',
+        highlight: true
+      },
+      {
+        id: 'refresh-data',
+        target: 'button',
+        title: '🔄 Refresh Data',
+        content: 'Click this button to refresh all data and get the latest stock prices and AI recommendations.',
+        position: 'top',
+        highlight: true
+      }
+    ];
+  };
+
+  // Performance Analytics tour steps
+  const getPerformanceSteps = (): TourStep[] => {
+    return [
+      {
+        id: 'performance-welcome',
+        target: 'body',
+        title: '📊 Performance Analytics',
+        content: 'Welcome to the Performance Analytics page! Here you can analyze your portfolio\'s historical performance with detailed charts and metrics.',
+        position: 'center',
+        highlight: true,
+        skipable: false
+      },
+      {
+        id: 'performance-chart',
+        target: '.chart',
+        title: '📈 Performance Chart',
+        content: 'This interactive chart shows your portfolio value over time. You can hover over data points to see exact values and dates.',
+        position: 'bottom',
+        highlight: true
+      },
+      {
+        id: 'performance-metrics',
+        target: '.metric-card',
+        title: '📊 Key Metrics',
+        content: 'These cards display important performance metrics like total return, volatility, and risk-adjusted returns.',
+        position: 'top',
+        highlight: true
+      }
+    ];
+  };
+
+  // Watchlist tour steps
+  const getWatchlistSteps = (): TourStep[] => {
+    return [
+      {
+        id: 'watchlist-welcome',
+        target: 'body',
+        title: '👁️ Watchlist Manager',
+        content: 'Your watchlist lets you track stocks you\'re interested in before adding them to your portfolio. Get real-time price alerts and AI recommendations.',
+        position: 'center',
+        highlight: true,
+        skipable: false
+      },
+      {
+        id: 'add-to-watchlist',
+        target: '.add-watchlist-btn',
+        title: '➕ Add to Watchlist',
+        content: 'Click here to add new stocks to your watchlist. You\'ll get notifications when they reach your target prices.',
+        position: 'top',
+        highlight: true
+      },
+      {
+        id: 'watchlist-table',
+        target: 'table',
+        title: '📋 Your Watchlist',
+        content: 'This table shows all stocks you\'re watching, their current prices, target prices, and AI recommendations.',
+        position: 'top',
+        highlight: true
+      }
+    ];
+  };
+
+  // Risk Management tour steps
+  const getRiskManagementSteps = (): TourStep[] => {
+    return [
+      {
+        id: 'risk-welcome',
+        target: 'body',
+        title: '🛡️ Risk Management Center',
+        content: 'This is your risk management dashboard where you can monitor portfolio risk, set stop-losses, and get risk alerts.',
+        position: 'center',
+        highlight: true,
+        skipable: false
+      },
+      {
+        id: 'risk-metrics',
+        target: '.risk-card',
+        title: '⚠️ Risk Metrics',
+        content: 'These cards show your portfolio\'s risk metrics: Value at Risk (VaR), Maximum Drawdown, and Risk Score.',
+        position: 'bottom',
+        highlight: true
+      },
+      {
+        id: 'risk-alerts',
+        target: '.alert-panel',
+        title: '🚨 Risk Alerts',
+        content: 'This panel shows any active risk alerts for your portfolio. You\'ll be notified when stocks approach your risk thresholds.',
+        position: 'top',
+        highlight: true
+      }
+    ];
+  };
+
+  // Subscription tour steps
+  const getSubscriptionSteps = (): TourStep[] => {
+    return [
+      {
+        id: 'subscription-welcome',
+        target: 'body',
+        title: '💎 Subscription Plans',
+        content: 'Here you can view and upgrade your subscription plan to unlock premium features like advanced analytics and AI recommendations.',
+        position: 'center',
+        highlight: true,
+        skipable: false
+      },
+      {
+        id: 'current-plan',
+        target: '.current-plan',
+        title: '📋 Your Current Plan',
+        content: 'This shows your current subscription plan and its features. Premium plans include advanced AI analysis and priority support.',
+        position: 'bottom',
+        highlight: true
+      },
+      {
+        id: 'upgrade-options',
+        target: '.upgrade-card',
+        title: '🚀 Upgrade Options',
+        content: 'Click on any plan card to upgrade and unlock more features. Premium+ includes unlimited stocks and advanced risk management.',
+        position: 'top',
+        highlight: true
+      }
+    ];
+  };
+
   // Default tour steps with error handling
   const getDefaultSteps = (): TourStep[] => {
     try {
@@ -160,8 +398,11 @@ export function TourProvider({ children }: TourProviderProps) {
 
   const startTour = () => {
     try {
-      const defaultSteps = getDefaultSteps();
-      setStepsState(defaultSteps);
+      // Get page-specific tour steps based on current URL
+      const currentPath = window.location.pathname;
+      const pageSpecificSteps = getPageSpecificSteps(currentPath);
+      
+      setStepsState(pageSpecificSteps);
       setCurrentStep(0);
       setIsActive(true);
       // Add body class to prevent scrolling
