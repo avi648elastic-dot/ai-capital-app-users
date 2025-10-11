@@ -198,11 +198,12 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         console.log('📊 [TEST] API Key Stats:', apiStats);
         
       } catch (testError) {
-        console.error('❌ [TEST] Google Finance service test failed:', testError);
+        const error = testError as Error;
+        console.error('❌ [TEST] Google Finance service test failed:', error);
         console.error('❌ [TEST] Error details:', {
-          message: testError.message,
-          stack: testError.stack,
-          name: testError.name
+          message: error.message,
+          stack: error.stack,
+          name: error.name
         });
       }
       
