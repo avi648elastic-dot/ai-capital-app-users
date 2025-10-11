@@ -399,7 +399,14 @@ class GoogleFinanceFormulasService {
         timeout: 10000
       });
 
+      // Check for API error response
+      if (response.data && response.data.error) {
+        loggerService.warn(`⚠️ [FINNHUB] API Error for ${symbol}: ${response.data.error}`);
+        throw new Error(`Finnhub error: ${response.data.error}`);
+      }
+
       if (!response.data || response.data.s !== 'ok' || !response.data.c) {
+        loggerService.warn(`⚠️ [FINNHUB] Invalid response for ${symbol}:`, response.data);
         return null;
       }
 
