@@ -182,8 +182,8 @@ export default function Watchlist() {
     } else {
       setAlertType('both');
       // Set suggested prices
-      setHighPrice((stock.lastPrice * 1.1).toFixed(2));
-      setLowPrice((stock.lastPrice * 0.9).toFixed(2));
+      setHighPrice((stock.currentPrice * 1.1).toFixed(2));
+      setLowPrice((stock.currentPrice * 0.9).toFixed(2));
     }
     setShowAlertModal(true);
   };
@@ -372,7 +372,7 @@ export default function Watchlist() {
               {/* Price Display */}
               <div className="mb-4">
                 <div className="text-xl sm:text-2xl font-bold text-white [data-theme='light']:text-gray-900 mb-1">
-                  ${item.lastPrice?.toFixed(2) || 'N/A'}
+                  ${item.currentPrice?.toFixed(2) || 'N/A'}
                 </div>
                 <div className={`flex items-center text-xs sm:text-sm font-medium ${
                   item.change >= 0 ? 'text-emerald-400 [data-theme="light"]:text-emerald-600' : 'text-red-400 [data-theme="light"]:text-red-600'
@@ -487,7 +487,7 @@ export default function Watchlist() {
               <div className="text-sm text-slate-300 [data-theme='light']:text-gray-600 mb-2">{selectedStock.name}</div>
               <div className="flex items-baseline space-x-2">
                 <span className="text-xs text-slate-400 [data-theme='light']:text-gray-500">{t('currentPrice')}:</span>
-                <span className="text-xl font-bold text-blue-400 [data-theme='light']:text-blue-600">${selectedStock.lastPrice?.toFixed(2) || 'N/A'}</span>
+                <span className="text-xl font-bold text-blue-400 [data-theme='light']:text-blue-600">${selectedStock.currentPrice?.toFixed(2) || 'N/A'}</span>
               </div>
             </div>
 
@@ -546,7 +546,7 @@ export default function Watchlist() {
                       step="0.01"
                       value={highPrice}
                       onChange={(e) => setHighPrice(e.target.value)}
-                      placeholder={(selectedStock.lastPrice * 1.1).toFixed(2)}
+                      placeholder={(selectedStock.currentPrice * 1.1).toFixed(2)}
                       className="input-field w-full pl-8 text-lg font-bold"
                     />
                   </div>
@@ -566,7 +566,7 @@ export default function Watchlist() {
                       step="0.01"
                       value={lowPrice}
                       onChange={(e) => setLowPrice(e.target.value)}
-                      placeholder={(selectedStock.lastPrice * 0.9).toFixed(2)}
+                      placeholder={(selectedStock.currentPrice * 0.9).toFixed(2)}
                       className="input-field w-full pl-8 text-lg font-bold"
                     />
                   </div>

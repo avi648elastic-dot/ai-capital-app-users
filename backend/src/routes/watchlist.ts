@@ -27,6 +27,13 @@ router.get('/', authenticateToken, async (req, res) => {
           const change = item.lastPrice ? currentPrice - item.lastPrice : 0;
           const changePercent = item.lastPrice ? ((currentPrice - item.lastPrice) / item.lastPrice) * 100 : 0;
           
+          // Update the stored lastPrice and lastChecked in the database
+          if (metrics?.current && metrics.current !== item.lastPrice) {
+            item.lastPrice = metrics.current;
+            item.lastChecked = new Date();
+            await item.save();
+          }
+          
           return {
             id: item._id,
             ticker: item.ticker,
