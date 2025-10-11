@@ -32,7 +32,7 @@ export default function RootLayout({
           <LanguageProvider>
             <TourProvider>
               <ThemeApplier />
-              <div className="min-h-screen transition-colors duration-300 text-slate-100 [data-theme='light']:text-gray-900 relative">
+              <div className="min-h-screen transition-colors duration-300 bg-slate-950 text-slate-100 [data-theme='light']:bg-white [data-theme='light']:text-gray-900 relative">
                 {/* Global Animated Background - appears on all pages */}
                 <AnimatedBackground />
                 <div className="relative z-10">
