@@ -372,24 +372,39 @@ export default function Watchlist() {
 
               {/* Quick Alert Setup - Simple & Direct */}
               <div className="mb-4 p-3 bg-slate-700/30 [data-theme='light']:bg-gray-100 rounded-lg border border-slate-600/30 [data-theme='light']:border-gray-300">
-                <div className="text-xs font-semibold text-slate-300 [data-theme='light']:text-gray-700 mb-2 flex items-center">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  Quick Price Alerts
+                <div className="text-xs font-semibold text-slate-300 [data-theme='light']:text-gray-700 mb-2 flex items-center justify-between">
+                  <div className="flex items-center">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    Quick Price Alerts
+                  </div>
+                  {item.priceAlert?.enabled && (
+                    <span className="text-[10px] text-emerald-400 [data-theme='light']:text-emerald-600 flex items-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse"></div>
+                      Active
+                    </span>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-[10px] text-slate-400 [data-theme='light']:text-gray-600 block mb-1">High Price ($)</label>
                     <input
+                      key={`high-${item.id}-${item.priceAlert?.highPrice}`}
                       type="number"
                       step="0.01"
+                      min="0"
                       placeholder={(item.currentPrice * 1.1).toFixed(2)}
-                      defaultValue={item.priceAlert?.highPrice?.toString() || ''}
-                      onBlur={async (e) => {
-                        const value = parseFloat(e.target.value);
-                        if (value > 0 && value > item.currentPrice) {
+                      defaultValue={item.priceAlert?.highPrice || ''}
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          const value = parseFloat(e.currentTarget.value);
+                          if (!value || value <= 0) {
+                            showToast('warning', '⚠️ Enter a valid price');
+                            return;
+                          }
                           try {
+                            console.log('🔔 Saving HIGH alert:', value, 'for', item.ticker);
                             const token = Cookies.get('token');
-                            await axios.patch(
+                            const response = await axios.patch(
                               `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${item.id}/alert`,
                               {
                                 type: item.priceAlert?.lowPrice ? 'both' : 'high',
@@ -399,29 +414,40 @@ export default function Watchlist() {
                               },
                               { headers: { Authorization: `Bearer ${token}` } }
                             );
+                            console.log('✅ Alert saved:', response.data);
                             await fetchUserAndWatchlist();
-                            showToast('success', `✅ High alert set at $${value.toFixed(2)}`);
-                          } catch (error) {
-                            showToast('error', '❌ Failed to set alert');
+                            showToast('success', `✅ High alert: $${value.toFixed(2)}`);
+                            e.currentTarget.blur();
+                          } catch (error: any) {
+                            console.error('❌ Failed to save alert:', error);
+                            showToast('error', '❌ ' + (error.response?.data?.error || 'Failed'));
                           }
                         }
                       }}
-                      className="w-full px-2 py-1.5 text-xs bg-slate-800 [data-theme='light']:bg-white border border-slate-600 [data-theme='light']:border-gray-300 rounded text-white [data-theme='light']:text-gray-900 focus:ring-1 focus:ring-emerald-500"
+                      className="w-full px-2 py-1.5 text-xs bg-slate-800 [data-theme='light']:bg-white border border-slate-600 [data-theme='light']:border-gray-300 rounded text-white [data-theme='light']:text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
+                    <div className="text-[9px] text-slate-500 [data-theme='light']:text-gray-500 mt-0.5">Press Enter to save</div>
                   </div>
                   <div>
                     <label className="text-[10px] text-slate-400 [data-theme='light']:text-gray-600 block mb-1">Low Price ($)</label>
                     <input
+                      key={`low-${item.id}-${item.priceAlert?.lowPrice}`}
                       type="number"
                       step="0.01"
+                      min="0"
                       placeholder={(item.currentPrice * 0.9).toFixed(2)}
-                      defaultValue={item.priceAlert?.lowPrice?.toString() || ''}
-                      onBlur={async (e) => {
-                        const value = parseFloat(e.target.value);
-                        if (value > 0 && value < item.currentPrice) {
+                      defaultValue={item.priceAlert?.lowPrice || ''}
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          const value = parseFloat(e.currentTarget.value);
+                          if (!value || value <= 0) {
+                            showToast('warning', '⚠️ Enter a valid price');
+                            return;
+                          }
                           try {
+                            console.log('🔔 Saving LOW alert:', value, 'for', item.ticker);
                             const token = Cookies.get('token');
-                            await axios.patch(
+                            const response = await axios.patch(
                               `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${item.id}/alert`,
                               {
                                 type: item.priceAlert?.highPrice ? 'both' : 'low',
@@ -431,15 +457,19 @@ export default function Watchlist() {
                               },
                               { headers: { Authorization: `Bearer ${token}` } }
                             );
+                            console.log('✅ Alert saved:', response.data);
                             await fetchUserAndWatchlist();
-                            showToast('success', `✅ Low alert set at $${value.toFixed(2)}`);
-                          } catch (error) {
-                            showToast('error', '❌ Failed to set alert');
+                            showToast('success', `✅ Low alert: $${value.toFixed(2)}`);
+                            e.currentTarget.blur();
+                          } catch (error: any) {
+                            console.error('❌ Failed to save alert:', error);
+                            showToast('error', '❌ ' + (error.response?.data?.error || 'Failed'));
                           }
                         }
                       }}
-                      className="w-full px-2 py-1.5 text-xs bg-slate-800 [data-theme='light']:bg-white border border-slate-600 [data-theme='light']:border-gray-300 rounded text-white [data-theme='light']:text-gray-900 focus:ring-1 focus:ring-red-500"
+                      className="w-full px-2 py-1.5 text-xs bg-slate-800 [data-theme='light']:bg-white border border-slate-600 [data-theme='light']:border-gray-300 rounded text-white [data-theme='light']:text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
+                    <div className="text-[9px] text-slate-500 [data-theme='light']:text-gray-500 mt-0.5">Press Enter to save</div>
                   </div>
                 </div>
               </div>
