@@ -70,6 +70,13 @@ class GoogleFinanceFormulasService {
     ];
     this.currentFmpIndex = 0;
     
+    // Log which keys are being used
+    loggerService.info(`🔑 [API KEYS] Alpha Vantage keys loaded: ${this.alphaVantageKeys.length}`);
+    loggerService.info(`🔑 [API KEYS] Finnhub keys loaded: ${this.finnhubApiKeys.length}`);
+    loggerService.info(`🔑 [API KEYS] FMP keys loaded: ${this.fmpApiKeys.length}`);
+    loggerService.info(`🔑 [API KEYS] Using environment variables: ${!!process.env.ALPHA_VANTAGE_API_KEY_1}`);
+    loggerService.info(`🔑 [API KEYS] Alpha Vantage sample: ${this.alphaVantageKeys[0]?.substring(0, 8)}...`);
+    
     // Initialize LRU Cache with 10 minute TTL
     this.cache = new LRUCache<string, StockMetrics>({
       max: 1000, // Maximum 1000 cached stocks
