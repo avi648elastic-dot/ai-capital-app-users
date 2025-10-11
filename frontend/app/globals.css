@@ -35,109 +35,104 @@
   }
 }
 
-/* Mobile Responsive Fixes - Optimized for Better UX */
+/* Mobile Responsive Fixes - Natural & Optimized */
 @media (max-width: 768px) {
   html {
     width: 100vw !important;
-    height: 100% !important;
     overflow-x: hidden !important;
-    font-size: 14px !important; /* Smaller base size for mobile - 12.5% reduction */
-    -webkit-text-size-adjust: 100% !important; /* Allow text scaling */
+    font-size: 14px !important; /* Slightly smaller for mobile readability */
+    -webkit-text-size-adjust: 100% !important;
   }
   
   body {
     width: 100vw !important;
     min-height: 100vh !important;
     overflow-x: hidden !important;
-    font-size: 14px !important; /* Smaller base size */
     position: relative !important;
   }
   
   * {
-    -webkit-text-size-adjust: 100% !important; /* Allow text scaling */
+    -webkit-text-size-adjust: 100% !important;
     text-size-adjust: 100% !important;
   }
   
-        /* Scale down main content by 15% for mobile fit */
-        .min-h-screen > div:not(.fixed) {
-          transform: scale(0.85) !important;
-          transform-origin: top left !important;
-          width: 117.65% !important; /* 100% / 0.85 */
-        }
-  
-  /* Keep fixed elements (nav, modals) at normal scale */
-  .fixed,
-  [role="dialog"],
-  .modal {
-    transform: none !important;
+  /* Remove aggressive scaling - use natural responsive design */
+  .min-h-screen > div:not(.fixed) {
     width: 100% !important;
   }
   
-  /* Reduce component sizes by 30-40% */
+  /* Keep fixed elements properly sized */
+  .fixed,
+  [role="dialog"],
+  .modal {
+    width: 100% !important;
+  }
+  
+  /* Natural component sizing for mobile */
   .card {
-    @apply p-3 m-2; /* Reduced padding and margin */
+    @apply p-3 m-1; /* Compact but readable */
   }
   
   .input-field {
-    @apply py-2 px-3 text-sm; /* Smaller inputs */
+    @apply py-2.5 px-3 text-sm; /* Comfortable touch targets */
   }
   
-  /* Dashboard specific optimizations */
+  /* Dashboard optimizations */
   .dashboard-grid {
-    @apply gap-2 p-2; /* Tighter grid spacing */
+    @apply gap-3 p-2; /* Balanced spacing */
   }
   
   .portfolio-summary {
-    @apply p-3 space-y-2; /* Compact portfolio summary */
+    @apply p-3 space-y-3; /* Comfortable spacing */
   }
   
   .market-overview {
-    @apply p-3 space-y-2; /* Compact market overview */
+    @apply p-3 space-y-3; /* Comfortable spacing */
   }
   
-  /* Reduce text sizes for mobile */
-  h1 { @apply text-xl; }
-  h2 { @apply text-lg; }
-  h3 { @apply text-base; }
-  h4 { @apply text-sm; }
+  /* Natural text sizing */
+  h1 { @apply text-xl sm:text-2xl; }
+  h2 { @apply text-lg sm:text-xl; }
+  h3 { @apply text-base sm:text-lg; }
+  h4 { @apply text-sm sm:text-base; }
   
-  /* Compact navigation */
+  /* Touch-friendly navigation */
   .mobile-nav {
-    @apply p-2 space-y-1;
+    @apply p-3 space-y-2;
   }
   
   .nav-item {
-    @apply py-2 px-3 text-sm;
+    @apply py-3 px-4 text-sm; /* Comfortable touch targets */
   }
   
-  /* Compact tables */
+  /* Readable tables */
   .table-container {
-    @apply text-xs;
+    @apply text-xs sm:text-sm;
   }
   
   .table-container th,
   .table-container td {
-    @apply px-2 py-1;
+    @apply px-2 py-2; /* Comfortable cell padding */
   }
   
-  /* Compact charts */
+  /* Optimal chart height */
   .chart-container {
-    @apply h-48; /* Reduced chart height */
+    @apply h-56 sm:h-64; /* Taller for better readability */
   }
   
-  /* Compact buttons */
+  /* Touch-friendly buttons */
   .btn {
-    @apply py-2 px-3 text-sm;
+    @apply py-2.5 px-4 text-sm; /* Comfortable touch targets */
   }
   
-  /* Reduce spacing in forms */
+  /* Natural form spacing */
   .form-group {
-    @apply space-y-2;
+    @apply space-y-3;
   }
   
-  /* Compact modals */
+  /* Comfortable modals */
   .modal-content {
-    @apply p-4 m-2 max-w-sm;
+    @apply p-5 m-3 max-w-lg;
   }
 }
 

@@ -427,91 +427,59 @@ export default function Dashboard() {
       <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} />
       
       <div className="px-4 sm:px-6 lg:px-8">
-        {/* Enhanced Subscription Status Banner - AGGRESSIVE Mobile Optimization */}
-        <div className={`mb-6 sm:mb-6 p-6 sm:p-6 rounded-xl border-2 ${
+        {/* Compact Account Type Badge - Optimized */}
+        <div className={`mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg border ${
           user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+'
             ? user?.subscriptionTier === 'premium+' 
-              ? 'bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border-purple-500/50 shadow-lg shadow-purple-500/10'
-              : 'bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border-emerald-500/50 shadow-lg shadow-emerald-500/10'
-            : 'bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/50 shadow-lg shadow-amber-500/10'
+              ? 'bg-gradient-to-r from-purple-900/20 to-indigo-900/20 border-purple-500/30'
+              : 'bg-gradient-to-r from-emerald-900/20 to-blue-900/20 border-emerald-500/30'
+            : 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-500/30'
         }`}>
-          <div className="flex flex-col space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className={`w-6 h-6 rounded-full ${
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
                 user?.subscriptionTier === 'premium' ? 'bg-emerald-400' : 
                 user?.subscriptionTier === 'premium+' ? 'bg-purple-400' : 'bg-amber-400'
               } animate-pulse`}></div>
-              <div>
-                <div className="flex flex-col space-y-2">
-                  <h3 className={`text-2xl font-bold ${
-                    user?.subscriptionTier === 'premium' ? 'text-emerald-300' : 
-                    user?.subscriptionTier === 'premium+' ? 'text-purple-300' : 'text-amber-300'
-                  }`}>
-                    {user?.subscriptionTier === 'premium' ? '✨ Premium Account' : 
-                     user?.subscriptionTier === 'premium+' ? '👑 Premium+ Account' : '🔒 Free Account'}
-                  </h3>
-                  {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && (
-                    <span className={`px-3 py-2 text-white text-base rounded-full font-semibold w-fit ${
-                      user?.subscriptionTier === 'premium+' ? 'bg-purple-600' : 'bg-emerald-600'
-                    }`}>
-                      ACTIVE
-                    </span>
-                  )}
-                </div>
-                <p className="text-base text-slate-300 mb-3 leading-relaxed mt-2">
-                  {user?.subscriptionTier === 'premium' 
-                    ? 'Full access: Up to 3 portfolios of each type (Solid & Risky) with 15 stocks each. Plus real-time push notifications and advanced portfolio analytics with detailed market insights.' 
+              <h3 className={`text-xs sm:text-sm font-bold ${
+                user?.subscriptionTier === 'premium' ? 'text-emerald-300' : 
+                user?.subscriptionTier === 'premium+' ? 'text-purple-300' : 'text-amber-300'
+              }`}>
+                {user?.subscriptionTier === 'premium' ? '✨ Premium' : 
+                 user?.subscriptionTier === 'premium+' ? '👑 Premium+' : '🔒 Free'}
+              </h3>
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${
+                  user?.subscriptionTier === 'premium' 
+                    ? 'bg-emerald-600/20 text-emerald-300' 
                     : user?.subscriptionTier === 'premium+'
-                    ? 'Ultimate access: Unlimited portfolios with 20 stocks each, advanced risk management, real-time analytics, and priority support. All features unlocked!'
-                    : 'Limited to 1 portfolio with 10 stocks. Upgrade to unlock 6 portfolios with 15 stocks each!'
-                  }
-                </p>
-                <div className="flex flex-wrap gap-3 text-sm">
-                  <span className={`px-3 py-2 rounded-full ${
-                    user?.subscriptionTier === 'premium' 
-                      ? 'bg-emerald-600/20 text-emerald-300' 
-                      : user?.subscriptionTier === 'premium+'
-                      ? 'bg-purple-600/20 text-purple-300'
-                      : 'bg-amber-600/20 text-amber-300'
-                  }`}>
-                    {user?.subscriptionTier === 'premium' ? '6 Portfolios (3 Solid + 3 Risky)' : 
-                     user?.subscriptionTier === 'premium+' ? 'Unlimited Portfolios' : '1 Portfolio Only'}
-                  </span>
-                  <span className={`px-2 py-1 rounded-full ${
-                    user?.subscriptionTier === 'premium' 
-                      ? 'bg-blue-600/20 text-blue-300' 
-                      : user?.subscriptionTier === 'premium+'
-                      ? 'bg-purple-600/20 text-purple-300'
-                      : 'bg-amber-600/20 text-amber-300'
-                  }`}>
-                    {user?.subscriptionTier === 'premium' ? '15 Stocks Per Portfolio' : 
-                     user?.subscriptionTier === 'premium+' ? '20 Stocks Per Portfolio' : '10 Stocks Per Portfolio'}
-                  </span>
-                  <span className={`px-2 py-1 rounded-full ${
-                    user?.subscriptionTier === 'premium' 
-                      ? 'bg-purple-600/20 text-purple-300' 
-                      : user?.subscriptionTier === 'premium+'
-                      ? 'bg-purple-600/20 text-purple-300'
-                      : 'bg-slate-600/20 text-slate-400'
-                  }`}>
-                    {user?.subscriptionTier === 'premium' ? 'Both Portfolio Types' : 
-                     user?.subscriptionTier === 'premium+' ? 'All Features Unlocked' : '1 Portfolio Type Only'}
-                  </span>
-                </div>
+                    ? 'bg-purple-600/20 text-purple-300'
+                    : 'bg-amber-600/20 text-amber-300'
+                }`}>
+                  {user?.subscriptionTier === 'premium' ? '6 Portfolios' : 
+                   user?.subscriptionTier === 'premium+' ? '∞ Portfolios' : '1 Portfolio'}
+                </span>
+                <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${
+                  user?.subscriptionTier === 'premium' 
+                    ? 'bg-blue-600/20 text-blue-300' 
+                    : user?.subscriptionTier === 'premium+'
+                    ? 'bg-purple-600/20 text-purple-300'
+                    : 'bg-amber-600/20 text-amber-300'
+                }`}>
+                  {user?.subscriptionTier === 'premium' ? '15 Stocks' : 
+                   user?.subscriptionTier === 'premium+' ? '20 Stocks' : '10 Stocks'}
+                </span>
               </div>
             </div>
             {user?.subscriptionTier === 'free' && (
-              <div className="flex flex-col items-end space-y-2">
-                <button 
-                  className="btn-primary flex items-center space-x-2 px-6 py-3 text-sm font-bold opacity-60 cursor-not-allowed"
-                  title="Upgrade requires payment checkout (disabled here)"
-                  disabled
-                >
-                  <span>🚀</span>
-                  <span>Upgrade to Premium</span>
-                </button>
-                <p className="text-xs text-slate-400">Payments not configured in this environment</p>
-              </div>
+              <button 
+                className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-[10px] sm:text-xs font-bold rounded transition-all opacity-60 cursor-not-allowed flex items-center space-x-1"
+                title="Upgrade requires payment checkout (disabled here)"
+                disabled
+              >
+                <span>🚀</span>
+                <span className="hidden sm:inline">Upgrade</span>
+              </button>
             )}
           </div>
         </div>

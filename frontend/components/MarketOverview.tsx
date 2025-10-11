@@ -37,12 +37,13 @@ export default function MarketOverview() {
   const pct = (n?: number) => (n == null ? '' : `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`);
 
   return (
-    <div className="card p-3 sm:p-6 [data-theme='light']:bg-white [data-theme='light']:border-gray-200 bg-gradient-to-br from-slate-900/80 to-slate-800/80 market-overview">
-      <div className="flex flex-col mb-4 sm:mb-6 space-y-2 sm:space-y-3">
-        <h3 className="text-lg sm:text-2xl font-bold text-white tracking-wide [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">Markets Overview</h3>
-        <div className="flex items-center space-x-3">
-          {data?.updatedAt && <span className="text-sm text-slate-400 [data-theme='light']:text-gray-600 [data-theme='light']:!text-gray-600">Updated {new Date(data.updatedAt).toLocaleTimeString()}</span>}
-        </div>
+    <div className="card p-3 sm:p-4 [data-theme='light']:bg-white [data-theme='light']:border-gray-200 bg-gradient-to-br from-slate-900/80 to-slate-800/80 market-overview">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h3 className="text-base sm:text-lg font-bold text-white tracking-wide [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900 flex items-center space-x-2">
+          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+          <span>Markets</span>
+        </h3>
+        {data?.updatedAt && <span className="text-xs text-slate-400 [data-theme='light']:text-gray-600 [data-theme='light']:!text-gray-600">{new Date(data.updatedAt).toLocaleTimeString()}</span>}
       </div>
       <div className="grid grid-cols-2 gap-2 sm:gap-4">
         {[
@@ -52,16 +53,16 @@ export default function MarketOverview() {
         ].map(({ symbol, name }) => {
           const item = data!.indexes[symbol];
           return (
-                <div key={symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner [data-theme='light']:bg-white [data-theme='light']:border-gray-200 [data-theme='light']:shadow-sm [data-theme='light']:!bg-white [data-theme='light']:!border-gray-200">
-                  <div className="flex flex-col">
-                    <div className="flex items-center justify-between mb-2">
+                <div key={symbol} className="rounded-lg p-3 sm:p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner [data-theme='light']:bg-white [data-theme='light']:border-gray-200 [data-theme='light']:shadow-sm [data-theme='light']:!bg-white [data-theme='light']:!border-gray-200 hover:border-emerald-500/30 transition-all duration-200">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-slate-300 text-lg font-medium [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">{symbol}</div>
-                        <div className="text-slate-400 text-sm [data-theme='light']:text-gray-600 [data-theme='light']:!text-gray-600">{name}</div>
+                        <div className="text-slate-300 text-sm sm:text-base font-bold [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">{symbol}</div>
+                        <div className="text-slate-400 text-xs [data-theme='light']:text-gray-600 [data-theme='light']:!text-gray-600">{name}</div>
                       </div>
-                      <span className={`text-sm px-2 py-1 rounded-full ${item?.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300 [data-theme="light"]:bg-emerald-100 [data-theme="light"]:text-emerald-700' : 'bg-red-900/40 text-red-300 [data-theme="light"]:bg-red-100 [data-theme="light"]:text-red-700'}`}>{pct(item?.thisMonthPercent)}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${item?.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300 [data-theme="light"]:bg-emerald-100 [data-theme="light"]:text-emerald-700' : 'bg-red-900/40 text-red-300 [data-theme="light"]:bg-red-100 [data-theme="light"]:text-red-700'}`}>{pct(item?.thisMonthPercent)}</span>
                     </div>
-                    <div className="text-white text-xl font-bold [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">{fmt(item?.price)}</div>
+                    <div className="text-white text-base sm:text-lg font-bold [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">{fmt(item?.price)}</div>
                   </div>
                 </div>
           );
@@ -69,7 +70,7 @@ export default function MarketOverview() {
       </div>
 
       {/* Featured stocks: mobile-optimized */}
-      <div className="mt-6 grid grid-cols-2 gap-4">
+      <div className="mt-4 sm:mt-6 grid grid-cols-2 gap-2 sm:gap-4">
         {data!.featured.map((f) => {
           // Add company names for common stocks
           const getCompanyName = (symbol: string) => {
@@ -86,15 +87,17 @@ export default function MarketOverview() {
           };
           
           return (
-              <div key={f.symbol} className="rounded-xl p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner [data-theme='light']:bg-white [data-theme='light']:border-gray-200 [data-theme='light']:shadow-sm [data-theme='light']:!bg-white [data-theme='light']:!border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-slate-300 text-base font-medium [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">{f.symbol}</div>
-                    <div className="text-slate-400 text-sm [data-theme='light']:text-gray-600 [data-theme='light']:!text-gray-600">{getCompanyName(f.symbol)}</div>
+              <div key={f.symbol} className="rounded-lg p-3 sm:p-4 border border-slate-700/50 bg-slate-900/60 shadow-inner [data-theme='light']:bg-white [data-theme='light']:border-gray-200 [data-theme='light']:shadow-sm [data-theme='light']:!bg-white [data-theme='light']:!border-gray-200 hover:border-blue-500/30 transition-all duration-200">
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-slate-300 text-sm sm:text-base font-bold [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">{f.symbol}</div>
+                      <div className="text-slate-400 text-xs [data-theme='light']:text-gray-600 [data-theme='light']:!text-gray-600">{getCompanyName(f.symbol)}</div>
+                    </div>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300 [data-theme="light"]:bg-emerald-100 [data-theme="light"]:text-emerald-700' : 'bg-red-900/40 text-red-300 [data-theme="light"]:bg-red-100 [data-theme="light"]:text-red-700'}`}>{pct(f.thisMonthPercent)}</span>
                   </div>
-                  <span className={`text-sm px-2 py-1 rounded-full ${f.thisMonthPercent! >= 0 ? 'bg-emerald-900/40 text-emerald-300 [data-theme="light"]:bg-emerald-100 [data-theme="light"]:text-emerald-700' : 'bg-red-900/40 text-red-300 [data-theme="light"]:bg-red-100 [data-theme="light"]:text-red-700'}`}>{pct(f.thisMonthPercent)}</span>
+                  <div className="text-white text-base sm:text-lg font-bold [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">{fmt(f.price)}</div>
                 </div>
-                <div className="text-white text-xl font-bold mt-2 [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900">{fmt(f.price)}</div>
               </div>
           );
         })}
