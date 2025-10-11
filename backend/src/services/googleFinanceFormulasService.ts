@@ -192,7 +192,7 @@ class GoogleFinanceFormulasService {
    * 📊 Main method: Get stock metrics (replicates Google Sheet logic)
    * This is the equivalent of your Google Sheet formula that fetches 90 days of data
    */
-  async getStockMetrics(symbol: string): Promise<StockMetrics | null> {
+  async getStockMetrics(symbol: string): Promise<StockMetrics> {
     try {
       loggerService.info(`🔍 [GOOGLE FINANCE FORMULAS] Fetching metrics for ${symbol}`);
       
@@ -204,10 +204,6 @@ class GoogleFinanceFormulasService {
         return cachedData;
       }
 
-      // If APIs are failing, generate realistic data like your Google Sheet
-      loggerService.warn(`⚠️ [GOOGLE FINANCE FORMULAS] APIs failing, generating realistic data for ${symbol}`);
-      return this.generateRealisticStockData(symbol);
-      
       // Try Alpha Vantage first with smart key rotation (most reliable for historical data)
       let metrics: StockMetrics | null = null;
       
