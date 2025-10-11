@@ -95,8 +95,8 @@ export default function AppLayout({
         {/* Market Status Bar - positioned at the top */}
         <MarketStatusBar />
         
-        {/* Main Content */}
-        <div className="flex-1 px-4 sm:px-6 lg:px-8 pt-6 pb-6 sm:pb-8">
+        {/* Main Content - Optimized spacing */}
+        <div className="flex-1 px-3 sm:px-4 md:px-6 lg:px-8 pt-4 pb-4 sm:pt-6 sm:pb-8">
           <div className="max-w-7xl mx-auto w-full">
             {children}
           </div>
