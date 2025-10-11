@@ -2,6 +2,8 @@ import express from 'express';
 import User from '../models/User';
 import Portfolio from '../models/Portfolio';
 import { authenticateToken } from '../middleware/auth';
+import { decisionEngine } from '../services/decisionEngine';
+import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 
 const router = express.Router();
 
@@ -486,6 +488,70 @@ router.put('/users/:userId/promote', authenticateToken, requireAdmin, async (req
     });
   } catch (error) {
     console.error('Error promoting user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// API Key Management Endpoints
+router.get('/api-keys/stats', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('🔍 [ADMIN] Getting API key statistics');
+    
+    const cacheStats = decisionEngine.getCacheStats();
+    const apiKeyStats = decisionEngine.getApiKeyStats();
+    
+    const stats = {
+      cache: cacheStats,
+      apiKeys: apiKeyStats,
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('✅ [ADMIN] API key stats retrieved:', {
+      totalKeys: apiKeyStats.totalKeys,
+      availableKeys: apiKeyStats.availableKeys,
+      blacklistedKeys: apiKeyStats.blacklistedKeys,
+      cacheSize: cacheStats.size
+    });
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('❌ [ADMIN] Error getting API key stats:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Reset API key blacklist
+router.post('/api-keys/reset-blacklist', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('🔄 [ADMIN] Resetting API key blacklist');
+    
+    decisionEngine.resetApiKeyBlacklist();
+    
+    console.log('✅ [ADMIN] API key blacklist reset successfully');
+    res.json({ 
+      message: 'API key blacklist reset successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ [ADMIN] Error resetting blacklist:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Clear cache
+router.post('/api-keys/clear-cache', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('🧹 [ADMIN] Clearing cache');
+    
+    decisionEngine.clearCache();
+    
+    console.log('✅ [ADMIN] Cache cleared successfully');
+    res.json({ 
+      message: 'Cache cleared successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ [ADMIN] Error clearing cache:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

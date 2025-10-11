@@ -213,6 +213,20 @@ export class DecisionEngine {
   }
 
   /**
+   * 🔑 Get API key statistics (for monitoring)
+   */
+  getApiKeyStats() {
+    return googleFinanceFormulasService.getApiKeyStats();
+  }
+
+  /**
+   * 🔄 Reset API key blacklist (for admin)
+   */
+  resetApiKeyBlacklist() {
+    googleFinanceFormulasService.resetBlacklist();
+  }
+
+  /**
    * 🧹 Clear cache (for testing)
    */
   clearCache() {
