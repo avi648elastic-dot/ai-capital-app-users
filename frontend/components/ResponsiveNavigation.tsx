@@ -49,7 +49,7 @@ export default function ResponsiveNavigation({
       icon: BarChart3,
       children: [
         { id: 'performance', label: t('navigation.performance'), icon: TrendingUp, href: '/analytics/performance' },
-        { id: 'portfolio-analysis', label: t('navigation.portfolioAnalysis'), icon: PieChart, href: '/analytics', premium: true },
+        { id: 'portfolio-analysis', label: t('navigation.portfolioAnalysis'), icon: PieChart, href: '/analytics/portfolio-analysis', premium: true },
         { id: 'watchlist', label: t('navigation.watchlist'), icon: Eye, href: '/watchlist', premiumPlus: true },
         { id: 'risk-management', label: t('navigation.riskManagement'), icon: Shield, href: '/risk-management', premiumPlus: true },
         { id: 'reports', label: t('navigation.reports'), icon: Activity, href: '/analytics/reports', premiumPlus: true }
