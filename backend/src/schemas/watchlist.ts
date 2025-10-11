@@ -18,7 +18,7 @@ export const updateNotificationsSchema = z.object({
   enabled: z.boolean()
 });
 
-// Price alert schema
+// Price alert schema - FIXED FOR MAJOR
 export const priceAlertSchema = z.object({
   type: z.enum(['high', 'low', 'both']),
   
@@ -31,26 +31,7 @@ export const priceAlertSchema = z.object({
     .optional(),
   
   enabled: z.boolean().optional().default(true)
-}).refine(
-  (data) => {
-    // If type is 'high' or 'both', highPrice must be provided
-    if ((data.type === 'high' || data.type === 'both') && !data.highPrice) {
-      return false;
-    }
-    // If type is 'low' or 'both', lowPrice must be provided
-    if ((data.type === 'low' || data.type === 'both') && !data.lowPrice) {
-      return false;
-    }
-    // If type is 'both', lowPrice must be less than highPrice
-    if (data.type === 'both' && data.lowPrice && data.highPrice && data.lowPrice >= data.highPrice) {
-      return false;
-    }
-    return true;
-  },
-  {
-    message: 'Invalid price alert configuration'
-  }
-);
+});
 
 // Toggle alert schema
 export const toggleAlertSchema = z.object({

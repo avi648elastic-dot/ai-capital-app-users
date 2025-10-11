@@ -202,17 +202,24 @@ router.patch('/:id/notifications', authenticateToken, validate({ body: updateNot
   }
 });
 
-// Set price alert for a stock
+// Set price alert for a stock - FIXED FOR MAJOR
 router.patch('/:id/alert', authenticateToken, validate({ body: priceAlertSchema }), async (req, res) => {
   try {
     const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
     const { type, highPrice, lowPrice, enabled } = req.body;
     
+    loggerService.info(`🔔 [WATCHLIST] Setting price alert for user ${userId}, item ${id}`, { 
+      type, 
+      highPrice, 
+      lowPrice, 
+      enabled 
+    });
+    
     const priceAlert: IPriceAlert = {
       type,
-      highPrice: type === 'high' || type === 'both' ? highPrice : undefined,
-      lowPrice: type === 'low' || type === 'both' ? lowPrice : undefined,
+      highPrice: highPrice || undefined,
+      lowPrice: lowPrice || undefined,
       enabled: enabled !== undefined ? enabled : true,
       triggeredCount: 0
     };
@@ -238,8 +245,16 @@ router.patch('/:id/alert', authenticateToken, validate({ body: priceAlertSchema 
       priceAlert: watchlistItem.priceAlert
     });
   } catch (error) {
-    loggerService.error('❌ [WATCHLIST] Error setting price alert', { error });
-    res.status(500).json({ error: 'Failed to set price alert' });
+    loggerService.error('❌ [WATCHLIST] Error setting price alert', { 
+      error: error instanceof Error ? error.message : error,
+      userId: (req as any).user?._id || (req as any).user?.id,
+      itemId: req.params.id,
+      body: req.body
+    });
+    res.status(500).json({ 
+      error: 'Failed to set price alert',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
