@@ -16,6 +16,22 @@
   }
 }
 
+/* Mobile Responsive Fixes */
+@media (max-width: 768px) {
+  body {
+    transform: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-x: hidden !important;
+  }
+  
+  html {
+    transform: none !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
 @layer components {
   .card {
     @apply bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 shadow-2xl rounded-xl;
@@ -230,24 +246,93 @@
   animation: stock-down 2s ease-in-out infinite;
 }
 
-/* Theme Support */
-[data-theme='light'] body {
-  @apply bg-white text-gray-900;
-}
-
-[data-theme='light'] .card {
-  @apply bg-white/90 border-gray-200 shadow-lg;
-}
-
-[data-theme='light'] .input-field {
-  @apply bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500;
-}
-
-[data-theme='light'] .text-slate-100, 
-[data-theme='light'] .text-white {
-  text-shadow: none;
-}
-
-[data-theme='light'] .text-slate-200 {
-  text-shadow: none;
+/* Complete Theme Support */
+[data-theme='light'] {
+  /* Body and main backgrounds */
+  body { 
+    background: #ffffff !important; 
+    color: #1e293b !important; 
+  }
+  
+  /* Cards and containers */
+  .card { 
+    background: rgba(255, 255, 255, 0.95) !important; 
+    border-color: #e2e8f0 !important; 
+    color: #1e293b !important; 
+  }
+  
+  /* Input fields */
+  .input-field { 
+    background: #f8fafc !important; 
+    border-color: #cbd5e1 !important; 
+    color: #1e293b !important; 
+  }
+  
+  /* Tables */
+  table, .table-container, th, td { 
+    background: #ffffff !important; 
+    color: #1e293b !important; 
+    border-color: #e2e8f0 !important; 
+  }
+  
+  /* Text colors */
+  .text-slate-100, .text-slate-200, .text-slate-300, .text-slate-400 { 
+    color: #1e293b !important; 
+  }
+  .text-slate-500, .text-slate-600 { 
+    color: #475569 !important; 
+  }
+  .text-slate-700, .text-slate-800, .text-slate-900 { 
+    color: #1e293b !important; 
+  }
+  
+  /* Buttons */
+  .btn-primary { 
+    background: linear-gradient(to right, #3b82f6, #8b5cf6) !important; 
+    color: #ffffff !important; 
+  }
+  .btn-secondary { 
+    background: #f1f5f9 !important; 
+    color: #1e293b !important; 
+    border-color: #cbd5e1 !important; 
+  }
+  
+  /* Borders */
+  .border-slate-700, .border-slate-600, .border-slate-500 { 
+    border-color: #e2e8f0 !important; 
+  }
+  
+  /* Hover states */
+  .hover\:bg-slate-700:hover, .hover\:bg-slate-600:hover { 
+    background-color: #f1f5f9 !important; 
+  }
+  
+  /* Navigation */
+  nav, .nav-container { 
+    background: rgba(255, 255, 255, 0.95) !important; 
+    border-color: #e2e8f0 !important; 
+  }
+  
+  /* Sidebar */
+  .sidebar { 
+    background: #ffffff !important; 
+    border-color: #e2e8f0 !important; 
+  }
+  
+  /* Modals */
+  .modal, .overlay { 
+    background: rgba(255, 255, 255, 0.95) !important; 
+    color: #1e293b !important; 
+  }
+  
+  /* Charts */
+  .chart-container, .graph-container { 
+    background: #ffffff !important; 
+    color: #1e293b !important; 
+  }
+  
+  /* Remove text shadows in light theme */
+  .text-slate-100, .text-slate-200, .text-white { 
+    text-shadow: none !important; 
+  }
 }
