@@ -190,8 +190,27 @@ export const translations = {
         content: 'Get real-time alerts for important stock movements, portfolio changes, and market opportunities. Never miss a critical trading opportunity!'
       },
       settings: {
-        title: 'Settings & Preferences',
-        content: 'Customize your experience, manage notifications, update your profile, and configure your trading preferences here.'
+        title: 'Settings',
+        subtitle: 'Manage your account preferences',
+        appearance: 'Appearance',
+        theme: 'Theme',
+        dark: 'Dark Mode',
+        light: 'Light Mode',
+        language: 'Language',
+        notifications: 'Notifications',
+        pushNotifications: 'Push Notifications',
+        pushNotificationsDesc: 'Receive notifications about important updates',
+        emailUpdates: 'Email Updates',
+        emailUpdatesDesc: 'Get email notifications for portfolio changes',
+        account: 'Account',
+        manageProfile: 'Manage Profile',
+        updatePersonalInfo: 'Update your personal information',
+        subscription: 'Subscription',
+        manageSubscription: 'Manage your subscription plan',
+        signOut: 'Sign Out',
+        logoutFromAccount: 'Logout from your account',
+        saveSuccess: 'Settings saved successfully!',
+        saveError: 'Failed to save settings. Please try again.'
       },
       upgradeCta: {
         title: 'Ready to Upgrade? 💎',
@@ -390,8 +409,27 @@ export const translations = {
         content: 'احصل على تنبيهات فورية للحركات المهمة للأسهم وتغييرات المحفظة وفرص السوق. لا تفوت أبداً فرصة تداول حاسمة!'
       },
       settings: {
-        title: 'الإعدادات والتفضيلات',
-        content: 'خصص تجربتك وأدر الإشعارات وحدث ملفك الشخصي واعدد تفضيلات التداول الخاصة بك هنا.'
+        title: 'الإعدادات',
+        subtitle: 'إدارة تفضيلات حسابك',
+        appearance: 'المظهر',
+        theme: 'السمة',
+        dark: 'الوضع المظلم',
+        light: 'الوضع الفاتح',
+        language: 'اللغة',
+        notifications: 'الإشعارات',
+        pushNotifications: 'الإشعارات الفورية',
+        pushNotificationsDesc: 'تلقي إشعارات حول التحديثات المهمة',
+        emailUpdates: 'تحديثات البريد الإلكتروني',
+        emailUpdatesDesc: 'تلقي إشعارات البريد الإلكتروني لتغييرات المحفظة',
+        account: 'الحساب',
+        manageProfile: 'إدارة الملف الشخصي',
+        updatePersonalInfo: 'تحديث معلوماتك الشخصية',
+        subscription: 'الاشتراك',
+        manageSubscription: 'إدارة خطة الاشتراك',
+        signOut: 'تسجيل الخروج',
+        logoutFromAccount: 'تسجيل الخروج من حسابك',
+        saveSuccess: 'تم حفظ الإعدادات بنجاح!',
+        saveError: 'فشل في حفظ الإعدادات. يرجى المحاولة مرة أخرى.'
       },
       upgradeCta: {
         title: 'مستعد للترقية؟ 💎',
@@ -590,8 +628,27 @@ export const translations = {
         content: 'קבלו התראות בזמן אמת לתנועות חשובות של מניות, שינויים בתיק והזדמנויות שוק. לעולם אל תחמיצו הזדמנות מסחר קריטית!'
       },
       settings: {
-        title: 'הגדרות והעדפות',
-        content: 'התאימו את החוויה שלכם, נהלו התראות, עדכנו את הפרופיל שלכם והגדירו את העדפות המסחר שלכם כאן.'
+        title: 'הגדרות',
+        subtitle: 'נהל את העדפות החשבון שלך',
+        appearance: 'מראה',
+        theme: 'ערכת נושא',
+        dark: 'מצב כהה',
+        light: 'מצב בהיר',
+        language: 'שפה',
+        notifications: 'התראות',
+        pushNotifications: 'התראות דחיפה',
+        pushNotificationsDesc: 'קבל התראות על עדכונים חשובים',
+        emailUpdates: 'עדכוני אימייל',
+        emailUpdatesDesc: 'קבל התראות אימייל על שינויים בתיק',
+        account: 'חשבון',
+        manageProfile: 'נהל פרופיל',
+        updatePersonalInfo: 'עדכן את המידע האישי שלך',
+        subscription: 'מנוי',
+        manageSubscription: 'נהל את תוכנית המנוי שלך',
+        signOut: 'התנתק',
+        logoutFromAccount: 'התנתק מהחשבון שלך',
+        saveSuccess: 'ההגדרות נשמרו בהצלחה!',
+        saveError: 'נכשל בשמירת ההגדרות. אנא נסה שוב.'
       },
       upgradeCta: {
         title: 'מוכנים לשדרוג? 💎',
