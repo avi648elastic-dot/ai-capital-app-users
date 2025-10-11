@@ -102,7 +102,64 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
   }
 
   return (
-    <div className="card overflow-hidden">
+    <>
+      {/* Mobile Card View */}
+      <div className="block sm:hidden space-y-3">
+        {portfolio.map((item) => {
+          const { pnl, pnlPercent } = calculatePnL(item);
+          return (
+            <div key={item._id} className="card p-4 bg-gradient-to-br from-slate-800/50 to-slate-900/50 [data-theme='light']:from-white [data-theme='light']:to-gray-50">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="text-lg font-bold text-white [data-theme='light']:text-gray-900">{item.ticker}</h3>
+                  <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold mt-1 ${getActionColor(item.action)}`}>
+                    {item.action}
+                  </span>
+                </div>
+                <button
+                  onClick={() => onDelete(item._id)}
+                  className="text-red-400 hover:text-red-300 p-1"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-slate-400 [data-theme='light']:text-gray-600 text-xs">Shares</span>
+                  <p className="text-white [data-theme='light']:text-gray-900 font-semibold">{item.shares}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 [data-theme='light']:text-gray-600 text-xs">Entry</span>
+                  <p className="text-white [data-theme='light']:text-gray-900 font-semibold">{formatCurrency(item.entryPrice)}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 [data-theme='light']:text-gray-600 text-xs">Current</span>
+                  <p className="text-white [data-theme='light']:text-gray-900 font-semibold">{formatCurrency(item.currentPrice)}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 [data-theme='light']:text-gray-600 text-xs">P&L</span>
+                  <p className={`font-bold ${pnl >= 0 ? 'text-emerald-400 [data-theme="light"]:text-emerald-600' : 'text-red-400 [data-theme="light"]:text-red-600'}`}>
+                    {formatCurrency(pnl)} ({formatPercent(pnlPercent)})
+                  </p>
+                </div>
+              </div>
+              
+              {item.reason && (
+                <div className="mt-3 pt-3 border-t border-slate-700 [data-theme='light']:border-gray-200">
+                  <span className="text-slate-400 [data-theme='light']:text-gray-600 text-xs">Reason:</span>
+                  <p className="text-slate-300 [data-theme='light']:text-gray-700 text-xs mt-1">{item.reason}</p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden sm:block card overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-slate-800/50 [data-theme='light']:bg-gray-50 border-b border-slate-700 [data-theme='light']:border-gray-300">
@@ -260,5 +317,6 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
         </table>
       </div>
     </div>
+    </>
   );
 }

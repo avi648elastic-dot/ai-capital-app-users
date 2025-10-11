@@ -426,31 +426,114 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Users Table - Mobile Optimized */}
-        <div className="card overflow-hidden">
-          <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-700 flex justify-between items-center">
-            <h2 className="text-base sm:text-lg font-semibold text-white">All Users</h2>
-            <button
-              onClick={async () => {
-                try {
-                  const response = await axios.post(
-                    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/update-all-prices`,
-                    {},
-                    { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
-                  );
-                  alert(`✅ ${response.data.message}`);
-                  fetchData(); // Refresh all data
-                } catch (error) {
-                  console.error('Error updating all prices:', error);
-                  alert('❌ Error updating all prices. Please try again.');
-                }
-              }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Update All Prices</span>
-            </button>
-          </div>
+        {/* Users Table Header */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-base sm:text-lg font-semibold text-white">All Users</h2>
+          <button
+            onClick={async () => {
+              try {
+                const response = await axios.post(
+                  `${process.env.NEXT_PUBLIC_API_URL}/api/admin/update-all-prices`,
+                  {},
+                  { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
+                );
+                alert(`✅ ${response.data.message}`);
+                fetchData();
+              } catch (error) {
+                console.error('Error updating all prices:', error);
+                alert('❌ Error updating all prices. Please try again.');
+              }
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
+          >
+            <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Update All Prices</span>
+            <span className="sm:hidden">Update</span>
+          </button>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="block sm:hidden space-y-3">
+          {users.map((user) => (
+            <div key={user.id} className="card p-4 bg-gradient-to-br from-slate-800/50 to-slate-900/50">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="text-base font-bold text-white">{user.name}</h3>
+                  <p className="text-xs text-gray-400">{user.email}</p>
+                </div>
+                {user.isAdmin && (
+                  <span className="px-2 py-1 text-[10px] font-bold rounded-full text-red-300 bg-red-900/50 border border-red-500/30 flex items-center">
+                    <Shield className="w-3 h-3 mr-1" />
+                    ADMIN
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-2 mb-3">
+                <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-full ${
+                  user.subscriptionTier === 'premium+' 
+                    ? 'text-purple-300 bg-purple-900/50' 
+                    : user.subscriptionTier === 'premium'
+                    ? 'text-emerald-300 bg-emerald-900/50' 
+                    : 'text-amber-300 bg-amber-900/50'
+                }`}>
+                  {user.subscriptionTier === 'premium+' ? '💎 PREMIUM+' : 
+                   user.subscriptionTier === 'premium' ? '⭐ PREMIUM' : '🔒 FREE'}
+                </span>
+                <div className="flex items-center space-x-2 mt-2">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    user.onboardingCompleted ? 'text-primary-400 bg-primary-900' : 'text-warning-400 bg-warning-900'
+                  }`}>
+                    {user.onboardingCompleted ? '✅ Onboarded' : '⏳ Pending'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                <div>
+                  <span className="text-gray-400">Portfolio:</span>
+                  <p className="text-white font-semibold">{user.portfolioType || 'None'}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Stocks:</span>
+                  <p className="text-white font-semibold">{user.portfolioStats.stockCount}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">P&L:</span>
+                  <p className={`font-bold ${user.portfolioStats.totalPnL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {formatCurrency(user.portfolioStats.totalPnL)}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-gray-400">ROI:</span>
+                  <p className={`font-bold ${user.portfolioStats.pnlPercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    {user.portfolioStats.pnlPercent.toFixed(2)}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => viewUserPortfolio(user.id, user.name)}
+                  className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded text-xs flex items-center justify-center space-x-1"
+                >
+                  <Eye className="w-3 h-3" />
+                  <span>View</span>
+                </button>
+                <button
+                  onClick={() => toggleUserAdmin(user.id, user.isAdmin || false)}
+                  className="flex-1 bg-warning-600 hover:bg-warning-700 text-white px-3 py-1.5 rounded text-xs flex items-center justify-center space-x-1"
+                >
+                  <Crown className="w-3 h-3" />
+                  <span>{user.isAdmin ? 'Remove' : 'Make'} Admin</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden sm:block card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="table-header">
