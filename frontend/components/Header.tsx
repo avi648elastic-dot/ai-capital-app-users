@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import ThemeToggle from './ThemeToggle';
 import AcaciaLogo from './AcaciaLogo';
+import NotificationCenter from './NotificationCenter';
 
 interface HeaderProps {
   userName?: string;
@@ -64,6 +65,9 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                 <p className="text-sm font-medium text-slate-200">Welcome, {userName}</p>
                 <p className="text-xs text-slate-400">Portfolio Manager</p>
               </div>
+              
+              {/* NOTIFICATION BELL - VISIBLE ON ALL PAGES */}
+              <NotificationCenter userId={userName} />
               
               {/* Theme Toggle */}
               <ThemeToggle />
