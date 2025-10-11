@@ -40,20 +40,27 @@ export default function Page() {
     // ✅ Test token validity
     (async () => {
       try {
+        console.log('🔍 Checking token validity...', token.substring(0, 10) + '...');
+
         // Test user profile with token (no need for separate connectivity test)
         const { data } = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
+        console.log('✅ Token valid, user data:', data?.user);
+
         if (data?.user?.onboardingCompleted) {
+          console.log('✅ User authenticated, redirecting to dashboard');
           router.replace('/dashboard');
         } else {
           console.log('✅ User authenticated, redirecting to onboarding');
           router.replace('/onboarding');
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('❌ Token check failed:', err);
+        console.error('❌ Error details:', err.response?.data || err.message);
+        console.log('🧹 Removing invalid token...');
         Cookies.remove('token');
         setCheckingToken(false);
       }
@@ -81,12 +88,16 @@ export default function Page() {
         return;
       }
 
-      // ✅ Cookie set correctly for production (https)
+      // ✅ Cookie set correctly for both development and production
+      const isProduction = process.env.NODE_ENV === 'production';
+      console.log('🍪 Setting cookie - Production:', isProduction);
       Cookies.set('token', token, {
         expires: 7,
-        secure: true,
-        sameSite: 'None', // Required in production
+        secure: isProduction, // Only secure in production
+        sameSite: isProduction ? 'None' : 'Lax', // None for production, Lax for development
       });
+
+      console.log('✅ Token saved, checking onboarding status...');
 
       // ✅ Check status again
       const { data: status } = await axios.get(
@@ -96,9 +107,13 @@ export default function Page() {
         }
       );
 
+      console.log('📋 Onboarding status:', status);
+
       if (status?.onboardingCompleted) {
+        console.log('✅ User completed onboarding, redirecting to dashboard');
         router.replace('/dashboard');
       } else {
+        console.log('📝 User needs onboarding, redirecting to onboarding');
         router.replace('/onboarding');
       }
     } catch (err: any) {
@@ -123,7 +138,7 @@ export default function Page() {
     <div className="min-h-screen relative">
       {/* Animated Background */}
       <AnimatedBackground />
-      
+
       {/* Main Content */}
       <div className="flex items-center justify-center min-h-screen p-4 relative z-10">
         <div className="w-full max-w-md">
@@ -264,7 +279,7 @@ export default function Page() {
                     {isLogin ? t('auth.signup') : t('auth.login')}
                   </button>
                 </p>
-              </div>
+            </div>
           </div>
 
           {/* Trust Indicators */}
