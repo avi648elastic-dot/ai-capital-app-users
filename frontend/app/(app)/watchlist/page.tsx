@@ -182,8 +182,8 @@ export default function Watchlist() {
     } else {
       setAlertType('both');
       // Set suggested prices
-      setHighPrice((stock.currentPrice * 1.1).toFixed(2));
-      setLowPrice((stock.currentPrice * 0.9).toFixed(2));
+      setHighPrice((stock.lastPrice * 1.1).toFixed(2));
+      setLowPrice((stock.lastPrice * 0.9).toFixed(2));
     }
     setShowAlertModal(true);
   };
@@ -284,8 +284,8 @@ export default function Watchlist() {
 
       {/* Page Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white [data-theme='light']:text-gray-900 mb-2">{t('watchlist.title')}</h1>
-        <p className="text-sm sm:text-base text-slate-400 [data-theme='light']:text-gray-600">{t('watchlist.subtitle')}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white [data-theme='light']:text-gray-900 mb-2">{t('watchlistTitle')}</h1>
+        <p className="text-sm sm:text-base text-slate-400 [data-theme='light']:text-gray-600">{t('watchlistSubtitle')}</p>
       </div>
 
       {/* Add Stock Form - Professional */}
@@ -294,14 +294,14 @@ export default function Watchlist() {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mr-3">
             <Plus className="w-5 h-5 text-white" />
           </div>
-          {t('watchlist.addStock')}
+          {t('addStock')}
         </h2>
         <div className="flex gap-3 sm:gap-4">
           <input
             type="text"
             value={newTicker}
             onChange={(e) => setNewTicker(e.target.value.toUpperCase())}
-            placeholder={t('watchlist.enterSymbol')}
+            placeholder={t('enterSymbol')}
             className="input-field flex-1 text-sm sm:text-base"
             onKeyPress={(e) => e.key === 'Enter' && !addingStock && addToWatchlist()}
             disabled={addingStock}
@@ -372,7 +372,7 @@ export default function Watchlist() {
               {/* Price Display */}
               <div className="mb-4">
                 <div className="text-xl sm:text-2xl font-bold text-white [data-theme='light']:text-gray-900 mb-1">
-                  ${item.currentPrice.toFixed(2)}
+                  ${item.lastPrice?.toFixed(2) || 'N/A'}
                 </div>
                 <div className={`flex items-center text-xs sm:text-sm font-medium ${
                   item.change >= 0 ? 'text-emerald-400 [data-theme="light"]:text-emerald-600' : 'text-red-400 [data-theme="light"]:text-red-600'
@@ -471,7 +471,7 @@ export default function Watchlist() {
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                   <AlertCircle className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white [data-theme='light']:text-gray-900">{t('watchlist.priceAlertTitle')}</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white [data-theme='light']:text-gray-900">{t('priceAlertTitle')}</h3>
               </div>
               <button
                 onClick={closeAlertModal}
@@ -486,14 +486,14 @@ export default function Watchlist() {
               <div className="text-2xl font-bold text-white [data-theme='light']:text-gray-900 mb-1">{selectedStock.ticker}</div>
               <div className="text-sm text-slate-300 [data-theme='light']:text-gray-600 mb-2">{selectedStock.name}</div>
               <div className="flex items-baseline space-x-2">
-                <span className="text-xs text-slate-400 [data-theme='light']:text-gray-500">{t('watchlist.currentPrice')}:</span>
-                <span className="text-xl font-bold text-blue-400 [data-theme='light']:text-blue-600">${selectedStock.currentPrice.toFixed(2)}</span>
+                <span className="text-xs text-slate-400 [data-theme='light']:text-gray-500">{t('currentPrice')}:</span>
+                <span className="text-xl font-bold text-blue-400 [data-theme='light']:text-blue-600">${selectedStock.lastPrice?.toFixed(2) || 'N/A'}</span>
               </div>
             </div>
 
             {/* Alert Type Selection - Visual */}
             <div className="mb-6">
-              <label className="block text-xs sm:text-sm font-medium text-slate-300 [data-theme='light']:text-gray-700 mb-3">{t('watchlist.alertType')}</label>
+              <label className="block text-xs sm:text-sm font-medium text-slate-300 [data-theme='light']:text-gray-700 mb-3">{t('alertType')}</label>
               <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => setAlertType('high')}
@@ -504,7 +504,7 @@ export default function Watchlist() {
                   }`}
                 >
                   <TrendingUp className="w-5 h-5 mx-auto mb-1" />
-                  <div className="text-xs font-semibold">{t('watchlist.highOnly')}</div>
+                  <div className="text-xs font-semibold">{t('highOnly')}</div>
                 </button>
                 <button
                   onClick={() => setAlertType('low')}
@@ -515,7 +515,7 @@ export default function Watchlist() {
                   }`}
                 >
                   <TrendingDown className="w-5 h-5 mx-auto mb-1" />
-                  <div className="text-xs font-semibold">{t('watchlist.lowOnly')}</div>
+                  <div className="text-xs font-semibold">{t('lowOnly')}</div>
                 </button>
                 <button
                   onClick={() => setAlertType('both')}
@@ -526,7 +526,7 @@ export default function Watchlist() {
                   }`}
                 >
                   <AlertCircle className="w-5 h-5 mx-auto mb-1" />
-                  <div className="text-xs font-semibold">{t('watchlist.both')}</div>
+                  <div className="text-xs font-semibold">{t('both')}</div>
                 </button>
               </div>
             </div>
@@ -537,7 +537,7 @@ export default function Watchlist() {
                 <div className="bg-emerald-900/20 [data-theme='light']:bg-emerald-50 p-4 rounded-lg border border-emerald-700/50 [data-theme='light']:border-emerald-200">
                   <label className="block text-xs sm:text-sm font-semibold text-emerald-300 [data-theme='light']:text-emerald-700 mb-2 flex items-center">
                     <TrendingUp className="w-4 h-4 mr-1.5" />
-                    {t('watchlist.highPriceLabel')}
+                    {t('highPriceLabel')}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400">$</span>
@@ -546,7 +546,7 @@ export default function Watchlist() {
                       step="0.01"
                       value={highPrice}
                       onChange={(e) => setHighPrice(e.target.value)}
-                      placeholder={(selectedStock.currentPrice * 1.1).toFixed(2)}
+                      placeholder={(selectedStock.lastPrice * 1.1).toFixed(2)}
                       className="input-field w-full pl-8 text-lg font-bold"
                     />
                   </div>
@@ -557,7 +557,7 @@ export default function Watchlist() {
                 <div className="bg-red-900/20 [data-theme='light']:bg-red-50 p-4 rounded-lg border border-red-700/50 [data-theme='light']:border-red-200">
                   <label className="block text-xs sm:text-sm font-semibold text-red-300 [data-theme='light']:text-red-700 mb-2 flex items-center">
                     <TrendingDown className="w-4 h-4 mr-1.5" />
-                    {t('watchlist.lowPriceLabel')}
+                    {t('lowPriceLabel')}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400">$</span>
@@ -566,7 +566,7 @@ export default function Watchlist() {
                       step="0.01"
                       value={lowPrice}
                       onChange={(e) => setLowPrice(e.target.value)}
-                      placeholder={(selectedStock.currentPrice * 0.9).toFixed(2)}
+                      placeholder={(selectedStock.lastPrice * 0.9).toFixed(2)}
                       className="input-field w-full pl-8 text-lg font-bold"
                     />
                   </div>
@@ -581,9 +581,9 @@ export default function Watchlist() {
                   <Info className="w-5 h-5 text-blue-400 [data-theme='light']:text-blue-600" />
                 </div>
                 <div className="text-xs sm:text-sm text-slate-300 [data-theme='light']:text-gray-700">
-                  <div className="font-semibold text-blue-300 [data-theme='light']:text-blue-700 mb-1">{t('watchlist.smartMonitoring')}</div>
+                  <div className="font-semibold text-blue-300 [data-theme='light']:text-blue-700 mb-1">{t('smartMonitoring')}</div>
                   <p className="text-xs leading-relaxed">
-                    {t('watchlist.smartMonitoringDesc')}
+                    {t('smartMonitoringDesc')}
                   </p>
                 </div>
               </div>
