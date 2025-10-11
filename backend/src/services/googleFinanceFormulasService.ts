@@ -259,7 +259,9 @@ class GoogleFinanceFormulasService {
       // If all APIs fail, generate realistic data
       if (!metrics) {
         loggerService.warn(`⚠️ [GOOGLE FINANCE] All APIs failed for ${symbol}, generating realistic data`);
-        metrics = this.generateRealisticStockData(symbol);
+        const fallbackMetrics = this.generateRealisticStockData(symbol);
+        this.cache.set(symbol, fallbackMetrics);
+        return fallbackMetrics;
       }
       
       // Cache the result
