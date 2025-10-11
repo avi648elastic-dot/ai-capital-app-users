@@ -9,6 +9,7 @@ import AcaciaLogo from '@/components/AcaciaLogo';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
+import AnimatedBackground from '@/components/AnimatedBackground';
 
 // ✅ All requests will send cookies to other domains (cross-site)
 axios.defaults.withCredentials = true;
@@ -124,8 +125,11 @@ export default function Page() {
 
   return (
     <div className="min-h-screen relative">
+      {/* Animated Background */}
+      <AnimatedBackground />
+      
       {/* Main Content */}
-      <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="flex items-center justify-center min-h-screen p-4 relative z-10">
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="text-center mb-8">

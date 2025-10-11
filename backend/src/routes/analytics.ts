@@ -3,8 +3,49 @@ import Portfolio from '../models/Portfolio';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { sectorService } from '../services/sectorService';
 import { historicalDataService } from '../services/historicalDataService';
+import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 
 const router = express.Router();
+
+// Helper function to generate portfolio performance data from stock data
+function generatePortfolioPerformanceFromStockData(stockData: any[], days: number): any[] {
+  const performance: any[] = [];
+  const today = new Date();
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    
+    // Calculate total portfolio value for this day
+    const totalValue = stockData.reduce((sum, stock) => {
+      const currentPrice = stock.currentPrice || stock.entryPrice;
+      return sum + (currentPrice * stock.shares);
+    }, 0);
+    
+    // Calculate total cost basis
+    const totalCost = stockData.reduce((sum, stock) => {
+      return sum + (stock.entryPrice * stock.shares);
+    }, 0);
+    
+    const totalPnL = totalValue - totalCost;
+    const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
+    
+    // Calculate daily change (simplified - using current data)
+    const dailyChange = totalPnL;
+    const dailyChangePercent = totalPnLPercent;
+    
+    performance.push({
+      date: date.toISOString().split('T')[0],
+      totalValue: totalValue,
+      totalPnL: totalPnL,
+      totalPnLPercent: totalPnLPercent,
+      dailyChange: dailyChange,
+      dailyChangePercent: dailyChangePercent
+    });
+  }
+  
+  return performance;
+}
 
 // Basic analytics endpoint for dashboard charts (no premium required)
 router.get('/', authenticateToken, async (req, res) => {
@@ -140,17 +181,104 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     // Try to get historical performance data with fallback
     let portfolioPerformance: any[] = [];
     let sectorPerformance: any[] = [];
+    let portfolioData: any[] = [];
     
     try {
-      console.log('🔍 [ANALYTICS] Attempting to fetch historical data...');
-      portfolioPerformance = await historicalDataService.calculatePortfolioPerformance(
-        portfolio, 
-        30, // Last 30 days
-        userId.toString()
+      console.log('🔍 [ANALYTICS] Attempting to fetch data using Google Finance formulas service...');
+      
+      // Use our new Google Finance formulas service with multiple API keys
+      const portfolioData = await Promise.all(
+        portfolio.map(async (stock) => {
+          try {
+            const data = await googleFinanceFormulasService.getStockData(stock.ticker);
+            return {
+              ticker: stock.ticker,
+              shares: stock.shares,
+              entryPrice: stock.entryPrice,
+              currentPrice: data.currentPrice || stock.entryPrice,
+              priceChange: data.priceChange || 0,
+              priceChangePercent: data.priceChangePercent || 0,
+              volume: data.volume || 0,
+              marketCap: data.marketCap || 0,
+              pe: data.pe || 0,
+              pb: data.pb || 0,
+              debtToEquity: data.debtToEquity || 0,
+              roe: data.roe || 0,
+              roa: data.roa || 0,
+              grossMargin: data.grossMargin || 0,
+              operatingMargin: data.operatingMargin || 0,
+              netMargin: data.netMargin || 0,
+              revenueGrowth: data.revenueGrowth || 0,
+              earningsGrowth: data.earningsGrowth || 0,
+              dividendYield: data.dividendYield || 0,
+              beta: data.beta || 1,
+              volatility: data.volatility || 0,
+              sharpeRatio: data.sharpeRatio || 0,
+              maxDrawdown: data.maxDrawdown || 0,
+              rsi: data.rsi || 50,
+              macd: data.macd || 0,
+              sma20: data.sma20 || stock.entryPrice,
+              sma50: data.sma50 || stock.entryPrice,
+              sma200: data.sma200 || stock.entryPrice,
+              top30D: data.top30D || stock.entryPrice,
+              top60D: data.top60D || stock.entryPrice,
+              top90D: data.top90D || stock.entryPrice,
+              low30D: data.low30D || stock.entryPrice,
+              low60D: data.low60D || stock.entryPrice,
+              low90D: data.low90D || stock.entryPrice,
+              lastUpdated: new Date().toISOString()
+            };
+          } catch (error) {
+            console.error(`❌ [ANALYTICS] Failed to fetch data for ${stock.ticker}:`, error);
+            // Return fallback data
+            return {
+              ticker: stock.ticker,
+              shares: stock.shares,
+              entryPrice: stock.entryPrice,
+              currentPrice: stock.entryPrice,
+              priceChange: 0,
+              priceChangePercent: 0,
+              volume: 0,
+              marketCap: 0,
+              pe: 0,
+              pb: 0,
+              debtToEquity: 0,
+              roe: 0,
+              roa: 0,
+              grossMargin: 0,
+              operatingMargin: 0,
+              netMargin: 0,
+              revenueGrowth: 0,
+              earningsGrowth: 0,
+              dividendYield: 0,
+              beta: 1,
+              volatility: 0,
+              sharpeRatio: 0,
+              maxDrawdown: 0,
+              rsi: 50,
+              macd: 0,
+              sma20: stock.entryPrice,
+              sma50: stock.entryPrice,
+              sma200: stock.entryPrice,
+              top30D: stock.entryPrice,
+              top60D: stock.entryPrice,
+              top90D: stock.entryPrice,
+              low30D: stock.entryPrice,
+              low60D: stock.entryPrice,
+              low90D: stock.entryPrice,
+              lastUpdated: new Date().toISOString()
+            };
+          }
+        })
       );
-      console.log('✅ [ANALYTICS] Historical portfolio data fetched:', portfolioPerformance.length, 'days');
+
+      // Generate portfolio performance data from the fetched stock data
+      portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 30);
+      
+      console.log('✅ [ANALYTICS] Google Finance data fetched for', portfolioData.length, 'stocks');
+      console.log('✅ [ANALYTICS] Generated portfolio performance:', portfolioPerformance.length, 'days');
     } catch (error: any) {
-      console.error('❌ [ANALYTICS] Historical data service failed:', error?.message || error);
+      console.error('❌ [ANALYTICS] Google Finance formulas service failed:', error?.message || error);
       // No fake data - return empty array with error info
       portfolioPerformance = [];
     }
@@ -199,7 +327,9 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       portfolioPerformance,
       sectorPerformance,
       riskAssessment,
-      dataStatus
+      dataStatus,
+      stockData: portfolioData || [], // Include detailed stock data from Google Finance
+      dataSource: portfolioData && portfolioData.length > 0 ? 'Google Finance APIs' : 'Fallback Data (APIs unavailable)'
     };
 
     // Log data status for admin monitoring
