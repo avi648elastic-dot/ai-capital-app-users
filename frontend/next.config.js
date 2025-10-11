@@ -3,6 +3,10 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
   },
+  // Force environment variables to be loaded
+  publicRuntimeConfig: {
+    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  },
   // Keep config minimal for Vercel build stability
   output: 'standalone',
   eslint: {

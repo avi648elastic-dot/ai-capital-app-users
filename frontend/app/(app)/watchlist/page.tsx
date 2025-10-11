@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Toast from '@/components/ui/Toast';
 import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
+import { getApiUrl, logApiConfig } from '@/lib/config';
 
 interface PriceAlert {
   type: 'high' | 'low' | 'both';
@@ -59,6 +60,8 @@ export default function Watchlist() {
   };
 
   useEffect(() => {
+    // Log API configuration for debugging
+    logApiConfig();
     fetchUserAndWatchlist();
     // Refresh watchlist every 5 minutes
     const interval = setInterval(fetchUserAndWatchlist, 5 * 60 * 1000);
@@ -105,13 +108,13 @@ export default function Watchlist() {
       }
 
       // Fetch user data
-      const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`, {
+      const userResponse = await axios.get(getApiUrl('/api/user/profile'), {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(userResponse.data.user);
 
       // Fetch watchlist
-      const watchlistResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/watchlist`, {
+      const watchlistResponse = await axios.get(getApiUrl('/api/watchlist'), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -145,7 +148,7 @@ export default function Watchlist() {
     try {
       const token = Cookies.get('token');
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/add`,
+        getApiUrl('/api/watchlist/add'),
         { ticker: newTicker.toUpperCase() },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -169,7 +172,7 @@ export default function Watchlist() {
     try {
       const token = Cookies.get('token');
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${id}`,
+        getApiUrl(`/api/watchlist/${id}`),
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -185,7 +188,7 @@ export default function Watchlist() {
     try {
       const token = Cookies.get('token');
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${id}/notifications`,
+        getApiUrl(`/api/watchlist/${id}/notifications`),
         { notifications: !currentStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -209,7 +212,7 @@ export default function Watchlist() {
     try {
       const token = Cookies.get('token');
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${id}/alert`,
+        getApiUrl(`/api/watchlist/${id}/alert`),
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -354,7 +357,7 @@ export default function Watchlist() {
                           console.log('🔔 Saving HIGH alert:', value, 'for', item.ticker, 'ID:', item.id);
                           const token = Cookies.get('token');
                           console.log('🔑 Token exists:', !!token);
-                          console.log('🌐 API URL:', process.env.NEXT_PUBLIC_API_URL);
+                          console.log('🌐 API URL:', getApiUrl(''));
                           
                           const currentLow = parseFloat(quickAlerts[item.id]?.low || item.priceAlert?.lowPrice?.toString() || '0');
                           const requestData = {
@@ -366,7 +369,7 @@ export default function Watchlist() {
                           console.log('📤 Request data:', requestData);
                           
                           const response = await axios.patch(
-                            `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${item.id}/alert`,
+                            getApiUrl(`/api/watchlist/${item.id}/alert`),
                             requestData,
                             { 
                               headers: { 
@@ -437,7 +440,7 @@ export default function Watchlist() {
                           console.log('📤 Request data:', requestData);
                           
                           const response = await axios.patch(
-                            `${process.env.NEXT_PUBLIC_API_URL}/api/watchlist/${item.id}/alert`,
+                            getApiUrl(`/api/watchlist/${item.id}/alert`),
                             requestData,
                             { 
                               headers: { 
