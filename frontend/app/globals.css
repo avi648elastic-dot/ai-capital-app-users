@@ -418,3 +418,27 @@
 [data-theme='light'] h6 {
   color: #0f172a;
 }
+
+/* Force Markets Overview to be bright in light theme */
+[data-theme='light'] .card {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+[data-theme='light'] .card * {
+  color: #1e293b !important;
+}
+
+[data-theme='light'] .card h3 {
+  color: #0f172a !important;
+}
+
+[data-theme='light'] .card .text-slate-300,
+[data-theme='light'] .card .text-slate-400 {
+  color: #475569 !important;
+}
+
+[data-theme='light'] .card .text-white {
+  color: #0f172a !important;
+}
