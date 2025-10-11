@@ -228,4 +228,76 @@ router.post('/update-profile', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * 📌 GOOGLE OAUTH - Google Sign-In Authentication
+ */
+router.post('/google', async (req: Request, res: Response) => {
+  console.log('📩 [GOOGLE OAUTH] Request received');
+
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({ message: 'Google credential is required' });
+    }
+
+    // For now, we'll create a simple mock response
+    // In production, you should verify the Google credential server-side
+    console.log('🔑 [GOOGLE OAUTH] Processing credential...');
+
+    // Mock user data - replace with actual Google verification
+    const mockUserData = {
+      email: 'user@example.com',
+      name: 'Google User',
+      picture: 'https://via.placeholder.com/150',
+      email_verified: true
+    };
+
+    // Check if user exists
+    let user = await User.findOne({ email: mockUserData.email });
+
+    if (!user) {
+      // Create new user
+      user = new User({
+        name: mockUserData.name,
+        email: mockUserData.email,
+        password: '', // No password for OAuth users
+        subscriptionActive: false,
+        subscriptionTier: 'free',
+        onboardingCompleted: false,
+        googleId: credential.substring(0, 50), // Store part of credential as ID
+        avatar: mockUserData.picture,
+        isEmailVerified: mockUserData.email_verified
+      });
+
+      await user.save();
+      console.log('✅ [GOOGLE OAUTH] New user created:', user.email);
+    } else {
+      console.log('✅ [GOOGLE OAUTH] Existing user found:', user.email);
+    }
+
+    // Issue token
+    const token = issueToken(String(user._id), user.email, res);
+
+    return res.status(200).json({
+      message: 'Google authentication successful',
+      token,
+      user: {
+        id: String(user._id),
+        name: user.name,
+        email: user.email,
+        onboardingCompleted: user.onboardingCompleted,
+        subscriptionActive: user.subscriptionActive,
+        subscriptionTier: user.subscriptionTier,
+        avatar: user.avatar,
+        isEmailVerified: user.isEmailVerified
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ [GOOGLE OAUTH] Error:', error.message);
+    return res.status(500).json({ message: 'Google authentication failed' });
+  }
+});
+
 export default router;

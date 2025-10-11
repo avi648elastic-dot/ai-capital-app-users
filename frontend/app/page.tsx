@@ -138,36 +138,117 @@ export default function Page() {
           }}
         />
         
-        {/* Floating Stock Symbols */}
-        {['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'BTC', 'ETH'].map((symbol, index) => (
+        {/* Floating Stock Symbols & Market Markers */}
+        {['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META', 'NVDA', 'NFLX', 'BTC', 'ETH', 'SPY', 'QQQ', 'IWM', 'VIX', 'GOLD', 'OIL', 'EUR/USD', 'GBP/USD'].map((symbol, index) => (
           <div
             key={symbol}
-            className="absolute text-xs font-mono text-slate-400/60 opacity-40 animate-float-enhanced bg-slate-800/20 px-2 py-1 rounded backdrop-blur-sm"
+            className="absolute text-xs font-mono text-slate-400/70 opacity-50 animate-float-enhanced bg-slate-800/30 px-2 py-1 rounded backdrop-blur-sm border border-blue-500/30"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animationDelay: `${index * 0.5}s`,
               animationDuration: `${10 + Math.random() * 10}s`,
-              border: '1px solid rgba(59, 130, 246, 0.2)'
+              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)'
             }}
           >
             {symbol}
           </div>
         ))}
 
-        {/* Additional Floating Numbers */}
-        {[...Array(15)].map((_, i) => (
+        {/* Market Exchange Symbols */}
+        {['NYSE', 'NASDAQ', 'TSX', 'LSE', 'HKEX', 'TSE', 'SSE', 'BSE'].map((exchange, index) => (
           <div
-            key={`number-${i}`}
-            className="absolute text-sm font-mono text-emerald-400/50 animate-float"
+            key={`exchange-${exchange}`}
+            className="absolute text-xs font-bold text-emerald-400/60 opacity-40 animate-float bg-slate-900/40 px-2 py-1 rounded-full border border-emerald-500/20"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 8}s`,
-              animationDuration: `${8 + Math.random() * 6}s`
+              animationDelay: `${index * 0.7}s`,
+              animationDuration: `${12 + Math.random() * 8}s`,
+              fontSize: '10px'
             }}
           >
-            {`${(Math.random() * 100).toFixed(1)}%`}
+            {exchange}
+          </div>
+        ))}
+
+        {/* Financial Market Icons */}
+        {['📊', '📈', '📉', '💰', '💎', '🏦', '🏛️', '📋', '🔍', '⚡', '🎯', '📱', '💼', '🔄', '📌'].map((icon, index) => (
+          <div
+            key={`icon-${icon}`}
+            className="absolute text-lg opacity-30 animate-float-delayed"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${index * 0.3}s`,
+              animationDuration: `${8 + Math.random() * 6}s`,
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+            }}
+          >
+            {icon}
+          </div>
+        ))}
+
+        {/* Market Data Bubbles */}
+        {[...Array(20)].map((_, i) => {
+          const isPositive = Math.random() > 0.5;
+          const percentage = (Math.random() * 20).toFixed(1);
+          const price = (Math.random() * 500 + 50).toFixed(2);
+          
+          return (
+            <div
+              key={`market-data-${i}`}
+              className={`absolute text-xs font-mono animate-bubble-drift bg-slate-800/40 px-2 py-1 rounded-full border backdrop-blur-sm ${
+                isPositive 
+                  ? 'text-emerald-400/70 border-emerald-500/30' 
+                  : 'text-red-400/70 border-red-500/30'
+              }`}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 10}s`,
+                animationDuration: `${10 + Math.random() * 8}s`,
+                boxShadow: `0 2px 6px ${isPositive ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+              }}
+            >
+              {isPositive ? '+' : '-'}{percentage}% ${price}
+            </div>
+          );
+        })}
+
+        {/* Crypto & Forex Markers */}
+        {['BTC', 'ETH', 'ADA', 'SOL', 'MATIC', 'EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD'].map((symbol, index) => (
+          <div
+            key={`crypto-${symbol}`}
+            className="absolute text-xs font-bold text-purple-400/60 opacity-45 animate-float bg-slate-900/50 px-2 py-1 rounded-lg border border-purple-500/25"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${index * 0.6}s`,
+              animationDuration: `${9 + Math.random() * 7}s`,
+              fontSize: '11px',
+              boxShadow: '0 2px 8px rgba(139, 92, 246, 0.2)'
+            }}
+          >
+            {symbol}
+          </div>
+        ))}
+
+        {/* Market Sector Markers */}
+        {['TECH', 'HEALTH', 'ENERGY', 'FINANCE', 'REAL', 'CONSUMER', 'INDUSTRIAL', 'UTILITIES'].map((sector, index) => (
+          <div
+            key={`sector-${sector}`}
+            className="absolute text-xs font-bold text-orange-400/50 opacity-35 animate-float bg-slate-900/60 px-2 py-1 rounded-lg border border-orange-500/20"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${index * 0.8}s`,
+              animationDuration: `${11 + Math.random() * 9}s`,
+              fontSize: '10px',
+              textTransform: 'uppercase'
+            }}
+          >
+            {sector}
           </div>
         ))}
 
@@ -191,8 +272,22 @@ export default function Page() {
           🚀
         </div>
 
+        {/* Additional Market Icons */}
+        <div className="absolute top-1/4 right-1/4 animate-float text-2xl opacity-25">
+          🎯
+        </div>
+        <div className="absolute bottom-1/3 left-1/3 animate-float-delayed text-3xl opacity-20">
+          ⚡
+        </div>
+        <div className="absolute top-2/3 right-1/3 animate-float-slow text-2xl opacity-15">
+          🔍
+        </div>
+        <div className="absolute bottom-1/4 left-1/4 animate-float text-3xl opacity-25">
+          📋
+        </div>
+
         {/* Animated Bubbles - Multiple Types (Mobile Optimized) */}
-        {[...Array(window.innerWidth < 768 ? 12 : 25)].map((_, i) => {
+        {[...Array(typeof window !== 'undefined' && window.innerWidth < 768 ? 12 : 25)].map((_, i) => {
           const bubbleTypes = [
             'bg-gradient-to-r from-blue-500/30 to-cyan-500/20',
             'bg-gradient-to-r from-purple-500/30 to-pink-500/20', 
@@ -245,7 +340,7 @@ export default function Page() {
         })}
 
         {/* Floating Particles (Mobile Optimized) */}
-        {[...Array(window.innerWidth < 768 ? 15 : 30)].map((_, i) => (
+        {[...Array(typeof window !== 'undefined' && window.innerWidth < 768 ? 15 : 30)].map((_, i) => (
           <div
             key={`particle-${i}`}
             className="absolute w-1 h-1 bg-white/40 rounded-full animate-ping hidden md:block"

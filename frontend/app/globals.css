@@ -237,14 +237,14 @@
 
 /* Enhanced Mobile Optimization */
 @media (max-width: 768px) {
-  /* Optimized mobile scaling - 40% for better usability */
+  /* Remove aggressive scaling that breaks animations */
   body {
-    transform: scale(0.4);
-    transform-origin: top left;
-    width: 250vw;
-    height: 250vh;
-    overflow-x: auto;
-    overflow-y: auto;
+    /* transform: scale(0.4); */
+    /* transform-origin: top left; */
+    /* width: 250vw; */
+    /* height: 250vh; */
+    /* overflow-x: auto; */
+    /* overflow-y: auto; */
   }
   
   /* Enhanced mobile typography */
@@ -289,10 +289,10 @@
 /* Tablet optimization */
 @media (max-width: 1024px) and (min-width: 769px) {
   body {
-    transform: scale(0.7);
-    transform-origin: top left;
-    width: 142.86vw;
-    height: 142.86vh;
+    /* transform: scale(0.7); */
+    /* transform-origin: top left; */
+    /* width: 142.86vw; */
+    /* height: 142.86vh; */
   }
   
   .card {
@@ -304,10 +304,10 @@
 /* Large mobile optimization */
 @media (max-width: 480px) {
   body {
-    transform: scale(0.35);
-    transform-origin: top left;
-    width: 285.71vw;
-    height: 285.71vh;
+    /* transform: scale(0.35); */
+    /* transform-origin: top left; */
+    /* width: 285.71vw; */
+    /* height: 285.71vh; */
   }
   
   html {
