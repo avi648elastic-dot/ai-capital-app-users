@@ -463,155 +463,187 @@ export default function Watchlist() {
 
       {/* Price Alert Modal - IMPROVED UX */}
       {showAlertModal && selectedStock && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="card p-4 sm:p-6 max-w-md w-full modal-content shadow-2xl bg-gradient-to-br from-slate-800 to-slate-900 [data-theme='light']:from-white [data-theme='light']:to-gray-50">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <AlertCircle className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-white [data-theme='light']:text-gray-900">{t('priceAlertTitle')}</h3>
-              </div>
-              <button
-                onClick={closeAlertModal}
-                className="text-slate-400 hover:text-white [data-theme='light']:text-gray-600 [data-theme='light']:hover:text-gray-900 transition-colors hover:bg-slate-700 [data-theme='light']:hover:bg-gray-200 rounded-lg p-1"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Stock Info - Prominent */}
-            <div className="mb-6 p-4 bg-gradient-to-r from-blue-900/30 to-purple-900/30 [data-theme='light']:from-blue-50 [data-theme='light']:to-purple-50 rounded-lg border border-blue-700/50 [data-theme='light']:border-blue-200">
-              <div className="text-2xl font-bold text-white [data-theme='light']:text-gray-900 mb-1">{selectedStock.ticker}</div>
-              <div className="text-sm text-slate-300 [data-theme='light']:text-gray-600 mb-2">{selectedStock.name}</div>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-xs text-slate-400 [data-theme='light']:text-gray-500">{t('currentPrice')}:</span>
-                <span className="text-xl font-bold text-blue-400 [data-theme='light']:text-blue-600">${selectedStock.currentPrice?.toFixed(2) || 'N/A'}</span>
-              </div>
-            </div>
-
-            {/* Alert Type Selection - Visual */}
-            <div className="mb-6">
-              <label className="block text-xs sm:text-sm font-medium text-slate-300 [data-theme='light']:text-gray-700 mb-3">{t('alertType')}</label>
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  onClick={() => setAlertType('high')}
-                  className={`p-3 sm:p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
-                    alertType === 'high'
-                      ? 'border-emerald-500 bg-gradient-to-br from-emerald-900/50 to-emerald-800/50 text-white shadow-lg shadow-emerald-500/30 [data-theme="light"]:from-emerald-50 [data-theme="light"]:to-emerald-100 [data-theme="light"]:text-emerald-800'
-                      : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-emerald-600/50 [data-theme="light"]:border-gray-300 [data-theme="light"]:bg-gray-50 [data-theme="light"]:text-gray-600 [data-theme="light"]:hover:border-emerald-400'
-                  }`}
-                >
-                  <TrendingUp className="w-5 h-5 mx-auto mb-1" />
-                  <div className="text-xs font-semibold">{t('highOnly')}</div>
-                </button>
-                <button
-                  onClick={() => setAlertType('low')}
-                  className={`p-3 sm:p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
-                    alertType === 'low'
-                      ? 'border-red-500 bg-gradient-to-br from-red-900/50 to-red-800/50 text-white shadow-lg shadow-red-500/30 [data-theme="light"]:from-red-50 [data-theme="light"]:to-red-100 [data-theme="light"]:text-red-800'
-                      : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-red-600/50 [data-theme="light"]:border-gray-300 [data-theme="light"]:bg-gray-50 [data-theme="light"]:text-gray-600 [data-theme="light"]:hover:border-red-400'
-                  }`}
-                >
-                  <TrendingDown className="w-5 h-5 mx-auto mb-1" />
-                  <div className="text-xs font-semibold">{t('lowOnly')}</div>
-                </button>
-                <button
-                  onClick={() => setAlertType('both')}
-                  className={`p-3 sm:p-4 rounded-xl border-2 transition-all transform hover:scale-105 ${
-                    alertType === 'both'
-                      ? 'border-blue-500 bg-gradient-to-br from-blue-900/50 to-purple-900/50 text-white shadow-lg shadow-blue-500/30 [data-theme="light"]:from-blue-50 [data-theme="light"]:to-purple-100 [data-theme="light"]:text-blue-800'
-                      : 'border-slate-700 bg-slate-800/50 text-slate-400 hover:border-blue-600/50 [data-theme="light"]:border-gray-300 [data-theme="light"]:bg-gray-50 [data-theme="light"]:text-gray-600 [data-theme="light"]:hover:border-blue-400'
-                  }`}
-                >
-                  <AlertCircle className="w-5 h-5 mx-auto mb-1" />
-                  <div className="text-xs font-semibold">{t('both')}</div>
-                </button>
-              </div>
-            </div>
-
-            {/* Price Inputs - Clear and Simple */}
-            <div className="space-y-4 mb-6">
-              {(alertType === 'high' || alertType === 'both') && (
-                <div className="bg-emerald-900/20 [data-theme='light']:bg-emerald-50 p-4 rounded-lg border border-emerald-700/50 [data-theme='light']:border-emerald-200">
-                  <label className="block text-xs sm:text-sm font-semibold text-emerald-300 [data-theme='light']:text-emerald-700 mb-2 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-1.5" />
-                    {t('highPriceLabel')}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400">$</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={highPrice}
-                      onChange={(e) => setHighPrice(e.target.value)}
-                      placeholder={(selectedStock.currentPrice * 1.1).toFixed(2)}
-                      className="input-field w-full pl-8 text-lg font-bold"
-                    />
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[9999] p-2 sm:p-4">
+          <div className="bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 [data-theme='light']:from-yellow-300 [data-theme='light']:via-orange-400 [data-theme='light']:to-red-400 rounded-3xl shadow-2xl border-4 border-white/20 [data-theme='light']:border-gray-200 w-full max-w-sm sm:max-w-lg max-h-[90vh] overflow-y-auto transform scale-100 animate-in zoom-in-95 duration-300">
+            {/* ULTRA PROMINENT HEADER */}
+            <div className="relative p-4 sm:p-6 border-b border-white/20 [data-theme='light']:border-gray-300">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/20 flex items-center justify-center shadow-lg animate-pulse">
+                    <AlertCircle className="w-7 h-7 sm:w-9 sm:h-9 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg sm:text-2xl font-black text-white mb-1">
+                      🚨 PRICE ALERT
+                    </h3>
+                    <p className="text-sm sm:text-base text-white/90 font-medium">
+                      Set your targets
+                    </p>
                   </div>
                 </div>
-              )}
-
-              {(alertType === 'low' || alertType === 'both') && (
-                <div className="bg-red-900/20 [data-theme='light']:bg-red-50 p-4 rounded-lg border border-red-700/50 [data-theme='light']:border-red-200">
-                  <label className="block text-xs sm:text-sm font-semibold text-red-300 [data-theme='light']:text-red-700 mb-2 flex items-center">
-                    <TrendingDown className="w-4 h-4 mr-1.5" />
-                    {t('lowPriceLabel')}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400">$</span>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={lowPrice}
-                      onChange={(e) => setLowPrice(e.target.value)}
-                      placeholder={(selectedStock.currentPrice * 0.9).toFixed(2)}
-                      className="input-field w-full pl-8 text-lg font-bold"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Info Box */}
-            <div className="mb-6 p-4 bg-blue-900/20 [data-theme='light']:bg-blue-50 border border-blue-700/50 [data-theme='light']:border-blue-200 rounded-lg">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                  <Info className="w-5 h-5 text-blue-400 [data-theme='light']:text-blue-600" />
-                </div>
-                <div className="text-xs sm:text-sm text-slate-300 [data-theme='light']:text-gray-700">
-                  <div className="font-semibold text-blue-300 [data-theme='light']:text-blue-700 mb-1">{t('smartMonitoring')}</div>
-                  <p className="text-xs leading-relaxed">
-                    {t('smartMonitoringDesc')}
-                  </p>
-                </div>
+                <button
+                  onClick={closeAlertModal}
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/20 hover:bg-white/30 text-white transition-all duration-200 flex items-center justify-center border border-white/30"
+                >
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
               </div>
             </div>
+            
+            {/* CONTENT AREA */}
+            <div className="p-4 sm:p-6">
 
-            {/* Action Buttons - Clear and Prominent */}
-            <div className="flex space-x-3">
-              <button
-                onClick={closeAlertModal}
-                disabled={savingAlert}
-                className="flex-1 py-3 px-4 bg-slate-700 text-white rounded-lg hover:bg-slate-600 [data-theme='light']:bg-gray-200 [data-theme='light']:text-gray-900 [data-theme='light']:hover:bg-gray-300 transition-all font-medium disabled:opacity-50"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={savePriceAlert}
-                disabled={savingAlert}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg shadow-blue-500/50 font-medium disabled:opacity-50 flex items-center justify-center space-x-2"
-              >
-                {savingAlert ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <span>{t('common.save')}</span>
+              {/* STOCK INFO - ULTRA PROMINENT */}
+              <div className="mb-6 p-4 sm:p-6 bg-white/10 [data-theme='light']:bg-gray-900/10 rounded-2xl border-2 border-white/20 [data-theme='light']:border-gray-300 backdrop-blur-sm">
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-black text-white [data-theme='light']:text-gray-900 mb-2">
+                    {selectedStock.ticker}
+                  </div>
+                  <div className="text-sm sm:text-base text-white/80 [data-theme='light']:text-gray-700 mb-3 font-medium">
+                    {selectedStock.name}
+                  </div>
+                  <div className="bg-white/20 [data-theme='light']:bg-gray-800/20 rounded-xl p-3 sm:p-4">
+                    <div className="text-xs sm:text-sm text-white/70 [data-theme='light']:text-gray-400 mb-1 font-medium">
+                      CURRENT PRICE
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-black text-white [data-theme='light']:text-gray-900">
+                      ${selectedStock.currentPrice?.toFixed(2) || 'N/A'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ALERT TYPE SELECTION - ULTRA PROMINENT */}
+              <div className="mb-6">
+                <label className="block text-sm sm:text-base font-black text-white [data-theme='light']:text-gray-900 mb-4 text-center">
+                  🎯 CHOOSE ALERT TYPE
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button
+                    onClick={() => setAlertType('high')}
+                    className={`p-4 sm:p-5 rounded-2xl border-3 transition-all transform hover:scale-105 ${
+                      alertType === 'high'
+                        ? 'border-green-400 bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-xl shadow-green-500/50'
+                        : 'border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-green-300'
+                    }`}
+                  >
+                    <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2" />
+                    <div className="text-sm sm:text-base font-black">HIGH ONLY</div>
+                    <div className="text-xs opacity-80">Price goes up</div>
+                  </button>
+                  <button
+                    onClick={() => setAlertType('low')}
+                    className={`p-4 sm:p-5 rounded-2xl border-3 transition-all transform hover:scale-105 ${
+                      alertType === 'low'
+                        ? 'border-red-400 bg-gradient-to-br from-red-500 to-pink-600 text-white shadow-xl shadow-red-500/50'
+                        : 'border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-red-300'
+                    }`}
+                  >
+                    <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2" />
+                    <div className="text-sm sm:text-base font-black">LOW ONLY</div>
+                    <div className="text-xs opacity-80">Price goes down</div>
+                  </button>
+                  <button
+                    onClick={() => setAlertType('both')}
+                    className={`p-4 sm:p-5 rounded-2xl border-3 transition-all transform hover:scale-105 sm:col-span-1 ${
+                      alertType === 'both'
+                        ? 'border-blue-400 bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-xl shadow-blue-500/50'
+                        : 'border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-blue-300'
+                    }`}
+                  >
+                    <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2" />
+                    <div className="text-sm sm:text-base font-black">BOTH</div>
+                    <div className="text-xs opacity-80">Up & down alerts</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* PRICE INPUTS - ULTRA PROMINENT */}
+              <div className="space-y-4 mb-6">
+                {(alertType === 'high' || alertType === 'both') && (
+                  <div className="bg-white/10 [data-theme='light']:bg-gray-900/10 p-4 sm:p-6 rounded-2xl border-2 border-green-400/50 [data-theme='light']:border-green-300 backdrop-blur-sm">
+                    <label className="block text-sm sm:text-base font-black text-white [data-theme='light']:text-gray-900 mb-3 text-center">
+                      📈 HIGH PRICE ALERT
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-white [data-theme='light']:text-gray-900">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={highPrice}
+                        onChange={(e) => setHighPrice(e.target.value)}
+                        placeholder={(selectedStock.currentPrice * 1.1).toFixed(2)}
+                        className="w-full pl-12 pr-4 py-4 sm:py-5 text-xl sm:text-2xl font-black text-white [data-theme='light']:text-gray-900 bg-white/20 [data-theme='light']:bg-gray-800/20 rounded-xl border-2 border-green-400/30 [data-theme='light']:border-green-300 focus:border-green-400 focus:ring-2 focus:ring-green-400/20 outline-none"
+                      />
+                    </div>
+                    <div className="text-xs text-white/70 [data-theme='light']:text-gray-400 mt-2 text-center">
+                      When price goes ABOVE this amount
+                    </div>
+                  </div>
                 )}
-              </button>
+
+                {(alertType === 'low' || alertType === 'both') && (
+                  <div className="bg-white/10 [data-theme='light']:bg-gray-900/10 p-4 sm:p-6 rounded-2xl border-2 border-red-400/50 [data-theme='light']:border-red-300 backdrop-blur-sm">
+                    <label className="block text-sm sm:text-base font-black text-white [data-theme='light']:text-gray-900 mb-3 text-center">
+                      📉 LOW PRICE ALERT
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-black text-white [data-theme='light']:text-gray-900">$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={lowPrice}
+                        onChange={(e) => setLowPrice(e.target.value)}
+                        placeholder={(selectedStock.currentPrice * 0.9).toFixed(2)}
+                        className="w-full pl-12 pr-4 py-4 sm:py-5 text-xl sm:text-2xl font-black text-white [data-theme='light']:text-gray-900 bg-white/20 [data-theme='light']:bg-gray-800/20 rounded-xl border-2 border-red-400/30 [data-theme='light']:border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none"
+                      />
+                    </div>
+                    <div className="text-xs text-white/70 [data-theme='light']:text-gray-400 mt-2 text-center">
+                      When price goes BELOW this amount
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* INFO BOX - PROMINENT */}
+              <div className="mb-6 p-4 sm:p-5 bg-white/10 [data-theme='light']:bg-gray-900/10 rounded-2xl border-2 border-white/20 [data-theme='light']:border-gray-300 backdrop-blur-sm">
+                <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <Info className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                  </div>
+                  <div className="text-sm sm:text-base text-white [data-theme='light']:text-gray-900">
+                    <div className="font-black text-white [data-theme='light']:text-gray-900 mb-2">⚡ SMART MONITORING</div>
+                    <p className="text-xs sm:text-sm leading-relaxed text-white/80 [data-theme='light']:text-gray-700">
+                      We check prices every 5 minutes and send instant notifications when your targets are reached!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* ACTION BUTTONS - ULTRA PROMINENT */}
+              <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                <button
+                  onClick={closeAlertModal}
+                  disabled={savingAlert}
+                  className="flex-1 py-4 sm:py-5 px-6 bg-white/20 hover:bg-white/30 text-white rounded-2xl transition-all font-black text-lg disabled:opacity-50 border-2 border-white/30"
+                >
+                  CANCEL
+                </button>
+                <button
+                  onClick={savePriceAlert}
+                  disabled={savingAlert}
+                  className="flex-1 py-4 sm:py-5 px-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl transition-all shadow-xl shadow-green-500/50 font-black text-lg disabled:opacity-50 flex items-center justify-center space-x-2 border-2 border-green-400"
+                >
+                  {savingAlert ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>SAVING...</span>
+                    </>
+                  ) : (
+                    <span>💾 SAVE ALERT</span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
