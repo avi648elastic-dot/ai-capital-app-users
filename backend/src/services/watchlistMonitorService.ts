@@ -109,15 +109,16 @@ class WatchlistMonitorService {
 
   /**
    * Check a single watchlist item for price alerts
+   * @returns true if alert was triggered, false otherwise
    */
-  private async checkWatchlistItem(item: any): Promise<void> {
+  private async checkWatchlistItem(item: any): Promise<boolean> {
     try {
       // Fetch current price
       const metrics = await googleFinanceFormulasService.getStockMetrics(item.ticker);
       
       if (!metrics || !metrics.current) {
         loggerService.warn(`⚠️ [WATCHLIST MONITOR] No price data for ${item.ticker}`);
-        return;
+        return false;
       }
       
       const currentPrice = metrics.current;
@@ -152,10 +153,17 @@ class WatchlistMonitorService {
         // item.priceAlert.enabled = false;
         
         loggerService.info(`✅ [WATCHLIST MONITOR] Notification sent for ${item.ticker} alert`);
+        
+        // Save updated item
+        await item.save();
+        
+        return true;
       }
       
-      // Save updated item
+      // Save updated item (price and last checked)
       await item.save();
+      
+      return false;
       
     } catch (error) {
       loggerService.error(`❌ [WATCHLIST MONITOR] Error checking ${item.ticker}`, {
