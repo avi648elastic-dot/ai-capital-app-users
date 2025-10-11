@@ -202,63 +202,103 @@ router.patch('/:id/notifications', authenticateToken, validate({ body: updateNot
   }
 });
 
-// Set price alert for a stock - FIXED FOR MAJOR
-router.patch('/:id/alert', authenticateToken, validate({ body: priceAlertSchema }), async (req, res) => {
+// Set price alert for a stock - COMPLETE FIX FOR MAJOR
+router.patch('/:id/alert', authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user._id || (req as any).user.id;
     const { id } = req.params;
+    
+    loggerService.info(`🔔 [WATCHLIST ALERT] ============================================`);
+    loggerService.info(`🔔 [WATCHLIST ALERT] Incoming request from user: ${userId}`);
+    loggerService.info(`🔔 [WATCHLIST ALERT] Item ID: ${id}`);
+    loggerService.info(`🔔 [WATCHLIST ALERT] Request body:`, req.body);
+    loggerService.info(`🔔 [WATCHLIST ALERT] ============================================`);
+    
+    // Manual validation (bypass Zod to avoid issues)
     const { type, highPrice, lowPrice, enabled } = req.body;
     
-    loggerService.info(`🔔 [WATCHLIST] Setting price alert for user ${userId}, item ${id}`, { 
-      type, 
-      highPrice, 
-      lowPrice, 
-      enabled 
-    });
+    if (!type || !['high', 'low', 'both'].includes(type)) {
+      loggerService.error(`❌ [WATCHLIST ALERT] Invalid type: ${type}`);
+      return res.status(400).json({ 
+        error: 'Invalid alert type',
+        details: 'Type must be one of: high, low, both'
+      });
+    }
     
+    if (type === 'high' && (!highPrice || highPrice <= 0)) {
+      loggerService.error(`❌ [WATCHLIST ALERT] High price required but not provided`);
+      return res.status(400).json({ 
+        error: 'High price required',
+        details: 'High price must be greater than 0'
+      });
+    }
+    
+    if (type === 'low' && (!lowPrice || lowPrice <= 0)) {
+      loggerService.error(`❌ [WATCHLIST ALERT] Low price required but not provided`);
+      return res.status(400).json({ 
+        error: 'Low price required',
+        details: 'Low price must be greater than 0'
+      });
+    }
+    
+    // Build price alert object
     const priceAlert: IPriceAlert = {
-      type,
-      highPrice: highPrice || undefined,
-      lowPrice: lowPrice || undefined,
-      enabled: enabled !== undefined ? enabled : true,
+      type: type as 'high' | 'low' | 'both',
+      highPrice: highPrice ? Number(highPrice) : undefined,
+      lowPrice: lowPrice ? Number(lowPrice) : undefined,
+      enabled: enabled !== undefined ? Boolean(enabled) : true,
       triggeredCount: 0
     };
     
-    loggerService.info(`🔍 [WATCHLIST] Looking for item with ID: ${id}, UserID: ${userId}`);
+    loggerService.info(`📊 [WATCHLIST ALERT] Price alert object:`, priceAlert);
+    loggerService.info(`🔍 [WATCHLIST ALERT] Searching for watchlist item...`);
     
-    const watchlistItem = await Watchlist.findOneAndUpdate(
-      { _id: id, userId },
-      { priceAlert },
-      { new: true }
-    );
+    // Find the item first to verify it exists
+    const existingItem = await Watchlist.findOne({ _id: id, userId });
     
-    if (!watchlistItem) {
-      loggerService.warn(`❌ [WATCHLIST] Item not found - ID: ${id}, UserID: ${userId}`);
+    if (!existingItem) {
+      loggerService.error(`❌ [WATCHLIST ALERT] Item NOT FOUND - ID: ${id}, UserID: ${userId}`);
+      
+      // Check if item exists at all (maybe wrong user?)
+      const anyItem = await Watchlist.findById(id);
+      if (anyItem) {
+        loggerService.error(`❌ [WATCHLIST ALERT] Item exists but belongs to different user! ItemUserID: ${anyItem.userId}, RequestUserID: ${userId}`);
+        return res.status(403).json({ error: 'Not authorized to modify this watchlist item' });
+      }
+      
       return res.status(404).json({ error: 'Watchlist item not found' });
     }
     
-    loggerService.info(`✅ [WATCHLIST] Item found and updated: ${watchlistItem.ticker}`);
+    loggerService.info(`✅ [WATCHLIST ALERT] Found item: ${existingItem.ticker} for user ${userId}`);
+    loggerService.info(`📊 [WATCHLIST ALERT] Current priceAlert:`, existingItem.priceAlert);
     
-    loggerService.info(`✅ [WATCHLIST] Set price alert for ${watchlistItem.ticker}`, { 
-      type, 
-      highPrice, 
-      lowPrice 
-    });
+    // Update the item
+    existingItem.priceAlert = priceAlert;
+    await existingItem.save();
+    
+    loggerService.info(`✅ [WATCHLIST ALERT] Successfully saved! New priceAlert:`, existingItem.priceAlert);
+    loggerService.info(`🔔 [WATCHLIST ALERT] ============================================`);
     
     res.json({ 
-      message: 'Price alert set',
-      priceAlert: watchlistItem.priceAlert
+      success: true,
+      message: 'Price alert set successfully',
+      priceAlert: existingItem.priceAlert,
+      ticker: existingItem.ticker
     });
+    
   } catch (error) {
-    loggerService.error('❌ [WATCHLIST] Error setting price alert', { 
+    loggerService.error('❌ [WATCHLIST ALERT] CRITICAL ERROR:', { 
       error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined,
       userId: (req as any).user?._id || (req as any).user?.id,
       itemId: req.params.id,
       body: req.body
     });
+    
     res.status(500).json({ 
       error: 'Failed to set price alert',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
     });
   }
 });
