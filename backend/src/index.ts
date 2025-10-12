@@ -139,36 +139,42 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// ✅ Strict CORS Configuration (Vercel + admin domains only)
-const allowedOrigins = [
-  'https://ai-capital.vercel.app',
-  'https://ai-capital-app7.vercel.app',
-  'https://ai-capital-app7-qalnn40zw-avi648elastic-dots-projects.vercel.app',
-  'https://ai-capital-app7-git-main-avi648elastic-dots-projects.vercel.app',
-  'https://ai-capital-app7-c08qh68ux-avi648elastic-dots-projects.vercel.app',
-  'https://ai-capital-app7.onrender.com',
-  'http://localhost:3000', // Development only
-];
-
+// ✅ CRITICAL FIX: Enhanced CORS Configuration for Login Issues
 app.use(
   cors({
     origin: function (origin, callback) {
-      // MAJOR'S FIX: Allow ALL Vercel origins + localhost
-      if (!origin) return callback(null, true);
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) {
+        console.log(`✅ [CORS] Allowed request with no origin`);
+        return callback(null, true);
+      }
       
-      // Allow any vercel.app subdomain, localhost, or onrender.com
-      if (origin.includes('vercel.app') || origin.includes('localhost') || origin.includes('onrender.com') || allowedOrigins.includes(origin)) {
+      // CRITICAL FIX: Allow ALL Vercel origins dynamically
+      if (origin.includes('vercel.app') || 
+          origin.includes('localhost') || 
+          origin.includes('onrender.com') ||
+          origin.includes('ai-capital')) {
         console.log(`✅ [CORS] Allowed origin: ${origin}`);
         return callback(null, true);
-      } else {
-        console.warn(`🚫 [CORS] Blocked origin: ${origin}`);
-        return callback(new Error('Not allowed by CORS'));
       }
+      
+      console.warn(`🚫 [CORS] Blocked origin: ${origin}`);
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    allowedHeaders: [
+      'Content-Type', 
+      'Authorization', 
+      'X-Requested-With', 
+      'Accept',
+      'Origin',
+      'Access-Control-Request-Method',
+      'Access-Control-Request-Headers'
+    ],
     exposedHeaders: ['Content-Length', 'X-Request-Id'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   })
 );
 
@@ -178,6 +184,16 @@ app.use(express.urlencoded({ extended: true }));
 
 // 📁 Serve static files (for avatar uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// 🔧 CRITICAL FIX: Handle preflight OPTIONS requests for login
+app.options('*', (req, res) => {
+  console.log(`🔄 [PREFLIGHT] Handling OPTIONS request for: ${req.url}`);
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.status(204).send();
+});
 
 // ✅ מסלולים ראשיים
 app.use('/api/auth', authRoutes);
