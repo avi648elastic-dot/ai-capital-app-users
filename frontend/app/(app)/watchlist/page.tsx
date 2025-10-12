@@ -137,7 +137,7 @@ export default function Watchlist() {
     const maxStocks = user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+' ? 20 : 5;
     
     if (watchlist.length >= maxStocks) {
-      showToast('warning', `You've reached your limit of ${maxStocks} stocks. ${user?.subscriptionTier === 'free' ? t('watchlist.upgradeMessage') : ''}`);
+      showToast('warning', `You've reached your limit of ${maxStocks} stocks. ${user?.subscriptionTier === 'free' ? t('navigation.upgradeMessage') : ''}`);
       return;
     }
 
@@ -151,14 +151,14 @@ export default function Watchlist() {
       );
 
       await fetchUserAndWatchlist();
-      showToast('success', `✅ ${newTicker.toUpperCase()} ${t('watchlist.stockAdded')}`);
+      showToast('success', `✅ ${newTicker.toUpperCase()} ${t('navigation.stockAdded')}`);
       setNewTicker('');
     } catch (error) {
       console.error('Error adding to watchlist:', error);
       if (axios.isAxiosError(error)) {
-        showToast('error', error.response?.data?.error || t('watchlist.failedToAdd'));
+        showToast('error', error.response?.data?.error || t('navigation.failedToAdd'));
       } else {
-        showToast('error', t('watchlist.failedToAdd'));
+        showToast('error', t('navigation.failedToAdd'));
       }
     } finally {
       setAddingStock(false);
@@ -177,7 +177,7 @@ export default function Watchlist() {
       showToast('success', `${ticker} removed from watchlist`);
     } catch (error) {
       console.error('Error removing from watchlist:', error);
-      showToast('error', t('watchlist.failedToRemove'));
+      showToast('error', t('navigation.failedToRemove'));
     }
   };
 
@@ -197,7 +197,7 @@ export default function Watchlist() {
       showToast('success', `Notifications ${!currentStatus ? 'enabled' : 'disabled'} for ${ticker}`);
     } catch (error) {
       console.error('Error toggling notifications:', error);
-      showToast('error', t('watchlist.failedToUpdate'));
+      showToast('error', t('navigation.failedToUpdate'));
     }
   };
 
@@ -217,7 +217,7 @@ export default function Watchlist() {
       showToast('success', `Price alert removed for ${ticker}`);
     } catch (error) {
       console.error('Error removing price alert:', error);
-      showToast('error', t('watchlist.failedToRemoveAlert'));
+      showToast('error', t('navigation.failedToRemoveAlert'));
     }
   };
 
@@ -275,12 +275,12 @@ export default function Watchlist() {
             {addingStock ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>{t('watchlist.adding')}</span>
+                <span>{t('navigation.adding')}</span>
               </>
             ) : (
               <>
                 <Plus className="w-5 h-5" />
-                <span>{t('watchlist.addButton')}</span>
+                <span>{t('navigation.addButton')}</span>
               </>
             )}
           </button>
@@ -293,8 +293,8 @@ export default function Watchlist() {
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
             <Eye className="w-10 h-10 text-blue-400 [data-theme='light']:text-blue-600" />
           </div>
-          <h3 className="text-lg sm:text-xl font-semibold text-white [data-theme='light']:text-gray-900 mb-2">{t('watchlist.emptyTitle')}</h3>
-          <p className="text-sm sm:text-base text-slate-400 [data-theme='light']:text-gray-600 max-w-md mx-auto">{t('watchlist.emptyDescription')}</p>
+          <h3 className="text-lg sm:text-xl font-semibold text-white [data-theme='light']:text-gray-900 mb-2">{t('navigation.emptyTitle')}</h3>
+          <p className="text-sm sm:text-base text-slate-400 [data-theme='light']:text-gray-600 max-w-md mx-auto">{t('navigation.emptyDescription')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -529,24 +529,24 @@ export default function Watchlist() {
                     <div className="flex-1">
                       <div className="flex items-center text-blue-300 [data-theme='light']:text-blue-700 text-xs sm:text-sm font-semibold mb-2">
                         <AlertCircle className="w-4 h-4 mr-1 animate-pulse" />
-                        {t('watchlist.priceAlertActive')}
+                        {t('navigation.priceAlertActive')}
                       </div>
                       <div className="space-y-1">
                         {(item.priceAlert.type === 'high' || item.priceAlert.type === 'both') && item.priceAlert.highPrice && (
                           <div className="text-xs text-emerald-300 [data-theme='light']:text-emerald-700 font-medium">
-                            ↗️ {t('watchlist.high')}: ${item.priceAlert.highPrice.toFixed(2)}
+                            ↗️ {t('navigation.high')}: ${item.priceAlert.highPrice.toFixed(2)}
                           </div>
                         )}
                         {(item.priceAlert.type === 'low' || item.priceAlert.type === 'both') && item.priceAlert.lowPrice && (
                           <div className="text-xs text-red-300 [data-theme='light']:text-red-700 font-medium">
-                            ↘️ {t('watchlist.low')}: ${item.priceAlert.lowPrice.toFixed(2)}
+                            ↘️ {t('navigation.low')}: ${item.priceAlert.lowPrice.toFixed(2)}
                           </div>
                         )}
                       </div>
                       {item.priceAlert.triggeredCount > 0 && (
                         <div className="text-xs text-slate-400 [data-theme='light']:text-gray-500 mt-2 flex items-center">
                           <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mr-1.5 animate-pulse"></div>
-                          {t('watchlist.triggered')} {item.priceAlert.triggeredCount} {item.priceAlert.triggeredCount > 1 ? t('watchlist.times') : t('watchlist.time')}
+                          {t('navigation.triggered')} {item.priceAlert.triggeredCount} {item.priceAlert.triggeredCount > 1 ? t('navigation.times') : t('navigation.time')}
                         </div>
                       )}
                     </div>
@@ -556,7 +556,7 @@ export default function Watchlist() {
                         removePriceAlert(item.id, item.ticker);
                       }}
                       className="text-red-400 hover:text-red-300 [data-theme='light']:text-red-600 [data-theme='light']:hover:text-red-700 transition-colors p-1 hover:bg-red-500/20 rounded"
-                      title={t('watchlist.removeAlert')}
+                      title={t('navigation.removeAlert')}
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -568,17 +568,17 @@ export default function Watchlist() {
               <div className="flex items-center justify-between text-xs text-slate-400 [data-theme='light']:text-gray-500 pt-3 border-t border-slate-700/50 [data-theme='light']:border-gray-200">
                 <span className="flex items-center">
                   <div className="w-1.5 h-1.5 rounded-full bg-slate-500 mr-1.5"></div>
-                  {t('watchlist.addedDate')}: {new Date(item.addedAt).toLocaleDateString()}
+                  {t('navigation.addedDate')}: {new Date(item.addedAt).toLocaleDateString()}
                 </span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (confirm(t('watchlist.removeStockConfirm'))) {
+                    if (confirm(t('navigation.removeStockConfirm'))) {
                       removeFromWatchlist(item.id, item.ticker);
                     }
                   }}
                   className="text-red-400 hover:text-red-300 [data-theme='light']:text-red-600 [data-theme='light']:hover:text-red-700 transition-colors hover:bg-red-500/20 rounded p-1"
-                  title={t('watchlist.removeStock')}
+                  title={t('navigation.removeStock')}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -593,9 +593,9 @@ export default function Watchlist() {
         <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-slate-800/50 to-slate-700/50 [data-theme='light']:from-gray-100 [data-theme='light']:to-gray-50 rounded-lg border border-slate-700/50 [data-theme='light']:border-gray-200">
           <p className="text-xs sm:text-sm text-slate-300 [data-theme='light']:text-gray-700 flex items-center">
             <div className="w-2 h-2 rounded-full bg-blue-500 mr-2 animate-pulse"></div>
-            {t('watchlist.trackingStocks')} <span className="font-bold mx-1">{watchlist.length}</span> {t('watchlist.of')} <span className="font-bold mx-1">{user.subscriptionTier === 'premium' || user.subscriptionTier === 'premium+' ? 20 : 5}</span> {t('watchlist.stocks')}
+            {t('navigation.trackingStocks')} <span className="font-bold mx-1">{watchlist.length}</span> {t('navigation.of')} <span className="font-bold mx-1">{user.subscriptionTier === 'premium' || user.subscriptionTier === 'premium+' ? 20 : 5}</span> {t('navigation.stocks')}
             {user.subscriptionTier === 'free' && watchlist.length >= 3 && (
-              <span className="text-emerald-400 [data-theme='light']:text-emerald-600 ml-2">✨ {t('watchlist.upgradeMessage')}</span>
+              <span className="text-emerald-400 [data-theme='light']:text-emerald-600 ml-2">✨ {t('navigation.upgradeMessage')}</span>
             )}
           </p>
         </div>
