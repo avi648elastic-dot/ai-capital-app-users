@@ -282,6 +282,15 @@ export default function Dashboard() {
       console.log(`✅ [DASHBOARD] Portfolio fetched in ${loadTime}ms:`, response.data);
       
       if (response.data && response.data.portfolio) {
+        console.log('🔍 [EMERGENCY DEBUG] Raw portfolio data from API:', response.data.portfolio);
+        console.log('🔍 [EMERGENCY DEBUG] Portfolio data structure check:', response.data.portfolio.map(item => ({
+          ticker: item.ticker,
+          portfolioType: item.portfolioType,
+          portfolioId: item.portfolioId,
+          hasType: 'portfolioType' in item,
+          hasId: 'portfolioId' in item
+        })));
+        
         setPortfolio(response.data.portfolio);
         setTotals(response.data.totals || { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
         
@@ -569,20 +578,34 @@ export default function Dashboard() {
 
   // Filter portfolio based on selected portfolio or tab/type
   const filteredPortfolio = portfolio.filter(item => {
+    console.log('🔍 [EMERGENCY DEBUG] Portfolio item:', item);
+    console.log('🔍 [EMERGENCY DEBUG] showMultiPortfolio:', showMultiPortfolio);
+    console.log('🔍 [EMERGENCY DEBUG] selectedPortfolioId:', selectedPortfolioId);
+    console.log('🔍 [EMERGENCY DEBUG] activeTab:', activeTab);
+    
     // If we're in multi-portfolio view and have a selected portfolio, filter by portfolio ID
     if (showMultiPortfolio && selectedPortfolioId) {
-      return (item as any)?.portfolioId === selectedPortfolioId;
+      const matches = (item as any)?.portfolioId === selectedPortfolioId;
+      console.log('🔍 [EMERGENCY DEBUG] Multi-portfolio filter result:', matches);
+      return matches;
     }
     
     // For single portfolio view, filter by portfolio type and clear selectedPortfolioId
     if (!showMultiPortfolio) {
       const itemType = (item as any)?.portfolioType || 'solid';
-      return activeTab === 'solid' ? itemType === 'solid' : itemType === 'risky';
+      const matches = activeTab === 'solid' ? itemType === 'solid' : itemType === 'risky';
+      console.log('🔍 [EMERGENCY DEBUG] Single portfolio filter - itemType:', itemType, 'activeTab:', activeTab, 'matches:', matches);
+      return matches;
     }
     
     // Default fallback
+    console.log('🔍 [EMERGENCY DEBUG] Default fallback - returning true');
     return true;
   });
+  
+  console.log('🔍 [EMERGENCY DEBUG] Total portfolio items:', portfolio.length);
+  console.log('🔍 [EMERGENCY DEBUG] Filtered portfolio items:', filteredPortfolio.length);
+  console.log('🔍 [EMERGENCY DEBUG] Final filtered portfolio:', filteredPortfolio);
 
   if (loading) {
     return (
