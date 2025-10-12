@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com',
   },
   // Force environment variables to be loaded
   publicRuntimeConfig: {
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com',
   },
   // Keep config minimal for Vercel build stability
   output: 'standalone',
