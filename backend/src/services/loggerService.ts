@@ -1,14 +1,38 @@
 import pino from 'pino';
+import * as Sentry from '@sentry/node';
 
 /**
- * 📊 Enhanced Logging Service with Pino
+ * 📊 Enhanced Logging Service with Pino + Sentry Integration
  */
 class LoggerService {
   private logger: pino.Logger;
   private requestId: string | null = null;
+  private sentryEnabled: boolean = false;
 
   constructor() {
-    // Configure Pino logger
+    // Initialize Sentry if DSN is provided
+    if (process.env.SENTRY_DSN) {
+      try {
+        Sentry.init({
+          dsn: process.env.SENTRY_DSN,
+          environment: process.env.NODE_ENV || 'development',
+          tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+          beforeSend(event) {
+            // Filter out health check errors
+            if (event.request?.url?.includes('/healthz')) {
+              return null;
+            }
+            return event;
+          },
+        });
+        this.sentryEnabled = true;
+        console.log('✅ [LOGGER] Sentry initialized');
+      } catch (error) {
+        console.error('❌ [LOGGER] Failed to initialize Sentry:', error);
+      }
+    }
+
+    // Configure Pino logger with Sentry transport
     this.logger = pino({
       level: process.env.LOG_LEVEL || 'info',
       transport: process.env.NODE_ENV === 'development' ? {
@@ -25,9 +49,38 @@ class LoggerService {
         }
       },
       timestamp: pino.stdTimeFunctions.isoTime,
+      // Custom hook to send errors to Sentry
+      hooks: {
+        logMethod: (inputArgs, method, level) => {
+          if (this.sentryEnabled && level >= 50) { // 50 = error, 60 = fatal
+            const logData = inputArgs[0];
+            const message = inputArgs[1] || 'Unknown error';
+            
+            // Send to Sentry
+            if (level === 60) { // fatal
+              Sentry.captureException(new Error(message), {
+                level: 'fatal',
+                extra: logData,
+                tags: {
+                  requestId: this.requestId || 'unknown'
+                }
+              });
+            } else { // error
+              Sentry.captureException(new Error(message), {
+                level: 'error',
+                extra: logData,
+                tags: {
+                  requestId: this.requestId || 'unknown'
+                }
+              });
+            }
+          }
+          return method.apply(this, inputArgs);
+        }
+      }
     });
 
-    console.log('✅ [LOGGER] Pino logger initialized');
+    console.log('✅ [LOGGER] Pino logger initialized with Sentry transport');
   }
 
   /**

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Toast from '@/components/ui/Toast';
 import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
+import NotificationBanner from '@/components/NotificationBanner';
 
 interface PriceAlert {
   type: 'high' | 'low' | 'both';
@@ -243,10 +244,13 @@ export default function Watchlist() {
         ))}
       </div>
 
+      {/* CRITICAL FIX: Notification Banner - Below Header, Above Content */}
+      <NotificationBanner isMobile={false} />
+
       {/* Page Header */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white [data-theme='light']:text-gray-900 mb-2">{t('watchlistTitle')}</h1>
-        <p className="text-sm sm:text-base text-slate-400 [data-theme='light']:text-gray-600">{t('watchlistSubtitle')}</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white [data-theme='light']:text-gray-900 mb-2">Watchlist</h1>
+        <p className="text-sm sm:text-base text-slate-400 [data-theme='light']:text-gray-600">Track your favorite stocks and get real-time price alerts</p>
       </div>
 
       {/* Add Stock Form - Mobile Optimized */}
@@ -255,14 +259,14 @@ export default function Watchlist() {
           <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mr-2">
             <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          {t('addStock')}
+          Add Stock to Watchlist
         </h2>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <input
             type="text"
             value={newTicker}
             onChange={(e) => setNewTicker(e.target.value.toUpperCase())}
-            placeholder={t('enterSymbol')}
+            placeholder="Enter stock symbol (e.g., AAPL)"
             className="input-field flex-1 text-sm sm:text-base py-3 sm:py-3 px-4 font-bold"
             onKeyPress={(e) => e.key === 'Enter' && !addingStock && addToWatchlist()}
             disabled={addingStock}

@@ -41,22 +41,35 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       PORT: 3000
       MONGODB_URI: mongodb://admin:password@mongodb:27017/aicapital?authSource=admin
       REDIS_URL: redis://:redispassword@redis:6379
-      JWT_SECRET: your-jwt-secret-change-in-production
-      SESSION_SECRET: your-session-secret-change-in-production
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-change-in-production}
+      SESSION_SECRET: ${SESSION_SECRET:-your-session-secret-change-in-production}
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
       FINNHUB_API_KEY: ${FINNHUB_API_KEY}
+      FINNHUB_API_KEY_2: ${FINNHUB_API_KEY_2}
+      FINNHUB_API_KEY_3: ${FINNHUB_API_KEY_3}
+      FINNHUB_API_KEY_4: ${FINNHUB_API_KEY_4}
       ALPHA_VANTAGE_API_KEY: ${ALPHA_VANTAGE_API_KEY}
+      ALPHA_VANTAGE_API_KEY_2: ${ALPHA_VANTAGE_API_KEY_2}
+      ALPHA_VANTAGE_API_KEY_3: ${ALPHA_VANTAGE_API_KEY_3}
+      ALPHA_VANTAGE_API_KEY_4: ${ALPHA_VANTAGE_API_KEY_4}
       FINANCIAL_MODELING_PREP_API_KEY: ${FINANCIAL_MODELING_PREP_API_KEY}
+      FINANCIAL_MODELING_PREP_API_KEY_2: ${FINANCIAL_MODELING_PREP_API_KEY_2}
+      FINANCIAL_MODELING_PREP_API_KEY_3: ${FINANCIAL_MODELING_PREP_API_KEY_3}
+      FINANCIAL_MODELING_PREP_API_KEY_4: ${FINANCIAL_MODELING_PREP_API_KEY_4}
       SENTRY_DSN: ${SENTRY_DSN}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_PREMIUM_PRICE_ID: ${STRIPE_PREMIUM_PRICE_ID}
+      STRIPE_PREMIUM_PLUS_PRICE_ID: ${STRIPE_PREMIUM_PLUS_PRICE_ID}
     depends_on:
       - mongodb
       - redis

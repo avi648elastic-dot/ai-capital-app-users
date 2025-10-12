@@ -4,6 +4,7 @@ import Portfolio from '../models/Portfolio';
 import { authenticateToken } from '../middleware/auth';
 import { decisionEngine } from '../services/decisionEngine';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
+import { runFullBenchmark } from '../utils/queryBenchmark';
 
 const router = express.Router();
 
@@ -552,6 +553,31 @@ router.post('/api-keys/clear-cache', authenticateToken, requireAdmin, async (req
     });
   } catch (error) {
     console.error('❌ [ADMIN] Error clearing cache:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+/**
+ * 🔍 Run query performance benchmark
+ * POST /api/admin/benchmark-queries
+ */
+router.post('/benchmark-queries', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('🔍 [ADMIN] Starting query benchmark...');
+    
+    // Run benchmark in background to avoid timeout
+    runFullBenchmark().then(() => {
+      console.log('✅ [ADMIN] Query benchmark completed');
+    }).catch((error) => {
+      console.error('❌ [ADMIN] Query benchmark failed:', error);
+    });
+    
+    res.json({ 
+      message: 'Query benchmark started. Check logs for results.',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ [ADMIN] Error starting benchmark:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

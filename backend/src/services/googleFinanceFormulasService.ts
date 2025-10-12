@@ -218,6 +218,12 @@ class GoogleFinanceFormulasService {
       if (['NVDA', 'AAPL', 'MSFT', 'TSLA'].includes(symbol.toUpperCase())) {
         loggerService.warn(`🚨 [CACHE CLEAR] Forcing fresh data for ${symbol} due to potential corruption`);
         this.cache.delete(symbol);
+        
+        // EMERGENCY: Clear ALL related cache keys for NVDA
+        if (symbol.toUpperCase() === 'NVDA') {
+          this.cache.clear(); // Clear entire cache for NVDA corruption
+          loggerService.error(`🚨 [EMERGENCY CACHE CLEAR] Cleared entire cache due to NVDA corruption`);
+        }
       }
       
       // Check cache first

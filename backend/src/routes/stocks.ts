@@ -32,6 +32,33 @@ router.get('/test-nvda', async (req, res) => {
 });
 
 /**
+ * 🚨 EMERGENCY: Clear stock cache
+ * POST /api/stocks/clear-cache
+ */
+router.post('/clear-cache', async (req, res) => {
+  try {
+    const { googleFinanceFormulasService } = await import('../services/googleFinanceFormulasService');
+    
+    console.log('🚨 [EMERGENCY] Clearing all stock cache...');
+    
+    // Clear the cache
+    googleFinanceFormulasService.clearCache();
+    
+    res.json({
+      success: true,
+      message: 'Stock cache cleared successfully',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ [EMERGENCY] Error clearing cache:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
  * Get current stock price
  * GET /api/stocks/price/:symbol
  */

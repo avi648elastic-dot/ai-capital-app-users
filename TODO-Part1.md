@@ -1,20 +1,20 @@
 # 🚀 TODO-Part1: Production Hardening
 
-## 📊 OVERALL PROGRESS: 90% COMPLETE (36/40 tasks)
+## 📊 OVERALL PROGRESS: 95% COMPLETE (38/40 tasks)
 
 **✅ FULLY COMPLETE SECTIONS:**
 - Security & Middleware: 100% (7/7)
-- Data & Index Optimization: 100% (3/3)
+- Data & Index Optimization: 100% (4/4) ✅ NEW!
 - Market-Data Service: 100% (7/7)
 - Health & Logging: 100% (3/3)
-- Documentation: 100% (5/5)
+- Documentation: 100% (7/7) ✅ UPDATED!
 - Request Validation: 100% (4/4)
 - Plan Limit Middleware: 100% (1/1)
+- Frontend UX Polish: 100% (6/6) ✅ NEW!
+- DevOps: 86% (6/7) ✅ UPDATED!
 
 **⏳ IN PROGRESS:**
 - Frontend API: 83% (5/6)
-- Frontend UX Polish: 67% (4/6)
-- DevOps: 57% (4/7)
 
 **❌ NOT STARTED:**
 - Cron & Job Stability (needs Redis URL)
@@ -40,10 +40,11 @@
 
 **STATUS: 100% COMPLETE ✅**
 
-## ✅ DATA & INDEX OPTIMIZATION (`backend/src/models`) - 3/3 COMPLETE
+## ✅ DATA & INDEX OPTIMIZATION (`backend/src/models`) - 4/4 COMPLETE
 - [x] Add indexes (users, portfolios, historicaldata, watchlist) ✅
 - [x] Pre-save hook for stock-limit per plan ✅
 - [x] Run ensureIndexes() on startup with safe creation ✅
+- [x] Benchmark heavy queries with `.explain()` ✅
 
 **STATUS: 100% COMPLETE ✅**
 
@@ -81,38 +82,40 @@
 
 **STATUS: 83% COMPLETE ✅**
 
-## ✅ FRONTEND UX POLISH - 4/6 COMPLETE
+## ✅ FRONTEND UX POLISH - 6/6 COMPLETE
 - [x] Add tooltips for financial terms (Initial, Current, P&L, ROI) ✅
 - [x] Add plan-based feature flags (Free / Premium / Premium+) ✅
 - [x] Use unified number formatters (currency, percent) ✅
 - [x] Add skeleton loaders for async sections ✅
-- [ ] Display "Last updated: …" under market indices - TODO
-- [ ] Confirm full mobile responsiveness on major screens - TODO
+- [x] Display "Last updated: …" under market indices ✅
+- [x] Confirm full mobile responsiveness on major screens ✅
 
-**STATUS: 67% COMPLETE ✅**
+**STATUS: 100% COMPLETE ✅**
 
 ## TESTING
 - [ ] Jest + Supertest + Playwright
 - [ ] Unit tests (decision engine, data service)
 - [ ] Integration tests (auth→onboard→decision)
 
-## ✅ DEVOPS - 4/7 COMPLETE
+## ✅ DEVOPS - 6/7 COMPLETE
 - [x] Convert Dockerfile to multi-stage build (build → run) ✅
 - [x] Ensure NODE_ENV=production and npm ci --omit=dev ✅
 - [x] Add .env.example with all required vars (no secrets) ✅
 - [x] Add Render health checks and env var docs ✅
-- [ ] Update docker-compose.yml to reference .env - TODO
+- [x] Update docker-compose.yml to reference .env ✅
+- [x] Stream Pino logs to Sentry ✅
 - [ ] Enable auto-deploy triggers from GitHub main branch - TODO
-- [ ] Stream Pino logs to Sentry or Logtail - TODO
 
-**STATUS: 57% COMPLETE ✅**
+**STATUS: 86% COMPLETE ✅**
 
-## ✅ DOCUMENTATION (/docs) - 5/5 COMPLETE
+## ✅ DOCUMENTATION (/docs) - 7/7 COMPLETE
 - [x] Architecture.md ✅
 - [x] DataProviders.md ✅
 - [x] DecisionEngine.md ✅
 - [x] Runbook.md ✅
 - [x] Update README with paid-tier notes ✅
+- [x] Redis-Setup.md ✅
+- [x] Mobile-Responsiveness-Checklist.md ✅
 
 **STATUS: 100% COMPLETE ✅**
 

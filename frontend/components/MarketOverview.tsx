@@ -8,14 +8,16 @@ type IndexItem = { symbol: string; price: number | null; thisMonthPercent?: numb
 
 export default function MarketOverview() {
   const [data, setData] = useState<{ indexes: Record<string, IndexItem>; featured: IndexItem[]; updatedAt: string } | null>(null);
-  // Remove editing functionality since Customize button is removed
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  
   const load = async () => {
     try {
       console.log('🔍 [MARKET OVERVIEW] Fetching markets data...');
       const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/markets/overview`);
       console.log('🔍 [MARKET OVERVIEW] Received data:', res.data);
       setData(res.data);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error('❌ [MARKET OVERVIEW] Error fetching data:', error);
     } finally {
@@ -28,6 +30,18 @@ export default function MarketOverview() {
     const id = setInterval(load, 5 * 60 * 1000);
     return () => clearInterval(id);
   }, []);
+  
+  // Format relative time (e.g., "2 minutes ago")
+  const getRelativeTime = (date: Date | null) => {
+    if (!date) return '';
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return 'just now';
+    if (seconds < 120) return '1 minute ago';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+    if (seconds < 7200) return '1 hour ago';
+    return `${Math.floor(seconds / 3600)} hours ago`;
+  };
 
   if (loading && !data) {
     return <div className="card p-6">Loading markets…</div>;
@@ -39,10 +53,17 @@ export default function MarketOverview() {
   return (
     <div className="card p-3 sm:p-4 [data-theme='light']:bg-white [data-theme='light']:border-gray-200 bg-gradient-to-br from-slate-900/80 to-slate-800/80 market-overview">
       <div className="flex items-center justify-between mb-3 sm:mb-4">
-        <h3 className="text-base sm:text-lg font-bold text-white tracking-wide [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900 flex items-center space-x-2">
-          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-          <span>Markets</span>
-        </h3>
+        <div className="flex flex-col">
+          <h3 className="text-base sm:text-lg font-bold text-white tracking-wide [data-theme='light']:text-gray-900 [data-theme='light']:!text-gray-900 flex items-center space-x-2">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            <span>Markets</span>
+          </h3>
+          {lastUpdated && (
+            <span className="text-xs text-slate-400 [data-theme='light']:text-gray-500 mt-1 ml-4">
+              Last updated: {getRelativeTime(lastUpdated)}
+            </span>
+          )}
+        </div>
         {data?.updatedAt && <span className="text-xs text-slate-400 [data-theme='light']:text-gray-600 [data-theme='light']:!text-gray-600">{new Date(data.updatedAt).toLocaleTimeString()}</span>}
       </div>
       <div className="grid grid-cols-2 gap-2 sm:gap-4">
