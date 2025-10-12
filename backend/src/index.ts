@@ -139,28 +139,10 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// ✅ CRITICAL FIX: Enhanced CORS Configuration for Login Issues
+// 🚨 EMERGENCY FIX: Ultra-permissive CORS for immediate login fix
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) {
-        console.log(`✅ [CORS] Allowed request with no origin`);
-        return callback(null, true);
-      }
-      
-      // CRITICAL FIX: Allow ALL Vercel origins dynamically
-      if (origin.includes('vercel.app') || 
-          origin.includes('localhost') || 
-          origin.includes('onrender.com') ||
-          origin.includes('ai-capital')) {
-        console.log(`✅ [CORS] Allowed origin: ${origin}`);
-        return callback(null, true);
-      }
-      
-      console.warn(`🚫 [CORS] Blocked origin: ${origin}`);
-      return callback(new Error('Not allowed by CORS'));
-    },
+    origin: true, // Allow ALL origins temporarily for login fix
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
@@ -170,7 +152,8 @@ app.use(
       'Accept',
       'Origin',
       'Access-Control-Request-Method',
-      'Access-Control-Request-Headers'
+      'Access-Control-Request-Headers',
+      'X-CSRF-Token'
     ],
     exposedHeaders: ['Content-Length', 'X-Request-Id'],
     preflightContinue: false,
@@ -185,14 +168,26 @@ app.use(express.urlencoded({ extended: true }));
 // 📁 Serve static files (for avatar uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// 🔧 CRITICAL FIX: Handle preflight OPTIONS requests for login
+// 🚨 EMERGENCY FIX: Explicit preflight handler for login
 app.options('*', (req, res) => {
-  console.log(`🔄 [PREFLIGHT] Handling OPTIONS request for: ${req.url}`);
+  console.log(`🔄 [PREFLIGHT] Handling OPTIONS request for: ${req.url} from origin: ${req.headers.origin}`);
+  
+  // Set all necessary CORS headers
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token');
   res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400'); // 24 hours
+  
+  console.log(`✅ [PREFLIGHT] CORS headers set for origin: ${req.headers.origin}`);
   res.status(204).send();
+});
+
+// 🚨 EMERGENCY FIX: Additional CORS headers for all responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
 });
 
 // ✅ מסלולים ראשיים
