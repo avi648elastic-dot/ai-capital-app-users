@@ -6,6 +6,7 @@ import { decisionEngine } from '../services/decisionEngine';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 import { runFullBenchmark } from '../utils/queryBenchmark';
 import { cronLockService } from '../services/cronLockService';
+import { loggerService } from '../services/loggerService';
 
 const router = express.Router();
 

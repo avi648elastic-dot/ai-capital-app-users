@@ -406,11 +406,11 @@ router.post('/batch-prices', async (req, res) => {
           success: true,
           data: {
             current: metrics.current,
-            change: metrics.change || 0,
-            changePercent: metrics.changePercent || 0,
-            high: metrics.high || metrics.current,
-            low: metrics.low || metrics.current,
-            volume: metrics.volume || 0,
+            change: 0, // Will be calculated separately
+            changePercent: 0, // Will be calculated separately
+            high: metrics.current, // Use current as fallback
+            low: metrics.current, // Use current as fallback
+            volume: 0, // Default volume
             timestamp: metrics.timestamp,
             dataSource: metrics.dataSource
           }
@@ -444,7 +444,7 @@ router.post('/batch-prices', async (req, res) => {
           errors[symbol] = data.error;
         }
       } else {
-        errors[symbol] = result.reason?.message || 'Request failed';
+        errors[symbol] = (result.reason as Error)?.message || 'Request failed';
       }
     });
 

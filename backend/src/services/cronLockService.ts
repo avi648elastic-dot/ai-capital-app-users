@@ -195,7 +195,7 @@ class CronLockService {
       const ttl = await this.redis.ttl(lockKey);
       const value = await this.redis.get(lockKey);
 
-      return { exists: true, ttl, value };
+      return { exists: true, ttl, value: value || undefined };
     } catch (error) {
       loggerService.error(`🔴 [CRON LOCK] Error getting lock info for ${jobName}:`, { error });
       return { exists: false, ttl: 0 };
