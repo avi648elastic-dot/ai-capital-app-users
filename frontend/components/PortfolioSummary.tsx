@@ -1,3 +1,5 @@
+import Tooltip from './Tooltip';
+
 interface PortfolioTotals {
   initial: number;
   current: number;
@@ -27,7 +29,9 @@ export default function PortfolioSummary({ totals }: PortfolioSummaryProps) {
       <div className="financial-metric group hover:shadow-lg transition-all duration-200">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 [data-theme='light']:text-gray-600 mb-1">Initial</p>
+            <Tooltip content="Total amount initially invested in your portfolio" position="top">
+              <p className="text-[10px] sm:text-xs font-semibold text-slate-400 [data-theme='light']:text-gray-600 mb-1 cursor-help">Initial</p>
+            </Tooltip>
             <p className="text-base sm:text-lg font-bold text-slate-100 [data-theme='light']:text-gray-900">
               {formatCurrency(totals.initial)}
             </p>
@@ -44,7 +48,9 @@ export default function PortfolioSummary({ totals }: PortfolioSummaryProps) {
       <div className="financial-metric group hover:shadow-lg transition-all duration-200">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 [data-theme='light']:text-gray-600 mb-1">Current</p>
+            <Tooltip content="Current market value of your portfolio based on real-time stock prices" position="top">
+              <p className="text-[10px] sm:text-xs font-semibold text-slate-400 [data-theme='light']:text-gray-600 mb-1 cursor-help">Current</p>
+            </Tooltip>
             <p className="text-base sm:text-lg font-bold text-slate-100 [data-theme='light']:text-gray-900">
               {formatCurrency(totals.current)}
             </p>
@@ -61,7 +67,9 @@ export default function PortfolioSummary({ totals }: PortfolioSummaryProps) {
       <div className="financial-metric group hover:shadow-lg transition-all duration-200">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 [data-theme='light']:text-gray-600 mb-1">P&L</p>
+            <Tooltip content="Profit & Loss: The difference between current value and initial investment" position="top">
+              <p className="text-[10px] sm:text-xs font-semibold text-slate-400 [data-theme='light']:text-gray-600 mb-1 cursor-help">P&L</p>
+            </Tooltip>
             <p className={`text-base sm:text-lg font-bold ${
               totals.totalPnL >= 0 ? 'text-emerald-400 [data-theme="light"]:text-emerald-600' : 'text-red-400 [data-theme="light"]:text-red-600'
             }`}>
@@ -84,7 +92,9 @@ export default function PortfolioSummary({ totals }: PortfolioSummaryProps) {
       <div className="financial-metric group hover:shadow-lg transition-all duration-200">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 [data-theme='light']:text-gray-600 mb-1">ROI</p>
+            <Tooltip content="Return on Investment: Percentage gain or loss from your initial investment" position="top">
+              <p className="text-[10px] sm:text-xs font-semibold text-slate-400 [data-theme='light']:text-gray-600 mb-1 cursor-help">ROI</p>
+            </Tooltip>
             <p className={`text-base sm:text-lg font-bold ${
               totals.totalPnLPercent >= 0 ? 'text-emerald-400 [data-theme="light"]:text-emerald-600' : 'text-red-400 [data-theme="light"]:text-red-600'
             }`}>

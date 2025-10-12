@@ -333,9 +333,34 @@ export default function PortfolioAnalysis() {
   return (
     <div className="w-full">
         <div className="mb-6 sm:mb-8">
-          <div>
+          <div className="flex items-center justify-between">
+            <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Portfolio Analysis</h1>
-            <p className="text-sm sm:text-base text-slate-400">Comprehensive analysis of your portfolio performance and risk assessment</p>
+            <p className="text-sm sm:text-base text-slate-400">
+              Comprehensive analysis of your portfolio performance and risk assessment
+              {portfolioAnalysis?.dataSource && (
+                <span className="ml-2 text-xs bg-slate-700 px-2 py-1 rounded">
+                  📊 {portfolioAnalysis.dataSource}
+                </span>
+              )}
+            </p>
+            </div>
+            <button
+              onClick={() => fetchAnalyticsData(true)}
+              disabled={refreshing}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+            >
+              {refreshing ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  🔄 Refresh Data
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -426,36 +451,60 @@ export default function PortfolioAnalysis() {
               {/* Main Performance Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-slate-800 rounded-lg">
-                  <div className="text-2xl font-bold text-green-400">+12.5%</div>
-                  <div className="text-sm text-slate-400">30 Day Return</div>
+                  <div className={`text-2xl font-bold ${
+                    portfolioAnalysis?.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {portfolioAnalysis?.performance90D >= 0 ? '+' : ''}{portfolioAnalysis?.performance90D?.toFixed(1) || '0.0'}%
+                  </div>
+                  <div className="text-sm text-slate-400">90 Day Return</div>
                 </div>
                 <div className="text-center p-4 bg-slate-800 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-400">+8.2%</div>
-                  <div className="text-sm text-slate-400">60 Day Return</div>
+                  <div className={`text-2xl font-bold ${
+                    (portfolioAnalysis?.totalPnLPercent || 0) >= 0 ? 'text-blue-400' : 'text-red-400'
+                  }`}>
+                    {(portfolioAnalysis?.totalPnLPercent || 0) >= 0 ? '+' : ''}{(portfolioAnalysis?.totalPnLPercent || 0).toFixed(1)}%
+                  </div>
+                  <div className="text-sm text-slate-400">Total Return</div>
                 </div>
                 <div className="text-center p-4 bg-slate-800 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-400">15.3%</div>
+                  <div className={`text-2xl font-bold ${
+                    (riskAssessment?.avgVolatility || 0) > 20 ? 'text-red-400' : 
+                    (riskAssessment?.avgVolatility || 0) > 10 ? 'text-yellow-400' : 'text-green-400'
+                  }`}>
+                    {(riskAssessment?.avgVolatility || 0).toFixed(1)}%
+                  </div>
                   <div className="text-sm text-slate-400">Volatility</div>
                 </div>
                 <div className="text-center p-4 bg-slate-800 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-400">1.24</div>
-                  <div className="text-sm text-slate-400">Sharpe Ratio</div>
+                  <div className={`text-2xl font-bold ${
+                    (portfolioAnalysis?.riskScore || 0) > 7 ? 'text-red-400' : 
+                    (portfolioAnalysis?.riskScore || 0) > 4 ? 'text-yellow-400' : 'text-green-400'
+                  }`}>
+                    {(portfolioAnalysis?.riskScore || 0).toFixed(1)}
+                  </div>
+                  <div className="text-sm text-slate-400">Risk Score</div>
                 </div>
               </div>
               
               {/* Additional Metrics Row */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-3 bg-slate-800/70 rounded-lg">
-                  <div className="text-lg font-bold text-emerald-400">$58.2k</div>
+                  <div className="text-lg font-bold text-emerald-400">
+                    ${((portfolioAnalysis?.totalPortfolioValue || 0) / 1000).toFixed(1)}k
+                  </div>
                   <div className="text-xs text-slate-400">Current Value</div>
                 </div>
                 <div className="text-center p-3 bg-slate-800/70 rounded-lg">
-                  <div className="text-lg font-bold text-cyan-400">4</div>
+                  <div className="text-lg font-bold text-cyan-400">
+                    {portfolio.filter(stock => stock.currentPrice > stock.entryPrice).length}
+                  </div>
                   <div className="text-xs text-slate-400">Winning Stocks</div>
                 </div>
                 <div className="text-center p-3 bg-slate-800/70 rounded-lg">
-                  <div className="text-lg font-bold text-orange-400">2.8%</div>
-                  <div className="text-xs text-slate-400">Avg Daily Change</div>
+                  <div className="text-lg font-bold text-orange-400">
+                    {(portfolioAnalysis?.totalPnLPercent || 0).toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-slate-400">Total P&L</div>
                 </div>
               </div>
               

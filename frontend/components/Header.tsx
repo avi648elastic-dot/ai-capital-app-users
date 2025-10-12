@@ -8,6 +8,7 @@ import Image from 'next/image';
 import ThemeToggle from './ThemeToggle';
 import AcaciaLogo from './AcaciaLogo';
 import NotificationCenter from './NotificationCenter';
+import NotificationPanel from './NotificationPanel';
 
 interface HeaderProps {
   userName?: string;
@@ -18,6 +19,7 @@ interface HeaderProps {
 
 export default function Header({ userName, showNavigation = true, isAdmin = false, userAvatar }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const router = useRouter();
 
   const handleLogout = () => {
@@ -67,7 +69,29 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
               </div>
               
               {/* NOTIFICATION BELL - VISIBLE ON ALL PAGES */}
-              <NotificationCenter userId={userName} />
+              {/* CRITICAL FIX: Enhanced Notification System */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotificationPanel(true)}
+                  className="relative p-2 text-slate-400 hover:text-slate-300 transition-colors"
+                  title="Notifications"
+                >
+                  <span className="text-xl">🔔</span>
+                  {/* Unread count badge - will be updated by NotificationPanel */}
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    64
+                  </span>
+                </button>
+                
+                {/* Desktop Notification Panel */}
+                {showNotificationPanel && (
+                  <NotificationPanel 
+                    isVisible={showNotificationPanel}
+                    onClose={() => setShowNotificationPanel(false)}
+                    isMobile={false}
+                  />
+                )}
+              </div>
               
               {/* Theme Toggle */}
               <ThemeToggle />

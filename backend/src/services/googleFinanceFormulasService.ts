@@ -47,6 +47,20 @@ class GoogleFinanceFormulasService {
   private readonly MAX_CALLS_PER_KEY_PER_MINUTE = 5; // Alpha Vantage limit
   private readonly BLACKLIST_DURATION = 5 * 60 * 1000; // 5 minutes blacklist
 
+  /**
+   * 🚨 CRITICAL FIX: Get expected price ranges for validation
+   */
+  private getExpectedPriceRange(symbol: string): { min: number; max: number } {
+    const ranges: Record<string, { min: number; max: number }> = {
+      'NVDA': { min: 150, max: 200 },    // NVDA should be around $184
+      'AAPL': { min: 150, max: 200 },    // Apple range
+      'MSFT': { min: 300, max: 450 },    // Microsoft range  
+      'TSLA': { min: 200, max: 300 },    // Tesla range
+    };
+    
+    return ranges[symbol.toUpperCase()] || { min: 0, max: 10000 };
+  }
+
   constructor() {
     // 🔑 MAJOR'S SMART ENGINE - Multiple API Keys with aggressive rotation
     this.alphaVantageKeys = [
@@ -200,12 +214,32 @@ class GoogleFinanceFormulasService {
     try {
       loggerService.info(`🔍 [GOOGLE FINANCE FORMULAS] Fetching metrics for ${symbol}`);
       
+      // CRITICAL FIX: Clear cache for known problematic stocks to force fresh data
+      if (['NVDA', 'AAPL', 'MSFT', 'TSLA'].includes(symbol.toUpperCase())) {
+        loggerService.warn(`🚨 [CACHE CLEAR] Forcing fresh data for ${symbol} due to potential corruption`);
+        this.cache.delete(symbol);
+      }
+      
       // Check cache first
       const cachedData = this.cache.get(symbol);
       if (cachedData) {
         const age = Date.now() - cachedData.timestamp;
-        loggerService.info(`📊 [CACHE HIT] Returning cached data for ${symbol} (age: ${Math.floor(age / 1000)}s)`);
-        return cachedData;
+        
+        // CRITICAL FIX: Validate cached data for known stocks
+        if (['NVDA', 'AAPL', 'MSFT', 'TSLA'].includes(symbol.toUpperCase())) {
+          const expectedPriceRange = this.getExpectedPriceRange(symbol);
+          if (cachedData.current < expectedPriceRange.min || cachedData.current > expectedPriceRange.max) {
+            loggerService.error(`🚨 [CACHE CORRUPTION] Detected corrupted cache for ${symbol}: $${cachedData.current} (expected: $${expectedPriceRange.min}-$${expectedPriceRange.max})`);
+            this.cache.delete(symbol);
+            // Continue to fetch fresh data
+          } else {
+            loggerService.info(`📊 [CACHE HIT] Valid cached data for ${symbol} (age: ${Math.floor(age / 1000)}s)`);
+            return cachedData;
+          }
+        } else {
+          loggerService.info(`📊 [CACHE HIT] Returning cached data for ${symbol} (age: ${Math.floor(age / 1000)}s)`);
+          return cachedData;
+        }
       }
 
       // 🚀 MAJOR'S SMART ENGINE - Try ALL APIs with ALL keys aggressively

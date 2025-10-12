@@ -979,20 +979,30 @@ interface SystemStatsResponse {
 #### **Subscription Tiers**
 - **Free Tier**: Basic portfolio management (5 stocks max)
   - Price: $0/month
-  - Features: Basic analytics, 1 portfolio, standard support
+  - Features: Basic analytics, 1 portfolio, 3 watchlist items, standard support
   - Target: Individual investors, students
 
 - **Premium Tier**: Advanced features and analytics
-  - Price: $29/month or $290/year
-  - Features: 20 stocks, advanced analytics, priority support
+  - Price: $9.99/month
+  - Features: 25 stocks, 3 portfolios, 15 watchlist items, real-time data, advanced analytics, custom alerts
   - Target: Serious individual investors, small advisors
 
 - **Premium+ Tier**: Professional-grade tools
-  - Price: $99/month or $990/year
-  - Features: Unlimited stocks, AI insights, API access, white-label
+  - Price: $19.99/month
+  - Features: 100 stocks, 10 portfolios, 50 watchlist items, portfolio sharing, advanced risk management, priority support
   - Target: Financial advisors, small institutions
 
 - **Enterprise Tier**: Custom solutions
+  - Price: $199/month
+  - Features: Unlimited everything, custom branding, API access, dedicated support
+  - Target: Large institutions, white-label clients
+
+#### **Payment & Subscription Management**
+- **Stripe Integration**: Secure payment processing with automated webhook handling
+- **Plan Enforcement**: Middleware-based limit checking for all user actions
+- **Auto-downgrade**: Inactive subscriptions automatically revert to free tier after 7 days
+- **Billing Portal**: Self-service subscription management with upgrade/downgrade options
+- **Trial Periods**: 14-day free trial for all premium tiers
   - Price: Custom pricing
   - Features: Custom AI models, dedicated support, on-premise deployment
   - Target: Large institutions, hedge funds, family offices

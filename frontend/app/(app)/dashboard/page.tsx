@@ -20,6 +20,8 @@ import { CardSkeleton, TableSkeleton, ChartSkeleton } from '@/components/ui/Skel
 import { PageLoading } from '@/components/ui/LoadingSpinner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
+import Tooltip from '@/components/Tooltip';
+import NotificationBanner from '@/components/NotificationBanner';
 
 interface User {
   id: string;
@@ -476,6 +478,9 @@ export default function Dashboard() {
       
       {/* Professional Header */}
       <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} />
+      
+      {/* CRITICAL FIX: Notification Banner - Below Header, Above Content */}
+      <NotificationBanner isMobile={false} />
       
       <div className="px-4 sm:px-6 lg:px-8">
         {/* Compact Account Type Badge - Optimized */}

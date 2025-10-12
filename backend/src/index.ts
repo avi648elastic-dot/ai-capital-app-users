@@ -26,6 +26,7 @@ import subscriptionRoutes from './routes/subscription';
 import userRoutes from './routes/user';
 import notificationRoutes from './routes/notifications';
 import watchlistRoutes from './routes/watchlist';
+import stripeRoutes from './routes/stripe';
 import { schedulerService } from './services/schedulerService';
 import { watchlistMonitorService } from './services/watchlistMonitorService';
 import { watchlistAlertService } from './services/watchlistAlertService';
@@ -84,6 +85,45 @@ app.use((req, res, next) => {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
   next();
+});
+
+// 🛡️ CSRF Protection (Manual Implementation)
+app.use((req, res, next) => {
+  // Skip CSRF for GET requests and health checks
+  if (req.method === 'GET' || req.path.includes('/health') || req.path.includes('/test')) {
+    return next();
+  }
+  
+  // Skip CSRF for API routes that use token-based auth
+  if (req.path.startsWith('/api/') && req.headers.authorization) {
+    return next();
+  }
+  
+  // For other requests, check for CSRF token
+  const csrfToken = req.headers['x-csrf-token'] || req.body._csrf;
+  const sessionToken = req.cookies['csrf-token'];
+  
+  if (csrfToken && sessionToken && csrfToken === sessionToken) {
+    return next();
+  }
+  
+  // Allow requests from trusted origins (same-origin policy)
+  const origin = req.get('origin') || req.get('referer');
+  if (origin && (origin.includes('localhost') || origin.includes('vercel.app') || origin.includes('onrender.com'))) {
+    return next();
+  }
+  
+  // For development, be more permissive
+  if (process.env.NODE_ENV === 'development') {
+    return next();
+  }
+  
+  // Block suspicious requests
+  res.status(403).json({
+    success: false,
+    message: 'CSRF protection: Invalid or missing token',
+    requestId: loggerService.getRequestId(),
+  });
 });
 
 // 🔄 Enhanced Rate Limiting (300 req/min as per TODO)
@@ -156,6 +196,7 @@ app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/watchlist', watchlistRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {
