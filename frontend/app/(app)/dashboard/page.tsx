@@ -520,12 +520,25 @@ export default function Dashboard() {
 
   // Filter portfolio based on selected portfolio or tab/type
   const filteredPortfolio = portfolio.filter(item => {
+    console.log('🔍 [FILTER] Checking item:', item);
+    console.log('🔍 [FILTER] activeTab:', activeTab);
+    console.log('🔍 [FILTER] selectedPortfolioId:', selectedPortfolioId);
+    
     if (selectedPortfolioId) {
-      return (item as any)?.portfolioId === selectedPortfolioId;
+      const matches = (item as any)?.portfolioId === selectedPortfolioId;
+      console.log('🔍 [FILTER] Portfolio ID match:', matches);
+      return matches;
     }
+    
     const type = (item as any)?.portfolioType || 'solid';
-    return activeTab === 'solid' ? type === 'solid' : type === 'risky';
+    const matches = activeTab === 'solid' ? type === 'solid' : type === 'risky';
+    console.log('🔍 [FILTER] Type filtering - item type:', type, 'activeTab:', activeTab, 'matches:', matches);
+    return matches;
   });
+  
+  console.log('🔍 [FILTER] Total portfolio items:', portfolio.length);
+  console.log('🔍 [FILTER] Filtered portfolio items:', filteredPortfolio.length);
+  console.log('🔍 [FILTER] Active tab:', activeTab);
 
   if (loading) {
     return (
