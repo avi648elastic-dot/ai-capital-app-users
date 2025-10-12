@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import Toast from '@/components/ui/Toast';
 import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
 import NotificationBanner from '@/components/NotificationBanner';
+import MobileFloatingActionButton from '@/components/MobileFloatingActionButton';
 
 interface PriceAlert {
   type: 'high' | 'low' | 'both';
@@ -792,6 +793,18 @@ export default function Watchlist() {
           </div>
         </div>
       )}
+
+      {/* Mobile Floating Action Button - Only show on mobile */}
+      <div className="block md:hidden">
+        <MobileFloatingActionButton
+          userTier={user?.subscriptionTier || 'free'}
+          onSuccess={() => {
+            // Refresh watchlist data when new stock is added
+            // Refresh watchlist data
+            window.location.reload();
+          }}
+        />
+      </div>
     </div>
   );
 }

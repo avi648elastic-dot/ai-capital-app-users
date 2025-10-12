@@ -22,6 +22,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
 import Tooltip from '@/components/Tooltip';
 import NotificationBanner from '@/components/NotificationBanner';
+import MobileFloatingActionButton from '@/components/MobileFloatingActionButton';
 
 interface User {
   id: string;
@@ -879,6 +880,17 @@ export default function Dashboard() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
         </button>
+      </div>
+
+      {/* Mobile Floating Action Button - Only show on mobile */}
+      <div className="block md:hidden">
+        <MobileFloatingActionButton
+          userTier={user?.subscriptionTier || 'free'}
+          onSuccess={() => {
+            // Refresh dashboard data when new portfolio/stock is added
+            fetchUserData();
+          }}
+        />
       </div>
     </div>
   );
