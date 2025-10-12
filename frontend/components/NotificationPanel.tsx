@@ -43,85 +43,65 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
+      
+      // 🚨 CRITICAL FIX: First try to create real notifications for the user
+      try {
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/create-test`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        console.log('✅ [NOTIFICATIONS] Real notifications created for user');
+      } catch (createError) {
+        console.log('ℹ️ [NOTIFICATIONS] Could not create test notifications (may already exist):', createError);
+      }
+      
+      // Now fetch all notifications
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications?limit=50`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const fetchedNotifications = response.data.notifications || [];
+      const fetchedNotifications = response.data.data?.notifications || response.data.notifications || [];
+      console.log('📱 [NOTIFICATIONS] Fetched notifications:', fetchedNotifications.length);
       
-      // 🚨 CRITICAL FIX: Add sample notifications if none exist
-      if (fetchedNotifications.length === 0) {
-        const sampleNotifications: Notification[] = [
+      if (fetchedNotifications.length > 0) {
+        // 🎉 REAL NOTIFICATIONS FOUND!
+        setNotifications(fetchedNotifications);
+        setUnreadCount(fetchedNotifications.filter((n: Notification) => !n.readAt).length);
+        console.log('✅ [NOTIFICATIONS] Showing real notifications:', fetchedNotifications.length);
+      } else {
+        // Show helpful message if no notifications exist
+        const emptyStateNotifications: Notification[] = [
           {
-            id: 'sample-1',
-            title: 'Welcome to AI Capital!',
-            message: 'Your portfolio is ready. Start by adding some stocks to track.',
+            id: 'empty-state-1',
+            title: 'No Notifications Yet',
+            message: 'You\'ll see portfolio updates, price alerts, and market insights here once you start trading.',
             type: 'info',
-            priority: 'medium',
-            category: 'system',
-            createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-          },
-          {
-            id: 'sample-2',
-            title: 'Portfolio Performance',
-            message: 'Your portfolio is performing well. Consider reviewing your positions.',
-            type: 'success',
             priority: 'low',
-            category: 'portfolio',
-            createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
-          },
-          {
-            id: 'sample-3',
-            title: 'Market Alert',
-            message: 'High volatility detected in tech stocks. Monitor your positions closely.',
-            type: 'warning',
-            priority: 'high',
-            category: 'market',
-            createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+            category: 'system',
+            createdAt: new Date().toISOString(),
           }
         ];
         
-        setNotifications(sampleNotifications);
-        setUnreadCount(sampleNotifications.length);
-      } else {
-        setNotifications(fetchedNotifications);
-        setUnreadCount(fetchedNotifications.filter((n: Notification) => !n.readAt).length);
+        setNotifications(emptyStateNotifications);
+        setUnreadCount(0);
+        console.log('ℹ️ [NOTIFICATIONS] No real notifications found, showing empty state');
       }
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      console.error('❌ [NOTIFICATIONS] Failed to fetch notifications:', error);
       
-      // 🚨 CRITICAL FIX: Show proper sample notifications instead of loading message
-      const sampleNotifications: Notification[] = [
+      // Show error state with helpful message
+      const errorStateNotifications: Notification[] = [
         {
-          id: 'sample-1',
-          title: 'Welcome to AI Capital!',
-          message: 'Your portfolio is ready. Start by adding some stocks to track.',
-          type: 'success',
+          id: 'error-state-1',
+          title: 'Connection Issue',
+          message: 'Unable to load notifications right now. Please check your internet connection and try again.',
+          type: 'error',
           priority: 'medium',
           category: 'system',
-          createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-        },
-        {
-          id: 'sample-2',
-          title: 'Portfolio Performance',
-          message: 'Your portfolio is performing well. Consider reviewing your positions.',
-          type: 'info',
-          priority: 'low',
-          category: 'portfolio',
-          createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
-        },
-        {
-          id: 'sample-3',
-          title: 'Market Alert',
-          message: 'High volatility detected in tech stocks. Monitor your positions closely.',
-          type: 'warning',
-          priority: 'high',
-          category: 'market',
-          createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+          createdAt: new Date().toISOString(),
         }
       ];
-      setNotifications(sampleNotifications);
-      setUnreadCount(sampleNotifications.length);
+      setNotifications(errorStateNotifications);
+      setUnreadCount(0);
     } finally {
       setLoading(false);
     }

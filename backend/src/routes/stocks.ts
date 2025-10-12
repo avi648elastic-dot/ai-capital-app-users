@@ -374,4 +374,101 @@ router.post('/batch-prices', authenticateToken, async (req, res) => {
   }
 });
 
+// 🚀 PERFORMANCE: Batch stock price endpoint
+router.post('/batch-prices', async (req, res) => {
+  try {
+    const { symbols } = req.body;
+    
+    if (!symbols || !Array.isArray(symbols) || symbols.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Symbols array is required'
+      });
+    }
+
+    if (symbols.length > 50) {
+      return res.status(400).json({
+        success: false,
+        error: 'Maximum 50 symbols allowed per batch request'
+      });
+    }
+
+    console.log(`🚀 [BATCH] Fetching prices for ${symbols.length} symbols:`, symbols);
+    
+    const { googleFinanceFormulasService } = await import('../services/googleFinanceFormulasService');
+    
+    // Fetch all symbols in parallel for maximum performance
+    const pricePromises = symbols.map(async (symbol: string) => {
+      try {
+        const metrics = await googleFinanceFormulasService.getStockMetrics(symbol);
+        return {
+          symbol,
+          success: true,
+          data: {
+            current: metrics.current,
+            change: metrics.change || 0,
+            changePercent: metrics.changePercent || 0,
+            high: metrics.high || metrics.current,
+            low: metrics.low || metrics.current,
+            volume: metrics.volume || 0,
+            timestamp: metrics.timestamp,
+            dataSource: metrics.dataSource
+          }
+        };
+      } catch (error) {
+        console.error(`❌ [BATCH] Error fetching ${symbol}:`, error);
+        return {
+          symbol,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        };
+      }
+    });
+
+    const results = await Promise.allSettled(pricePromises);
+    
+    // Process results
+    const prices: Record<string, any> = {};
+    const errors: Record<string, string> = {};
+    let successCount = 0;
+
+    results.forEach((result, index) => {
+      const symbol = symbols[index];
+      
+      if (result.status === 'fulfilled') {
+        const data = result.value;
+        if (data.success) {
+          prices[symbol] = data.data;
+          successCount++;
+        } else {
+          errors[symbol] = data.error;
+        }
+      } else {
+        errors[symbol] = result.reason?.message || 'Request failed';
+      }
+    });
+
+    console.log(`✅ [BATCH] Successfully fetched ${successCount}/${symbols.length} stock prices`);
+
+    res.json({
+      success: true,
+      prices,
+      errors: Object.keys(errors).length > 0 ? errors : undefined,
+      summary: {
+        requested: symbols.length,
+        successful: successCount,
+        failed: symbols.length - successCount
+      },
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error: unknown) {
+    console.error('❌ [BATCH] Error in batch price request:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;

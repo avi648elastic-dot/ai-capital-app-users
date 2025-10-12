@@ -5,6 +5,7 @@ import { authenticateToken } from '../middleware/auth';
 import { decisionEngine } from '../services/decisionEngine';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 import { runFullBenchmark } from '../utils/queryBenchmark';
+import { cronLockService } from '../services/cronLockService';
 
 const router = express.Router();
 
@@ -579,6 +580,60 @@ router.post('/benchmark-queries', authenticateToken, requireAdmin, async (req, r
   } catch (error) {
     console.error('❌ [ADMIN] Error starting benchmark:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// 🔒 Cron Lock Management
+router.get('/cron-locks', requireAdmin, async (req, res) => {
+  try {
+    const jobNames = [
+      'stock-data-update',
+      'portfolio-decisions-update', 
+      'market-open-update',
+      'market-close-update',
+      'volatility-update',
+      'historical-data-update',
+      'risk-management-update'
+    ];
+
+    const lockStatus = [];
+    for (const jobName of jobNames) {
+      const lockInfo = await cronLockService.getLockInfo(jobName);
+      lockStatus.push({
+        jobName,
+        ...lockInfo
+      });
+    }
+
+    res.json({
+      success: true,
+      locks: lockStatus,
+      health: await cronLockService.healthCheck()
+    });
+  } catch (error) {
+    loggerService.error('❌ [ADMIN] Error fetching cron locks:', { error });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch cron lock status'
+    });
+  }
+});
+
+router.post('/cron-locks/force-release', requireAdmin, async (req, res) => {
+  try {
+    const releasedCount = await cronLockService.forceReleaseAllLocks();
+    
+    res.json({
+      success: true,
+      message: `Force released ${releasedCount} locks`,
+      releasedCount
+    });
+  } catch (error) {
+    loggerService.error('❌ [ADMIN] Error force releasing locks:', { error });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to force release locks'
+    });
   }
 });
 

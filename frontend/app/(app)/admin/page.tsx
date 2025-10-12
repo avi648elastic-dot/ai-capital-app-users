@@ -512,17 +512,55 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
+              {/* Subscription Tier Management - Mobile */}
+              <div className="space-y-2 mb-3">
+                <div className="text-xs text-gray-400 font-semibold">Subscription Management:</div>
+                <div className="flex flex-wrap gap-1">
+                  {user.subscriptionTier !== 'free' && (
+                    <button
+                      onClick={() => handleUserAction(user.id, 'make-free')}
+                      className="px-2 py-1 text-xs font-semibold rounded bg-amber-600 hover:bg-amber-700 text-white"
+                      title="Downgrade to Free"
+                    >
+                      🔒 Free
+                    </button>
+                  )}
+                  {user.subscriptionTier !== 'premium' && (
+                    <button
+                      onClick={() => handleUserAction(user.id, 'make-premium')}
+                      className="px-2 py-1 text-xs font-semibold rounded bg-emerald-600 hover:bg-emerald-700 text-white"
+                      title="Upgrade to Premium"
+                    >
+                      ⭐ Premium
+                    </button>
+                  )}
+                  {user.subscriptionTier !== 'premium+' && (
+                    <button
+                      onClick={() => handleUserAction(user.id, 'make-premium+')}
+                      className="px-2 py-1 text-xs font-semibold rounded bg-purple-600 hover:bg-purple-700 text-white"
+                      title="Upgrade to Premium+"
+                    >
+                      💎 Premium+
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => viewUserPortfolio(user.id, user.name)}
+                  onClick={() => viewUserPortfolio(user.id)}
                   className="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 rounded text-xs flex items-center justify-center space-x-1"
                 >
                   <Eye className="w-3 h-3" />
                   <span>View</span>
                 </button>
                 <button
-                  onClick={() => toggleUserAdmin(user.id, user.isAdmin || false)}
-                  className="flex-1 bg-warning-600 hover:bg-warning-700 text-white px-3 py-1.5 rounded text-xs flex items-center justify-center space-x-1"
+                  onClick={() => handleUserAction(user.id, user.isAdmin ? 'remove-admin' : 'make-admin')}
+                  className={`flex-1 px-3 py-1.5 rounded text-xs flex items-center justify-center space-x-1 ${
+                    user.isAdmin 
+                      ? 'bg-red-600 hover:bg-red-700 text-white' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
                 >
                   <Crown className="w-3 h-3" />
                   <span>{user.isAdmin ? 'Remove' : 'Make'} Admin</span>

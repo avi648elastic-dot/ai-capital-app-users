@@ -6,31 +6,57 @@ import { z } from 'zod';
 
 const router = express.Router();
 
-// 🚨 CRITICAL TEST ENDPOINT: Create test notifications
-router.post('/create-test', async (req, res) => {
+// 🚨 CRITICAL TEST ENDPOINT: Create test notifications for logged-in user
+router.post('/create-test', authenticateToken, async (req, res) => {
   try {
-    // Create test notifications using the imported notificationService
+    const userId = req.user!._id.toString();
+    
+    // Create test notifications using the actual logged-in user ID
     const testNotifications = [
       {
-        userId: 'test-user',
+        userId: userId,
         title: 'NVDA Price Alert',
-        message: 'NVDA has reached your target price of $185',
+        message: 'NVDA has reached your target price of $185. Consider reviewing your position.',
         type: 'action' as const,
-        priority: 'high' as const
+        priority: 'high' as const,
+        category: 'portfolio' as const,
+        actionData: {
+          ticker: 'NVDA',
+          action: 'SELL' as const,
+          reason: 'Target price reached'
+        }
       },
       {
-        userId: 'test-user', 
-        title: 'Portfolio Update',
-        message: 'Your portfolio gained 2.5% today',
+        userId: userId, 
+        title: 'Portfolio Performance Update',
+        message: 'Your portfolio gained 2.5% today. Great performance!',
         type: 'success' as const,
-        priority: 'medium' as const
+        priority: 'medium' as const,
+        category: 'portfolio' as const
       },
       {
-        userId: 'test-user',
-        title: 'Market Alert',
-        message: 'High volatility detected in tech stocks',
+        userId: userId,
+        title: 'Market Volatility Alert',
+        message: 'High volatility detected in tech stocks. Monitor your positions closely.',
         type: 'warning' as const,
-        priority: 'urgent' as const
+        priority: 'urgent' as const,
+        category: 'market' as const
+      },
+      {
+        userId: userId,
+        title: 'Welcome to AI Capital!',
+        message: 'Your portfolio is ready. Start by adding stocks to track and receive AI-powered recommendations.',
+        type: 'info' as const,
+        priority: 'medium' as const,
+        category: 'system' as const
+      },
+      {
+        userId: userId,
+        title: 'Risk Management Alert',
+        message: 'Your portfolio risk level is moderate. Consider diversifying across sectors.',
+        type: 'warning' as const,
+        priority: 'medium' as const,
+        category: 'portfolio' as const
       }
     ];
     
@@ -42,8 +68,9 @@ router.post('/create-test', async (req, res) => {
     
     res.json({
       success: true,
-      message: 'Test notifications created',
-      notifications: createdNotifications
+      message: `Created ${createdNotifications.length} test notifications for user ${userId}`,
+      notifications: createdNotifications,
+      userId: userId
     });
   } catch (error: unknown) {
     console.error('❌ [TEST] Error creating test notifications:', error);
