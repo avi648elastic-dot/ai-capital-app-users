@@ -431,7 +431,7 @@ router.delete('/:id', authenticateToken, requireSubscription, async (req, res) =
     // Update reputation BEFORE deleting the position
     try {
       await reputationService.updateReputationOnPositionClose(
-        req.user!._id,
+        req.user!._id.toString(),
         portfolioItem,
         finalExitPrice,
         'manual_delete'
@@ -446,7 +446,7 @@ router.delete('/:id', authenticateToken, requireSubscription, async (req, res) =
     await Portfolio.findOneAndDelete({ _id: id, userId: req.user!._id });
 
     // Get updated user reputation for response
-    const userReputation = await reputationService.getUserReputationSummary(req.user!._id);
+    const userReputation = await reputationService.getUserReputationSummary(req.user!._id.toString());
 
     res.json({ 
       message: 'Portfolio item deleted successfully and reputation updated',

@@ -25,7 +25,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/history', authenticateToken, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
-    const history = await reputationService.getUserTradingHistory(req.user!._id, limit);
+      const history = await reputationService.getUserTradingHistory(req.user!._id.toString(), limit);
     
     res.json({
       success: true,
@@ -41,7 +41,7 @@ router.get('/history', authenticateToken, async (req, res) => {
 // Get user's reputation summary
 router.get('/my-reputation', authenticateToken, async (req, res) => {
   try {
-    const reputation = await reputationService.getUserReputationSummary(req.user!._id);
+      const reputation = await reputationService.getUserReputationSummary(req.user!._id.toString());
     
     res.json({
       success: true,
