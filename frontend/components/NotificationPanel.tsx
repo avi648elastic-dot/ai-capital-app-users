@@ -42,59 +42,137 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      
-      // 🚨 CRITICAL FIX: First try to create real notifications for the user
-      try {
-        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/create-test`, {}, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        console.log('✅ [NOTIFICATIONS] Real notifications created for user');
-      } catch (createError) {
-        console.log('ℹ️ [NOTIFICATIONS] Could not create test notifications (may already exist):', createError);
+      // 🚨 MOBILE FIX: Get token from both localStorage and cookies
+      let token = localStorage.getItem('token');
+      if (!token) {
+        // Fallback to cookies for mobile
+        const cookies = document.cookie.split(';');
+        const tokenCookie = cookies.find(c => c.trim().startsWith('token='));
+        if (tokenCookie) {
+          token = tokenCookie.split('=')[1];
+        }
       }
       
-      // Now fetch all notifications
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications?limit=50`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      console.log('📱 [NOTIFICATIONS] Starting fetch with token:', token ? 'present' : 'missing');
       
-      const fetchedNotifications = response.data.data?.notifications || response.data.notifications || [];
-      console.log('📱 [NOTIFICATIONS] Fetched notifications:', fetchedNotifications.length);
+      // 🚨 MOBILE FIX: Use multiple API URL fallbacks
+      const apiUrls = [
+        process.env.NEXT_PUBLIC_API_URL,
+        'https://ai-capital-app7.onrender.com',
+        window.location.origin.replace(':3000', ':5000') // Local fallback
+      ].filter(Boolean);
+
+      let lastError: any = null;
       
-      if (fetchedNotifications.length > 0) {
-        // 🎉 REAL NOTIFICATIONS FOUND!
-        setNotifications(fetchedNotifications);
-        setUnreadCount(fetchedNotifications.filter((n: Notification) => !n.readAt).length);
-        console.log('✅ [NOTIFICATIONS] Showing real notifications:', fetchedNotifications.length);
-      } else {
-        // Show helpful message if no notifications exist
-        const emptyStateNotifications: Notification[] = [
-          {
-            id: 'empty-state-1',
-            title: 'No Notifications Yet',
-            message: 'You\'ll see portfolio updates, price alerts, and market insights here once you start trading.',
-            type: 'info',
-            priority: 'low',
-            category: 'system',
-            createdAt: new Date().toISOString(),
+      for (const apiUrl of apiUrls) {
+        try {
+          console.log(`📱 [NOTIFICATIONS] Trying API URL: ${apiUrl}`);
+          
+          // First, test if we can create notifications
+          try {
+            await axios.post(`${apiUrl}/api/notifications/create-test`, {}, {
+              headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              timeout: 10000 // 10 second timeout
+            });
+            console.log('✅ [NOTIFICATIONS] Test notifications created successfully');
+          } catch (createError: any) {
+            console.log('ℹ️ [NOTIFICATIONS] Create test failed (may already exist):', createError?.response?.status || createError.message);
           }
-        ];
-        
-        setNotifications(emptyStateNotifications);
-        setUnreadCount(0);
-        console.log('ℹ️ [NOTIFICATIONS] No real notifications found, showing empty state');
+          
+          // Now fetch notifications
+          const response = await axios.get(`${apiUrl}/api/notifications?limit=50`, {
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 10000 // 10 second timeout
+          });
+          
+          console.log('📱 [NOTIFICATIONS] API Response:', response.status, response.data);
+          
+          const fetchedNotifications = response.data.data?.notifications || response.data.notifications || [];
+          console.log('📱 [NOTIFICATIONS] Parsed notifications:', fetchedNotifications.length);
+          
+          if (fetchedNotifications.length > 0) {
+            // 🎉 REAL NOTIFICATIONS FOUND!
+            setNotifications(fetchedNotifications);
+            setUnreadCount(fetchedNotifications.filter((n: Notification) => !n.readAt).length);
+            console.log('✅ [NOTIFICATIONS] Successfully loaded real notifications:', fetchedNotifications.length);
+            return; // Success! Exit the function
+          } else {
+            // Create some sample notifications for the user
+            const sampleNotifications: Notification[] = [
+              {
+                id: 'sample-welcome',
+                title: 'Welcome to AI Capital! 🎉',
+                message: 'Your portfolio is ready. Start by adding stocks to track and receive AI-powered recommendations.',
+                type: 'success',
+                priority: 'medium',
+                category: 'system',
+                createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
+              },
+              {
+                id: 'sample-portfolio',
+                title: 'Portfolio Tips 💡',
+                message: 'Diversify your portfolio across different sectors to reduce risk and maximize returns.',
+                type: 'info',
+                priority: 'low',
+                category: 'portfolio',
+                createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
+              },
+              {
+                id: 'sample-market',
+                title: 'Market Insight 📈',
+                message: 'Tech stocks are showing strong momentum. Consider reviewing your positions.',
+                type: 'info',
+                priority: 'medium',
+                category: 'market',
+                createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
+              }
+            ];
+            
+            setNotifications(sampleNotifications);
+            setUnreadCount(sampleNotifications.length);
+            console.log('✅ [NOTIFICATIONS] Showing sample notifications');
+            return; // Success with samples
+          }
+          
+        } catch (apiError: any) {
+          console.error(`❌ [NOTIFICATIONS] API ${apiUrl} failed:`, apiError?.response?.status, apiError.message);
+          lastError = apiError;
+          continue; // Try next API URL
+        }
       }
-    } catch (error) {
-      console.error('❌ [NOTIFICATIONS] Failed to fetch notifications:', error);
       
-      // Show error state with helpful message
+      // If we get here, all API URLs failed
+      throw lastError || new Error('All API endpoints failed');
+      
+    } catch (error: any) {
+      console.error('❌ [NOTIFICATIONS] All attempts failed:', error);
+      
+      // Show detailed error state
       const errorStateNotifications: Notification[] = [
         {
-          id: 'error-state-1',
-          title: 'Connection Issue',
-          message: 'Unable to load notifications right now. Please check your internet connection and try again.',
+          id: 'error-connection',
+          title: 'Connection Issue 🔌',
+          message: `Unable to load notifications. ${error?.response?.status === 401 ? 'Please log in again.' : 'Please check your internet connection and try again.'}`,
           type: 'error',
+          priority: 'high',
+          category: 'system',
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'error-retry',
+          title: 'Retry Available 🔄',
+          message: 'Tap the refresh button or close and reopen the notification panel to try again.',
+          type: 'info',
           priority: 'medium',
           category: 'system',
           createdAt: new Date().toISOString(),
@@ -187,6 +265,35 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
             )}
           </div>
           <div className="flex items-center space-x-2">
+            {/* Refresh Button */}
+            <button
+              onClick={() => {
+                console.log('🔄 [NOTIFICATIONS] Manual refresh triggered');
+                fetchNotifications();
+              }}
+              disabled={loading}
+              className={`p-1 rounded transition-colors ${
+                loading 
+                  ? 'text-slate-400 cursor-not-allowed' 
+                  : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
+              }`}
+              title="Refresh Notifications"
+            >
+              <svg 
+                className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                />
+              </svg>
+            </button>
+            
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
