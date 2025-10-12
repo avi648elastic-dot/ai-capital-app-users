@@ -32,7 +32,7 @@ class LoggerService {
       }
     }
 
-    // Configure Pino logger with Sentry transport
+    // Configure Pino logger
     this.logger = pino({
       level: process.env.LOG_LEVEL || 'info',
       transport: process.env.NODE_ENV === 'development' ? {
@@ -48,39 +48,10 @@ class LoggerService {
           return { level: label };
         }
       },
-      timestamp: pino.stdTimeFunctions.isoTime,
-      // Custom hook to send errors to Sentry
-      hooks: {
-        logMethod: (inputArgs, method, level) => {
-          if (this.sentryEnabled && level >= 50) { // 50 = error, 60 = fatal
-            const logData = inputArgs[0];
-            const message = inputArgs[1] || 'Unknown error';
-            
-            // Send to Sentry
-            if (level === 60) { // fatal
-              Sentry.captureException(new Error(message), {
-                level: 'fatal',
-                extra: logData as any,
-                tags: {
-                  requestId: this.requestId || 'unknown'
-                }
-              });
-            } else { // error
-              Sentry.captureException(new Error(message), {
-                level: 'error',
-                extra: logData as any,
-                tags: {
-                  requestId: this.requestId || 'unknown'
-                }
-              });
-            }
-          }
-          return method.apply(this, inputArgs);
-        }
-      }
+      timestamp: pino.stdTimeFunctions.isoTime
     });
 
-    console.log('✅ [LOGGER] Pino logger initialized with Sentry transport');
+    console.log('✅ [LOGGER] Pino logger initialized' + (this.sentryEnabled ? ' with Sentry integration' : ''));
   }
 
   /**
@@ -171,10 +142,32 @@ class LoggerService {
 
   error(message: string, data?: any): void {
     this.logWithContext('error', message, data);
+    
+    // Send to Sentry if enabled
+    if (this.sentryEnabled) {
+      Sentry.captureException(new Error(message), {
+        level: 'error',
+        extra: data as any,
+        tags: {
+          requestId: this.requestId || 'unknown'
+        }
+      });
+    }
   }
 
   fatal(message: string, data?: any): void {
     this.logWithContext('fatal', message, data);
+    
+    // Send to Sentry if enabled
+    if (this.sentryEnabled) {
+      Sentry.captureException(new Error(message), {
+        level: 'fatal',
+        extra: data as any,
+        tags: {
+          requestId: this.requestId || 'unknown'
+        }
+      });
+    }
   }
 
   /**
