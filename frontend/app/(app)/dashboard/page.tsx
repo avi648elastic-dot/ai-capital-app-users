@@ -189,7 +189,7 @@ export default function Dashboard() {
           Authorization: `Bearer ${Cookies.get('token')}`,
           'Cache-Control': useCache ? 'max-age=30' : 'no-cache' // 30 second cache
         },
-        timeout: 8000 // Reduced from 15s to 8s for better UX
+        timeout: 30000 // 30s timeout - mobile connections can be slower
       });
       
       const endTime = performance.now();
@@ -226,11 +226,15 @@ export default function Dashboard() {
         alert('Subscription required to access portfolio features');
         return;
       } else if (error.code === 'ECONNABORTED') {
-        console.error('❌ [DASHBOARD] Request timeout (8s)');
-        alert('Loading is taking longer than expected. Please check your connection.');
+        console.error('❌ [DASHBOARD] Request timeout');
+        alert('Loading is taking longer than expected. Please check your internet connection and try again.');
+      } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+        console.error('❌ [DASHBOARD] Network error');
+        alert('Network error. Please check your internet connection.');
       } else {
-        console.error('❌ [DASHBOARD] Unknown error:', error);
-        alert('Failed to load portfolio. Please refresh the page and try again.');
+        console.error('❌ [DASHBOARD] Error:', error);
+        const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
+        alert(`Failed to load portfolio: ${errorMsg}. Please refresh and try again.`);
       }
       
       // Set empty state on error

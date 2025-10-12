@@ -25,10 +25,16 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
     const tickers = [...new Set(portfolio.map(item => item.ticker))];
     console.log('🔍 [PORTFOLIO] Updating prices for tickers:', tickers);
 
-    // Fetch real-time data for all tickers
+    // Fetch real-time data for all tickers - with graceful failure handling
     console.log('🔍 [PORTFOLIO] Fetching real-time data for tickers:', tickers);
-    const realTimeData = await stockDataService.getMultipleStockData(tickers);
-    console.log('✅ [PORTFOLIO] Fetched real-time data for', realTimeData.size, 'stocks');
+    let realTimeData: Map<string, any>;
+    try {
+      realTimeData = await stockDataService.getMultipleStockData(tickers);
+      console.log('✅ [PORTFOLIO] Fetched real-time data for', realTimeData.size, 'stocks');
+    } catch (stockDataError) {
+      console.error('❌ [PORTFOLIO] Error fetching stock data, using stored prices:', stockDataError);
+      realTimeData = new Map(); // Empty map, will use stored prices as fallback
+    }
     
     // Log the actual data we got
     realTimeData.forEach((data, symbol) => {
@@ -166,9 +172,14 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
         portfolioVolatility: portfolioVolatility // 🚨 CRITICAL FIX: Include overall portfolio volatility even if individual calculation failed
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ [PORTFOLIO] Get portfolio error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    const errorMessage = error.message || 'Internal server error';
+    res.status(500).json({ 
+      message: 'Failed to load portfolio',
+      error: process.env.NODE_ENV === 'development' ? errorMessage : 'Please try again later',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

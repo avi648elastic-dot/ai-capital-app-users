@@ -281,10 +281,19 @@ class GoogleFinanceFormulasService {
         }
       }
       
-      // If all APIs fail, return error - DO NOT use fake data
+      // If all APIs fail, use last known cached data or return basic metrics with warning
       if (!metrics) {
         loggerService.error(`❌ [GOOGLE FINANCE] All APIs failed for ${symbol} - NO REAL DATA AVAILABLE`);
-        throw new Error(`Unable to fetch real-time data for ${symbol}. All financial APIs are unavailable. Please try again later.`);
+        
+        // Check if we have any stale cached data we can use as fallback
+        const staleCached = this.cache.get(symbol);
+        if (staleCached) {
+          loggerService.warn(`⚠️ [FALLBACK] Using stale cached data for ${symbol} due to API failures`);
+          return staleCached;
+        }
+        
+        // Last resort: throw error so the portfolio can handle the missing stock gracefully
+        throw new Error(`Unable to fetch data for ${symbol} - all APIs unavailable`);
       }
       
       // Cache the result
