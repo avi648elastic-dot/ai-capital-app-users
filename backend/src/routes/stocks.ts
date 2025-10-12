@@ -277,6 +277,68 @@ router.get('/cache-stats', (req, res) => {
 });
 
 /**
+ * 🚨 ENHANCED Cache Management - Clear corrupted data and force refresh
+ * POST /api/stocks/force-refresh
+ */
+router.post('/force-refresh', async (req, res) => {
+  try {
+    const { symbols } = req.body;
+    
+    console.log('🚨 [FORCE REFRESH] Forcing data refresh for stock prices...');
+    
+    // Clear cache completely to remove any corrupted data
+    googleFinanceFormulasService.clearCache();
+    
+    // Reset API key blacklists
+    googleFinanceFormulasService.resetBlacklist();
+    
+    if (symbols && Array.isArray(symbols) && symbols.length > 0) {
+      // Force fresh fetch for specific symbols
+      console.log(`🔍 [FORCE REFRESH] Fetching fresh data for: ${symbols.join(', ')}`);
+      
+      const results = await Promise.allSettled(
+        symbols.map(async (symbol: string) => {
+          try {
+            const metrics = await googleFinanceFormulasService.getStockMetrics(symbol);
+            return { symbol, success: true, price: metrics.current, dataSource: metrics.dataSource };
+          } catch (error) {
+            return { symbol, success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+          }
+        })
+      );
+      
+      const successful = results.filter(r => r.status === 'fulfilled' && r.value.success);
+      const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+      
+      res.json({
+        success: true,
+        message: 'Cache cleared and fresh data fetched',
+        results: results.map(r => r.status === 'fulfilled' ? r.value : { symbol: 'unknown', success: false, error: 'Promise rejected' }),
+        summary: {
+          total: symbols.length,
+          successful: successful.length,
+          failed: failed.length
+        },
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.json({
+        success: true,
+        message: 'All cache cleared and API keys reset',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ [FORCE REFRESH] Error forcing refresh:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+/**
  * 🧹 Clear Cache (for testing)
  * POST /api/stocks/clear-cache
  */

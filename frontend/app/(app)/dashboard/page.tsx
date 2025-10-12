@@ -176,21 +176,37 @@ export default function Dashboard() {
     }
   }, [user]); // Only depend on user, not activeTab to avoid infinite loops
 
-  const fetchPortfolio = async () => {
+  // 🚀 PERFORMANCE OPTIMIZED: Portfolio fetching with caching and shorter timeout
+  const fetchPortfolio = async (useCache = true) => {
     try {
       setLoading(true);
-      console.log('🔍 [DASHBOARD] Fetching portfolio...');
+      console.log('🔍 [DASHBOARD] Fetching portfolio... (cache:', useCache, ')');
+      
+      const startTime = performance.now();
       
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
-        timeout: 15000 // 15 second timeout
+        headers: { 
+          Authorization: `Bearer ${Cookies.get('token')}`,
+          'Cache-Control': useCache ? 'max-age=30' : 'no-cache' // 30 second cache
+        },
+        timeout: 8000 // Reduced from 15s to 8s for better UX
       });
       
-      console.log('✅ [DASHBOARD] Portfolio fetched successfully:', response.data);
+      const endTime = performance.now();
+      const loadTime = Math.round(endTime - startTime);
+      console.log(`✅ [DASHBOARD] Portfolio fetched in ${loadTime}ms:`, response.data);
       
       if (response.data && response.data.portfolio) {
         setPortfolio(response.data.portfolio);
         setTotals(response.data.totals || { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
+        
+        // Update debug info with performance metrics
+        setDebugInfo(prev => ({
+          ...prev,
+          lastFetchTime: loadTime,
+          portfolioCount: response.data.portfolio.length,
+          lastUpdate: new Date().toISOString()
+        }));
       } else {
         console.warn('⚠️ [DASHBOARD] Invalid portfolio data received');
         setPortfolio([]);
@@ -210,8 +226,8 @@ export default function Dashboard() {
         alert('Subscription required to access portfolio features');
         return;
       } else if (error.code === 'ECONNABORTED') {
-        console.error('❌ [DASHBOARD] Request timeout');
-        alert('Request timed out. Please check your connection and try again.');
+        console.error('❌ [DASHBOARD] Request timeout (8s)');
+        alert('Loading is taking longer than expected. Please check your connection.');
       } else {
         console.error('❌ [DASHBOARD] Unknown error:', error);
         alert('Failed to load portfolio. Please refresh the page and try again.');

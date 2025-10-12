@@ -52,10 +52,13 @@ class GoogleFinanceFormulasService {
    */
   private getExpectedPriceRange(symbol: string): { min: number; max: number } {
     const ranges: Record<string, { min: number; max: number }> = {
-      'NVDA': { min: 150, max: 200 },    // NVDA should be around $184
-      'AAPL': { min: 150, max: 200 },    // Apple range
-      'MSFT': { min: 300, max: 450 },    // Microsoft range  
-      'TSLA': { min: 200, max: 300 },    // Tesla range
+      'NVDA': { min: 100, max: 150 },    // NVDA current range (updated Dec 2024)
+      'AAPL': { min: 180, max: 250 },    // Apple range
+      'MSFT': { min: 400, max: 480 },    // Microsoft range  
+      'TSLA': { min: 220, max: 300 },    // Tesla range
+      'GOOGL': { min: 160, max: 200 },   // Google range
+      'AMZN': { min: 180, max: 220 },    // Amazon range
+      'META': { min: 480, max: 600 },    // Meta range
     };
     
     return ranges[symbol.toUpperCase()] || { min: 0, max: 10000 };
@@ -214,15 +217,20 @@ class GoogleFinanceFormulasService {
     try {
       loggerService.info(`🔍 [GOOGLE FINANCE FORMULAS] Fetching metrics for ${symbol}`);
       
-      // CRITICAL FIX: Clear cache for known problematic stocks to force fresh data
-      if (['NVDA', 'AAPL', 'MSFT', 'TSLA'].includes(symbol.toUpperCase())) {
-        loggerService.warn(`🚨 [CACHE CLEAR] Forcing fresh data for ${symbol} due to potential corruption`);
+      // CRITICAL FIX: Clear cache for ALL major stocks to force fresh data
+      const majorStocks = ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'NFLX', 'INTC'];
+      if (majorStocks.includes(symbol.toUpperCase())) {
+        loggerService.warn(`🚨 [CACHE CLEAR] Forcing fresh data for major stock ${symbol} due to potential corruption`);
         this.cache.delete(symbol);
         
-        // EMERGENCY: Clear ALL related cache keys for NVDA
-        if (symbol.toUpperCase() === 'NVDA') {
-          this.cache.clear(); // Clear entire cache for NVDA corruption
-          loggerService.error(`🚨 [EMERGENCY CACHE CLEAR] Cleared entire cache due to NVDA corruption`);
+        // For any major stock request, validate cache integrity
+        const cachedData = this.cache.get(symbol);
+        if (cachedData) {
+          const expectedRange = this.getExpectedPriceRange(symbol);
+          if (cachedData.current < expectedRange.min || cachedData.current > expectedRange.max) {
+            loggerService.error(`🚨 [CACHE CORRUPTION] Detected corrupted cache for ${symbol}: $${cachedData.current}, clearing cache`);
+            this.cache.clear(); // Clear entire cache to prevent corruption spread
+          }
         }
       }
       
@@ -734,20 +742,25 @@ class GoogleFinanceFormulasService {
    * Generate realistic stock data like your Google Sheet
    */
   private generateRealisticStockData(symbol: string): StockMetrics {
-    // Base prices for different stocks (like your Google Sheet)
+    // Updated base prices for different stocks (December 2024)
     const basePrices: Record<string, number> = {
-      'AAPL': 245.27,
-      'QS': 14.70,
-      'UEC': 14.65,
-      'HIMX': 8.13,
-      'ONCY': 1.20,
-      'AQST': 6.54,
-      'AEG': 7.67,
-      'HST': 15.82,
-      'MSFT': 510.96,
-      'GOOGL': 2800.00,
-      'TSLA': 250.00,
-      'NVDA': 800.00
+      'AAPL': 220.00,   // Apple - updated
+      'QS': 5.20,       // QuantumScape - updated
+      'UEC': 6.85,      // Uranium Energy Corp - updated 
+      'HIMX': 12.45,    // Himax Technologies - updated
+      'ONCY': 18.50,    // Oncolytics Biotech - updated
+      'AQST': 7.25,     // Aquestive Therapeutics - updated
+      'AEG': 8.90,      // Aegon - updated
+      'HST': 17.30,     // Host Hotels & Resorts - updated
+      'MSFT': 435.00,   // Microsoft - updated
+      'GOOGL': 175.00,  // Alphabet - updated (post-split)
+      'TSLA': 250.00,   // Tesla - maintained
+      'NVDA': 125.00,   // NVIDIA - CRITICAL FIX: corrected from $800 to realistic range
+      'AMZN': 195.00,   // Amazon - updated
+      'META': 540.00,   // Meta - updated
+      'AMD': 135.00,    // AMD - added
+      'NFLX': 680.00,   // Netflix - added
+      'INTC': 21.00     // Intel - added
     };
 
     const basePrice = basePrices[symbol] || 100.00;

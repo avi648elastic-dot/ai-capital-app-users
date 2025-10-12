@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 interface Notification {
   id: string;
@@ -39,12 +40,14 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
 
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = Cookies.get('token');
+      if (!token) return;
+      
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications?unreadOnly=true&limit=3`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      const unreadNotifications = response.data.notifications || [];
+      const unreadNotifications = response.data.data?.notifications || response.data.notifications || [];
       setNotifications(unreadNotifications);
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
@@ -53,8 +56,10 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}/read`, {}, {
+      const token = Cookies.get('token');
+      if (!token) return;
+      
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -64,6 +69,24 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
       }
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
+    }
+  };
+
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const token = Cookies.get('token');
+      if (!token) return;
+      
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      if (currentIndex >= notifications.length - 1) {
+        setCurrentIndex(0);
+      }
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
     }
   };
 
@@ -133,8 +156,16 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
           
           <button
             onClick={() => markAsRead(currentNotification.id)}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-green-400 hover:text-green-300 transition-colors text-sm px-2 py-1 bg-green-900/20 rounded"
             title="Mark as read"
+          >
+            ✓
+          </button>
+          
+          <button
+            onClick={() => deleteNotification(currentNotification.id)}
+            className="text-red-400 hover:text-red-300 transition-colors text-sm px-2 py-1 bg-red-900/20 rounded"
+            title="Delete notification"
           >
             ✕
           </button>
