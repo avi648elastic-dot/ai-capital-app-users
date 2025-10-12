@@ -1,10 +1,9 @@
 /**
  * 🚀 Performance Optimization Middleware
- * Implements caching, compression, and response optimization
+ * Implements caching and response optimization
  */
 
 import { Request, Response, NextFunction } from 'express';
-import compression from 'compression';
 import { LRUCache } from 'lru-cache';
 
 interface CacheEntry {
@@ -102,18 +101,13 @@ export const performanceMiddleware = (req: Request, res: Response, next: NextFun
 };
 
 /**
- * Compression middleware setup
+ * Compression middleware setup (optional - install compression package to use)
+ * npm install compression @types/compression
  */
-export const compressionMiddleware = compression({
-  filter: (req, res) => {
-    if (req.headers['x-no-compression']) {
-      return false;
-    }
-    return compression.filter(req, res);
-  },
-  level: 6, // Good balance between compression and CPU usage
-  threshold: 1024, // Only compress responses larger than 1KB
-});
+export const compressionMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  // Compression disabled - install compression package if needed
+  next();
+};
 
 /**
  * Response optimization middleware
