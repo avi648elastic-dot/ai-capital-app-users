@@ -9,30 +9,28 @@ const router = express.Router();
 // 🚨 CRITICAL TEST ENDPOINT: Create test notifications
 router.post('/create-test', async (req, res) => {
   try {
-    const { notificationService } = await import('../services/notificationService');
-    
-    // Create test notifications
+    // Create test notifications using the imported notificationService
     const testNotifications = [
       {
         userId: 'test-user',
         title: 'NVDA Price Alert',
         message: 'NVDA has reached your target price of $185',
-        type: 'action',
-        priority: 'high'
+        type: 'action' as const,
+        priority: 'high' as const
       },
       {
         userId: 'test-user', 
         title: 'Portfolio Update',
         message: 'Your portfolio gained 2.5% today',
-        type: 'success',
-        priority: 'medium'
+        type: 'success' as const,
+        priority: 'medium' as const
       },
       {
         userId: 'test-user',
         title: 'Market Alert',
         message: 'High volatility detected in tech stocks',
-        type: 'warning',
-        priority: 'urgent'
+        type: 'warning' as const,
+        priority: 'urgent' as const
       }
     ];
     
@@ -47,11 +45,11 @@ router.post('/create-test', async (req, res) => {
       message: 'Test notifications created',
       notifications: createdNotifications
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ [TEST] Error creating test notifications:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });

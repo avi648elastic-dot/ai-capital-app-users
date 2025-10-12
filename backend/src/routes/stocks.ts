@@ -22,11 +22,11 @@ router.get('/test-nvda', async (req, res) => {
       dataSource: nvdaMetrics.dataSource,
       message: `NVDA current price: $${nvdaMetrics.current}`
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ [TEST] Error fetching NVDA:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
