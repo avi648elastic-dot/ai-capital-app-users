@@ -6,6 +6,31 @@ import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
+// 🚨 CRITICAL TEST ENDPOINT: Test NVDA price fetching
+router.get('/test-nvda', async (req, res) => {
+  try {
+    const { googleFinanceFormulasService } = await import('../services/googleFinanceFormulasService');
+    
+    console.log('🔍 [TEST] Fetching NVDA price...');
+    const nvdaMetrics = await googleFinanceFormulasService.getStockMetrics('NVDA');
+    
+    res.json({
+      success: true,
+      symbol: 'NVDA',
+      current: nvdaMetrics.current,
+      timestamp: nvdaMetrics.timestamp,
+      dataSource: nvdaMetrics.dataSource,
+      message: `NVDA current price: $${nvdaMetrics.current}`
+    });
+  } catch (error) {
+    console.error('❌ [TEST] Error fetching NVDA:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 /**
  * Get current stock price
  * GET /api/stocks/price/:symbol

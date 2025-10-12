@@ -6,6 +6,56 @@ import { z } from 'zod';
 
 const router = express.Router();
 
+// 🚨 CRITICAL TEST ENDPOINT: Create test notifications
+router.post('/create-test', async (req, res) => {
+  try {
+    const { notificationService } = await import('../services/notificationService');
+    
+    // Create test notifications
+    const testNotifications = [
+      {
+        userId: 'test-user',
+        title: 'NVDA Price Alert',
+        message: 'NVDA has reached your target price of $185',
+        type: 'action',
+        priority: 'high'
+      },
+      {
+        userId: 'test-user', 
+        title: 'Portfolio Update',
+        message: 'Your portfolio gained 2.5% today',
+        type: 'success',
+        priority: 'medium'
+      },
+      {
+        userId: 'test-user',
+        title: 'Market Alert',
+        message: 'High volatility detected in tech stocks',
+        type: 'warning',
+        priority: 'urgent'
+      }
+    ];
+    
+    const createdNotifications = [];
+    for (const notification of testNotifications) {
+      const created = await notificationService.createNotification(notification);
+      createdNotifications.push(created);
+    }
+    
+    res.json({
+      success: true,
+      message: 'Test notifications created',
+      notifications: createdNotifications
+    });
+  } catch (error) {
+    console.error('❌ [TEST] Error creating test notifications:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Validation schemas
 const createNotificationSchema = z.object({
   userId: z.string().optional(),
