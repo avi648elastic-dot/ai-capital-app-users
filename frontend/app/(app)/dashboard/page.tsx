@@ -92,51 +92,97 @@ export default function Dashboard() {
       return;
     }
 
+    // EMERGENCY FIX: If user is already on dashboard and has been here before, 
+    // skip onboarding check and go straight to portfolio fetch
+    const hasVisitedDashboard = sessionStorage.getItem('dashboard-visited');
+    if (hasVisitedDashboard) {
+      console.log('🔍 [DASHBOARD] User has visited dashboard before - skipping onboarding check');
+      sessionStorage.setItem('dashboard-visited', 'true');
+      fetchUserData();
+      fetchPortfolio();
+      return;
+    }
+
+    sessionStorage.setItem('dashboard-visited', 'true');
     checkOnboardingStatus();
   }, [router]);
 
   const checkOnboardingStatus = async () => {
     try {
+      const token = Cookies.get('token');
+      if (!token) {
+        console.error('❌ [DASHBOARD] No token found for onboarding check');
+        router.push('/');
+        return;
+      }
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      console.log('🔍 [DASHBOARD] Checking onboarding status with API URL:', apiUrl);
+      
       const response = await axios.get(`${apiUrl}/api/onboarding/status`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        headers: { Authorization: `Bearer ${token}` },
         timeout: 15000
       });
       
-      console.log('🔍 [DASHBOARD] Onboarding status:', response.data);
+      console.log('🔍 [DASHBOARD] Onboarding status response:', response.data);
       
-      // Only redirect to onboarding if user has no portfolios AND onboarding not completed
-      if (!response.data.onboardingCompleted && (!response.data.portfolio || response.data.portfolio.length === 0)) {
+      // CRITICAL: Don't redirect to onboarding if API fails - just proceed to fetch portfolio
+      // Only redirect if explicitly told user has no portfolios AND onboarding not completed
+      if (response.data && !response.data.onboardingCompleted && (!response.data.portfolio || response.data.portfolio.length === 0)) {
         console.log('🔍 [DASHBOARD] No portfolios found and onboarding not completed, redirecting to onboarding');
         router.push('/onboarding');
         return;
       }
       
       // If user has portfolios but onboarding not completed, mark it as completed
-      if (!response.data.onboardingCompleted && response.data.portfolio && response.data.portfolio.length > 0) {
+      if (response.data && !response.data.onboardingCompleted && response.data.portfolio && response.data.portfolio.length > 0) {
         console.log('🔍 [DASHBOARD] User has portfolios but onboarding not marked complete, updating status');
         // Update user onboarding status
         try {
-          await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/complete`, {}, {
-            headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+          await axios.post(`${apiUrl}/api/onboarding/complete`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 10000
           });
         } catch (updateError) {
           console.warn('Failed to update onboarding status:', updateError);
+          // Don't redirect - just continue
         }
       }
 
       // Set initial active tab based on portfolio type from onboarding status
-      if (response.data.portfolioType) {
+      if (response.data && response.data.portfolioType) {
         console.log('🔍 [DASHBOARD] Setting initial active tab to:', response.data.portfolioType);
         setActiveTab(response.data.portfolioType as 'solid' | 'risky');
       }
-    } catch (error) {
-      console.error('Error checking onboarding status:', error);
-      router.push('/onboarding');
+    } catch (error: any) {
+      console.error('❌ [DASHBOARD] Error checking onboarding status:', error);
+      
+      // CRITICAL FIX: Don't redirect to onboarding on API errors
+      // Just proceed to fetch portfolio data directly
+      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') {
+        console.log('🔍 [DASHBOARD] Onboarding check failed due to network - proceeding to fetch portfolio');
+        fetchUserData();
+        fetchPortfolio();
+        return;
+      }
+      
+      // Only redirect on auth errors
+      if (error.response?.status === 401) {
+        console.error('❌ [DASHBOARD] Unauthorized - redirecting to login');
+        Cookies.remove('token');
+        router.push('/');
+        return;
+      }
+      
+      // For other errors, just proceed to fetch portfolio
+      console.log('🔍 [DASHBOARD] Onboarding check failed - proceeding to fetch portfolio anyway');
+      fetchUserData();
+      fetchPortfolio();
       return;
     }
     
-    // Only reach here if onboarding is completed
+    // Only reach here if onboarding is completed successfully
+    console.log('🔍 [DASHBOARD] Onboarding check passed - fetching user data and portfolio');
     fetchUserData();
     fetchPortfolio();
   };
