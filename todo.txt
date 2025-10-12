@@ -38,7 +38,7 @@
 
 ---
 
-## 4️⃣ MARKET-DATA SERVICE (`backend/src/services/stockDataService.ts`)
+## ✅ 4️⃣ MARKET-DATA SERVICE (`backend/src/services/stockDataService.ts`) - 7/7 COMPLETE
 - [x] Install `lru-cache` ✅
 - [x] Implement symbol-scoped LRU cache (max 1000, ttl 10min) ✅
 - [x] Add retry/backoff logic with 12 API keys and aggressive retries ✅
@@ -73,18 +73,18 @@
 - [x] Create centralized `api.ts` for all fetch requests ✅
 - [x] Add Zod validation for responses ✅
 - [x] Unify error handling (map status → toast) ✅
-- [ ] Use SWR/React-Query for caching - TODO (future enhancement)
 - [x] Apply consistent base URL from env ✅
 - [x] Add type-safe DTOs for each API call ✅
+- [ ] Use SWR/React-Query for caching - TODO (future enhancement)
 
 ---
 
 ## ✅ 8️⃣ FRONTEND UX POLISH - 4/6 COMPLETE
 - [x] Add tooltips for financial terms (Initial, Current, P&L, ROI) ✅
-- [ ] Display "Last updated: …" under market indices - TODO
 - [x] Add plan-based feature flags (Free / Premium / Premium+) ✅
 - [x] Use unified number formatters (currency, percent) ✅
 - [x] Add skeleton loaders for async sections ✅
+- [ ] Display "Last updated: …" under market indices - TODO
 - [ ] Confirm full mobile responsiveness on major screens - TODO
 
 ---
@@ -108,8 +108,8 @@
 - [x] Convert Dockerfile to multi-stage build (build → run) ✅
 - [x] Ensure `NODE_ENV=production` and `npm ci --omit=dev` ✅
 - [x] Add `.env.example` with all required vars (no secrets) ✅
-- [ ] Update `docker-compose.yml` to reference `.env` - TODO
 - [x] Add Render health checks and env var docs ✅
+- [ ] Update `docker-compose.yml` to reference `.env` - TODO
 - [ ] Enable auto-deploy triggers from GitHub main branch - TODO
 - [ ] Stream Pino logs to Sentry or Logtail - TODO
 
