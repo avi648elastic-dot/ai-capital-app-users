@@ -48,20 +48,12 @@ class GoogleFinanceFormulasService {
   private readonly BLACKLIST_DURATION = 5 * 60 * 1000; // 5 minutes blacklist
 
   /**
-   * 🚨 CRITICAL FIX: Get expected price ranges for validation
+   * 🚨 DISABLED: Price validation - ALWAYS use real API data, never validate/reject
+   * Real market prices can change rapidly and validation ranges become outdated
    */
   private getExpectedPriceRange(symbol: string): { min: number; max: number } {
-    const ranges: Record<string, { min: number; max: number }> = {
-      'NVDA': { min: 100, max: 150 },    // NVDA current range (updated Dec 2024)
-      'AAPL': { min: 180, max: 250 },    // Apple range
-      'MSFT': { min: 400, max: 480 },    // Microsoft range  
-      'TSLA': { min: 220, max: 300 },    // Tesla range
-      'GOOGL': { min: 160, max: 200 },   // Google range
-      'AMZN': { min: 180, max: 220 },    // Amazon range
-      'META': { min: 480, max: 600 },    // Meta range
-    };
-    
-    return ranges[symbol.toUpperCase()] || { min: 0, max: 10000 };
+    // DISABLED: No validation - trust API data completely
+    return { min: 0, max: Infinity };
   }
 
   constructor() {
@@ -217,43 +209,15 @@ class GoogleFinanceFormulasService {
     try {
       loggerService.info(`🔍 [GOOGLE FINANCE FORMULAS] Fetching metrics for ${symbol}`);
       
-      // CRITICAL FIX: Clear cache for ALL major stocks to force fresh data
-      const majorStocks = ['NVDA', 'AAPL', 'MSFT', 'TSLA', 'GOOGL', 'AMZN', 'META', 'AMD', 'NFLX', 'INTC'];
-      if (majorStocks.includes(symbol.toUpperCase())) {
-        loggerService.warn(`🚨 [CACHE CLEAR] Forcing fresh data for major stock ${symbol} due to potential corruption`);
-        this.cache.delete(symbol);
-        
-        // For any major stock request, validate cache integrity
-        const cachedData = this.cache.get(symbol);
-        if (cachedData) {
-          const expectedRange = this.getExpectedPriceRange(symbol);
-          if (cachedData.current < expectedRange.min || cachedData.current > expectedRange.max) {
-            loggerService.error(`🚨 [CACHE CORRUPTION] Detected corrupted cache for ${symbol}: $${cachedData.current}, clearing cache`);
-            this.cache.clear(); // Clear entire cache to prevent corruption spread
-          }
-        }
-      }
+      // Cache management - use cached data if available and recent
+      // NO validation or rejection of API data - trust the financial APIs completely
       
-      // Check cache first
+      // Check cache first - ALWAYS trust cached API data if recent
       const cachedData = this.cache.get(symbol);
       if (cachedData) {
         const age = Date.now() - cachedData.timestamp;
-        
-        // CRITICAL FIX: Validate cached data for known stocks
-        if (['NVDA', 'AAPL', 'MSFT', 'TSLA'].includes(symbol.toUpperCase())) {
-          const expectedPriceRange = this.getExpectedPriceRange(symbol);
-          if (cachedData.current < expectedPriceRange.min || cachedData.current > expectedPriceRange.max) {
-            loggerService.error(`🚨 [CACHE CORRUPTION] Detected corrupted cache for ${symbol}: $${cachedData.current} (expected: $${expectedPriceRange.min}-$${expectedPriceRange.max})`);
-            this.cache.delete(symbol);
-            // Continue to fetch fresh data
-          } else {
-            loggerService.info(`📊 [CACHE HIT] Valid cached data for ${symbol} (age: ${Math.floor(age / 1000)}s)`);
-            return cachedData;
-          }
-        } else {
-          loggerService.info(`📊 [CACHE HIT] Returning cached data for ${symbol} (age: ${Math.floor(age / 1000)}s)`);
-          return cachedData;
-        }
+        loggerService.info(`📊 [CACHE HIT] Returning real API data for ${symbol} (age: ${Math.floor(age / 1000)}s, price: $${cachedData.current})`);
+        return cachedData;
       }
 
       // 🚀 MAJOR'S SMART ENGINE - Try ALL APIs with ALL keys aggressively
@@ -317,12 +281,10 @@ class GoogleFinanceFormulasService {
         }
       }
       
-      // If all APIs fail, generate realistic data
+      // If all APIs fail, return error - DO NOT use fake data
       if (!metrics) {
-        loggerService.warn(`⚠️ [GOOGLE FINANCE] All APIs failed for ${symbol}, generating realistic data`);
-        const fallbackMetrics = this.generateRealisticStockData(symbol);
-        this.cache.set(symbol, fallbackMetrics);
-        return fallbackMetrics;
+        loggerService.error(`❌ [GOOGLE FINANCE] All APIs failed for ${symbol} - NO REAL DATA AVAILABLE`);
+        throw new Error(`Unable to fetch real-time data for ${symbol}. All financial APIs are unavailable. Please try again later.`);
       }
       
       // Cache the result
