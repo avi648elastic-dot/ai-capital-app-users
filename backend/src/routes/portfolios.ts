@@ -3,6 +3,7 @@ import Portfolio from '../models/Portfolio';
 import User from '../models/User';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { portfolioGenerator } from '../services/portfolioGenerator';
+import { volatilityService } from '../services/volatilityService';
 
 const router = express.Router();
 
@@ -86,9 +87,26 @@ router.get('/', authenticateToken, requireSubscription, async (req, res) => {
           })
         );
         
+        // 🚨 CRITICAL FIX: Calculate portfolio volatility
+        let portfolioVolatility = portfolio.volatility || 0;
+        try {
+          const tickers = portfolio.stocks.map((stock: any) => stock.ticker);
+          if (tickers.length > 0) {
+            const portfolioVolatilityMetrics = await volatilityService.calculatePortfolioVolatility(tickers);
+            if (portfolioVolatilityMetrics) {
+              portfolioVolatility = portfolioVolatilityMetrics.volatility;
+              console.log(`📊 [PORTFOLIOS] Portfolio ${portfolio.portfolioId} volatility: ${portfolioVolatility.toFixed(2)}%`);
+            }
+          }
+        } catch (error) {
+          console.error(`❌ [PORTFOLIOS] Error calculating volatility for portfolio ${portfolio.portfolioId}:`, error);
+        }
+
         return {
           ...portfolio,
-          stocks: stocksWithExchange
+          stocks: stocksWithExchange,
+          volatility: portfolioVolatility,
+          lastVolatilityUpdate: new Date().toISOString()
         };
       })
     );

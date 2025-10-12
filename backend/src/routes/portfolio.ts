@@ -35,6 +35,19 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
       console.log(`📊 [PORTFOLIO] ${symbol}: $${data.current} (vs stored: $${portfolio.find(p => p.ticker === symbol)?.currentPrice})`);
     });
 
+    // 🚨 CRITICAL FIX: Calculate portfolio volatility
+    let portfolioVolatility = 0;
+    try {
+      const portfolioTickers = [...new Set(portfolio.map(item => item.ticker))];
+      const portfolioVolatilityMetrics = await volatilityService.calculatePortfolioVolatility(portfolioTickers);
+      if (portfolioVolatilityMetrics) {
+        portfolioVolatility = portfolioVolatilityMetrics.volatility;
+        console.log(`📊 [PORTFOLIO] Portfolio volatility calculated: ${portfolioVolatility.toFixed(2)}% (${portfolioVolatilityMetrics.riskLevel})`);
+      }
+    } catch (error) {
+      console.error('❌ [PORTFOLIO] Error calculating portfolio volatility:', error);
+    }
+
     // Update portfolio with real-time prices, exchange info, and recalculate decisions
     const updatedPortfolio = await Promise.all(portfolio.map(async item => {
       const realTimeStock = realTimeData.get(item.ticker);
@@ -139,11 +152,19 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
       );
 
       console.log('✅ [PORTFOLIO] Portfolio updated with real-time prices and volatility');
-      res.json({ portfolio: portfolioWithVolatility, totals });
+      res.json({ 
+        portfolio: portfolioWithVolatility, 
+        totals,
+        portfolioVolatility: portfolioVolatility // 🚨 CRITICAL FIX: Include overall portfolio volatility
+      });
     } catch (volatilityError) {
       console.warn('⚠️ [PORTFOLIO] Volatility calculation failed, using portfolio without volatility:', volatilityError);
       console.log('✅ [PORTFOLIO] Portfolio updated with real-time prices (no volatility)');
-      res.json({ portfolio: updatedPortfolio, totals });
+      res.json({ 
+        portfolio: updatedPortfolio, 
+        totals,
+        portfolioVolatility: portfolioVolatility // 🚨 CRITICAL FIX: Include overall portfolio volatility even if individual calculation failed
+      });
     }
   } catch (error) {
     console.error('❌ [PORTFOLIO] Get portfolio error:', error);
