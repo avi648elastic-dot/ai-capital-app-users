@@ -66,8 +66,11 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
       const token = Cookies.get('token');
       if (!token) return;
       
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}/read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      
+      await axios.put(`${apiUrl}/api/notifications/${notificationId}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000
       });
       
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
@@ -92,7 +95,8 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
       
       const response = await axios.delete(`${apiUrl}/api/notifications/${notificationId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000
       });
       
       console.log('✅ Notification deleted successfully:', response.data);
@@ -106,9 +110,25 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
       console.error('Error details:', {
         status: error.response?.status,
         message: error.response?.data?.message || error.message,
-        notificationId
+        notificationId,
+        apiUrl
       });
-      alert(`Failed to delete notification: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+      
+      // Handle specific error types
+      if (error.code === 'ECONNABORTED') {
+        alert('Delete request timed out. Please try again.');
+      } else if (error.code === 'ERR_NETWORK') {
+        alert('Cannot connect to server. Backend might be deploying.');
+      } else if (error.response?.status === 404) {
+        // Notification already deleted, remove from UI
+        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        if (currentIndex >= notifications.length - 1) {
+          setCurrentIndex(0);
+        }
+        return;
+      } else {
+        alert(`Failed to delete notification: ${error.response?.data?.message || error.message || 'Unknown error'}`);
+      }
     }
   };
 
