@@ -229,15 +229,19 @@ export default function Dashboard() {
     } catch (error: any) {
       console.error('❌ [DASHBOARD] Error fetching portfolio:', error);
       
-      // Handle different types of errors
+      // Handle different types of errors - ONLY clear data on auth errors
       if (error.response?.status === 401) {
         console.error('❌ [DASHBOARD] Unauthorized - redirecting to login');
+        setPortfolio([]);
+        setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
         Cookies.remove('token');
         router.push('/');
         return;
       } else if (error.response?.status === 403) {
         console.error('❌ [DASHBOARD] Forbidden - subscription required');
         alert('Subscription required to access portfolio features');
+        setPortfolio([]);
+        setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
         return;
       } else if (error.code === 'ECONNABORTED') {
         console.error('❌ [DASHBOARD] Request timeout');
@@ -245,7 +249,9 @@ export default function Dashboard() {
       } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
         console.error('❌ [DASHBOARD] Network error - Backend might be deploying');
         console.error('API URL:', apiUrl);
-        alert('Cannot connect to server. The backend might be deploying on Render (takes 5-10 minutes). Please wait and try again.');
+        // DON'T clear portfolio on network error - keep showing existing data
+        alert('Cannot connect to server. Backend is deploying (5-10 min). Your portfolio data is safe, just can\'t refresh right now.');
+        return; // Exit early - don't clear portfolio
       } else {
         console.error('❌ [DASHBOARD] Error:', error);
         console.error('Full error:', { 
@@ -256,12 +262,12 @@ export default function Dashboard() {
           config: { url: error.config?.url, method: error.config?.method }
         });
         const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
-        alert(`Failed to load portfolio: ${errorMsg}. If backend is deploying on Render, please wait 5-10 minutes.`);
+        alert(`Failed to load portfolio: ${errorMsg}. Your data is safe, just can't refresh.`);
+        return; // Exit early - don't clear portfolio
       }
       
-      // Set empty state on error
-      setPortfolio([]);
-      setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
+      // ONLY clear portfolio on auth errors (401)
+      // For other errors, keep existing data
     } finally {
       setLoading(false);
     }
