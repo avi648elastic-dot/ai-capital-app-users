@@ -113,10 +113,12 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, curl, etc.)
+      // MAJOR'S FIX: Allow ALL Vercel origins + localhost
       if (!origin) return callback(null, true);
       
-      if (allowedOrigins.includes(origin)) {
+      // Allow any vercel.app subdomain, localhost, or onrender.com
+      if (origin.includes('vercel.app') || origin.includes('localhost') || origin.includes('onrender.com') || allowedOrigins.includes(origin)) {
+        console.log(`✅ [CORS] Allowed origin: ${origin}`);
         return callback(null, true);
       } else {
         console.warn(`🚫 [CORS] Blocked origin: ${origin}`);
@@ -124,8 +126,9 @@ app.use(
       }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Content-Length', 'X-Request-Id'],
   })
 );
 
