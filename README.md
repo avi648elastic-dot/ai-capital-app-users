@@ -1475,10 +1475,20 @@ interface SystemStatsResponse {
 
 ---
 
-**Last Updated**: October 11, 2025  
-**Version**: 2.0.0  
-**Status**: Production Ready (85% Complete)  
-**Deployments**: 425+ Commits
+**Last Updated**: October 12, 2025  
+**Version**: 2.1.0  
+**Status**: Production Ready (90% Complete)  
+**Deployments**: 430+ Commits
+
+### 🔥 **Recent Updates (v2.1.0)**
+- ✅ Watchlist price alert system completely fixed with comprehensive logging
+- ✅ Smart API engine with 12 keys (4 Alpha Vantage + 4 Finnhub + 4 FMP)
+- ✅ Complete documentation suite (Architecture, DataProviders, DecisionEngine, Runbook)
+- ✅ Centralized API client with error handling
+- ✅ Public pages (/pricing, /about, /upgrade)
+- ✅ Multi-stage Docker with security improvements
+- ✅ Real-time price updates across all pages
+- ✅ Database optimization with safe index creation
 
 > **🚀 Ready to revolutionize investment portfolio management with cutting-edge AI technology, institutional-grade analytics, and professional-grade tools accessible to all investors!**
 
