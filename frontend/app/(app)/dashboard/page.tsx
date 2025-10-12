@@ -97,8 +97,10 @@ export default function Dashboard() {
 
   const checkOnboardingStatus = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/onboarding/status`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      const response = await axios.get(`${apiUrl}/api/onboarding/status`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        timeout: 15000
       });
       
       console.log('🔍 [DASHBOARD] Onboarding status:', response.data);
@@ -141,8 +143,10 @@ export default function Dashboard() {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      const response = await axios.get(`${apiUrl}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        timeout: 10000
       });
       setUser(response.data.user);
       console.log('🔍 [DASHBOARD] User data fetched:', response.data.user);
@@ -184,9 +188,19 @@ export default function Dashboard() {
       
       const startTime = performance.now();
       
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
+      const token = Cookies.get('token');
+      if (!token) {
+        console.error('❌ [DASHBOARD] No token found');
+        router.push('/');
+        return;
+      }
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      console.log('🔍 [DASHBOARD] Using API URL:', apiUrl);
+      
+      const response = await axios.get(`${apiUrl}/api/portfolio`, {
         headers: { 
-          Authorization: `Bearer ${Cookies.get('token')}`,
+          Authorization: `Bearer ${token}`,
           'Cache-Control': useCache ? 'max-age=30' : 'no-cache' // 30 second cache
         },
         timeout: 30000 // 30s timeout - mobile connections can be slower

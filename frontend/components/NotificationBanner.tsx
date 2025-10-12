@@ -43,14 +43,21 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
       const token = Cookies.get('token');
       if (!token) return;
       
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications?unreadOnly=true&limit=3`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      
+      const response = await axios.get(`${apiUrl}/api/notifications?unreadOnly=true&limit=3`, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000
       });
       
       const unreadNotifications = response.data.data?.notifications || response.data.notifications || [];
+      console.log('📬 Fetched notifications:', unreadNotifications.length);
       setNotifications(unreadNotifications);
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+    } catch (error: any) {
+      console.error('❌ Failed to fetch notifications:', error.message);
+      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') {
+        console.error('Network/timeout error fetching notifications');
+      }
     }
   };
 
@@ -75,18 +82,33 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
   const deleteNotification = async (notificationId: string) => {
     try {
       const token = Cookies.get('token');
-      if (!token) return;
+      if (!token) {
+        console.error('No token found for delete notification');
+        alert('Session expired. Please log in again.');
+        return;
+      }
       
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}`, {
+      console.log('🗑️ Deleting notification:', notificationId);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      
+      const response = await axios.delete(`${apiUrl}/api/notifications/${notificationId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('✅ Notification deleted successfully:', response.data);
       
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       if (currentIndex >= notifications.length - 1) {
         setCurrentIndex(0);
       }
-    } catch (error) {
-      console.error('Failed to delete notification:', error);
+    } catch (error: any) {
+      console.error('❌ Failed to delete notification:', error);
+      console.error('Error details:', {
+        status: error.response?.status,
+        message: error.response?.data?.message || error.message,
+        notificationId
+      });
+      alert(`Failed to delete notification: ${error.response?.data?.message || error.message || 'Unknown error'}`);
     }
   };
 
