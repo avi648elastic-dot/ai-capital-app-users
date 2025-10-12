@@ -441,7 +441,7 @@ router.post('/batch-prices', async (req, res) => {
           prices[symbol] = data.data;
           successCount++;
         } else {
-          errors[symbol] = data.error;
+          errors[symbol] = data.error || 'Unknown error';
         }
       } else {
         errors[symbol] = (result.reason as Error)?.message || 'Request failed';
