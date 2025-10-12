@@ -27,6 +27,7 @@ import userRoutes from './routes/user';
 import notificationRoutes from './routes/notifications';
 import watchlistRoutes from './routes/watchlist';
 import stripeRoutes from './routes/stripe';
+import leaderboardRoutes from './routes/leaderboard';
 import { schedulerService } from './services/schedulerService';
 import { watchlistMonitorService } from './services/watchlistMonitorService';
 import { watchlistAlertService } from './services/watchlistAlertService';
@@ -208,6 +209,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {

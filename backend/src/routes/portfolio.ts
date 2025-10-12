@@ -4,6 +4,7 @@ import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { decisionEngine } from '../services/decisionEngine';
 import { stockDataService } from '../services/stockDataService';
 import { volatilityService } from '../services/volatilityService';
+import { reputationService } from '../services/reputationService';
 import { validate, validatePartial } from '../middleware/validate';
 import { stockSchema, updatePortfolioSchema, portfolioQuerySchema } from '../schemas/portfolio';
 import { z } from 'zod';
@@ -405,17 +406,53 @@ router.put('/:id', authenticateToken, requireSubscription, validate({ body: upda
   }
 });
 
-// Delete stock from portfolio
+// Delete stock from portfolio - WITH REPUTATION TRACKING
 router.delete('/:id', authenticateToken, requireSubscription, async (req, res) => {
   try {
     const { id } = req.params;
+    const { exitPrice } = req.body; // Get exit price from request body
 
-    const portfolioItem = await Portfolio.findOneAndDelete({ _id: id, userId: req.user!._id });
+    // Find the portfolio item first (don't delete yet)
+    const portfolioItem = await Portfolio.findOne({ _id: id, userId: req.user!._id });
     if (!portfolioItem) {
       return res.status(404).json({ message: 'Portfolio item not found' });
     }
 
-    res.json({ message: 'Portfolio item deleted successfully' });
+    console.log('🏆 [PORTFOLIO DELETE] Closing position for reputation tracking:', {
+      ticker: portfolioItem.ticker,
+      entryPrice: portfolioItem.entryPrice,
+      exitPrice: exitPrice || portfolioItem.currentPrice,
+      shares: portfolioItem.shares
+    });
+
+    // Calculate exit price (use provided price or current price)
+    const finalExitPrice = exitPrice || portfolioItem.currentPrice;
+
+    // Update reputation BEFORE deleting the position
+    try {
+      await reputationService.updateReputationOnPositionClose(
+        req.user!._id,
+        portfolioItem,
+        finalExitPrice,
+        'manual_delete'
+      );
+      console.log('✅ [PORTFOLIO DELETE] Reputation updated successfully');
+    } catch (reputationError) {
+      console.error('⚠️ [PORTFOLIO DELETE] Reputation update failed:', reputationError);
+      // Continue with deletion even if reputation update fails
+    }
+
+    // Now delete the portfolio item
+    await Portfolio.findOneAndDelete({ _id: id, userId: req.user!._id });
+
+    // Get updated user reputation for response
+    const userReputation = await reputationService.getUserReputationSummary(req.user!._id);
+
+    res.json({ 
+      message: 'Portfolio item deleted successfully and reputation updated',
+      reputation: userReputation,
+      realizedPnL: (finalExitPrice - portfolioItem.entryPrice) * portfolioItem.shares
+    });
   } catch (error) {
     console.error('Delete portfolio error:', error);
     res.status(500).json({ message: 'Internal server error' });

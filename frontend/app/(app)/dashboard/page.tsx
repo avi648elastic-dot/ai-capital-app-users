@@ -77,6 +77,7 @@ export default function Dashboard() {
   const [showDeletePortfolio, setShowDeletePortfolio] = useState(false);
   const [selectedMultiPortfolio, setSelectedMultiPortfolio] = useState<any>(null);
   const [portfolioMeta, setPortfolioMeta] = useState({ total: 0, solid: 0, risky: 0 });
+  const [userReputation, setUserReputation] = useState<any>(null);
   const [portfolioPerformance, setPortfolioPerformance] = useState<any[]>([]);
   const [sectorPerformance, setSectorPerformance] = useState<any[]>([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -185,6 +186,7 @@ export default function Dashboard() {
     console.log('🔍 [DASHBOARD] Onboarding check passed - fetching user data and portfolio');
     fetchUserData();
     fetchPortfolio();
+    fetchUserReputation();
   };
 
   const fetchUserData = async () => {
@@ -210,6 +212,22 @@ export default function Dashboard() {
       console.error('Error fetching user data:', error);
       Cookies.remove('token');
       router.push('/');
+    }
+  };
+
+  const fetchUserReputation = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      const response = await axios.get(`${apiUrl}/api/leaderboard/my-reputation`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        timeout: 10000
+      });
+      
+      console.log('🏆 [DASHBOARD] User reputation fetched:', response.data);
+      setUserReputation(response.data.reputation);
+    } catch (error) {
+      console.error('❌ [DASHBOARD] Error fetching user reputation:', error);
+      // Don't show error to user - reputation is optional
     }
   };
 
@@ -473,12 +491,36 @@ export default function Dashboard() {
 
   const handleDeleteStock = async (id: string) => {
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio/${id}`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+      console.log('🏆 [DASHBOARD] Deleting stock with reputation tracking:', id);
+      
+      // Find the stock to get current price for reputation calculation
+      const stockToDelete = portfolio.find(item => item._id === id);
+      const exitPrice = stockToDelete?.currentPrice || 0;
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      const response = await axios.delete(`${apiUrl}/api/portfolio/${id}`, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        data: { exitPrice }, // Send exit price for reputation calculation
+        timeout: 15000
       });
+      
+      console.log('🏆 [DASHBOARD] Stock deleted, reputation response:', response.data);
+      
+      // Show reputation update to user
+      if (response.data.realizedPnL !== undefined) {
+        const pnl = response.data.realizedPnL;
+        const pnlText = pnl >= 0 ? `+$${pnl.toFixed(2)}` : `-$${Math.abs(pnl).toFixed(2)}`;
+        const emoji = pnl >= 0 ? '🎉' : '📉';
+        alert(`${emoji} Position closed! Realized P&L: ${pnlText}`);
+      }
+      
+      // Refresh portfolio and reputation
       fetchPortfolio();
+      fetchUserReputation();
+      
     } catch (error) {
-      console.error('Error deleting stock:', error);
+      console.error('❌ [DASHBOARD] Error deleting stock:', error);
+      alert('Failed to delete stock. Please try again.');
     }
   };
 
@@ -585,7 +627,7 @@ export default function Dashboard() {
       />
       
       {/* Professional Header */}
-      <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} />
+      <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} userReputation={userReputation} />
       
       {/* CRITICAL FIX: Notification Banner - Below Header, Above Content */}
       <NotificationBanner isMobile={false} />

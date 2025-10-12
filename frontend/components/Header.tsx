@@ -9,17 +9,20 @@ import ThemeToggle from './ThemeToggle';
 import AcaciaLogo from './AcaciaLogo';
 import NotificationCenter from './NotificationCenter';
 import NotificationPanel from './NotificationPanel';
+import Leaderboard from './Leaderboard';
 
 interface HeaderProps {
   userName?: string;
   showNavigation?: boolean;
   isAdmin?: boolean;
   userAvatar?: string;
+  userReputation?: any;
 }
 
-export default function Header({ userName, showNavigation = true, isAdmin = false, userAvatar }: HeaderProps) {
+export default function Header({ userName, showNavigation = true, isAdmin = false, userAvatar, userReputation }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const router = useRouter();
 
   const handleLogout = () => {
@@ -68,6 +71,25 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                 <p className="text-xs text-slate-400">Portfolio Manager</p>
               </div>
               
+              {/* REPUTATION DISPLAY */}
+              {userReputation && (
+                <button
+                  onClick={() => setShowLeaderboard(true)}
+                  className="hidden sm:flex items-center space-x-2 bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50 hover:bg-slate-700/50 transition-colors"
+                  title="View Trading Leaderboard"
+                >
+                  <span className="text-lg">🏆</span>
+                  <div className="text-right">
+                    <div className={`text-sm font-semibold ${userReputation.reputation >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      ${userReputation.reputation?.toFixed(2) || '0.00'}
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      {userReputation.totalPositionsClosed || 0} trades
+                    </div>
+                  </div>
+                </button>
+              )}
+
               {/* NOTIFICATION BELL - VISIBLE ON ALL PAGES */}
               {/* CRITICAL FIX: Enhanced Notification System */}
               <div className="relative">
@@ -159,6 +181,13 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
           )}
         </div>
       </div>
+      
+      {/* Leaderboard Modal */}
+      <Leaderboard 
+        isVisible={showLeaderboard}
+        onClose={() => setShowLeaderboard(false)}
+        isMobile={false}
+      />
     </header>
   );
 }

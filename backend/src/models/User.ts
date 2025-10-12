@@ -21,6 +21,17 @@ export interface IUser extends Document {
   notifications?: boolean; // User notification preference
   emailUpdates?: boolean; // User email update preference
   avatar?: string; // Renamed from avatarUrl for consistency
+  
+  // 🏆 REPUTATION SYSTEM
+  reputation: number; // Total realized P&L from all closed positions (USD)
+  totalRealizedPnL: number; // Same as reputation but more explicit
+  totalPositionsClosed: number; // Total number of positions closed
+  winRate: number; // Percentage of profitable positions
+  averageWin: number; // Average profit per winning position
+  averageLoss: number; // Average loss per losing position
+  bestTrade: number; // Best single trade profit
+  worstTrade: number; // Worst single trade loss
+  
   createdAt: Date;
 
   apiKey?: string;
@@ -50,6 +61,16 @@ const UserSchema: Schema<IUser> = new Schema(
     emailUpdates: { type: Boolean, default: true },
     avatar: { type: String }, // Avatar URL from Google or uploaded
 
+    // 🏆 REPUTATION SYSTEM - Default values for new users
+    reputation: { type: Number, default: 0 }, // Total realized P&L
+    totalRealizedPnL: { type: Number, default: 0 }, // Same as reputation
+    totalPositionsClosed: { type: Number, default: 0 },
+    winRate: { type: Number, default: 0 }, // Percentage (0-100)
+    averageWin: { type: Number, default: 0 },
+    averageLoss: { type: Number, default: 0 },
+    bestTrade: { type: Number, default: 0 },
+    worstTrade: { type: Number, default: 0 },
+
     apiKey: { type: String },
     apiSecret: { type: String },
     shopDomain: { type: String },
@@ -63,6 +84,11 @@ UserSchema.index({ subscriptionTier: 1 });
 UserSchema.index({ subscriptionActive: 1 });
 UserSchema.index({ createdAt: -1 });
 UserSchema.index({ 'featuredTickers': 1 });
+
+// 🏆 REPUTATION SYSTEM INDEXES
+UserSchema.index({ reputation: -1 }); // For leaderboard queries
+UserSchema.index({ totalRealizedPnL: -1 }); // For leaderboard queries
+UserSchema.index({ winRate: -1 }); // For win rate leaderboard
 
 // 🔒 Pre-save hook for portfolio limits validation
 UserSchema.pre('save', async function(next) {
