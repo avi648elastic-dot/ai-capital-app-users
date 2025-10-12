@@ -243,12 +243,20 @@ export default function Dashboard() {
         console.error('❌ [DASHBOARD] Request timeout');
         alert('Loading is taking longer than expected. Please check your internet connection and try again.');
       } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
-        console.error('❌ [DASHBOARD] Network error');
-        alert('Network error. Please check your internet connection.');
+        console.error('❌ [DASHBOARD] Network error - Backend might be deploying');
+        console.error('API URL:', apiUrl);
+        alert('Cannot connect to server. The backend might be deploying on Render (takes 5-10 minutes). Please wait and try again.');
       } else {
         console.error('❌ [DASHBOARD] Error:', error);
+        console.error('Full error:', { 
+          message: error.message, 
+          code: error.code, 
+          status: error.response?.status,
+          data: error.response?.data,
+          config: { url: error.config?.url, method: error.config?.method }
+        });
         const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
-        alert(`Failed to load portfolio: ${errorMsg}. Please refresh and try again.`);
+        alert(`Failed to load portfolio: ${errorMsg}. If backend is deploying on Render, please wait 5-10 minutes.`);
       }
       
       // Set empty state on error
