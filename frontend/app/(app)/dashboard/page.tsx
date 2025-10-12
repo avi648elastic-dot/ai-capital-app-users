@@ -244,6 +244,13 @@ export default function Dashboard() {
     }
   }, [user]); // Only depend on user, not activeTab to avoid infinite loops
 
+  // Clear selectedPortfolioId when switching to single view
+  useEffect(() => {
+    if (!showMultiPortfolio) {
+      setSelectedPortfolioId('');
+    }
+  }, [showMultiPortfolio]);
+
   // 🚀 PERFORMANCE OPTIMIZED: Portfolio fetching with caching and shorter timeout
   const fetchPortfolio = async (useCache = true) => {
     try {
@@ -562,25 +569,20 @@ export default function Dashboard() {
 
   // Filter portfolio based on selected portfolio or tab/type
   const filteredPortfolio = portfolio.filter(item => {
-    console.log('🔍 [FILTER] Checking item:', item);
-    console.log('🔍 [FILTER] activeTab:', activeTab);
-    console.log('🔍 [FILTER] selectedPortfolioId:', selectedPortfolioId);
-    
-    if (selectedPortfolioId) {
-      const matches = (item as any)?.portfolioId === selectedPortfolioId;
-      console.log('🔍 [FILTER] Portfolio ID match:', matches);
-      return matches;
+    // If we're in multi-portfolio view and have a selected portfolio, filter by portfolio ID
+    if (showMultiPortfolio && selectedPortfolioId) {
+      return (item as any)?.portfolioId === selectedPortfolioId;
     }
     
-    const type = (item as any)?.portfolioType || 'solid';
-    const matches = activeTab === 'solid' ? type === 'solid' : type === 'risky';
-    console.log('🔍 [FILTER] Type filtering - item type:', type, 'activeTab:', activeTab, 'matches:', matches);
-    return matches;
+    // For single portfolio view, filter by portfolio type and clear selectedPortfolioId
+    if (!showMultiPortfolio) {
+      const itemType = (item as any)?.portfolioType || 'solid';
+      return activeTab === 'solid' ? itemType === 'solid' : itemType === 'risky';
+    }
+    
+    // Default fallback
+    return true;
   });
-  
-  console.log('🔍 [FILTER] Total portfolio items:', portfolio.length);
-  console.log('🔍 [FILTER] Filtered portfolio items:', filteredPortfolio.length);
-  console.log('🔍 [FILTER] Active tab:', activeTab);
 
   if (loading) {
     return (
