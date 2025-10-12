@@ -60,7 +60,7 @@ class LoggerService {
             if (level === 60) { // fatal
               Sentry.captureException(new Error(message), {
                 level: 'fatal',
-                extra: logData,
+                extra: logData as any,
                 tags: {
                   requestId: this.requestId || 'unknown'
                 }
@@ -68,7 +68,7 @@ class LoggerService {
             } else { // error
               Sentry.captureException(new Error(message), {
                 level: 'error',
-                extra: logData,
+                extra: logData as any,
                 tags: {
                   requestId: this.requestId || 'unknown'
                 }

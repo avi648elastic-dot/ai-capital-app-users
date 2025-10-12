@@ -33,14 +33,18 @@ export async function benchmarkQuery(
     
     const duration = Date.now() - startTime;
     
-    // Extract relevant stats
+    // Extract relevant stats - Type-safe access to MongoDB explain result
+    const explainResult = explanation as any;
+    const executionStats = explainResult.executionStats || {};
+    const executionStages = executionStats.executionStages || {};
+    
     const stats: ExplainStats = {
-      executionTimeMillis: explanation.executionStats?.executionTimeMillis || duration,
-      totalKeysExamined: explanation.executionStats?.totalKeysExamined || 0,
-      totalDocsExamined: explanation.executionStats?.totalDocsExamined || 0,
-      nReturned: explanation.executionStats?.nReturned || 0,
-      stage: explanation.executionStats?.executionStages?.stage || 'UNKNOWN',
-      indexUsed: explanation.executionStats?.executionStages?.indexName,
+      executionTimeMillis: executionStats.executionTimeMillis || duration,
+      totalKeysExamined: executionStats.totalKeysExamined || 0,
+      totalDocsExamined: executionStats.totalDocsExamined || 0,
+      nReturned: executionStats.nReturned || 0,
+      stage: executionStages.stage || 'UNKNOWN',
+      indexUsed: executionStages.indexName,
     };
 
     // Log performance metrics
