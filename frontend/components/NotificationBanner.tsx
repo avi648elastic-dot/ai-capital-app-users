@@ -6,7 +6,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 interface Notification {
-  id: string;
+  _id?: string;
+  id?: string;
   title: string;
   message: string;
   type: 'info' | 'warning' | 'success' | 'error' | 'action';
@@ -50,7 +51,12 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
         timeout: 10000
       });
       
-      const unreadNotifications = response.data.data?.notifications || response.data.notifications || [];
+      const unreadNotificationsRaw = response.data.data?.notifications || response.data.notifications || [];
+      // Normalize id so we always have .id available
+      const unreadNotifications = unreadNotificationsRaw.map((n: any) => ({
+        ...n,
+        id: n.id || n._id
+      }));
       console.log('📬 Fetched notifications:', unreadNotifications.length);
       setNotifications(unreadNotifications);
     } catch (error: any) {
@@ -73,7 +79,7 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
         timeout: 10000
       });
       
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setNotifications(prev => prev.filter(n => (n.id || n._id) !== notificationId));
       if (currentIndex >= notifications.length - 1) {
         setCurrentIndex(0);
       }
@@ -101,7 +107,7 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
       
       console.log('✅ Notification deleted successfully:', response.data);
       
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setNotifications(prev => prev.filter(n => (n.id || n._id) !== notificationId));
       if (currentIndex >= notifications.length - 1) {
         setCurrentIndex(0);
       }
@@ -120,7 +126,7 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
         alert('Cannot connect to server. Backend might be deploying.');
       } else if (error.response?.status === 404) {
         // Notification already deleted, remove from UI
-        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        setNotifications(prev => prev.filter(n => (n.id || n._id) !== notificationId));
         if (currentIndex >= notifications.length - 1) {
           setCurrentIndex(0);
         }
