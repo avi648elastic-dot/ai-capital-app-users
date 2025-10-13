@@ -154,7 +154,9 @@ app.use(
       'Origin',
       'Access-Control-Request-Method',
       'Access-Control-Request-Headers',
-      'X-CSRF-Token'
+      'X-CSRF-Token',
+      'Cache-Control',
+      'Pragma'
     ],
     exposedHeaders: ['Content-Length', 'X-Request-Id'],
     preflightContinue: false,
@@ -176,7 +178,7 @@ app.options('*', (req, res) => {
   // Set all necessary CORS headers
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token, Cache-Control, Pragma');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Max-Age', '86400'); // 24 hours
   

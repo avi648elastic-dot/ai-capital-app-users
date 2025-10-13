@@ -328,7 +328,10 @@ export default function Dashboard() {
         alert('Loading is taking longer than expected. Please check your internet connection and try again.');
       } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
         console.error('❌ [DASHBOARD] Network error - Backend might be deploying');
-        console.error('API URL:', apiUrl);
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+          console.error('API URL:', apiUrl);
+        } catch {}
         // DON'T clear portfolio on network error - keep showing existing data
         alert('Cannot connect to server. Backend is deploying (5-10 min). Your portfolio data is safe, just can\'t refresh right now.');
         return; // Exit early - don't clear portfolio
