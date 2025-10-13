@@ -226,6 +226,30 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
     }
   };
 
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      // Handle sample notifications locally
+      if (notificationId.startsWith('sample') || notificationId.startsWith('error')) {
+        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      
+      await axios.delete(`${apiUrl}/api/notifications/${notificationId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000
+      });
+      
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent': return 'text-red-500 bg-red-50 border-red-200';
@@ -333,10 +357,9 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-colors ${
+                  className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
                     !notification.readAt ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                   }`}
-                  onClick={() => markAsRead(notification.id)}
                 >
                   <div className="flex items-start space-x-3">
                     <span className="text-lg flex-shrink-0">
@@ -344,14 +367,34 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h4 className={`text-sm font-medium ${!notification.readAt ? 'text-slate-900 dark:text-slate-100' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <h4 
+                          className={`text-sm font-medium cursor-pointer ${!notification.readAt ? 'text-slate-900 dark:text-slate-100' : 'text-slate-700 dark:text-slate-300'}`}
+                          onClick={() => markAsRead(notification.id)}
+                        >
                           {notification.title}
                         </h4>
-                        <span className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(notification.priority)}`}>
-                          {notification.priority}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(notification.priority)}`}>
+                            {notification.priority}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notification.id);
+                            }}
+                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                            title="Delete notification"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
-                      <p className={`text-sm ${!notification.readAt ? 'text-slate-800 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}>
+                      <p 
+                        className={`text-sm cursor-pointer ${!notification.readAt ? 'text-slate-800 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}
+                        onClick={() => markAsRead(notification.id)}
+                      >
                         {notification.message}
                       </p>
                       {notification.actionData && (

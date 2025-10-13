@@ -197,15 +197,11 @@ export default function Dashboard() {
         timeout: 10000
       });
       setUser(response.data.user);
-      console.log('🔍 [DASHBOARD] User data fetched:', response.data.user);
-      
       // Auto-select tab based on the user's portfolioType (free users)
       const pt = response.data.user?.portfolioType as 'solid' | 'risky' | undefined;
       const tier = response.data.user?.subscriptionTier as 'free' | 'premium' | undefined;
-      console.log('🔍 [DASHBOARD] Portfolio type:', pt, 'Tier:', tier);
       
       if (pt && tier === 'free') {
-        console.log('🔍 [DASHBOARD] Setting active tab to:', pt);
         setActiveTab(pt);
       }
     } catch (error) {
@@ -223,10 +219,8 @@ export default function Dashboard() {
         timeout: 10000
       });
       
-      console.log('🏆 [DASHBOARD] User reputation fetched:', response.data);
       setUserReputation(response.data.reputation);
     } catch (error) {
-      console.error('❌ [DASHBOARD] Error fetching user reputation:', error);
       // Don't show error to user - reputation is optional
     }
   };
@@ -236,9 +230,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (user && user.subscriptionTier === 'free' && user.portfolioType) {
       const pt = user.portfolioType as 'solid' | 'risky';
-      console.log('🔍 [DASHBOARD] useEffect - User portfolio type:', pt, 'Current active tab:', activeTab);
       if (activeTab !== pt) {
-        console.log('🔍 [DASHBOARD] Syncing active tab to user portfolio type:', pt);
         setActiveTab(pt);
       }
     }
@@ -255,102 +247,53 @@ export default function Dashboard() {
   const fetchPortfolio = async (useCache = true) => {
     try {
       setLoading(true);
-      console.log('🔍 [DASHBOARD] Fetching portfolio... (cache:', useCache, ')');
-      
-      const startTime = performance.now();
-      
       const token = Cookies.get('token');
       if (!token) {
-        console.error('❌ [DASHBOARD] No token found');
         router.push('/');
         return;
       }
       
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-      console.log('🔍 [DASHBOARD] Using API URL:', apiUrl);
       
       const response = await axios.get(`${apiUrl}/api/portfolio`, {
         headers: { 
           Authorization: `Bearer ${token}`,
-          'Cache-Control': useCache ? 'max-age=15' : 'no-cache' // reduce cache
+          'Cache-Control': useCache ? 'max-age=15' : 'no-cache'
         },
-        timeout: 30000 // 30s timeout - mobile connections can be slower
+        timeout: 30000
       });
       
-      const endTime = performance.now();
-      const loadTime = Math.round(endTime - startTime);
-      console.log(`✅ [DASHBOARD] Portfolio fetched in ${loadTime}ms:`, response.data);
-      
       if (response.data && response.data.portfolio) {
-        console.log('🔍 [EMERGENCY DEBUG] Raw portfolio data from API:', response.data.portfolio);
-        console.log('🔍 [EMERGENCY DEBUG] Portfolio data structure check:', response.data.portfolio.map(item => ({
-          ticker: item.ticker,
-          portfolioType: item.portfolioType,
-          portfolioId: item.portfolioId,
-          hasType: 'portfolioType' in item,
-          hasId: 'portfolioId' in item
-        })));
-        
         setPortfolio(response.data.portfolio);
         setTotals(response.data.totals || { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
-        
-        // Update debug info with performance metrics
-        setDebugInfo(prev => ({
-          ...prev,
-          lastFetchTime: loadTime,
-          portfolioCount: response.data.portfolio.length,
-          lastUpdate: new Date().toISOString()
-        }));
       } else {
-        console.warn('⚠️ [DASHBOARD] Invalid portfolio data received');
         setPortfolio([]);
         setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
       }
     } catch (error: any) {
-      console.error('❌ [DASHBOARD] Error fetching portfolio:', error);
-      
       // Handle different types of errors - ONLY clear data on auth errors
       if (error.response?.status === 401) {
-        console.error('❌ [DASHBOARD] Unauthorized - redirecting to login');
         setPortfolio([]);
         setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
         Cookies.remove('token');
         router.push('/');
         return;
       } else if (error.response?.status === 403) {
-        console.error('❌ [DASHBOARD] Forbidden - subscription required');
         alert('Subscription required to access portfolio features');
         setPortfolio([]);
         setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
         return;
       } else if (error.code === 'ECONNABORTED') {
-        console.error('❌ [DASHBOARD] Request timeout');
         alert('Loading is taking longer than expected. Please check your internet connection and try again.');
       } else if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
-        console.error('❌ [DASHBOARD] Network error - Backend might be deploying');
-        try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-          console.error('API URL:', apiUrl);
-        } catch {}
         // DON'T clear portfolio on network error - keep showing existing data
         alert('Cannot connect to server. Backend is deploying (5-10 min). Your portfolio data is safe, just can\'t refresh right now.');
         return; // Exit early - don't clear portfolio
       } else {
-        console.error('❌ [DASHBOARD] Error:', error);
-        console.error('Full error:', { 
-          message: error.message, 
-          code: error.code, 
-          status: error.response?.status,
-          data: error.response?.data,
-          config: { url: error.config?.url, method: error.config?.method }
-        });
         const errorMsg = error.response?.data?.message || error.message || 'Unknown error';
         alert(`Failed to load portfolio: ${errorMsg}. Your data is safe, just can't refresh.`);
         return; // Exit early - don't clear portfolio
       }
-      
-      // ONLY clear portfolio on auth errors (401)
-      // For other errors, keep existing data
     } finally {
       setLoading(false);
     }

@@ -72,15 +72,13 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
     // 🚀 PERFORMANCE: Throttle requests to avoid too frequent API calls
     const now = Date.now();
     if (now - this.lastFetchTime < this.MIN_FETCH_INTERVAL) {
-      console.log('📊 [THROTTLE] Skipping fetch - too soon since last request');
-      return;
+      return; // Removed verbose logging
     }
 
     try {
       const token = Cookies.get('token');
       if (!token) {
-        console.warn('⚠️ No auth token for price updates');
-        return;
+        return; // Removed verbose logging
       }
 
       // 🚀 PERFORMANCE: Check cache first for recent prices
@@ -104,12 +102,9 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
 
       // If we have all data in cache, return it
       if (tickersToFetch.length === 0 && cachedUpdates.length > 0) {
-        console.log('📊 [CACHE HIT] Using cached prices for all tickers');
         this.updateCallback(cachedUpdates);
         return;
       }
-
-      console.log(`📊 Fetching real-time prices for: ${tickersToFetch.length} tickers (${cachedUpdates.length} cached)`);
 
       this.lastFetchTime = now;
       
@@ -133,8 +128,18 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
           const ticker = price.ticker;
           const incoming = Number(price.currentPrice ?? price.price ?? 0);
           const prev = this.priceCache.get(ticker)?.price ?? 0;
-          // Never overwrite a known price with 0/NaN
-          const currentPrice = isFinite(incoming) && incoming > 0 ? incoming : prev;
+          
+          // 🚀 CRITICAL FIX: Only update price if new price is valid AND different from cached
+          // This prevents price flipping between real data and 0
+          let currentPrice = prev; // Default to cached price
+          
+          if (isFinite(incoming) && incoming > 0) {
+            // Only update if the new price is significantly different (not just 0->real or real->0)
+            const priceDiff = Math.abs(incoming - prev) / Math.max(prev, 1);
+            if (priceDiff > 0.01 || prev === 0) { // Only update if >1% change or if we had no previous price
+              currentPrice = incoming;
+            }
+          }
           
           // 🚀 PERFORMANCE: Cache the price data
           this.priceCache.set(ticker, {
@@ -159,12 +164,9 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
         [...cachedUpdates, ...fetchedUpdates].forEach(u => mergedMap.set(u.ticker, u));
         const allUpdates = Array.from(mergedMap.values());
         
-        console.log(`✅ Real-time price updates: ${fetchedUpdates.length} fetched + ${cachedUpdates.length} cached = ${allUpdates.length} total`);
         this.updateCallback(allUpdates);
       }
     } catch (error) {
-      console.error('❌ Failed to fetch real-time prices:', error);
-      
       // 🚀 PERFORMANCE: On error, try to return cached data if available
       const cachedUpdates: PriceUpdate[] = [];
       const now = Date.now();
@@ -183,17 +185,7 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
       }
       
       if (cachedUpdates.length > 0) {
-        console.log(`📊 [FALLBACK] Using ${cachedUpdates.length} cached prices due to API error`);
         this.updateCallback(cachedUpdates);
-      }
-      
-      // Don't stop updates on error, just log it
-      if (axios.isAxiosError(error)) {
-        console.error('❌ API Error:', {
-          status: error.response?.status,
-          message: error.message,
-          data: error.response?.data
-        });
       }
     }
   }

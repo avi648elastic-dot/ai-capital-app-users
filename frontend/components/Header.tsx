@@ -71,20 +71,25 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                 <p className="text-xs text-slate-400">Portfolio Manager</p>
               </div>
               
-              {/* REPUTATION DISPLAY */}
+              {/* REPUTATION DISPLAY - VISIBLE ON ALL SCREENS */}
               {userReputation && (
                 <button
                   onClick={() => setShowLeaderboard(true)}
-                  className="hidden sm:flex items-center space-x-2 bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50 hover:bg-slate-700/50 transition-colors"
+                  className="flex items-center space-x-2 bg-slate-800/50 rounded-lg px-2 sm:px-3 py-2 border border-slate-700/50 hover:bg-slate-700/50 transition-colors"
                   title="View Trading Leaderboard"
                 >
                   <span className="text-lg">🏆</span>
-                  <div className="text-right">
+                  <div className="text-right hidden sm:block">
                     <div className={`text-sm font-semibold ${userReputation.reputation >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       ${userReputation.reputation?.toFixed(2) || '0.00'}
                     </div>
                     <div className="text-xs text-slate-400">
                       {userReputation.totalPositionsClosed || 0} trades
+                    </div>
+                  </div>
+                  <div className="text-right sm:hidden">
+                    <div className={`text-xs font-semibold ${userReputation.reputation >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      ${userReputation.reputation?.toFixed(0) || '0'}
                     </div>
                   </div>
                 </button>
