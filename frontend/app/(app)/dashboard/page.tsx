@@ -164,9 +164,9 @@ export default function Dashboard() {
         console.log('🔍 [DASHBOARD] Onboarding check failed due to network - proceeding to fetch portfolio');
         fetchUserData();
         fetchPortfolio();
-        return;
-      }
-      
+      return;
+    }
+    
       // Only redirect on auth errors
       if (error.response?.status === 401) {
         console.error('❌ [DASHBOARD] Unauthorized - redirecting to login');
@@ -177,8 +177,8 @@ export default function Dashboard() {
       
       // For other errors, just proceed to fetch portfolio
       console.log('🔍 [DASHBOARD] Onboarding check failed - proceeding to fetch portfolio anyway');
-      fetchUserData();
-      fetchPortfolio();
+    fetchUserData();
+    fetchPortfolio();
       return;
     }
     
@@ -272,7 +272,7 @@ export default function Dashboard() {
       const response = await axios.get(`${apiUrl}/api/portfolio`, {
         headers: { 
           Authorization: `Bearer ${token}`,
-          'Cache-Control': useCache ? 'max-age=30' : 'no-cache' // 30 second cache
+          'Cache-Control': useCache ? 'max-age=15' : 'no-cache' // reduce cache
         },
         timeout: 30000 // 30s timeout - mobile connections can be slower
       });
@@ -718,8 +718,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Debug panel is hidden in production */}
-        {process.env.NODE_ENV !== 'production' && debugInfo && (
+        {debugInfo && (
           <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
             <h3 className="text-lg font-semibold text-white mb-2">Debug Info:</h3>
             <pre className="text-sm text-gray-300 overflow-auto">

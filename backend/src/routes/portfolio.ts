@@ -31,7 +31,7 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
     let realTimeData: Map<string, any>;
     try {
       realTimeData = await stockDataService.getMultipleStockData(tickers);
-      console.log('✅ [PORTFOLIO] Fetched real-time data for', realTimeData.size, 'stocks');
+    console.log('✅ [PORTFOLIO] Fetched real-time data for', realTimeData.size, 'stocks');
     } catch (stockDataError) {
       console.error('❌ [PORTFOLIO] Error fetching stock data, using stored prices:', stockDataError);
       realTimeData = new Map(); // Empty map, will use stored prices as fallback
@@ -124,12 +124,12 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
         exchange = '—';
       }
       
+      const reason = currentPrice && currentPrice > 0 ? decision.reason : (item.reason || 'Unable to fetch data');
       return {
         ...item.toObject(),
         currentPrice: currentPrice,
         action: decision.action,
-        // Always set fresh reason when we have a price
-        reason: currentPrice && currentPrice > 0 ? decision.reason : (item.reason || '—'),
+        reason,
         color: decision.color,
         exchange: exchange
       };

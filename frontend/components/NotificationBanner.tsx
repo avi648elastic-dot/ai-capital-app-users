@@ -110,8 +110,7 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
       console.error('Error details:', {
         status: error.response?.status,
         message: error.response?.data?.message || error.message,
-        notificationId,
-        apiUrl
+        notificationId
       });
       
       // Handle specific error types
@@ -119,8 +118,6 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
         alert('Delete request timed out. Please try again.');
       } else if (error.code === 'ERR_NETWORK') {
         alert('Cannot connect to server. Backend might be deploying.');
-      } else if (error.response?.status === 500) {
-        alert('Server error deleting notification. I will fix the endpoint now.');
       } else if (error.response?.status === 404) {
         // Notification already deleted, remove from UI
         setNotifications(prev => prev.filter(n => n.id !== notificationId));
