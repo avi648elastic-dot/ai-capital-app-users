@@ -113,8 +113,9 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
 
       this.lastFetchTime = now;
       
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/stocks/batch-prices`,
+        `${apiUrl}/api/stocks/batch-prices`,
         { tickers: tickersToFetch.length > 0 ? tickersToFetch : this.currentTickers },
         { 
           headers: { 
@@ -127,9 +128,13 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
       );
 
       if (response.data && response.data.prices) {
-        const fetchedUpdates: PriceUpdate[] = response.data.prices.map((price: any) => {
+        const fetchedUpdates: PriceUpdate[] = response.data.prices
+          .map((price: any) => {
           const ticker = price.ticker;
-          const currentPrice = price.currentPrice || price.price || 0;
+          const incoming = Number(price.currentPrice ?? price.price ?? 0);
+          const prev = this.priceCache.get(ticker)?.price ?? 0;
+          // Never overwrite a known price with 0/NaN
+          const currentPrice = isFinite(incoming) && incoming > 0 ? incoming : prev;
           
           // 🚀 PERFORMANCE: Cache the price data
           this.priceCache.set(ticker, {
@@ -144,10 +149,15 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
             changePercent: price.changePercent || 0,
             lastUpdated: new Date()
           };
-        });
+        })
+        // Filter out entries where we still don't have a valid price
+        .filter(u => typeof u.currentPrice === 'number' && u.currentPrice > 0);
 
         // Combine cached and fetched updates
-        const allUpdates = [...cachedUpdates, ...fetchedUpdates];
+        // Merge: prefer fetched > cached by ticker
+        const mergedMap = new Map<string, PriceUpdate>();
+        [...cachedUpdates, ...fetchedUpdates].forEach(u => mergedMap.set(u.ticker, u));
+        const allUpdates = Array.from(mergedMap.values());
         
         console.log(`✅ Real-time price updates: ${fetchedUpdates.length} fetched + ${cachedUpdates.length} cached = ${allUpdates.length} total`);
         this.updateCallback(allUpdates);
