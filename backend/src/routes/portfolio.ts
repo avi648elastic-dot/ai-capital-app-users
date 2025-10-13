@@ -128,7 +128,8 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
         ...item.toObject(),
         currentPrice: currentPrice,
         action: decision.action,
-        reason: decision.reason,
+        // Always set fresh reason when we have a price
+        reason: currentPrice && currentPrice > 0 ? decision.reason : (item.reason || '—'),
         color: decision.color,
         exchange: exchange
       };

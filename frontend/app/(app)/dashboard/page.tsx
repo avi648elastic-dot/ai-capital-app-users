@@ -718,7 +718,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {debugInfo && (
+        {/* Debug panel is hidden in production */}
+        {process.env.NODE_ENV !== 'production' && debugInfo && (
           <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
             <h3 className="text-lg font-semibold text-white mb-2">Debug Info:</h3>
             <pre className="text-sm text-gray-300 overflow-auto">
