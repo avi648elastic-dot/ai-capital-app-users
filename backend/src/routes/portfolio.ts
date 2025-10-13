@@ -58,7 +58,22 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
     // Update portfolio with real-time prices, exchange info, and recalculate decisions
     const updatedPortfolio = await Promise.all(portfolio.map(async item => {
       const realTimeStock = realTimeData.get(item.ticker);
-      const currentPrice = realTimeStock?.current || item.currentPrice; // Fallback to stored price
+      let currentPrice = realTimeStock?.current || item.currentPrice; // Fallback to stored price
+
+      // 🔄 EMERGENCY FALLBACK: If price missing/zero, fetch this symbol individually
+      if (!currentPrice || currentPrice <= 0) {
+        try {
+          const singleData = await stockDataService.getStockData(item.ticker);
+          if (singleData && singleData.current && singleData.current > 0) {
+            currentPrice = singleData.current;
+            console.log(`✅ [PORTFOLIO] Recovered price for ${item.ticker} via single fetch: $${currentPrice}`);
+          } else {
+            console.warn(`⚠️ [PORTFOLIO] No price for ${item.ticker} even after single fetch`);
+          }
+        } catch (e) {
+          console.warn(`⚠️ [PORTFOLIO] Single fetch failed for ${item.ticker}:`, (e as Error).message);
+        }
+      }
       
       console.log(`🔍 [PORTFOLIO] ${item.ticker}: Entry=${item.entryPrice}, Current=${currentPrice}, StopLoss=${item.stopLoss}, RealTime=${realTimeStock?.current || 'N/A'}`);
       
