@@ -32,21 +32,18 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
   // Update portfolio type and ID when props change
   useEffect(() => {
     if (!isPremium && defaultPortfolioType && formData.portfolioType !== defaultPortfolioType) {
-      console.log(`🔍 [StockForm] Updating portfolioType for free user from ${formData.portfolioType} to ${defaultPortfolioType}`);
       setFormData(prev => ({
         ...prev,
         portfolioType: defaultPortfolioType,
         portfolioId: `${defaultPortfolioType}-1`,
       }));
     } else if (isPremium && activeTab && formData.portfolioType !== activeTab) {
-      console.log(`🔍 [StockForm] Updating portfolioType for premium user from ${formData.portfolioType} to ${activeTab}`);
       setFormData(prev => ({
         ...prev,
         portfolioType: activeTab,
         portfolioId: selectedPortfolioId || `${activeTab}-1`,
       }));
     } else if (selectedPortfolioId && formData.portfolioId !== selectedPortfolioId) {
-      console.log(`🔍 [StockForm] Updating portfolioId to ${selectedPortfolioId}`);
       setFormData(prev => ({
         ...prev,
         portfolioId: selectedPortfolioId,
@@ -82,17 +79,14 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
   useEffect(() => {
     const fetchCurrentPrice = async () => {
       if (formData.ticker && formData.ticker.length >= 2) {
-        console.log('🔍 [STOCK FORM] Fetching price for:', formData.ticker.toUpperCase());
         setFetchingPrice(true);
         try {
           const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/test-stock/${formData.ticker.toUpperCase()}`, {
             timeout: 10000 // 10 second timeout
           });
-          console.log('✅ [STOCK FORM] API response:', response.data);
           
           if (response.data.status === 'OK' && response.data.data && response.data.data.current) {
             const currentPrice = response.data.data.current;
-            console.log('✅ [STOCK FORM] Setting current price:', currentPrice);
             
             setFormData(prev => ({
               ...prev,
@@ -112,7 +106,6 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
               }));
             }
           } else {
-            console.warn('⚠️ [STOCK FORM] No valid data received for:', formData.ticker);
             // Try to get a reasonable fallback price
             const fallbackPrice = getFallbackPrice(formData.ticker);
             setFormData(prev => ({
@@ -121,8 +114,6 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
             }));
           }
         } catch (error) {
-          console.error('❌ [STOCK FORM] Error fetching current price:', error);
-          console.error('❌ [STOCK FORM] Error details:', error.response?.data);
           // Try to get a reasonable fallback price
           const fallbackPrice = getFallbackPrice(formData.ticker);
           setFormData(prev => ({
@@ -191,13 +182,13 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-bold text-white mb-6">Add New Stock</h2>
+    <div className="max-w-md sm:max-w-2xl">
+      <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Add New Stock</h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label htmlFor="ticker" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="ticker" className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
               Ticker Symbol *
             </label>
             <input
@@ -213,7 +204,7 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
           </div>
 
           <div>
-            <label htmlFor="shares" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="shares" className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
               Number of Shares *
             </label>
             <input
@@ -233,10 +224,10 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
         {/* Portfolio Type Selector (Premium only) or Display (Free users) */}
         {isPremium ? (
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">
               Portfolio Type
             </label>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3">
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -262,9 +253,9 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
             </div>
           </div>
         ) : (
-          <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+          <div className="bg-slate-800/50 rounded-lg p-2 sm:p-3 border border-slate-700/50">
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-slate-300">Adding to:</span>
+              <span className="text-xs sm:text-sm font-medium text-slate-300">Adding to:</span>
               <span className={`px-3 py-1 text-xs font-bold rounded-full ${
                 formData.portfolioType === 'risky' 
                   ? 'text-orange-300 bg-orange-900/50 border border-orange-500/30' 
@@ -272,14 +263,14 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
               }`}>
                 {formData.portfolioType === 'risky' ? '⚡ Risky Portfolio' : '🛡️ Solid Portfolio'}
               </span>
-              <span className="text-xs text-slate-400">(Free users can only add to their chosen portfolio type)</span>
+              <span className="text-[10px] sm:text-xs text-slate-400">(Free users can only add to their chosen type)</span>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label htmlFor="entryPrice" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="entryPrice" className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
               Entry Price *
             </label>
             <input
@@ -298,16 +289,16 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
           </div>
 
           <div>
-            <label htmlFor="currentPrice" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="currentPrice" className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
               Current Price * 
               {fetchingPrice && (
-                <span className="ml-2 text-blue-400 text-xs flex items-center">
+                <span className="ml-2 text-blue-400 text-[10px] sm:text-xs inline-flex items-center">
                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-400 mr-1"></div>
                   Fetching real-time price...
                 </span>
               )}
               {!fetchingPrice && formData.currentPrice && formData.currentPrice !== '0.00' && (
-                <span className="ml-2 text-green-400 text-xs">✓ Real-time data loaded</span>
+                <span className="ml-2 text-green-400 text-[10px] sm:text-xs">✓ Real-time</span>
               )}
             </label>
             <div className="relative">
@@ -341,16 +332,14 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
               )}
             </div>
             {formData.currentPrice === '0.00' && (
-              <p className="text-xs text-amber-400 mt-1">
-                ⚠️ Using fallback price. Real-time data unavailable for this ticker.
-              </p>
+              <p className="text-[10px] sm:text-xs text-amber-400 mt-1">⚠️ Using fallback price.</p>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <label htmlFor="stopLoss" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="stopLoss" className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
               Stop Loss (Optional)
             </label>
             <input
@@ -367,7 +356,7 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
           </div>
 
           <div>
-            <label htmlFor="takeProfit" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="takeProfit" className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
               Take Profit (Optional)
             </label>
             <input
@@ -385,7 +374,7 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
         </div>
 
         {/* Auto-calculate checkbox */}
-        <div className="flex items-center space-x-2 mb-4">
+        <div className="flex items-center space-x-2 mb-3 sm:mb-4">
           <input
             type="checkbox"
             id="autoCalculate"
@@ -393,13 +382,13 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
             onChange={handleAutoCalculateChange}
             className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
           />
-          <label htmlFor="autoCalculate" className="text-sm font-medium text-gray-300">
-            Auto-calculate Stop Loss (8% below entry) and Take Profit (15% above entry)
+          <label htmlFor="autoCalculate" className="text-xs sm:text-sm font-medium text-gray-300">
+            Auto-calc SL (8% below) & TP (15% above)
           </label>
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-300 mb-1">
+          <label htmlFor="notes" className="block text-xs sm:text-sm font-medium text-gray-300 mb-1">
             Notes (Optional)
           </label>
           <textarea
@@ -413,7 +402,7 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
           />
         </div>
 
-        <div className="flex justify-end space-x-4 pt-4">
+        <div className="flex justify-end space-x-3 sm:space-x-4 pt-3 sm:pt-4">
           <button
             type="button"
             onClick={onCancel}

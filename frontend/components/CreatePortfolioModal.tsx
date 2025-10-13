@@ -11,7 +11,6 @@ interface CreatePortfolioModalProps {
 }
 
 export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortfolioModalProps) {
-  console.log('🔍 [CREATE PORTFOLIO MODAL] Modal component rendered');
   const [portfolioType, setPortfolioType] = useState<'solid' | 'risky' | ''>('');
   const [portfolioName, setPortfolioName] = useState('');
   const [initialInvestment, setInitialInvestment] = useState('');
@@ -19,24 +18,17 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
-    console.log('🔍 [CREATE PORTFOLIO] handleCreate called');
-    console.log('🔍 [CREATE PORTFOLIO] portfolioType:', portfolioType);
-    console.log('🔍 [CREATE PORTFOLIO] initialInvestment:', initialInvestment);
-    console.log('🔍 [CREATE PORTFOLIO] riskTolerance:', riskTolerance);
     
     if (!portfolioType) {
-      console.log('❌ [CREATE PORTFOLIO] No portfolio type selected');
       alert('Please select a portfolio type');
       return;
     }
 
     if (!initialInvestment || isNaN(Number(initialInvestment)) || Number(initialInvestment) <= 0) {
-      console.log('❌ [CREATE PORTFOLIO] Invalid initial investment:', initialInvestment);
       alert('Please enter a valid initial investment amount');
       return;
     }
 
-    console.log('🔍 [CREATE PORTFOLIO] Starting portfolio creation...');
     setLoading(true);
     try {
       const response = await axios.post(
@@ -75,10 +67,10 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
           </div>
         </div>
       )}
-      <div className="bg-slate-800 rounded-lg p-6 w-full max-w-lg mx-4">
+      <div className="bg-slate-800 rounded-lg p-4 sm:p-6 w-full max-w-sm sm:max-w-lg mx-3 sm:mx-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-white flex items-center">
+          <h3 className="text-lg sm:text-xl font-bold text-white flex items-center">
             <Plus className="w-5 h-5 mr-2 text-blue-400" />
             Create New Portfolio
           </h3>
@@ -93,26 +85,26 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
         <div className="space-y-6">
           {/* Portfolio Type Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-3">
+            <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2 sm:mb-3">
               Choose Portfolio Type <span className="text-red-400">*</span>
             </label>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-2 sm:gap-3">
               <button
                 onClick={() => setPortfolioType('solid')}
-                className={`p-4 rounded-lg border-2 transition-all ${
+                className={`p-3 sm:p-4 rounded-lg border-2 transition-all ${
                   portfolioType === 'solid'
                     ? 'border-blue-500 bg-blue-500/20 text-blue-300'
                     : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-blue-400 hover:bg-blue-500/10'
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <Shield className="w-6 h-6 text-blue-400" />
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
                   <div className="text-left">
-                    <div className="text-lg font-semibold">Solid Portfolio</div>
-                    <div className="text-sm text-slate-400">
+                    <div className="text-sm sm:text-lg font-semibold">Solid Portfolio</div>
+                    <div className="text-xs sm:text-sm text-slate-400">
                       Low risk, stable investments with steady growth
                     </div>
-                    <div className="text-xs text-blue-400 mt-1">
+                    <div className="text-[10px] sm:text-xs text-blue-400 mt-1">
                       Recommended for conservative investors
                     </div>
                   </div>
@@ -121,20 +113,20 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
               
               <button
                 onClick={() => setPortfolioType('risky')}
-                className={`p-4 rounded-lg border-2 transition-all ${
+                className={`p-3 sm:p-4 rounded-lg border-2 transition-all ${
                   portfolioType === 'risky'
                     ? 'border-orange-500 bg-orange-500/20 text-orange-300'
                     : 'border-slate-600 bg-slate-700/50 text-slate-300 hover:border-orange-400 hover:bg-orange-500/10'
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <AlertTriangle className="w-6 h-6 text-orange-400" />
+                  <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400" />
                   <div className="text-left">
-                    <div className="text-lg font-semibold">Risky Portfolio</div>
-                    <div className="text-sm text-slate-400">
+                    <div className="text-sm sm:text-lg font-semibold">Risky Portfolio</div>
+                    <div className="text-xs sm:text-sm text-slate-400">
                       High risk, high reward investments with growth potential
                     </div>
-                    <div className="text-xs text-orange-400 mt-1">
+                    <div className="text-[10px] sm:text-xs text-orange-400 mt-1">
                       For experienced investors comfortable with volatility
                     </div>
                   </div>
@@ -145,7 +137,7 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
 
           {/* Custom Portfolio Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-1 sm:mb-2">
               Portfolio Name (Optional)
             </label>
             <input
@@ -156,14 +148,14 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
               className="w-full input-field"
               maxLength={50}
             />
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-1">
               Leave empty to use default name: "{portfolioType} Portfolio {portfolioType ? 'X' : ''}"
             </p>
           </div>
 
           {/* Initial Investment Amount */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
               Initial Investment Amount <span className="text-red-400">*</span>
             </label>
             <div className="relative">
@@ -179,15 +171,15 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
                 required
               />
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-1">
               Enter the amount you want to invest in this portfolio
             </p>
           </div>
 
           {/* Risk Tolerance */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Risk Tolerance: {riskTolerance}/10
+            <label className="block text-xs sm:text-sm font-medium text-gray-300 mb-2">
+              Risk Tolerance {riskTolerance}/10
             </label>
             <input
               type="range"
@@ -197,20 +189,20 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
               onChange={(e) => setRiskTolerance(e.target.value)}
               className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer slider"
             />
-            <div className="flex justify-between text-xs text-slate-400 mt-1">
-              <span>Conservative (1)</span>
-              <span>Aggressive (10)</span>
+            <div className="flex justify-between text-[10px] sm:text-xs text-slate-400 mt-1">
+              <span>Conservative</span>
+              <span>Aggressive</span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-[10px] sm:text-xs text-slate-400 mt-1">
               This determines stop-loss and take-profit levels for your stocks
             </p>
           </div>
 
 
           {/* Premium Limits Info */}
-          <div className="bg-slate-700/30 rounded-lg p-3">
+          <details className="bg-slate-700/30 rounded-lg p-3">
+            <summary className="cursor-pointer text-xs sm:text-sm text-slate-300">Premium Portfolio Limits</summary>
             <div className="text-sm text-slate-300">
-              <div className="font-semibold text-blue-400 mb-1">Premium Portfolio Limits:</div>
               <div className="text-xs space-y-1">
                 <div>• Up to 3 Solid portfolios</div>
                 <div>• Up to 3 Risky portfolios</div>
@@ -226,10 +218,10 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
                 </div>
               </div>
             </div>
-          </div>
+          </details>
           
           {/* Action Buttons */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex space-x-3 pt-3 sm:pt-4">
             <button
               onClick={onClose}
               className="flex-1 btn-secondary"
@@ -239,8 +231,6 @@ export default function CreatePortfolioModal({ onClose, onSuccess }: CreatePortf
             </button>
             <button
               onClick={() => {
-                console.log('🔍 [CREATE PORTFOLIO] Button clicked');
-                console.log('🔍 [CREATE PORTFOLIO] Button disabled?', !portfolioType || !initialInvestment || loading);
                 handleCreate();
               }}
               disabled={!portfolioType || !initialInvestment || loading}
