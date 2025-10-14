@@ -47,7 +47,16 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
       const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
 
       // Create 7 days of meaningful data showing portfolio progression
-      const chartDataPoints: Array<{date: string, value: number}> = [];
+      const chartDataPoints: Array<{
+        date: string;
+        fullDate: Date;
+        value: number;
+        cost: number;
+        pnl: number;
+        pnlPercent: number;
+        dailyChange: number;
+        dailyChangePercent: number;
+      }> = [];
       const today = new Date();
       
       for (let i = 6; i >= 0; i--) {
