@@ -3,16 +3,18 @@ import Portfolio from '../models/Portfolio';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { decisionEngine } from '../services/decisionEngine';
 import { stockDataService } from '../services/stockDataService';
+import { optimizedStockDataService } from '../services/optimizedStockDataService';
 import { volatilityService } from '../services/volatilityService';
 import { reputationService } from '../services/reputationService';
 import { validate, validatePartial } from '../middleware/validate';
 import { stockSchema, updatePortfolioSchema, portfolioQuerySchema } from '../schemas/portfolio';
+import { portfolioCache } from '../middleware/performanceCache';
 import { z } from 'zod';
 
 const router = express.Router();
 
-// Get user portfolio with real-time prices
-router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), async (req, res) => {
+// Get user portfolio with real-time prices - OPTIMIZED WITH CACHING
+router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), portfolioCache, async (req, res) => {
   try {
     console.log('🔍 [PORTFOLIO] Fetching portfolio for user:', req.user!._id);
     
@@ -26,12 +28,13 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), as
     const tickers = [...new Set(portfolio.map(item => item.ticker))];
     console.log('🔍 [PORTFOLIO] Updating prices for tickers:', tickers);
 
-    // Fetch real-time data for all tickers - with graceful failure handling
+    // Fetch real-time data for all tickers - OPTIMIZED BATCH PROCESSING
     console.log('🔍 [PORTFOLIO] Fetching real-time data for tickers:', tickers);
     let realTimeData: Map<string, any>;
     try {
-      realTimeData = await stockDataService.getMultipleStockData(tickers);
-    console.log('✅ [PORTFOLIO] Fetched real-time data for', realTimeData.size, 'stocks');
+      // Use optimized service with batch processing
+      realTimeData = await optimizedStockDataService.getMultipleStockData(tickers);
+      console.log('✅ [PORTFOLIO] Fetched real-time data for', realTimeData.size, 'stocks (OPTIMIZED)');
     } catch (stockDataError) {
       console.error('❌ [PORTFOLIO] Error fetching stock data, using stored prices:', stockDataError);
       realTimeData = new Map(); // Empty map, will use stored prices as fallback
