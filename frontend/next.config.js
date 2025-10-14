@@ -179,20 +179,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  
-  // Skip trailing slash to avoid export issues
-  trailingSlash: false,
-  
-  // Skip error page generation during export
-  exportPathMap: async function (
-    defaultPathMap,
-    { dev, dir, outDir, distDir, buildId }
-  ) {
-    // Remove error pages from export
-    const pathMap = { ...defaultPathMap };
-    delete pathMap['/_error'];
-    return pathMap;
-  },
 
   // Performance monitoring
   poweredByHeader: false,
