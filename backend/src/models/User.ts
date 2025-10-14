@@ -37,6 +37,12 @@ export interface IUser extends Document {
   apiKey?: string;
   apiSecret?: string;
   shopDomain?: string;
+  
+  // 💳 STRIPE PAYMENT FIELDS
+  stripeCustomerId?: string; // Stripe customer ID
+  stripeSubscriptionId?: string; // Current Stripe subscription ID
+  subscriptionStatus?: 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing'; // Subscription status
+  subscriptionEndDate?: Date; // When subscription ends/renews
 }
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -74,6 +80,12 @@ const UserSchema: Schema<IUser> = new Schema(
     apiKey: { type: String },
     apiSecret: { type: String },
     shopDomain: { type: String },
+    
+    // 💳 STRIPE PAYMENT FIELDS
+    stripeCustomerId: { type: String },
+    stripeSubscriptionId: { type: String },
+    subscriptionStatus: { type: String, enum: ['active', 'canceled', 'past_due', 'incomplete', 'trialing'] },
+    subscriptionEndDate: { type: Date },
   },
   { timestamps: true }
 );
@@ -89,6 +101,11 @@ UserSchema.index({ 'featuredTickers': 1 });
 UserSchema.index({ reputation: -1 }); // For leaderboard queries
 UserSchema.index({ totalRealizedPnL: -1 }); // For leaderboard queries
 UserSchema.index({ winRate: -1 }); // For win rate leaderboard
+
+// 💳 STRIPE PAYMENT INDEXES
+UserSchema.index({ stripeCustomerId: 1 }); // For Stripe customer lookups
+UserSchema.index({ stripeSubscriptionId: 1 }); // For subscription lookups
+UserSchema.index({ subscriptionStatus: 1 }); // For subscription status queries
 
 // 🔒 Pre-save hook for portfolio limits validation
 UserSchema.pre('save', async function(next) {

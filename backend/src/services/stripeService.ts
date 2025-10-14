@@ -5,6 +5,7 @@
 
 import Stripe from 'stripe';
 import { loggerService } from './loggerService';
+import User from '../models/User';
 
 // Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_REPLACE_WITH_YOUR_STRIPE_SECRET_KEY', {
@@ -265,8 +266,14 @@ class StripeService {
 
       loggerService.info(`✅ [STRIPE] Checkout completed for user ${userId}`, { sessionId: session.id });
       
-      // Here you would update your database with the successful payment
-      // For now, just log it
+      // Update user with Stripe customer ID
+      const customerId = session.customer as string;
+      if (customerId) {
+        await User.findByIdAndUpdate(userId, {
+          stripeCustomerId: customerId
+        });
+        loggerService.info(`✅ [STRIPE] Updated user ${userId} with customer ID ${customerId}`);
+      }
     } catch (error) {
       loggerService.error(`❌ [STRIPE] Error handling checkout completed`, { error, sessionId: session.id });
     }
@@ -288,8 +295,21 @@ class StripeService {
         status: subscription.status 
       });
       
-      // Here you would update your database with the new subscription
-      // For now, just log it
+      // Determine subscription tier from price ID
+      const priceId = subscription.items.data[0]?.price.id;
+      const planType = this.getPlanTypeFromPriceId(priceId);
+      
+      // Update user with subscription details
+      await User.findByIdAndUpdate(userId, {
+        stripeCustomerId: subscription.customer as string,
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: subscription.status as any,
+        subscriptionActive: subscription.status === 'active' || subscription.status === 'trialing',
+        subscriptionTier: planType,
+        subscriptionEndDate: new Date((subscription as any).current_period_end * 1000)
+      });
+      
+      loggerService.info(`✅ [STRIPE] Updated user ${userId} subscription to ${planType}`);
     } catch (error) {
       loggerService.error(`❌ [STRIPE] Error handling subscription created`, { error, subscriptionId: subscription.id });
     }
@@ -311,8 +331,20 @@ class StripeService {
         status: subscription.status 
       });
       
-      // Here you would update your database with the subscription changes
-      // For now, just log it
+      // Determine subscription tier from price ID
+      const priceId = subscription.items.data[0]?.price.id;
+      const planType = this.getPlanTypeFromPriceId(priceId);
+      
+      // Update user with new subscription details
+      await User.findByIdAndUpdate(userId, {
+        stripeSubscriptionId: subscription.id,
+        subscriptionStatus: subscription.status as any,
+        subscriptionActive: subscription.status === 'active' || subscription.status === 'trialing',
+        subscriptionTier: planType,
+        subscriptionEndDate: new Date((subscription as any).current_period_end * 1000)
+      });
+      
+      loggerService.info(`✅ [STRIPE] Updated user ${userId} subscription status to ${subscription.status}`);
     } catch (error) {
       loggerService.error(`❌ [STRIPE] Error handling subscription updated`, { error, subscriptionId: subscription.id });
     }
@@ -331,8 +363,16 @@ class StripeService {
 
       loggerService.info(`✅ [STRIPE] Subscription deleted for user ${userId}`, { subscriptionId: subscription.id });
       
-      // Here you would update your database to mark subscription as cancelled
-      // For now, just log it
+      // Downgrade user to free tier
+      await User.findByIdAndUpdate(userId, {
+        subscriptionStatus: 'canceled',
+        subscriptionActive: false,
+        subscriptionTier: 'free',
+        stripeSubscriptionId: null,
+        subscriptionEndDate: new Date()
+      });
+      
+      loggerService.info(`✅ [STRIPE] Downgraded user ${userId} to free tier`);
     } catch (error) {
       loggerService.error(`❌ [STRIPE] Error handling subscription deleted`, { error, subscriptionId: subscription.id });
     }
