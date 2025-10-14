@@ -339,7 +339,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (portfolio.length === 0) return;
 
-    const tickers = [...new Set(portfolio.map(item => item.ticker))];
+    const tickers = Array.from(new Set(portfolio.map(item => item.ticker)));
     console.log(`📊 [DASHBOARD] Starting real-time updates for ${tickers.length} stocks`);
 
     realtimePriceService.startUpdates(tickers, (updates: PriceUpdate[]) => {
