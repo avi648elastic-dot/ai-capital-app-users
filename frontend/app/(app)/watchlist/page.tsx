@@ -60,6 +60,11 @@ export default function Watchlist() {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
+  // Dummy function for disabled modal
+  const closeAlertModal = () => {
+    // Modal is disabled, this function does nothing
+  };
+
   useEffect(() => {
     fetchUserAndWatchlist();
     // Refresh watchlist every 5 minutes
