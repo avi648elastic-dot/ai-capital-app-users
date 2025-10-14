@@ -94,6 +94,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@headlessui/react'],
+    appDir: true,
   },
 
   // Headers for performance
@@ -179,6 +180,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+
+  // Skip legacy error page generation
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: true,
 
   // Performance monitoring
   poweredByHeader: false,
