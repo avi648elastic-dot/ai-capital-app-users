@@ -967,11 +967,11 @@ export default function Dashboard() {
       {showCreatePortfolio && (
         <CreatePortfolioModal 
           onClose={() => setShowCreatePortfolio(false)}
-               onSuccess={() => {
-                 setShowCreatePortfolio(false);
-                 // Refresh portfolios without full page reload
-                 fetchPortfolio(Cookies.get('token') || '');
-               }}
+              onSuccess={() => {
+                setShowCreatePortfolio(false);
+                // Refresh portfolios without full page reload
+                fetchPortfolio(false);
+              }}
         />
       )}
 
@@ -982,7 +982,7 @@ export default function Dashboard() {
                onSuccess={() => {
                  setShowDeletePortfolio(false);
                  // Refresh portfolios without full page reload
-                 fetchPortfolio(Cookies.get('token') || '');
+                 fetchPortfolio(false);
                }}
         />
       )}
