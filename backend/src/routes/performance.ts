@@ -1,3 +1,14 @@
+import express from 'express';
+import Portfolio from '../models/Portfolio';
+import { authenticateToken } from '../middleware/auth';
+import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
+import { volatilityService } from '../services/volatilityService';
+import { loggerService } from '../services/loggerService';
+import { historicalDataService } from '../services/historicalDataService';
+import { redisService } from '../services/redisService';
+
+const router = express.Router();
+
 // Per-stock endpoint: accurate 7/30/60/90 metrics from 90d closes with Redis cache
 router.get('/stock', authenticateToken, async (req, res) => {
   try {
@@ -66,16 +77,6 @@ router.get('/stock', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Failed to compute stock metrics', error: error.message });
   }
 });
-import express from 'express';
-import Portfolio from '../models/Portfolio';
-import { authenticateToken } from '../middleware/auth';
-import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
-import { volatilityService } from '../services/volatilityService';
-import { loggerService } from '../services/loggerService';
-import { historicalDataService } from '../services/historicalDataService';
-import { redisService } from '../services/redisService';
-
-const router = express.Router();
 
 // Get real performance analytics using Google Finance 90-day data
 router.get('/', authenticateToken, async (req, res) => {
