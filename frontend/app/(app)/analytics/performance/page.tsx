@@ -232,13 +232,10 @@ export default function Performance() {
                     {formatPercentage(portfolioMetrics.volatility)}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    {portfolioMetrics.volatilityMetrics?.riskLevel || 'Annualized'}
-                    {portfolioMetrics.volatilityMetrics?.confidence && 
-                      ` • ${portfolioMetrics.volatilityMetrics.confidence}% confidence`
-                    }
+                    Annualized
                   </p>
                 </div>
-                <Activity className={`w-8 h-8 ${portfolioMetrics.volatilityMetrics?.riskColor || 'text-blue-400'}`} />
+                <Activity className="w-8 h-8 text-blue-400" />
               </div>
             </div>
             
@@ -330,14 +327,9 @@ export default function Performance() {
                         </td>
                         <td className="py-3 px-4 text-right">
                           <div className="flex flex-col items-end">
-                            <span className={`font-medium ${metrics.volatilityMetrics?.riskColor || 'text-slate-300'}`}>
+                            <span className="font-medium text-slate-300">
                               {formatPercentage(metrics.volatility)}
                             </span>
-                            {metrics.volatilityMetrics?.riskLevel && (
-                              <span className="text-xs text-slate-500">
-                                {metrics.volatilityMetrics.riskLevel}
-                              </span>
-                            )}
                           </div>
                         </td>
                         <td className="py-3 px-4 text-right">
