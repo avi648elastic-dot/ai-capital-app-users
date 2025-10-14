@@ -69,21 +69,46 @@ export function logout(): void {
     console.error('❌ [LOGOUT] Error during logout cleanup:', e);
   }
 
-  console.log('🚪 [LOGOUT] Redirecting to login page...');
+    console.log('🚪 [LOGOUT] Redirecting to login page...');
 
-  // Hard redirect to clear client state
-  try {
-    window.location.replace('/');
-  } catch (e) {
-    console.warn('⚠️ [LOGOUT] window.location.replace failed, trying href:', e);
+    // Set logout flag to prevent immediate token check
     try {
-      window.location.href = '/';
-    } catch (e2) {
-      console.error('❌ [LOGOUT] All redirect methods failed:', e2);
-      // Last resort - reload the page
-      window.location.reload();
+      sessionStorage.setItem('logout-redirect', 'true');
+      console.log('✅ [LOGOUT] Set logout redirect flag');
+    } catch (e) {
+      console.warn('⚠️ [LOGOUT] Failed to set logout flag:', e);
     }
-  }
+
+    // Clear any remaining tokens in localStorage and sessionStorage (but keep logout flag)
+    try {
+      localStorage.clear();
+      // Clear sessionStorage but preserve the logout flag
+      const logoutFlag = sessionStorage.getItem('logout-redirect');
+      sessionStorage.clear();
+      if (logoutFlag) {
+        sessionStorage.setItem('logout-redirect', logoutFlag);
+      }
+      console.log('✅ [LOGOUT] Cleared localStorage and sessionStorage');
+    } catch (e) {
+      console.warn('⚠️ [LOGOUT] Failed to clear storage:', e);
+    }
+
+    // Add a small delay to ensure cookies are cleared before redirect
+    setTimeout(() => {
+      // Hard redirect to clear client state
+      try {
+        window.location.replace('/');
+      } catch (e) {
+        console.warn('⚠️ [LOGOUT] window.location.replace failed, trying href:', e);
+        try {
+          window.location.href = '/';
+        } catch (e2) {
+          console.error('❌ [LOGOUT] All redirect methods failed:', e2);
+          // Last resort - reload the page
+          window.location.reload();
+        }
+      }
+    }, 100); // 100ms delay to ensure cookies are cleared
 }
 
 

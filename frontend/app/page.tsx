@@ -31,6 +31,14 @@ export default function Page() {
   const router = useRouter();
 
   useEffect(() => {
+    // Check if this is a logout redirect (don't check token immediately)
+    const isLogoutRedirect = sessionStorage.getItem('logout-redirect');
+    if (isLogoutRedirect) {
+      sessionStorage.removeItem('logout-redirect');
+      setCheckingToken(false);
+      return;
+    }
+
     const token = Cookies.get('token');
     if (!token) {
       setCheckingToken(false);
