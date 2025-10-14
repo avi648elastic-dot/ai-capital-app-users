@@ -164,14 +164,9 @@ const nextConfig = {
     ];
   },
 
-  // Rewrites for API optimization
+  // Rewrites for API optimization (removed Stripe proxy - using direct calls)
   async rewrites() {
-    return [
-      {
-        source: '/api/stripe/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/stripe/:path*`,
-      },
-    ];
+    return [];
   },
 
   // Environment variables
