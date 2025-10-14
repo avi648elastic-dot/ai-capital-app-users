@@ -270,7 +270,7 @@ export default function PortfolioAnalysis() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setPortfolio(response.data.portfolio || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching portfolio:', error);
     } finally {
       setLoading(false);
@@ -306,12 +306,12 @@ export default function PortfolioAnalysis() {
         performance: response.data.portfolioPerformance?.length || 0,
         risk: response.data.riskAssessment?.overallRisk || 'Unknown'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ [ANALYTICS] Error fetching analytics data:', error);
       console.error('❌ [ANALYTICS] Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data
+        message: error?.message || 'Unknown error',
+        status: error?.response?.status,
+        data: error?.response?.data
       });
     } finally {
       if (isRefresh) {
