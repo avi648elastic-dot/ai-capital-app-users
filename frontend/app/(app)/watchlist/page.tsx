@@ -54,6 +54,7 @@ export default function Watchlist() {
   const [alertType, setAlertType] = useState<'high' | 'low' | 'both'>('both');
   const [highPrice, setHighPrice] = useState('');
   const [lowPrice, setLowPrice] = useState('');
+  const [savingAlert, setSavingAlert] = useState(false);
 
   const showToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
     const id = Date.now();
