@@ -51,6 +51,9 @@ export default function Watchlist() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [quickAlerts, setQuickAlerts] = useState<Record<string, { high: string; low: string }>>({});
   const [selectedStock, setSelectedStock] = useState<WatchlistItem | null>(null);
+  const [alertType, setAlertType] = useState<'high' | 'low' | 'both'>('both');
+  const [highPrice, setHighPrice] = useState('');
+  const [lowPrice, setLowPrice] = useState('');
 
   const showToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
     const id = Date.now();
