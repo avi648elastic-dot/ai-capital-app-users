@@ -94,14 +94,6 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@headlessui/react'],
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
   },
 
   // Headers for performance
@@ -186,6 +178,20 @@ const nextConfig = {
   // TypeScript configuration
   typescript: {
     ignoreBuildErrors: false,
+  },
+  
+  // Skip trailing slash to avoid export issues
+  trailingSlash: false,
+  
+  // Skip error page generation during export
+  exportPathMap: async function (
+    defaultPathMap,
+    { dev, dir, outDir, distDir, buildId }
+  ) {
+    // Remove error pages from export
+    const pathMap = { ...defaultPathMap };
+    delete pathMap['/_error'];
+    return pathMap;
   },
 
   // Performance monitoring
