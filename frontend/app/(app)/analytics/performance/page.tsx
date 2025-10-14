@@ -232,7 +232,7 @@ export default function Performance() {
                     {formatPercentage(portfolioMetrics.volatility)}
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
-                    Annualized
+                    Annualized Volatility
                   </p>
                 </div>
                 <Activity className="w-8 h-8 text-blue-400" />
