@@ -82,7 +82,7 @@ export default function UpgradePage() {
       'premium': Zap,
       'premium+': Crown
     };
-    return icons[planId] || Shield;
+    return icons[planId as keyof typeof icons] || Shield;
   };
 
   const getPlanColor = (planId: string) => {
@@ -91,7 +91,7 @@ export default function UpgradePage() {
       'premium': 'from-blue-600 to-blue-700',
       'premium+': 'from-purple-600 to-purple-700'
     };
-    return colors[planId] || 'from-slate-600 to-slate-700';
+    return colors[planId as keyof typeof colors] || 'from-slate-600 to-slate-700';
   };
 
   const handleUpgrade = async (plan: SubscriptionPlan) => {
