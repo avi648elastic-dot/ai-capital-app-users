@@ -4,7 +4,10 @@ import { OAuth2Client } from 'google-auth-library';
 import User from '../models/User';
 
 const router = Router();
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID ||
+    '749170274091-iekr52ik39mg0gvs7amd67naiuqnr998.apps.googleusercontent.com'
+);
 
 // Google OAuth login/signup
 router.post('/google', async (req, res) => {

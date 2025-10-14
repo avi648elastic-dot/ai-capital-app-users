@@ -2,6 +2,8 @@
 const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com',
+    // Public by design: Google OAuth Client ID (used by Google Identity Services on client)
+    NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '749170274091-iekr52ik39mg0gvs7amd67naiuqnr998.apps.googleusercontent.com',
   },
   // Force environment variables to be loaded
   publicRuntimeConfig: {
