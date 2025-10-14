@@ -48,7 +48,7 @@ class PerformanceMonitor {
       
       // Override res.end to capture response time
       const originalEnd = res.end.bind(res);
-      res.end = function(chunk?: any, encoding?: any) {
+      res.end = function(chunk?: any, encoding?: any): Response {
         const responseTime = Date.now() - startTime;
         
         // Record metrics
@@ -73,7 +73,7 @@ class PerformanceMonitor {
           loggerService.error(`🚨 [VERY SLOW REQUEST] ${req.method} ${req.originalUrl} - ${responseTime}ms`);
         }
 
-        originalEnd(chunk, encoding);
+        return originalEnd(chunk, encoding);
       };
 
       next();
@@ -91,11 +91,11 @@ class PerformanceMonitor {
       this.metrics = this.metrics.slice(-this.MAX_METRICS);
     }
 
-    // Store in Redis for persistence (async)
+    // Store in Redis for persistence (async) - using simple key-value storage
     setImmediate(async () => {
       try {
-        await redisService.lpush('performance:api', JSON.stringify(metrics));
-        await redisService.ltrim('performance:api', 0, 999); // Keep last 1000
+        const key = `perf:api:${Date.now()}`;
+        await redisService.set(key, JSON.stringify(metrics), 86400000); // 24 hour TTL
       } catch (error) {
         loggerService.error('❌ [PERFORMANCE] Failed to store metrics:', error);
       }
@@ -125,8 +125,8 @@ class PerformanceMonitor {
     // Store in Redis for persistence (async)
     setImmediate(async () => {
       try {
-        await redisService.lpush('performance:database', JSON.stringify(metrics));
-        await redisService.ltrim('performance:database', 0, 999); // Keep last 1000
+        const key = `perf:db:${Date.now()}`;
+        await redisService.set(key, JSON.stringify(metrics), 86400000); // 24 hour TTL
       } catch (error) {
         loggerService.error('❌ [PERFORMANCE] Failed to store DB metrics:', error);
       }
@@ -134,7 +134,7 @@ class PerformanceMonitor {
   }
 
   /**
-   * Get performance statistics
+   * Get performance statistics from in-memory metrics
    */
   async getPerformanceStats(timeframe: 'hour' | 'day' | 'week' = 'hour') {
     const now = new Date();
@@ -152,9 +152,9 @@ class PerformanceMonitor {
         break;
     }
 
-    // Get metrics from Redis
-    const apiMetrics = await this.getAPIMetricsFromRedis(cutoffTime);
-    const dbMetrics = await this.getDatabaseMetricsFromRedis(cutoffTime);
+    // Filter in-memory metrics
+    const apiMetrics = this.metrics.filter(m => new Date(m.timestamp) > cutoffTime);
+    const dbMetrics = this.dbMetrics.filter(m => new Date(m.timestamp) > cutoffTime);
 
     return {
       timeframe,
@@ -172,36 +172,6 @@ class PerformanceMonitor {
         operationsByCollection: this.getOperationsByCollection(dbMetrics)
       }
     };
-  }
-
-  /**
-   * Get API metrics from Redis
-   */
-  private async getAPIMetricsFromRedis(cutoffTime: Date): Promise<PerformanceMetrics[]> {
-    try {
-      const metrics = await redisService.lrange('performance:api', 0, -1);
-      return metrics
-        .map(m => JSON.parse(m))
-        .filter((m: PerformanceMetrics) => new Date(m.timestamp) > cutoffTime);
-    } catch (error) {
-      loggerService.error('❌ [PERFORMANCE] Failed to get API metrics:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get database metrics from Redis
-   */
-  private async getDatabaseMetricsFromRedis(cutoffTime: Date): Promise<DatabaseMetrics[]> {
-    try {
-      const metrics = await redisService.lrange('performance:database', 0, -1);
-      return metrics
-        .map(m => JSON.parse(m))
-        .filter((m: DatabaseMetrics) => new Date(m.timestamp) > cutoffTime);
-    } catch (error) {
-      loggerService.error('❌ [PERFORMANCE] Failed to get DB metrics:', error);
-      return [];
-    }
   }
 
   /**
@@ -306,15 +276,9 @@ class PerformanceMonitor {
    * Clear old metrics
    */
   async clearOldMetrics() {
-    try {
-      await redisService.del('performance:api');
-      await redisService.del('performance:database');
-      this.metrics = [];
-      this.dbMetrics = [];
-      loggerService.info('🧹 [PERFORMANCE] Cleared old metrics');
-    } catch (error) {
-      loggerService.error('❌ [PERFORMANCE] Failed to clear metrics:', error);
-    }
+    this.metrics = [];
+    this.dbMetrics = [];
+    loggerService.info('🧹 [PERFORMANCE] Cleared old metrics');
   }
 }
 

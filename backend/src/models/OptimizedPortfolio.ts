@@ -194,9 +194,10 @@ OptimizedPortfolioSchema.pre('save', function(next) {
 });
 
 // 🚀 QUERY OPTIMIZATION MIDDLEWARE
-OptimizedPortfolioSchema.pre(/^find/, function() {
+OptimizedPortfolioSchema.pre(/^find/, function(this: any) {
   // Apply default sorting for better performance
-  if (!this.getOptions().sort) {
+  const options = this.getOptions ? this.getOptions() : {};
+  if (!options.sort && this.sort) {
     this.sort({ createdAt: -1 });
   }
 });

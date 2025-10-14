@@ -47,7 +47,7 @@ export function createCacheMiddleware(options: CacheOptions = {}) {
         // Cache the response asynchronously (don't block response)
         setImmediate(async () => {
           try {
-            await redisService.setex(cacheKey, ttl, JSON.stringify(body));
+            await redisService.set(cacheKey, JSON.stringify(body), ttl * 1000);
             console.log(`🚀 [CACHE STORED] ${req.originalUrl} (TTL: ${ttl}s)`);
           } catch (error) {
             console.error('❌ [CACHE ERROR] Failed to store cache:', error);

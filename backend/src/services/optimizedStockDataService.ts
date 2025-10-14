@@ -84,7 +84,7 @@ class OptimizedStockDataService {
       
       if (data) {
         // Cache for 5 minutes
-        await redisService.setex(cacheKey, 300, JSON.stringify(data));
+        await redisService.set(cacheKey, JSON.stringify(data), 300000);
         loggerService.info(`🚀 [STOCK CACHE MISS] ${symbol} - fetched from ${data.source}`);
       }
       
@@ -145,7 +145,7 @@ class OptimizedStockDataService {
         for (const [symbol, data] of alphaVantageData) {
           results.set(symbol, data);
           // Cache immediately
-          await redisService.setex(`stock:${symbol}`, 300, JSON.stringify(data));
+          await redisService.set(`stock:${symbol}`, JSON.stringify(data), 300000);
         }
       } catch (error) {
         loggerService.warn(`⚠️ [BATCH ALPHA VANTAGE FAILED]:`, error);
@@ -156,7 +156,7 @@ class OptimizedStockDataService {
             const data = await this.fetchStockDataWithFallback(symbol);
             if (data) {
               results.set(symbol, data);
-              await redisService.setex(`stock:${symbol}`, 300, JSON.stringify(data));
+              await redisService.set(`stock:${symbol}`, JSON.stringify(data), 300000);
             }
           } catch (err) {
             loggerService.error(`❌ [FALLBACK FETCH FAILED] ${symbol}:`, err);
