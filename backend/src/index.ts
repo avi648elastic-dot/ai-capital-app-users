@@ -143,7 +143,14 @@ app.use(limiter);
 // 🚨 EMERGENCY FIX: Ultra-permissive CORS for immediate login fix
 app.use(
   cors({
-    origin: true, // Allow ALL origins temporarily for login fix
+    origin: [
+      'https://ai-capital-app7.vercel.app',
+      'https://ai-capital.info',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
@@ -173,23 +180,50 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // 🚨 EMERGENCY FIX: Explicit preflight handler for login
 app.options('*', (req, res) => {
-  console.log(`🔄 [PREFLIGHT] Handling OPTIONS request for: ${req.url} from origin: ${req.headers.origin}`);
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://ai-capital-app7.vercel.app',
+    'https://ai-capital.info',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001'
+  ];
   
-  // Set all necessary CORS headers
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token, Cache-Control, Pragma');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Max-Age', '86400'); // 24 hours
+  console.log(`🔄 [PREFLIGHT] Handling OPTIONS request for: ${req.url} from origin: ${origin}`);
   
-  console.log(`✅ [PREFLIGHT] CORS headers set for origin: ${req.headers.origin}`);
-  res.status(204).send();
+  if (origin && allowedOrigins.includes(origin)) {
+    // Set all necessary CORS headers for allowed origin
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token, Cache-Control, Pragma');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // 24 hours
+    
+    console.log(`✅ [PREFLIGHT] CORS headers set for allowed origin: ${origin}`);
+    res.status(204).send();
+  } else {
+    console.log(`❌ [PREFLIGHT] Origin not allowed: ${origin}`);
+    res.status(403).json({ error: 'Origin not allowed' });
+  }
 });
 
 // 🚨 EMERGENCY FIX: Additional CORS headers for all responses
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://ai-capital-app7.vercel.app',
+    'https://ai-capital.info',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001'
+  ];
+  
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
   next();
 });
 
