@@ -7,6 +7,7 @@ import {
   Crown, Menu, X, LogOut, Eye, PieChart,
   Activity, AlertTriangle, Star, User, Settings, Sparkles
 } from 'lucide-react';
+import { logout } from '@/lib/auth';
 import { useDevice } from '@/hooks/useDevice';
 import Image from 'next/image';
 import NotificationCenter from './NotificationCenter';
@@ -242,7 +243,7 @@ export default function ResponsiveNavigation({
           
           {/* Logout Button */}
           <button
-            onClick={onLogout}
+            onClick={() => logout()}
             className="w-full flex items-center space-x-3 px-3 py-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
           >
             <LogOut className="w-5 h-5" />
@@ -421,7 +422,7 @@ export default function ResponsiveNavigation({
               {/* Logout Button */}
               <button
                 onClick={() => {
-                  onLogout();
+                  logout();
                   setIsMobileMenuOpen(false);
                 }}
                 className="w-full flex items-center space-x-4 px-6 py-5 text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-red-600/20 hover:to-red-500/20 rounded-xl transition-all duration-300 border border-transparent hover:border-red-500/50 hover:shadow-lg hover:scale-[1.02]"

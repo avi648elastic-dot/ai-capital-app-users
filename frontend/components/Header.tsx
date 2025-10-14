@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { LogOut, User, Settings, TrendingUp, BarChart3 } from 'lucide-react';
 import Cookies from 'js-cookie';
+import { logout } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import ThemeToggle from './ThemeToggle';
@@ -25,10 +26,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const router = useRouter();
 
-  const handleLogout = () => {
-    Cookies.remove('token');
-    router.push('/');
-  };
+  const handleLogout = () => logout();
 
   const Logo = () => (
     <div className="flex items-center space-x-3">

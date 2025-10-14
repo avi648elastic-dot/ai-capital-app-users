@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { logout } from '@/lib/auth';
 import ResponsiveNavigation from '@/components/ResponsiveNavigation';
 import MarketStatusBar from '@/components/MarketStatusBar';
 import TourTrigger from '@/components/TourTrigger';
@@ -21,10 +22,7 @@ export default function AppLayout({
   const pathname = usePathname();
   const { hasSeenTour } = useTour();
 
-  const handleLogout = () => {
-    Cookies.remove('token');
-    router.push('/');
-  };
+  const handleLogout = () => logout();
 
   useEffect(() => {
     const fetchUser = async () => {
