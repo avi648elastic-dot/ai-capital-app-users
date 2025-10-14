@@ -166,7 +166,7 @@ class HistoricalDataService {
         }));
       }
 
-      // If not enough data, fetch from API
+      // If not enough data, fetch from API (gap fill)
       console.log(`🔍 [HISTORICAL] Fetching fresh data for ${ticker}`);
       let prices = await this.getHistoricalDataFromFinnhub(ticker, days);
       

@@ -1,3 +1,71 @@
+// Per-stock endpoint: accurate 7/30/60/90 metrics from 90d closes with Redis cache
+router.get('/stock', authenticateToken, async (req, res) => {
+  try {
+    const symbol = (req.query.symbol as string || '').toUpperCase();
+    const days = parseInt(req.query.days as string) || 90;
+    if (!symbol) {
+      return res.status(400).json({ message: 'symbol is required' });
+    }
+
+    const cacheKey = `perf:stock:${symbol}:${days}`;
+    const cached = await redisService.get(cacheKey);
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
+
+    const history = await historicalDataService.getStockHistory(symbol, 90);
+    if (history.length === 0) {
+      return res.status(404).json({ message: 'No historical data', symbol });
+    }
+
+    const slice = history.slice(-Math.min(days, history.length));
+    const first = slice[0].price;
+    const last = slice[slice.length - 1].price;
+    const totalReturn = first > 0 ? ((last - first) / first) * 100 : 0;
+
+    // Daily log returns for volatility
+    const logReturns: number[] = [];
+    for (let i = 1; i < slice.length; i++) {
+      logReturns.push(Math.log(slice[i].price / slice[i - 1].price));
+    }
+    const mean = logReturns.reduce((a, b) => a + b, 0) / Math.max(1, logReturns.length);
+    const variance = logReturns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / Math.max(1, logReturns.length);
+    const volatility = Math.sqrt(variance) * Math.sqrt(252) * 100; // %
+    const riskFree = 2.0;
+    const annReturn = (Math.exp(mean * 252) - 1) * 100; // %
+    const sharpeRatio = volatility > 0 ? (annReturn - riskFree) / volatility : 0;
+
+    // Max drawdown
+    let peak = slice[0].price;
+    let maxDD = 0;
+    for (const p of slice) {
+      peak = Math.max(peak, p.price);
+      maxDD = Math.max(maxDD, (peak - p.price) / peak * 100);
+    }
+
+    const topPrice = Math.max(...history.map(h => h.price));
+    const currentPrice = history[history.length - 1].price;
+
+    const result = {
+      symbol,
+      days,
+      series: slice,
+      metrics: {
+        totalReturn,
+        volatility,
+        sharpeRatio,
+        maxDrawdown: maxDD,
+        topPrice,
+        currentPrice
+      }
+    };
+
+    await redisService.set(cacheKey, JSON.stringify(result), 10 * 60 * 1000);
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Failed to compute stock metrics', error: error.message });
+  }
+});
 import express from 'express';
 import Portfolio from '../models/Portfolio';
 import { authenticateToken } from '../middleware/auth';
@@ -5,6 +73,7 @@ import { googleFinanceFormulasService } from '../services/googleFinanceFormulasS
 import { volatilityService } from '../services/volatilityService';
 import { loggerService } from '../services/loggerService';
 import { historicalDataService } from '../services/historicalDataService';
+import { redisService } from '../services/redisService';
 
 const router = express.Router();
 
@@ -16,6 +85,13 @@ router.get('/', authenticateToken, async (req, res) => {
     
     loggerService.info(`🔍 [PERFORMANCE] Calculating performance for user ${userId}, ${days} days`);
     
+    // Try cache first (portfolio-level)
+    const cacheKey = `perf:portfolio:${userId}:${days}`;
+    const cached = await redisService.get(cacheKey);
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
+
     // Get user's portfolio
     const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
     
@@ -271,6 +347,8 @@ router.get('/', authenticateToken, async (req, res) => {
       isFallbackData: portfolioMetrics?.isFallbackData || false
     });
     
+    // Cache successful response for 10 minutes
+    await redisService.set(cacheKey, JSON.stringify(response), 10 * 60 * 1000);
     res.json(response);
 
   } catch (error: any) {
