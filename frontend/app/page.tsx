@@ -145,7 +145,7 @@ export default function Page() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Image src="/logo.png" alt="AI Capital" width={48} height={48} className="object-contain" />
+              <Image src="/logo.png" alt="AI Capital" width={56} height={56} className="object-contain rounded" />
               <div className="flex items-center space-x-4">
                 <LanguageSelector />
               </div>
@@ -171,7 +171,7 @@ export default function Page() {
                   onClick={() => setIsLogin(true)}
                   className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                     isLogin 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105' 
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105 ring-2 ring-blue-400/40' 
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
@@ -181,7 +181,7 @@ export default function Page() {
                   onClick={() => setIsLogin(false)}
                   className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                     !isLogin 
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105' 
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105 ring-2 ring-blue-400/40' 
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
@@ -214,7 +214,7 @@ export default function Page() {
                   </div>
                 )}
 
-                <div>
+                <div className="grid grid-cols-1 gap-4">
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     {t('auth.email')}
                   </label>
@@ -228,7 +228,7 @@ export default function Page() {
                   />
                 </div>
 
-                <div>
+                <div className="grid grid-cols-1 gap-4">
                   <label className="block text-sm font-medium text-slate-300 mb-2">
                     {t('auth.password')}
                   </label>
@@ -245,7 +245,7 @@ export default function Page() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full btn-primary flex items-center justify-center space-x-2 py-3"
+                  className="w-full btn-primary flex items-center justify-center space-x-2 py-3 hover:shadow-xl hover:shadow-blue-500/20"
                 >
                   {loading ? (
                     <>
