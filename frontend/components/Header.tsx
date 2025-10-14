@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import ThemeToggle from './ThemeToggle';
-import AcaciaLogo from './AcaciaLogo';
+import TechLogo from './TechLogo';
 import NotificationCenter from './NotificationCenter';
 import NotificationPanel from './NotificationPanel';
 import Leaderboard from './Leaderboard';
@@ -30,22 +30,17 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
     router.push('/');
   };
 
-  const Logo = () => {
-    // Professional Acacia Tree logo with perfect transparency
-    return (
-      <div className="flex items-center space-x-3">
-        <div className="relative w-12 h-12">
-          <AcaciaLogo size={48} className="drop-shadow-lg" />
-        </div>
-        <div>
-          <h1 className="logo-text text-xl bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent font-bold">
-            AI-Capital
-          </h1>
-          <p className="text-xs text-slate-400 font-medium">Professional Portfolio Management</p>
-        </div>
+  const Logo = () => (
+    <div className="flex items-center space-x-3">
+      <div className="relative w-12 h-12">
+        <TechLogo size={48} className="drop-shadow-[0_0_8px_rgba(96,165,250,0.25)]" />
       </div>
-    );
-  };
+      <div>
+        <h1 className="logo-text text-xl font-bold tracking-wide text-slate-200">AI CAPITAL</h1>
+        <p className="text-xs text-slate-400 font-medium">Professional Portfolio Management</p>
+      </div>
+    </div>
+  );
 
   return (
     <header className="bg-slate-900/95 backdrop-blur-md border-b border-slate-800/50 sticky top-0 z-50">

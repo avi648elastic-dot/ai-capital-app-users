@@ -294,11 +294,11 @@ export class SchedulerService {
       
       console.log(`📊 [SCHEDULER] Updating historical data for ${uniqueTickers.length} tickers`);
       
-      // Update historical data for each ticker
+      // Update historical data for each ticker (store last 120 days)
       for (const ticker of uniqueTickers) {
         try {
-          // Get 90 days of historical data
-          const historicalData = await historicalDataService.getHistoricalData(ticker, 90);
+          // Get 120 days of historical data
+          const historicalData = await historicalDataService.getHistoricalData(ticker, 120);
           if (historicalData.length > 0) {
             console.log(`✅ [SCHEDULER] Updated ${historicalData.length} days of data for ${ticker}`);
           }
