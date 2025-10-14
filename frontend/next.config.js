@@ -175,8 +175,8 @@ const nextConfig = {
     NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '749170274091-iekr52ik39mg0gvs7amd67naiuqnr998.apps.googleusercontent.com',
   },
 
-  // Output configuration
-  output: 'standalone',
+  // Output configuration (standalone mode disabled for Vercel)
+  // output: 'standalone',
   
   // ESLint configuration
   eslint: {
