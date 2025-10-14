@@ -30,7 +30,7 @@ interface User {
   name: string;
   subscriptionTier: 'free' | 'premium' | 'premium+';
   isAdmin?: boolean;
-  portfolioType?: 'solid' | 'risky';
+  portfolioType?: 'solid' | 'risky' | 'imported';
   avatarUrl?: string;
 }
 
@@ -47,7 +47,7 @@ interface PortfolioItem {
   action: 'BUY' | 'HOLD' | 'SELL';
   reason?: string;
   color?: string;
-  portfolioType: 'solid' | 'risky';
+  portfolioType: 'solid' | 'risky' | 'imported';
 }
 
 interface PortfolioTotals {
