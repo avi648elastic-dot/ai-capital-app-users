@@ -50,6 +50,7 @@ export default function Watchlist() {
   // REMOVED COMPLEX MODAL - MAJOR'S REQUEST
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [quickAlerts, setQuickAlerts] = useState<Record<string, { high: string; low: string }>>({});
+  const [selectedStock, setSelectedStock] = useState<WatchlistItem | null>(null);
 
   const showToast = (type: 'success' | 'error' | 'warning' | 'info', message: string) => {
     const id = Date.now();
@@ -647,17 +648,17 @@ export default function Watchlist() {
               <div className="mb-6 p-4 sm:p-6 bg-white/10 [data-theme='light']:bg-gray-900/10 rounded-2xl border-2 border-white/20 [data-theme='light']:border-gray-300 backdrop-blur-sm">
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-black text-white [data-theme='light']:text-gray-900 mb-2">
-                    {selectedStock.ticker}
+                    {selectedStock?.ticker || 'N/A'}
                   </div>
                   <div className="text-sm sm:text-base text-white/80 [data-theme='light']:text-gray-700 mb-3 font-medium">
-                    {selectedStock.name}
+                    {selectedStock?.name || 'N/A'}
                   </div>
                   <div className="bg-white/20 [data-theme='light']:bg-gray-800/20 rounded-xl p-3 sm:p-4">
                     <div className="text-xs sm:text-sm text-white/70 [data-theme='light']:text-gray-400 mb-1 font-medium">
                       CURRENT PRICE
                     </div>
                     <div className="text-2xl sm:text-3xl font-black text-white [data-theme='light']:text-gray-900">
-                      ${selectedStock.currentPrice?.toFixed(2) || 'N/A'}
+                      ${selectedStock?.currentPrice?.toFixed(2) || 'N/A'}
                     </div>
                   </div>
                 </div>
@@ -722,7 +723,7 @@ export default function Watchlist() {
                         step="0.01"
                         value={highPrice}
                         onChange={(e) => setHighPrice(e.target.value)}
-                        placeholder={(selectedStock.currentPrice * 1.1).toFixed(2)}
+                        placeholder={selectedStock?.currentPrice ? (selectedStock.currentPrice * 1.1).toFixed(2) : '0.00'}
                         className="w-full pl-12 pr-4 py-4 sm:py-5 text-xl sm:text-2xl font-black text-white [data-theme='light']:text-gray-900 bg-white/20 [data-theme='light']:bg-gray-800/20 rounded-xl border-2 border-green-400/30 [data-theme='light']:border-green-300 focus:border-green-400 focus:ring-2 focus:ring-green-400/20 outline-none"
                       />
                     </div>
@@ -744,7 +745,7 @@ export default function Watchlist() {
                         step="0.01"
                         value={lowPrice}
                         onChange={(e) => setLowPrice(e.target.value)}
-                        placeholder={(selectedStock.currentPrice * 0.9).toFixed(2)}
+                        placeholder={selectedStock?.currentPrice ? (selectedStock.currentPrice * 0.9).toFixed(2) : '0.00'}
                         className="w-full pl-12 pr-4 py-4 sm:py-5 text-xl sm:text-2xl font-black text-white [data-theme='light']:text-gray-900 bg-white/20 [data-theme='light']:bg-gray-800/20 rounded-xl border-2 border-red-400/30 [data-theme='light']:border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none"
                       />
                     </div>
