@@ -60,6 +60,12 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
 
   const markAsRead = async (notificationId: string) => {
     try {
+      // 🔧 Safety check: Ensure notificationId is valid
+      if (!notificationId) {
+        console.error('❌ Cannot mark notification as read: ID is undefined or null');
+        return;
+      }
+      
       const token = Cookies.get('token');
       await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
@@ -98,6 +104,12 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
 
   const deleteNotification = async (notificationId: string) => {
     try {
+      // 🔧 Safety check: Ensure notificationId is valid
+      if (!notificationId) {
+        console.error('❌ Cannot delete notification: ID is undefined or null');
+        return;
+      }
+      
       const token = Cookies.get('token');
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}`, {
         headers: { Authorization: `Bearer ${token}` }

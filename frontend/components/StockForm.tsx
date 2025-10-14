@@ -182,8 +182,11 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
   };
 
   return (
-    <div className="max-w-md sm:max-w-2xl">
-      <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">Add New Stock</h2>
+    <div className="max-w-2xl">
+      <div className="mb-4 sm:mb-5">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-white">Add New Stock</h2>
+        <p className="mt-1 text-xs sm:text-sm text-slate-400">Enter details below. Real-time price is fetched automatically.</p>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -253,13 +256,13 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
             </div>
           </div>
         ) : (
-          <div className="bg-slate-800/50 rounded-lg p-2 sm:p-3 border border-slate-700/50">
+          <div className="bg-slate-800/60 rounded-xl p-3 sm:p-4 border border-slate-700">
             <div className="flex items-center space-x-2">
               <span className="text-xs sm:text-sm font-medium text-slate-300">Adding to:</span>
               <span className={`px-3 py-1 text-xs font-bold rounded-full ${
                 formData.portfolioType === 'risky' 
-                  ? 'text-orange-300 bg-orange-900/50 border border-orange-500/30' 
-                  : 'text-blue-300 bg-blue-900/50 border border-blue-500/30'
+                  ? 'text-orange-200 bg-orange-900/40 border border-orange-500/30' 
+                  : 'text-blue-200 bg-blue-900/40 border border-blue-500/30'
               }`}>
                 {formData.portfolioType === 'risky' ? '⚡ Risky Portfolio' : '🛡️ Solid Portfolio'}
               </span>
@@ -402,18 +405,18 @@ export default function StockForm({ onSubmit, onCancel, isPremium = false, defau
           />
         </div>
 
-        <div className="flex justify-end space-x-3 sm:space-x-4 pt-3 sm:pt-4">
+        <div className="flex justify-end space-x-3 sm:space-x-4 pt-4">
           <button
             type="button"
             onClick={onCancel}
-            className="btn-secondary"
+            className="btn-secondary min-w-[96px]"
             disabled={loading}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="btn-primary"
+            className="btn-primary min-w-[120px]"
             disabled={loading}
           >
             {loading ? 'Adding...' : 'Add Stock'}

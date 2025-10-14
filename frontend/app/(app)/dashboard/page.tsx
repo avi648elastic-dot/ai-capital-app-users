@@ -944,16 +944,21 @@ export default function Dashboard() {
 
       {/* Stock Form Modal */}
       {showStockForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-        <StockForm
-          onSubmit={handleAddStock}
-          onCancel={() => setShowStockForm(false)}
-          isPremium={user?.subscriptionTier === 'premium'}
-          defaultPortfolioType={user?.portfolioType as any || 'solid'}
-          activeTab={activeTab}
-          selectedPortfolioId={selectedPortfolioId}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Dimmed backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowStockForm(false)} />
+          {/* Modal container */}
+          <div className="relative w-full max-w-lg mx-4 overflow-hidden rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-850 to-slate-900 shadow-2xl">
+            <div className="p-5 sm:p-6">
+              <StockForm
+                onSubmit={handleAddStock}
+                onCancel={() => setShowStockForm(false)}
+                isPremium={user?.subscriptionTier === 'premium'}
+                defaultPortfolioType={user?.portfolioType as any || 'solid'}
+                activeTab={activeTab}
+                selectedPortfolioId={selectedPortfolioId}
+              />
+            </div>
           </div>
         </div>
       )}

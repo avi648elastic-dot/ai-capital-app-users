@@ -102,9 +102,14 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
           
           if (fetchedNotifications.length > 0) {
             // 🎉 REAL NOTIFICATIONS FOUND!
-            setNotifications(fetchedNotifications);
-            setUnreadCount(fetchedNotifications.filter((n: Notification) => !n.readAt).length);
-            console.log('✅ [NOTIFICATIONS] Successfully loaded real notifications:', fetchedNotifications.length);
+            // 🔧 Normalize id field (backend returns _id, frontend expects id)
+            const normalizedNotifications = fetchedNotifications.map((n: any) => ({
+              ...n,
+              id: String(n.id || n._id || '')
+            }));
+            setNotifications(normalizedNotifications);
+            setUnreadCount(normalizedNotifications.filter((n: Notification) => !n.readAt).length);
+            console.log('✅ [NOTIFICATIONS] Successfully loaded real notifications:', normalizedNotifications.length);
             return; // Success! Exit the function
           } else {
             // Create some sample notifications for the user
@@ -187,22 +192,29 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   const markAsRead = async (notificationId: string) => {
     try {
+      // 🔧 Safety check: Ensure notificationId is valid
+      if (!notificationId) {
+        console.error('❌ Cannot mark notification as read: ID is undefined or null');
+        return;
+      }
+      
       // 🚨 CRITICAL FIX: Handle sample notifications locally
-      if (notificationId.startsWith('sample')) {
+      const id = String(notificationId);
+      if (id.startsWith('sample')) {
         setNotifications(prev => 
-          prev.map(n => n.id === notificationId ? { ...n, readAt: new Date().toISOString() } : n)
+          prev.map(n => String(n.id) === id ? { ...n, readAt: new Date().toISOString() } : n)
         );
         setUnreadCount(prev => Math.max(0, prev - 1));
         return;
       }
       
       const token = localStorage.getItem('token');
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}/read`, {}, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, readAt: new Date().toISOString() } : n)
+        prev.map(n => String(n.id) === id ? { ...n, readAt: new Date().toISOString() } : n)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
@@ -228,9 +240,16 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   const deleteNotification = async (notificationId: string) => {
     try {
+      // 🔧 Safety check: Ensure notificationId is valid
+      if (!notificationId) {
+        console.error('❌ Cannot delete notification: ID is undefined or null');
+        return;
+      }
+      
       // Handle sample notifications locally
-      if (notificationId.startsWith('sample') || notificationId.startsWith('error')) {
-        setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      const id = String(notificationId);
+      if (id.startsWith('sample') || id.startsWith('error')) {
+        setNotifications(prev => prev.filter(n => String(n.id) !== id));
         setUnreadCount(prev => Math.max(0, prev - 1));
         return;
       }
@@ -238,12 +257,12 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       const token = localStorage.getItem('token');
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
       
-      await axios.delete(`${apiUrl}/api/notifications/${notificationId}`, {
+      await axios.delete(`${apiUrl}/api/notifications/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 10000
       });
       
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setNotifications(prev => prev.filter(n => String(n.id) !== id));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Failed to delete notification:', error);
