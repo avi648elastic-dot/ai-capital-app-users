@@ -214,7 +214,7 @@ export default function Watchlist() {
               <h4 className="text-xl font-semibold text-white mb-2">No stocks in watchlist</h4>
               <p className="text-slate-400 mb-6">Add stocks you want to track to get started</p>
               <button
-                onClick={() => document.querySelector('input[placeholder*="ticker"]')?.focus()}
+                onClick={() => (document.querySelector('input[placeholder*="ticker"]') as HTMLInputElement)?.focus()}
                 className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 mx-auto"
               >
                 <Plus className="w-5 h-5" />
