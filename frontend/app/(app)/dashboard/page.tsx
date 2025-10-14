@@ -204,7 +204,7 @@ export default function Dashboard() {
       if (pt && tier === 'free') {
         setActiveTab(pt);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching user data:', error);
       Cookies.remove('token');
       router.push('/');
@@ -220,7 +220,7 @@ export default function Dashboard() {
       });
       
       setUserReputation(response.data.reputation);
-    } catch (error) {
+    } catch (error: any) {
       // Don't show error to user - reputation is optional
     }
   };
@@ -446,7 +446,7 @@ export default function Dashboard() {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` }
       });
       fetchPortfolio();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating stock:', error);
     }
   };
@@ -480,7 +480,7 @@ export default function Dashboard() {
       fetchPortfolio();
       fetchUserReputation();
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ [DASHBOARD] Error deleting stock:', error);
       alert('Failed to delete stock. Please try again.');
     }
@@ -497,7 +497,7 @@ export default function Dashboard() {
         // Refresh user data
         fetchUserData();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error upgrading subscription:', error);
       alert('Error upgrading subscription. Please try again.');
     }
@@ -516,9 +516,9 @@ export default function Dashboard() {
       });
       setDebugInfo(response.data);
       console.log('🔍 [DEBUG] Onboarding status:', response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ [DEBUG] Error checking status:', error);
-      setDebugInfo({ error: error.message });
+      setDebugInfo({ error: error?.message || 'Unknown error' });
     }
   };
 
@@ -716,7 +716,7 @@ export default function Dashboard() {
                     try {
                       console.log('🔍 [DASHBOARD] Toggling multi-portfolio view:', !showMultiPortfolio);
                       setShowMultiPortfolio(!showMultiPortfolio);
-                    } catch (error) {
+                    } catch (error: any) {
                       console.error('❌ [DASHBOARD] Error toggling multi-portfolio view:', error);
                     }
                   }}
@@ -801,7 +801,7 @@ export default function Dashboard() {
                 try {
                   console.log('🔍 [DASHBOARD] Portfolio selected:', portfolio);
                   setSelectedMultiPortfolio(portfolio);
-                } catch (error) {
+                } catch (error: any) {
                   console.error('❌ [DASHBOARD] Error handling portfolio selection:', error);
                 }
               }}
