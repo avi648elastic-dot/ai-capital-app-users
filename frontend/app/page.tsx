@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Crown } from 'lucide-react';
-import TechLogo from '@/components/TechLogo';
+import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from '@/components/LanguageSelector';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
@@ -145,7 +145,7 @@ export default function Page() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <TechLogo size={48} className="text-white" />
+              <Image src="/logo.png" alt="AI Capital" width={48} height={48} className="object-contain" />
               <div className="flex items-center space-x-4">
                 <LanguageSelector />
               </div>
