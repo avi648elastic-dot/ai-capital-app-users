@@ -145,7 +145,7 @@ export default function Page() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Image src="/brand/logo.png?v=2" alt="AI Capital" width={56} height={56} className="object-contain rounded" />
+              <Image src="/logo.png?v=2" alt="AI Capital" width={56} height={56} className="object-contain rounded" />
               <div className="flex items-center space-x-4">
                 <LanguageSelector />
               </div>

@@ -17,7 +17,7 @@ const AcaciaLogo: React.FC<AcaciaLogoProps> = ({ className = '', size = 'md' }) 
 
   return (
     <div className={className} style={{ width: logoSize, height: logoSize }}>
-      <Image src="/brand/logo.png?v=2" alt="AI Capital" width={logoSize} height={logoSize} className="object-contain w-full h-full" />
+      <Image src="/logo.png?v=2" alt="AI Capital" width={logoSize} height={logoSize} className="object-contain w-full h-full" />
     </div>
   );
 };
