@@ -328,8 +328,8 @@ router.get('/plans', async (req: Request, res: Response) => {
       {
         id: 'premium',
         name: 'Premium',
-        price: 29.99,
-        priceId: process.env.STRIPE_PREMIUM_PRICE_ID || 'price_xxxxxxxxx',
+        price: 9.99,
+        priceId: process.env.STRIPE_PREMIUM_PRICE_ID || 'price_1SHKPDJoluh5VDRCioKOKTOH',
         features: [
           'Up to 15 stocks per portfolio',
           'Advanced analytics',
@@ -346,8 +346,8 @@ router.get('/plans', async (req: Request, res: Response) => {
       {
         id: 'premium+',
         name: 'Premium+',
-        price: 49.99,
-        priceId: process.env.STRIPE_PREMIUM_PLUS_PRICE_ID || 'price_xxxxxxxxx',
+        price: 19.99,
+        priceId: process.env.STRIPE_PREMIUM_PLUS_PRICE_ID || 'price_1SHKPnJoluh5VDRCYcSxV4jb',
         features: [
           'Unlimited stocks',
           'Advanced risk analysis',
