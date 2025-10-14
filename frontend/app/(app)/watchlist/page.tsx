@@ -726,7 +726,7 @@ export default function Watchlist() {
                         step="0.01"
                         value={highPrice}
                         onChange={(e) => setHighPrice(e.target.value)}
-                        placeholder={selectedStock && selectedStock.currentPrice ? (selectedStock.currentPrice * 1.1).toFixed(2) : '0.00'}
+                        placeholder="0.00"
                         className="w-full pl-12 pr-4 py-4 sm:py-5 text-xl sm:text-2xl font-black text-white [data-theme='light']:text-gray-900 bg-white/20 [data-theme='light']:bg-gray-800/20 rounded-xl border-2 border-green-400/30 [data-theme='light']:border-green-300 focus:border-green-400 focus:ring-2 focus:ring-green-400/20 outline-none"
                       />
                     </div>
@@ -748,7 +748,7 @@ export default function Watchlist() {
                         step="0.01"
                         value={lowPrice}
                         onChange={(e) => setLowPrice(e.target.value)}
-                        placeholder={selectedStock && selectedStock.currentPrice ? (selectedStock.currentPrice * 0.9).toFixed(2) : '0.00'}
+                        placeholder="0.00"
                         className="w-full pl-12 pr-4 py-4 sm:py-5 text-xl sm:text-2xl font-black text-white [data-theme='light']:text-gray-900 bg-white/20 [data-theme='light']:bg-gray-800/20 rounded-xl border-2 border-red-400/30 [data-theme='light']:border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-400/20 outline-none"
                       />
                     </div>
