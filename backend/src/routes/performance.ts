@@ -4,6 +4,7 @@ import { authenticateToken } from '../middleware/auth';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 import { volatilityService } from '../services/volatilityService';
 import { loggerService } from '../services/loggerService';
+import { historicalDataService } from '../services/historicalDataService';
 
 const router = express.Router();
 
@@ -80,8 +81,18 @@ router.get('/', authenticateToken, async (req, res) => {
         continue;
       }
 
-      // Calculate performance for the requested timeframe from 90-day data
-      const timeframeReturn = calculateTimeframeReturn(stockData, days);
+      // Calculate performance for the requested timeframe from real close prices (fallback to service est.)
+      let timeframeReturn = calculateTimeframeReturn(stockData, days);
+      try {
+        const history = await historicalDataService.getStockHistory(stock.ticker, 90);
+        if (history.length >= 2) {
+          // Compute returns based on close prices
+          const recentSlice = history.slice(-Math.min(days, history.length));
+          const first = recentSlice[0].price;
+          const last = recentSlice[recentSlice.length - 1].price;
+          timeframeReturn = first > 0 ? ((last - first) / first) * 100 : timeframeReturn;
+        }
+      } catch {}
       
       // Get detailed volatility metrics from our volatility service
       let volatilityMetrics = null;
@@ -105,6 +116,14 @@ router.get('/', authenticateToken, async (req, res) => {
       const sharpeRatio = volatility > 0 ? (timeframeReturn - riskFreeRate) / volatility : 0;
       
       // Calculate max drawdown for the timeframe
+      // Calculate top price from 90d closes
+      let topPrice = stockData.current;
+      try {
+        const history = await historicalDataService.getStockHistory(stock.ticker, 90);
+        if (history.length > 0) {
+          topPrice = Math.max(...history.map(h => h.price));
+        }
+      } catch {}
       const maxDrawdown = calculateMaxDrawdown(stockData, days);
 
       const metrics = {
@@ -113,7 +132,7 @@ router.get('/', authenticateToken, async (req, res) => {
         volatilityMetrics, // Include detailed volatility data
         sharpeRatio,
         maxDrawdown,
-        topPrice: stockData.top60D, // Use TOP60D from our service
+        topPrice,
         currentPrice: stockData.current
       };
 
