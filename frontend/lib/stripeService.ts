@@ -42,7 +42,7 @@ class StripeService {
    */
   async createCheckoutSession(data: CreateCheckoutSessionData): Promise<{ sessionId: string; url: string }> {
     try {
-      const response = await fetch('/api/stripe/create-checkout-session', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ class StripeService {
    */
   async createBillingPortalSession(returnUrl: string): Promise<string> {
     try {
-      const response = await fetch('/api/stripe/create-billing-portal-session', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/create-billing-portal-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ class StripeService {
    */
   async getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
     try {
-      const response = await fetch('/api/stripe/plans');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/plans`);
       const result = await response.json();
 
       if (!result.success) {
@@ -144,7 +144,7 @@ class StripeService {
    */
   async getSubscription(subscriptionId: string): Promise<any> {
     try {
-      const response = await fetch(`/api/stripe/subscription/${subscriptionId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/subscription/${subscriptionId}`, {
         headers: {
           'Authorization': `Bearer ${this.getAuthToken()}`
         }
@@ -168,7 +168,7 @@ class StripeService {
    */
   async cancelSubscription(subscriptionId: string, cancelAtPeriodEnd: boolean = true): Promise<any> {
     try {
-      const response = await fetch(`/api/stripe/subscription/${subscriptionId}/cancel`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/subscription/${subscriptionId}/cancel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -195,7 +195,7 @@ class StripeService {
    */
   async reactivateSubscription(subscriptionId: string): Promise<any> {
     try {
-      const response = await fetch(`/api/stripe/subscription/${subscriptionId}/reactivate`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/subscription/${subscriptionId}/reactivate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.getAuthToken()}`
