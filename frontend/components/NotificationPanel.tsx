@@ -210,7 +210,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       }
       
       const token = localStorage.getItem('token');
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read`, {}, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -226,7 +226,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/mark-all-read`, {}, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/mark-all-read`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -273,7 +273,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
         try {
           const token = localStorage.getItem('token');
           const id = String(notificationId);
-          await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read`, {}, {
+          await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read`, {}, {
             headers: { Authorization: `Bearer ${token}` }
           });
         } catch (markErr) {
