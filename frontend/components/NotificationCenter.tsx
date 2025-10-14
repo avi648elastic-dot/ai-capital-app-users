@@ -45,7 +45,7 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
       const token = Cookies.get('token');
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { limit: 20, unreadOnly: false }
+        params: { limit: 20, unreadOnly: true }
       });
       
       console.log('🔔 [NOTIFICATIONS] API Response:', response.data);
@@ -121,8 +121,14 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
     } catch (error: any) {
       console.error('Error deleting notification:', error);
       const status = error?.response?.status;
-      // If forbidden or not found (e.g., global/admin notifications), dismiss locally
+      // If forbidden or not found (e.g., global/admin notifications), mark-as-read then dismiss locally
       if (status === 403 || status === 404) {
+        try {
+          const token = Cookies.get('token');
+          await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${notificationId}/read`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch {}
         setNotifications(prev => prev.filter(n => n._id !== notificationId));
         setUnreadCount(prev => Math.max(0, prev - 1));
       }

@@ -13,6 +13,7 @@ interface Notification {
   category: 'system' | 'portfolio' | 'market' | 'account' | 'action';
   readAt?: string;
   createdAt: string;
+  userId?: string | null;
   actionData?: {
     ticker?: string;
     action?: 'BUY' | 'SELL' | 'HOLD';
@@ -87,7 +88,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
           }
           
           // Now fetch notifications
-          const response = await axios.get(`${apiUrl}/api/notifications?limit=50`, {
+          const response = await axios.get(`${apiUrl}/api/notifications?limit=50&unreadOnly=true`, {
             headers: { 
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -267,8 +268,17 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
     } catch (error: any) {
       console.error('Failed to delete notification:', error);
       const status = error?.response?.status;
-      // If forbidden or not found (global/admin notifications), dismiss locally
+      // If forbidden or not found (global/admin notifications), mark-as-read then dismiss locally
       if (status === 403 || status === 404) {
+        try {
+          const token = localStorage.getItem('token');
+          const id = String(notificationId);
+          await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read`, {}, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (markErr) {
+          // ignore
+        }
         const id = String(notificationId);
         setNotifications(prev => prev.filter(n => String(n.id) !== id));
         setUnreadCount(prev => Math.max(0, prev - 1));
