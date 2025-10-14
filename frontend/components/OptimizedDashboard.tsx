@@ -199,9 +199,7 @@ export default function OptimizedDashboard({ user, isMobile = false }: Optimized
         {portfolioData && (
           <Suspense fallback={<PortfolioSkeleton />}>
             <LazyPortfolioSummary 
-              portfolio={portfolioData.portfolio || []}
               totals={portfolioData.totals || {}}
-              volatility={portfolioData.portfolioVolatility || 0}
             />
           </Suspense>
         )}
@@ -211,7 +209,10 @@ export default function OptimizedDashboard({ user, isMobile = false }: Optimized
           <Suspense fallback={<PortfolioSkeleton />}>
             <LazyMultiPortfolioDashboard 
               user={userInfo}
-              initialData={portfolioData}
+              onAddStock={() => {}}
+              onViewPortfolio={() => {}}
+              onPortfolioSelect={() => {}}
+              onMetaUpdate={() => {}}
             />
           </Suspense>
         )}
@@ -219,10 +220,7 @@ export default function OptimizedDashboard({ user, isMobile = false }: Optimized
         {/* Market Overview */}
         {marketData && (
           <Suspense fallback={<MarketSkeleton />}>
-            <LazyMarketOverview 
-              initialData={marketData}
-              lastUpdated={lastUpdate}
-            />
+            <LazyMarketOverview />
           </Suspense>
         )}
 

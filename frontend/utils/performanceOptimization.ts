@@ -14,7 +14,7 @@ export function debounce<T extends (...args: any[]) => any>(
   
   return function (...args: Parameters<T>) {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(this, args), delay);
+    timeoutId = setTimeout(() => func.apply(this as any, args), delay);
   };
 }
 
@@ -29,7 +29,7 @@ export function throttle<T extends (...args: any[]) => any>(
     const now = Date.now();
     if (now - lastCallTime >= delay) {
       lastCallTime = now;
-      return func.apply(this, args);
+      return func.apply(this as any, args);
     }
   };
 }
@@ -70,7 +70,7 @@ export class MemoryCache<T> {
   // Clean up expired entries
   cleanup(): void {
     const now = Date.now();
-    for (const [key, item] of this.cache.entries()) {
+    for (const [key, item] of Array.from(this.cache.entries())) {
       if (now - item.timestamp > item.ttl) {
         this.cache.delete(key);
       }
@@ -163,24 +163,22 @@ export class BatchRequestManager {
 }
 
 // Lazy loading utility for heavy components
-export const createLazyLoader = <T>(
+export const createLazyLoader = <T extends React.ComponentType<any>>(
   importFn: () => Promise<{ default: T }>,
   fallback?: React.ComponentType
 ) => {
-  const LazyComponent = React.lazy(importFn);
+  const LazyComponent = React.lazy(importFn as any);
   
-  return (props: any) => (
-    <React.Suspense 
-      fallback={
-        fallback ? React.createElement(fallback) : 
-        <div className="flex items-center justify-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      }
-    >
-      <LazyComponent {...props} />
-    </React.Suspense>
-  );
+  return (props: any) => {
+    return React.createElement(React.Suspense, {
+      fallback: fallback ? React.createElement(fallback) : 
+        React.createElement('div', {
+          className: "flex items-center justify-center p-8"
+        }, React.createElement('div', {
+          className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
+        }))
+    }, React.createElement(LazyComponent, props));
+  };
 };
 
 // Global performance cache instance

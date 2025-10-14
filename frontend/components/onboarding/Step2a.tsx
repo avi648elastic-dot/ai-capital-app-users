@@ -123,9 +123,9 @@ export default function Step2a({ onComplete, onBack }: Step2aProps) {
     } catch (error) {
       console.error('❌ [STEP2A] Error importing portfolio:', error);
       
-      if (error.response) {
-        console.error('❌ [STEP2A] Error response:', error.response.data);
-        alert(`Error: ${error.response.data.message || 'Failed to import portfolio'}`);
+      if ((error as any).response) {
+        console.error('❌ [STEP2A] Error response:', (error as any).response.data);
+        alert(`Error: ${(error as any).response.data.message || 'Failed to import portfolio'}`);
       } else {
         alert('Error importing portfolio. Please check your connection and try again.');
       }

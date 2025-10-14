@@ -60,8 +60,8 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
       onComplete(response.data);
     } catch (error) {
       console.error('❌ [STEP2B] Error generating portfolio:', error);
-      console.error('❌ [STEP2B] Error details:', error.response?.data);
-      alert(`Error generating portfolio: ${error.response?.data?.message || error.message}. Please try again.`);
+      console.error('❌ [STEP2B] Error details:', (error as any).response?.data);
+      alert(`Error generating portfolio: ${(error as any).response?.data?.message || (error as any).message}. Please try again.`);
     } finally {
       setLoading(false);
     }

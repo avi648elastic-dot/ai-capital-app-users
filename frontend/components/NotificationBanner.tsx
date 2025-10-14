@@ -202,7 +202,7 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
           )}
           
           <button
-            onClick={() => markAsRead(currentNotification.id)}
+            onClick={() => currentNotification.id && markAsRead(currentNotification.id)}
             className="text-green-400 hover:text-green-300 transition-colors text-sm px-2 py-1 bg-green-900/20 rounded"
             title="Mark as read"
           >
@@ -210,7 +210,7 @@ export default function NotificationBanner({ isMobile = false }: NotificationBan
           </button>
           
           <button
-            onClick={() => deleteNotification(currentNotification.id)}
+            onClick={() => currentNotification.id && deleteNotification(currentNotification.id)}
             className="text-red-400 hover:text-red-300 transition-colors text-sm px-2 py-1 bg-red-900/20 rounded"
             title="Delete notification"
           >

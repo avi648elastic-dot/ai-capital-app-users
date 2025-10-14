@@ -68,7 +68,7 @@ class NotificationService {
       tag: notification._id, // Prevent duplicate notifications
       requireInteraction: notification.priority === 'urgent' || notification.priority === 'high',
       silent: notification.priority === 'low',
-      timestamp: Date.now(),
+      // timestamp: Date.now(), // Not part of standard NotificationOptions
       data: {
         notificationId: notification._id,
         type: notification.type,
@@ -78,7 +78,7 @@ class NotificationService {
 
     // Add action buttons for action notifications
     if (notification.type === 'action' && notification.actionData) {
-      options.actions = [
+      (options as any).actions = [
         {
           action: 'view',
           title: 'View Portfolio',
@@ -107,7 +107,7 @@ class NotificationService {
 
     // Handle action button clicks
     browserNotification.addEventListener('actionclick', (event) => {
-      if (event.action === 'view') {
+      if ((event as any).action === 'view') {
         window.focus();
         window.location.href = '/dashboard';
         this.markAsRead(notification._id);

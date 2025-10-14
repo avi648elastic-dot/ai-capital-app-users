@@ -242,7 +242,7 @@ export default function TourOverlay() {
         )}
 
         {/* Premium Feature Indicator */}
-        {step.isPremiumFeature && (
+        {(step as any).isPremiumFeature && (
           <div className="flex items-center text-yellow-400 text-sm mb-4 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
             <Crown size={18} className="mr-2" />
             <span className="font-medium">👑 Premium Feature</span>

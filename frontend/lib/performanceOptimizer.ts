@@ -98,7 +98,7 @@ export class IntelligentCache {
     let leastUsedKey = '';
     let leastUsedScore = Infinity;
 
-    for (const [key, entry] of this.cache.entries()) {
+    for (const [key, entry] of Array.from(this.cache.entries())) {
       // Score based on access frequency and recency
       const score = entry.accessCount / (Date.now() - entry.lastAccess + 1);
       if (score < leastUsedScore) {
@@ -265,7 +265,7 @@ export class PerformanceMonitor {
   getAllMetrics(): Record<string, { avg: number; min: number; max: number }> {
     const result: Record<string, { avg: number; min: number; max: number }> = {};
     
-    for (const [label] of this.metrics) {
+    for (const [label] of Array.from(this.metrics.entries())) {
       const metrics = this.getMetrics(label);
       if (metrics) {
         result[label] = metrics;

@@ -145,7 +145,7 @@ class OptimizedApiService {
         // Regular request
         requestPromise = this.axiosInstance[method](url, data, {
           ...config,
-          retries: config?.retries || 2
+          // retries: config?.retries || 2 // Not part of standard AxiosRequestConfig
         });
       }
 
@@ -247,7 +247,7 @@ class OptimizedApiService {
         });
 
         // Cache individual results
-        for (const [symbol, data] of Object.entries(response.prices || {})) {
+        for (const [symbol, data] of Object.entries((response as any).prices || {})) {
           const cacheKey = `stock_price_${symbol}`;
           intelligentCache.set(cacheKey, data, 2 * 60 * 1000); // 2 minutes cache for stock prices
           cachedResults[symbol] = data;

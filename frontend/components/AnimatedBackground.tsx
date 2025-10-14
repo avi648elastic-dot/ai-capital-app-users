@@ -59,7 +59,7 @@ export default function AnimatedBackground() {
   const isLoginPage = pathname === '/';
   const isDashboard = pathname === '/dashboard';
   // Reduce login page intensity for faster loading
-  const intensity = isLoginPage ? 'medium' : isDashboard ? 'medium' : 'subtle';
+  const intensity = isLoginPage ? 'medium' : isDashboard ? 'full' : 'subtle';
 
   // Professional financial symbols (subtle, text-based)
   const stockSymbols = ['$', '€', '₿', '¥', '£', '₹', '₽', '₩', '₪', '₨', '₦', '₡', '₵', '₴', '₸', '₼', '₾', '₿'];

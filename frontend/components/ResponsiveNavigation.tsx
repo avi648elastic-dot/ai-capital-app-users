@@ -66,8 +66,8 @@ export default function ResponsiveNavigation({
       label: t('navigation.adminPanel'),
       icon: Shield,
       children: [
-        { id: 'admin-dashboard', label: t('navigation.adminDashboard'), icon: Shield, href: '/admin', admin: true },
-        { id: 'admin-notifications', label: t('navigation.adminNotifications'), icon: Settings, href: '/admin/notifications', admin: true }
+        { id: 'admin-dashboard', label: t('navigation.adminDashboard'), icon: Shield, href: '/admin', admin: true } as any,
+        { id: 'admin-notifications', label: t('navigation.adminNotifications'), icon: Settings, href: '/admin/notifications', admin: true } as any
       ]
     });
   }
@@ -200,7 +200,7 @@ export default function ResponsiveNavigation({
                           const ChildIcon = child.icon;
                           const isPremiumLocked = child.premium && subscriptionTier === 'free';
                           const isPremiumPlusLocked = child.premiumPlus && subscriptionTier !== 'premium+';
-                          const isAdminLocked = child.admin && !isAdmin;
+                          const isAdminLocked = (child as any).admin && !isAdmin;
                           const isLocked = isPremiumLocked || isPremiumPlusLocked || isAdminLocked;
                           
                           // Get feature preview info
@@ -220,7 +220,7 @@ export default function ResponsiveNavigation({
                               <ChildIcon className={`w-4 h-4 flex-shrink-0 ${
                                 child.premium ? 'text-yellow-400' : 
                                 child.premiumPlus ? 'text-purple-400' :
-                                child.admin ? 'text-red-400' : ''
+                                (child as any).admin ? 'text-red-400' : ''
                               }`} />
                               <span className="text-sm flex-1 ml-3">{child.label}</span>
                               {child.premium && (
@@ -229,7 +229,7 @@ export default function ResponsiveNavigation({
                               {child.premiumPlus && (
                                 <Crown className="w-3 h-3 text-purple-400 flex-shrink-0" />
                               )}
-                              {child.admin && (
+                              {(child as any).admin && (
                                 <Shield className="w-3 h-3 text-red-400 flex-shrink-0" />
                               )}
                             </button>
@@ -403,7 +403,7 @@ export default function ResponsiveNavigation({
                           const ChildIcon = child.icon;
                           const isPremiumLocked = child.premium && subscriptionTier === 'free';
                           const isPremiumPlusLocked = child.premiumPlus && subscriptionTier !== 'premium+';
-                          const isAdminLocked = child.admin && !isAdmin;
+                          const isAdminLocked = (child as any).admin && !isAdmin;
                           const isLocked = isPremiumLocked || isPremiumPlusLocked || isAdminLocked;
                           
                           return (
@@ -420,7 +420,7 @@ export default function ResponsiveNavigation({
                               <ChildIcon className={`w-4 h-4 flex-shrink-0 ${
                                 child.premium ? 'text-yellow-400' : 
                                 child.premiumPlus ? 'text-purple-400' :
-                                child.admin ? 'text-red-400' : ''
+                                (child as any).admin ? 'text-red-400' : ''
                               }`} />
                               <span className="text-sm flex-1 ml-4">{child.label}</span>
                               {child.premium && (
@@ -429,7 +429,7 @@ export default function ResponsiveNavigation({
                               {child.premiumPlus && (
                                 <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
                               )}
-                              {child.admin && (
+                              {(child as any).admin && (
                                 <Shield className="w-4 h-4 text-red-400 flex-shrink-0" />
                               )}
                             </button>

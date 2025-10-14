@@ -156,7 +156,7 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
           };
         })
         // Filter out entries where we still don't have a valid price
-        .filter(u => typeof u.currentPrice === 'number' && u.currentPrice > 0);
+        .filter((u: any) => typeof u.currentPrice === 'number' && u.currentPrice > 0);
 
         // Combine cached and fetched updates
         // Merge: prefer fetched > cached by ticker
