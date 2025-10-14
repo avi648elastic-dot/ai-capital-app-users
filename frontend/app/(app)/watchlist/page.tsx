@@ -83,7 +83,7 @@ export default function Watchlist() {
               currentPrice: update.currentPrice,
               change: update.change,
               changePercent: update.changePercent,
-              lastChecked: update.lastUpdated
+              lastChecked: update.lastUpdated.toISOString()
             };
           }
           return item;
