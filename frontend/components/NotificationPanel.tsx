@@ -264,8 +264,16 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       
       setNotifications(prev => prev.filter(n => String(n.id) !== id));
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete notification:', error);
+      const status = error?.response?.status;
+      // If forbidden or not found (global/admin notifications), dismiss locally
+      if (status === 403 || status === 404) {
+        const id = String(notificationId);
+        setNotifications(prev => prev.filter(n => String(n.id) !== id));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+        return;
+      }
     }
   };
 

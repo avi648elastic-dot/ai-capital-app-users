@@ -118,8 +118,14 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
       // Update local state
       setNotifications(prev => prev.filter(n => n._id !== notificationId));
       setUnreadCount(prev => Math.max(0, prev - 1));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting notification:', error);
+      const status = error?.response?.status;
+      // If forbidden or not found (e.g., global/admin notifications), dismiss locally
+      if (status === 403 || status === 404) {
+        setNotifications(prev => prev.filter(n => n._id !== notificationId));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
     }
   };
 
