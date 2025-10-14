@@ -1,7 +1,5 @@
 'use client';
 
-import { AlertTriangle } from 'lucide-react';
-
 export default function GlobalError({
   error,
   reset,
@@ -11,20 +9,37 @@ export default function GlobalError({
 }) {
   return (
     <html>
-      <body>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-red-900 to-slate-900">
-          <div className="text-center px-4 max-w-2xl">
-            <AlertTriangle className="w-24 h-24 text-red-400 mx-auto mb-6" />
-            <h1 className="text-6xl font-black text-white mb-4">500</h1>
-            <h2 className="text-3xl font-bold text-white mb-4">Server Error</h2>
-            <p className="text-slate-300 mb-8">
+      <body style={{ margin: 0, padding: 0, fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(to bottom right, #0f172a, #7f1d1d, #0f172a)'
+        }}>
+          <div style={{ textAlign: 'center', padding: '1rem', maxWidth: '42rem' }}>
+            <h1 style={{ fontSize: '4rem', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>500</h1>
+            <h2 style={{ fontSize: '2rem', fontWeight: 700, color: 'white', marginBottom: '1rem' }}>Server Error</h2>
+            <p style={{ color: '#cbd5e1', marginBottom: '2rem' }}>
               We encountered a critical error. Please refresh the page or try again later.
             </p>
             <button
               onClick={reset}
-              className="inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#2563eb',
+                color: 'white',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '0.5rem',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: 600
+              }}
             >
-              <span>Try Again</span>
+              Try Again
             </button>
           </div>
         </div>

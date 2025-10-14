@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 
 export default function Error({
   error,
@@ -16,34 +14,66 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-red-900 to-slate-900">
-      <div className="text-center px-4 max-w-2xl">
-        <AlertTriangle className="w-24 h-24 text-red-400 mx-auto mb-6" />
-        <h1 className="text-6xl font-black text-white mb-4">Oops!</h1>
-        <h2 className="text-3xl font-bold text-white mb-4">Something went wrong</h2>
-        <p className="text-slate-300 mb-8">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(to bottom right, #0f172a, #7f1d1d, #0f172a)'
+    }}>
+      <div style={{ textAlign: 'center', padding: '1rem', maxWidth: '42rem' }}>
+        <h1 style={{ fontSize: '4rem', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>Oops!</h1>
+        <h2 style={{ fontSize: '2rem', fontWeight: 700, color: 'white', marginBottom: '1rem' }}>Something went wrong</h2>
+        <p style={{ color: '#cbd5e1', marginBottom: '2rem' }}>
           We encountered an unexpected error. Please try again or return to the dashboard.
         </p>
         {error.message && (
-          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-8">
-            <p className="text-red-300 text-sm font-mono">{error.message}</p>
+          <div style={{
+            background: 'rgba(127, 29, 29, 0.2)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '0.5rem',
+            padding: '1rem',
+            marginBottom: '2rem'
+          }}>
+            <p style={{ color: '#fca5a5', fontSize: '0.875rem', fontFamily: 'monospace' }}>{error.message}</p>
           </div>
         )}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', justifyContent: 'center', alignItems: 'center' }}>
           <button
             onClick={reset}
-            className="inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#2563eb',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              fontWeight: 600
+            }}
           >
-            <RefreshCw className="w-5 h-5" />
-            <span>Try Again</span>
+            Try Again
           </button>
-          <Link
+          <a
             href="/dashboard"
-            className="inline-flex items-center justify-center space-x-2 bg-slate-700 hover:bg-slate-600 text-white px-6 py-3 rounded-lg transition-colors"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: '#334155',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              textDecoration: 'none',
+              fontSize: '1rem',
+              fontWeight: 600
+            }}
           >
-            <Home className="w-5 h-5" />
-            <span>Back to Dashboard</span>
-          </Link>
+            Back to Dashboard
+          </a>
         </div>
       </div>
     </div>

@@ -1,24 +1,35 @@
-'use client';
-
-import Link from 'next/link';
-import { Home } from 'lucide-react';
-
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      <div className="text-center px-4">
-        <h1 className="text-9xl font-black text-white mb-4">404</h1>
-        <h2 className="text-3xl font-bold text-white mb-4">Page Not Found</h2>
-        <p className="text-slate-300 mb-8 max-w-md mx-auto">
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(to bottom right, #0f172a, #1e3a8a, #0f172a)'
+    }}>
+      <div style={{ textAlign: 'center', padding: '1rem' }}>
+        <h1 style={{ fontSize: '9rem', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>404</h1>
+        <h2 style={{ fontSize: '2rem', fontWeight: 700, color: 'white', marginBottom: '1rem' }}>Page Not Found</h2>
+        <p style={{ color: '#cbd5e1', marginBottom: '2rem', maxWidth: '28rem', margin: '0 auto 2rem' }}>
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <Link
+        <a
           href="/dashboard"
-          className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: '#2563eb',
+            color: 'white',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '0.5rem',
+            textDecoration: 'none',
+            fontSize: '1rem',
+            fontWeight: 600
+          }}
         >
-          <Home className="w-5 h-5" />
           <span>Back to Dashboard</span>
-        </Link>
+        </a>
       </div>
     </div>
   );
