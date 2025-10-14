@@ -131,8 +131,19 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                       />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-600 bg-slate-800">
-                      <Image src="/logo.png?v=2" alt="AI Capital" width={32} height={32} className="w-full h-full object-cover" />
+                    <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-slate-600 bg-slate-800 flex items-center justify-center">
+                      <svg viewBox="0 0 100 100" className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" aria-label="AI Capital Logo">
+                        <defs>
+                          <linearGradient id="header-avatar-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#E5E7EB" />
+                            <stop offset="100%" stopColor="#9CA3AF" />
+                          </linearGradient>
+                        </defs>
+                        <g fill="url(#header-avatar-grad)">
+                          <path d="M20 78 L47 22 C49 18 51 18 53 22 L80 78 L70 78 L50 38 L30 78 Z" />
+                          <rect x="42" y="56" width="16" height="6" rx="2" />
+                        </g>
+                      </svg>
                     </div>
                   )}
                 </button>

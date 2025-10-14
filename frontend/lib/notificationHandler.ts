@@ -51,8 +51,9 @@ export function showNotificationWithVibration(options: NotificationOptions): voi
   if ('Notification' in window && Notification.permission === 'granted') {
     const notif = new Notification(title, {
       body: message,
-      icon: '/logo.png',
-      badge: '/logo.png',
+      // Inline SVG as data URL to avoid any caching of old assets
+      icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23E5E7EB"/><stop offset="100%" stop-color="%239CA3AF"/></linearGradient></defs><g fill="url(%23g)"><path d="M20 78 L47 22 C49 18 51 18 53 22 L80 78 L70 78 L50 38 L30 78 Z"/><rect x="42" y="56" width="16" height="6" rx="2"/></g></svg>',
+      badge: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%23E5E7EB"/><stop offset="100%" stop-color="%239CA3AF"/></linearGradient></defs><g fill="url(%23g)"><path d="M20 78 L47 22 C49 18 51 18 53 22 L80 78 L70 78 L50 38 L30 78 Z"/><rect x="42" y="56" width="16" height="6" rx="2"/></g></svg>',
       tag: `notification-${Date.now()}`,
       requireInteraction: requireInteraction || priority === 'urgent',
       vibrate: vibrate ? vibrationPatterns[priority] : undefined,
