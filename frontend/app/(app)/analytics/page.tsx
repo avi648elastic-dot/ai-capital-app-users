@@ -129,6 +129,7 @@ const RealPortfolioChart = ({ data }: { data: any[] }) => {
 };
 
 export default function Analytics() {
+  const [user, setUser] = useState<any>(null);
   const [portfolio, setPortfolio] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiAnalysis, setAiAnalysis] = useState<any>(null);
