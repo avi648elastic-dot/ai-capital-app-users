@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from 'next/image';
+import TechLogo from './TechLogo';
 
 interface AcaciaLogoProps {
   className?: string;
@@ -15,11 +15,7 @@ const AcaciaLogo: React.FC<AcaciaLogoProps> = ({ className = '', size = 'md' }) 
 
   const logoSize = getSize();
 
-  return (
-    <div className={className} style={{ width: logoSize, height: logoSize }}>
-      <Image src="/logo.png?v=2" alt="AI Capital" width={logoSize} height={logoSize} className="object-contain w-full h-full" />
-    </div>
-  );
+  return <TechLogo className={className} size={logoSize} />;
 };
 
 export default AcaciaLogo;

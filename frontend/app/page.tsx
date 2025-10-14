@@ -145,7 +145,18 @@ export default function Page() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Image src="/logo.png?v=2" alt="AI Capital" width={56} height={56} className="object-contain rounded" />
+              <svg viewBox="0 0 100 100" width="56" height="56" className="drop-shadow-[0_0_8px_rgba(96,165,250,0.25)]" xmlns="http://www.w3.org/2000/svg" aria-label="AI Capital Logo">
+                <defs>
+                  <linearGradient id="auth-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#E5E7EB" />
+                    <stop offset="100%" stopColor="#9CA3AF" />
+                  </linearGradient>
+                </defs>
+                <g fill="url(#auth-grad)">
+                  <path d="M20 78 L47 22 C49 18 51 18 53 22 L80 78 L70 78 L50 38 L30 78 Z" />
+                  <rect x="42" y="56" width="16" height="6" rx="2" />
+                </g>
+              </svg>
               <div className="flex items-center space-x-4">
                 <LanguageSelector />
               </div>

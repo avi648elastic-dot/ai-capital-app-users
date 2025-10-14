@@ -88,7 +88,18 @@ export default function ResponsiveNavigation({
         <div className="p-6 border-b border-slate-700">
           <div className="flex items-center space-x-3">
             <div className="relative w-7 h-7">
-              <Image src="/logo.png?v=2" alt="AI Capital" fill className="object-contain" />
+              <svg viewBox="0 0 100 100" className="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-label="AI Capital Logo">
+                <defs>
+                  <linearGradient id="nav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#E5E7EB" />
+                    <stop offset="100%" stopColor="#9CA3AF" />
+                  </linearGradient>
+                </defs>
+                <g fill="url(#nav-grad)">
+                  <path d="M20 78 L47 22 C49 18 51 18 53 22 L80 78 L70 78 L50 38 L30 78 Z" />
+                  <rect x="42" y="56" width="16" height="6" rx="2" />
+                </g>
+              </svg>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-emerald-500 rounded-lg flex items-center justify-center">

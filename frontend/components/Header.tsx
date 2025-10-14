@@ -7,7 +7,7 @@ import { logout } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import ThemeToggle from './ThemeToggle';
-// Use provided brand mark from public/logo.png
+import TechLogo from './TechLogo';
 import NotificationCenter from './NotificationCenter';
 import NotificationPanel from './NotificationPanel';
 import Leaderboard from './Leaderboard';
@@ -30,9 +30,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
 
   const Logo = () => (
     <div className="flex items-center space-x-3">
-      <div className="relative w-10 h-10">
-        <Image src="/logo.png?v=2" alt="AI Capital" fill className="object-contain" />
-      </div>
+      <TechLogo size={40} className="drop-shadow-[0_0_8px_rgba(96,165,250,0.25)]" />
       <div>
         <h1 className="logo-text text-xl font-bold tracking-wide text-slate-200">AI CAPITAL</h1>
         <p className="text-xs text-slate-400 font-medium">Professional Portfolio Management</p>
