@@ -70,6 +70,11 @@ export default function Watchlist() {
     // Modal is disabled, this function does nothing
   };
 
+  // Dummy function for disabled modal
+  const savePriceAlert = () => {
+    // Modal is disabled, this function does nothing
+  };
+
   useEffect(() => {
     fetchUserAndWatchlist();
     // Refresh watchlist every 5 minutes
