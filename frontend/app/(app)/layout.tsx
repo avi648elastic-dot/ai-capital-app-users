@@ -67,7 +67,7 @@ export default function AppLayout({
   }
 
   // Don't show layout for onboarding
-  if (pathname.startsWith('/onboarding')) {
+  if (pathname?.startsWith('/onboarding')) {
     return <>{children}</>;
   }
 
