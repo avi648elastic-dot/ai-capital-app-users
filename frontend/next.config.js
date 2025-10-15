@@ -109,7 +109,7 @@ const nextConfig = {
           // Use CSP frame-ancestors instead of X-Frame-Options to allow specific embedding
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self' https://ai-capital.info https://*.ai-capital.info;",
+            value: "frame-ancestors 'self' https://ai-capital.info https://*.ai-capital.info https://*.vercel.app https://ai-capital-app7.vercel.app https://*.onrender.com;",
           },
           {
             key: 'X-XSS-Protection',
