@@ -1,6 +1,7 @@
 /**
  * 💳 AI-Capital Frontend Stripe Service
  * Handles Stripe Elements and checkout session creation
+ * Version: 2.0 - No duplicate methods
  */
 
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
