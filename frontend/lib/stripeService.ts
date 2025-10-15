@@ -81,9 +81,9 @@ class StripeService {
   }
 
   /**
-   * Create billing portal session
+   * Create billing portal session with return URL
    */
-  async createBillingPortalSession(returnUrl: string): Promise<string> {
+  async createBillingPortalWithReturnUrl(returnUrl: string): Promise<string> {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/create-billing-portal-session`, {
         method: 'POST',
@@ -140,9 +140,9 @@ class StripeService {
   }
 
   /**
-   * Get subscription details
+   * Get subscription details by ID
    */
-  async getSubscription(subscriptionId: string): Promise<any> {
+  async getSubscriptionById(subscriptionId: string): Promise<any> {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/subscription/${subscriptionId}`, {
         headers: {
@@ -158,15 +158,15 @@ class StripeService {
 
       return result.subscription;
     } catch (error) {
-      console.error('Error getting subscription:', error);
+      console.error('Error getting subscription by ID:', error);
       throw error;
     }
   }
 
   /**
-   * Cancel subscription
+   * Cancel subscription by ID
    */
-  async cancelSubscription(subscriptionId: string, cancelAtPeriodEnd: boolean = true): Promise<any> {
+  async cancelSubscriptionById(subscriptionId: string, cancelAtPeriodEnd: boolean = true): Promise<any> {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/subscription/${subscriptionId}/cancel`, {
         method: 'POST',
@@ -191,9 +191,9 @@ class StripeService {
   }
 
   /**
-   * Reactivate subscription
+   * Reactivate subscription by ID
    */
-  async reactivateSubscription(subscriptionId: string): Promise<any> {
+  async reactivateSubscriptionById(subscriptionId: string): Promise<any> {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/subscription/${subscriptionId}/reactivate`, {
         method: 'POST',
