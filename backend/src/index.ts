@@ -141,22 +141,30 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // 🚨 EMERGENCY FIX: Ultra-permissive CORS for immediate login fix
+const isAllowedOrigin = (origin?: string) => {
+  if (!origin) return false;
+  const patterns = [
+    /^https?:\/\/localhost:(3000|3001)$/,
+    /^https?:\/\/127\.0\.0\.1:(3000|3001)$/,
+    /^https?:\/\/([a-z0-9-]+)\.vercel\.app$/i,
+    /^https?:\/\/(.*\.)?ai-capital\.info$/i,
+  ];
+  return patterns.some((p) => p.test(origin));
+};
+
 app.use(
   cors({
-    origin: [
-      'https://ai-capital-app7.vercel.app',
-      'https://ai-capital.info',
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001'
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow non-browser clients
+      if (isAllowedOrigin(origin)) return callback(null, true);
+      return callback(new Error('CORS: Origin not allowed'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
-      'Content-Type', 
-      'Authorization', 
-      'X-Requested-With', 
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
       'Accept',
       'Origin',
       'Access-Control-Request-Method',
@@ -180,19 +188,11 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // 🚨 EMERGENCY FIX: Explicit preflight handler for login
 app.options('*', (req, res) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    'https://ai-capital-app7.vercel.app',
-    'https://ai-capital.info',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001'
-  ];
+  const origin = req.headers.origin as string | undefined;
   
   console.log(`🔄 [PREFLIGHT] Handling OPTIONS request for: ${req.url} from origin: ${origin}`);
   
-  if (origin && allowedOrigins.includes(origin)) {
+  if (origin && isAllowedOrigin(origin)) {
     // Set all necessary CORS headers for allowed origin
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
@@ -210,17 +210,9 @@ app.options('*', (req, res) => {
 
 // 🚨 EMERGENCY FIX: Additional CORS headers for all responses
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    'https://ai-capital-app7.vercel.app',
-    'https://ai-capital.info',
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001'
-  ];
+  const origin = req.headers.origin as string | undefined;
   
-  if (origin && allowedOrigins.includes(origin)) {
+  if (origin && isAllowedOrigin(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
   }
