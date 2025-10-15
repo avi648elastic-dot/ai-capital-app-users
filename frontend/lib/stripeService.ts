@@ -113,7 +113,7 @@ class StripeService {
    */
   async redirectToBillingPortal(returnUrl: string): Promise<void> {
     try {
-      const url = await this.createBillingPortalSession(returnUrl);
+      const url = await this.createBillingPortalWithReturnUrl(returnUrl);
       window.location.href = url;
     } catch (error) {
       console.error('Error redirecting to billing portal:', error);
