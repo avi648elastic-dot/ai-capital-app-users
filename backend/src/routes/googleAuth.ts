@@ -39,12 +39,27 @@ router.post('/google', async (req, res) => {
     let user = await User.findOne({ email });
 
     if (user) {
-      // User exists, update Google ID if not set
+      // User exists, ensure Google linkage and refresh profile details
+      let changed = false;
       if (!user.googleId) {
         user.googleId = googleId;
-        user.avatar = picture || user.avatar;
-        await user.save();
+        changed = true;
       }
+      if (picture && picture !== user.avatar) {
+        user.avatar = picture;
+        changed = true;
+      }
+      // If name is missing or a generic placeholder, update from Google profile
+      const genericNames = ['Google User', 'User', 'Guest'];
+      if (!user.name || genericNames.includes(user.name)) {
+        user.name = name || email.split('@')[0];
+        changed = true;
+      }
+      if (!user.isEmailVerified) {
+        user.isEmailVerified = true;
+        changed = true;
+      }
+      if (changed) await user.save();
     } else {
       // Create new user
       user = new User({
