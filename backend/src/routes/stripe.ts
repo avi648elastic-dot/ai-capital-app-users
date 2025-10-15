@@ -385,7 +385,7 @@ router.get('/plans', async (req: Request, res: Response) => {
 router.get('/subscription', authenticateToken, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user._id || (req as any).user.id;
-    const subscription = await stripeService.getSubscription(userId);
+    const subscription = await stripeService.getUserSubscription(userId);
     
     res.json({
       success: true,
@@ -407,7 +407,7 @@ router.get('/subscription', authenticateToken, async (req: Request, res: Respons
 router.post('/cancel-subscription', authenticateToken, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user._id || (req as any).user.id;
-    await stripeService.cancelSubscription(userId);
+    await stripeService.cancelUserSubscription(userId);
     
     res.json({
       success: true,
@@ -429,7 +429,7 @@ router.post('/cancel-subscription', authenticateToken, async (req: Request, res:
 router.post('/reactivate-subscription', authenticateToken, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user._id || (req as any).user.id;
-    await stripeService.reactivateSubscription(userId);
+    await stripeService.reactivateUserSubscription(userId);
     
     res.json({
       success: true,
@@ -454,7 +454,7 @@ router.post('/create-portal-session', authenticateToken, async (req: Request, re
     const userEmail = (req as any).user.email;
     const returnUrl = req.body.returnUrl || `${process.env.FRONTEND_URL}/dashboard`;
     
-    const session = await stripeService.createBillingPortalSession({
+    const session = await stripeService.createUserBillingPortalSession({
       userId,
       userEmail,
       returnUrl

@@ -39,7 +39,7 @@ export const csrfErrorHandler = (err: any, req: Request, res: Response, next: Ne
 export const generateCsrfToken = (req: Request, res: Response) => {
   try {
     const token = req.csrfToken();
-    loggerService.info(`CSRF token generated for session ${req.sessionID}`);
+    loggerService.info(`CSRF token generated`);
     
     res.json({
       success: true,

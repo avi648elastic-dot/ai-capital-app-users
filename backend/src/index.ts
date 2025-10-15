@@ -10,6 +10,7 @@ import * as Sentry from '@sentry/node';
 import { loggerService } from './services/loggerService';
 import { requestIdMiddleware } from './middleware/requestId';
 import csrfProtection, { csrfErrorHandler, generateCsrfToken } from './middleware/csrf';
+import { authenticateToken } from './middleware/auth';
 
 import authRoutes from './routes/auth';
 import googleAuthRoutes from './routes/googleAuth';

@@ -317,7 +317,7 @@ class ApiClient {
               ticker: z.string(),
               return: z.number(),
             }),
-            sectorAllocation: z.record(z.number()),
+            sectorAllocation: z.record(z.string(), z.number()),
           }),
         })
       ),

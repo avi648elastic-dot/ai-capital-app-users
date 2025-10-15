@@ -10,6 +10,7 @@ export interface IUser extends Document {
   subscriptionTier: 'free' | 'premium' | 'premium+'; // Updated to include premium+
   onboardingCompleted: boolean;
   isAdmin?: boolean;
+  role?: 'user' | 'admin'; // User role
   isEmailVerified?: boolean; // Email verification status
   featuredTickers?: string[];
   portfolioType?: string;
@@ -55,6 +56,7 @@ const UserSchema: Schema<IUser> = new Schema(
     subscriptionTier: { type: String, enum: ['free', 'premium', 'premium+'], default: 'free' },
     onboardingCompleted: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' }, // User role
     isEmailVerified: { type: Boolean, default: false }, // Email verification status
     featuredTickers: { type: [String], default: undefined },
     portfolioType: { type: String },

@@ -256,7 +256,7 @@ class StripeService {
   /**
    * Handle checkout session completed
    */
-  private async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
     try {
       const userId = session.metadata?.userId;
       if (!userId) {
@@ -282,7 +282,7 @@ class StripeService {
   /**
    * Handle subscription created
    */
-  private async handleSubscriptionCreated(subscription: Stripe.Subscription): Promise<void> {
+  async handleSubscriptionCreated(subscription: Stripe.Subscription): Promise<void> {
     try {
       const userId = subscription.metadata?.userId;
       if (!userId) {
@@ -318,7 +318,7 @@ class StripeService {
   /**
    * Handle subscription updated
    */
-  private async handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
+  async handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
     try {
       const userId = subscription.metadata?.userId;
       if (!userId) {
@@ -353,7 +353,7 @@ class StripeService {
   /**
    * Handle subscription deleted
    */
-  private async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
+  async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
     try {
       const userId = subscription.metadata?.userId;
       if (!userId) {
@@ -458,7 +458,7 @@ class StripeService {
    */
   async handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
     try {
-      const subscriptionId = invoice.subscription as string;
+      const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
       if (!subscriptionId) {
         loggerService.warn(`⚠️ [STRIPE] Payment succeeded without subscription`, { invoiceId: invoice.id });
         return;
@@ -489,7 +489,7 @@ class StripeService {
    */
   async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     try {
-      const subscriptionId = invoice.subscription as string;
+      const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
       if (!subscriptionId) {
         loggerService.warn(`⚠️ [STRIPE] Payment failed without subscription`, { invoiceId: invoice.id });
         return;
@@ -539,9 +539,9 @@ class StripeService {
   }
 
   /**
-   * Get user subscription
+   * Get user subscription by user ID
    */
-  async getSubscription(userId: string): Promise<any> {
+  async getUserSubscription(userId: string): Promise<any> {
     try {
       const user = await User.findById(userId);
       if (!user || !user.stripeSubscriptionId) {
@@ -560,15 +560,15 @@ class StripeService {
         price: subscription.items.data[0]?.price.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0
       };
     } catch (error: any) {
-      loggerService.error('❌ [STRIPE] Error getting subscription:', error);
+      loggerService.error('❌ [STRIPE] Error getting user subscription:', error);
       throw error;
     }
   }
 
   /**
-   * Cancel subscription
+   * Cancel user subscription by user ID
    */
-  async cancelSubscription(userId: string): Promise<void> {
+  async cancelUserSubscription(userId: string): Promise<void> {
     try {
       const user = await User.findById(userId);
       if (!user || !user.stripeSubscriptionId) {
@@ -583,15 +583,15 @@ class StripeService {
         subscriptionId: user.stripeSubscriptionId
       });
     } catch (error: any) {
-      loggerService.error('❌ [STRIPE] Error cancelling subscription:', error);
+      loggerService.error('❌ [STRIPE] Error cancelling user subscription:', error);
       throw error;
     }
   }
 
   /**
-   * Reactivate subscription
+   * Reactivate user subscription by user ID
    */
-  async reactivateSubscription(userId: string): Promise<void> {
+  async reactivateUserSubscription(userId: string): Promise<void> {
     try {
       const user = await User.findById(userId);
       if (!user || !user.stripeSubscriptionId) {
@@ -606,15 +606,15 @@ class StripeService {
         subscriptionId: user.stripeSubscriptionId
       });
     } catch (error: any) {
-      loggerService.error('❌ [STRIPE] Error reactivating subscription:', error);
+      loggerService.error('❌ [STRIPE] Error reactivating user subscription:', error);
       throw error;
     }
   }
 
   /**
-   * Create billing portal session
+   * Create billing portal session for user
    */
-  async createBillingPortalSession(data: {
+  async createUserBillingPortalSession(data: {
     userId: string;
     userEmail: string;
     returnUrl: string;
@@ -633,7 +633,7 @@ class StripeService {
       loggerService.info(`✅ [STRIPE] Billing portal session created for user ${data.userId}`);
       return session;
     } catch (error: any) {
-      loggerService.error('❌ [STRIPE] Error creating billing portal session:', error);
+      loggerService.error('❌ [STRIPE] Error creating user billing portal session:', error);
       throw error;
     }
   }
