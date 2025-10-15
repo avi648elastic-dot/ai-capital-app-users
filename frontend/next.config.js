@@ -106,9 +106,10 @@ const nextConfig = {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
+          // Use CSP frame-ancestors instead of X-Frame-Options to allow specific embedding
           {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://ai-capital.info https://*.ai-capital.info;",
           },
           {
             key: 'X-XSS-Protection',
