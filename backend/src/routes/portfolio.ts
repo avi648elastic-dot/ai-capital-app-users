@@ -9,6 +9,7 @@ import { reputationService } from '../services/reputationService';
 import { validate, validatePartial } from '../middleware/validate';
 import { stockSchema, updatePortfolioSchema, portfolioQuerySchema } from '../schemas/portfolio';
 import { portfolioCache } from '../middleware/performanceCache';
+import { checkPortfolioLimits, checkStockLimits } from '../middleware/portfolioLimits';
 import { z } from 'zod';
 
 const router = express.Router();
@@ -204,7 +205,7 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
 });
 
 // Add stock to portfolio
-router.post('/add', authenticateToken, requireSubscription, validate({ body: stockSchema }), async (req, res) => {
+router.post('/add', authenticateToken, requireSubscription, checkStockLimits, validate({ body: stockSchema }), async (req, res) => {
   try {
     console.log('🔍 [PORTFOLIO ADD] Adding stock for user:', req.user!._id);
     console.log('🔍 [PORTFOLIO ADD] Request body:', req.body);

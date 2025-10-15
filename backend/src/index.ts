@@ -9,9 +9,11 @@ import path from 'path';
 import * as Sentry from '@sentry/node';
 import { loggerService } from './services/loggerService';
 import { requestIdMiddleware } from './middleware/requestId';
+import csrfProtection, { csrfErrorHandler, generateCsrfToken } from './middleware/csrf';
 
 import authRoutes from './routes/auth';
 import googleAuthRoutes from './routes/googleAuth';
+import User from './models/User';
 import portfolioRoutes from './routes/portfolio';
 import shopifyRoutes from './routes/shopify';
 import onboardingRoutes from './routes/onboarding';
@@ -32,6 +34,7 @@ import transactionsRoutes from './routes/transactions';
 import { schedulerService } from './services/schedulerService';
 import { watchlistMonitorService } from './services/watchlistMonitorService';
 import { watchlistAlertService } from './services/watchlistAlertService';
+import { queryBenchmark } from './services/queryBenchmark';
 
 // Load environment variables
 dotenv.config();
@@ -219,6 +222,24 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// CSRF Protection - Apply to all routes except health checks and auth
+app.use((req, res, next) => {
+  // Skip CSRF for health checks, auth endpoints, and webhooks
+  if (req.path.startsWith('/api/health') || 
+      req.path.startsWith('/api/auth') || 
+      req.path.startsWith('/api/stripe/webhook') ||
+      req.path.startsWith('/api/debug')) {
+    return next();
+  }
+  return csrfProtection(req, res, next);
+});
+
+// CSRF error handler
+app.use(csrfErrorHandler);
+
+// CSRF token endpoint
+app.get('/api/csrf-token', generateCsrfToken);
 
 // ✅ מסלולים ראשיים
 app.use('/api/auth', authRoutes);
@@ -524,12 +545,39 @@ app.get('/api/debug/keys', (req, res) => {
     FMP_API_KEY: process.env.FMP_API_KEY ? 'SET' : 'NOT SET',
     ALPHA_VANTAGE_API_KEY: process.env.ALPHA_VANTAGE_API_KEY ? 'SET' : 'NOT SET'
   };
-  
+
   res.json({
     success: true,
     keys,
     timestamp: new Date().toISOString()
   });
+});
+
+// 📊 Query benchmark endpoint (admin only)
+app.get('/api/debug/benchmark', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const user = await User.findById((req as any).user?.id);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const userId = (req as any).user?.id;
+    const results = await queryBenchmark.runBenchmarkSuite(userId);
+    
+    res.json({
+      success: true,
+      benchmark: results,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    loggerService.error('Benchmark failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Benchmark failed',
+      message: error.message
+    });
+  }
 });
 
 // 📊 Scheduler status endpoint
