@@ -73,21 +73,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
         try {
           console.log(`📱 [NOTIFICATIONS] Trying API URL: ${apiUrl}`);
           
-          // First, test if we can create notifications
-          try {
-            await axios.post(`${apiUrl}/api/notifications/create-test`, {}, {
-              headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              timeout: 10000 // 10 second timeout
-            });
-            console.log('✅ [NOTIFICATIONS] Test notifications created successfully');
-          } catch (createError: any) {
-            console.log('ℹ️ [NOTIFICATIONS] Create test failed (may already exist):', createError?.response?.status || createError.message);
-          }
-          
-          // Now fetch notifications
+          // Fetch notifications
           const response = await axios.get(`${apiUrl}/api/notifications?limit=50&unreadOnly=true`, {
             headers: { 
               'Authorization': `Bearer ${token}`,
