@@ -92,9 +92,8 @@ const nextConfig = {
 
   // Experimental features for performance
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled - causes critters module error in Next.js 15
     optimizePackageImports: ['lucide-react', '@headlessui/react'],
-    appDir: true,
   },
 
   // Headers for performance
