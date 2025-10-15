@@ -60,10 +60,10 @@ class GoogleFinanceFormulasService {
     // 🔑 MAJOR'S SMART ENGINE - Multiple API Keys with aggressive rotation
     this.alphaVantageKeys = [
       process.env.ALPHA_VANTAGE_API_KEY_1,
-      process.env.ALPHA_VANTAGE_API_KEY_2, 
+      process.env.ALPHA_VANTAGE_API_KEY_2,
       process.env.ALPHA_VANTAGE_API_KEY_3,
       process.env.ALPHA_VANTAGE_API_KEY_4
-    ].filter(key => key && key !== 'demo' && key.length > 10); // Remove any invalid keys
+    ].filter((key): key is string => key !== undefined && key !== 'demo' && key.length > 10); // Remove any invalid keys
     
     // Multiple Finnhub keys for rotation - MAJOR'S ADDITIONS
     this.finnhubApiKeys = [
@@ -71,7 +71,7 @@ class GoogleFinanceFormulasService {
       process.env.FINNHUB_API_KEY_2,
       process.env.FINNHUB_API_KEY_3,
       process.env.FINNHUB_API_KEY_4
-    ].filter(key => key && key.length > 10); // Filter out invalid keys
+    ].filter((key): key is string => key !== undefined && key.length > 10); // Filter out invalid keys
     this.currentFinnhubIndex = 0;
     
     // Multiple FMP keys for rotation - MAJOR'S ADDITIONS
@@ -80,7 +80,7 @@ class GoogleFinanceFormulasService {
       process.env.FMP_API_KEY_2,
       process.env.FMP_API_KEY_3,
       process.env.FMP_API_KEY_4
-    ].filter(key => key && key.length > 10); // Filter out invalid keys
+    ].filter((key): key is string => key !== undefined && key.length > 10); // Filter out invalid keys
     this.currentFmpIndex = 0;
     
     // Log which keys are being used
