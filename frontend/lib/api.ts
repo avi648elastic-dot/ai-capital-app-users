@@ -169,7 +169,7 @@ class ApiClient {
       return validatedData;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        console.error('API Response validation failed:', error.errors);
+        console.error('API Response validation failed:', error.issues);
         throw new Error('Invalid response format from server');
       }
       throw error;
