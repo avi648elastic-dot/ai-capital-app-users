@@ -225,17 +225,46 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   const markAllAsRead = async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/mark-all-read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+      // Get token from both localStorage and cookies
+      let token = localStorage.getItem('token');
+      if (!token) {
+        const cookies = document.cookie.split(';');
+        const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('token='));
+        if (tokenCookie) {
+          token = tokenCookie.split('=')[1];
+        }
+      }
+      
+      if (!token) {
+        console.error('❌ No authentication token found for mark all as read');
+        return;
+      }
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      console.log(`📖 Marking all notifications as read via ${apiUrl}/api/notifications/mark-all-read`);
+      
+      await axios.put(`${apiUrl}/api/notifications/mark-all-read`, {}, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 15000,
+        withCredentials: true
       });
       
+      console.log('✅ All notifications marked as read successfully');
       setNotifications(prev => 
         prev.map(n => ({ ...n, readAt: new Date().toISOString() }))
       );
       setUnreadCount(0);
-    } catch (error) {
-      console.error('Failed to mark all as read:', error);
+    } catch (error: any) {
+      console.error('❌ Failed to mark all as read:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
     }
   };
 
@@ -255,18 +284,44 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
         return;
       }
       
-      const token = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      // Get token from both localStorage and cookies
+      let token = localStorage.getItem('token');
+      if (!token) {
+        const cookies = document.cookie.split(';');
+        const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('token='));
+        if (tokenCookie) {
+          token = tokenCookie.split('=')[1];
+        }
+      }
       
-      await axios.delete(`${apiUrl}/api/notifications/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 10000
+      if (!token) {
+        console.error('❌ No authentication token found');
+        return;
+      }
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      console.log(`🗑️ Deleting notification ${id} via ${apiUrl}/api/notifications/${id}`);
+      
+      const response = await axios.delete(`${apiUrl}/api/notifications/${id}`, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 15000,
+        withCredentials: true
       });
       
+      console.log('✅ Notification deleted successfully:', response.data);
       setNotifications(prev => prev.filter(n => String(n.id) !== id));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error: any) {
-      console.error('Failed to delete notification:', error);
+      console.error('❌ Failed to delete notification:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data
+      });
       const status = error?.response?.status;
       // If forbidden or not found (global/admin notifications), mark-as-read then dismiss locally
       if (status === 403 || status === 404) {
