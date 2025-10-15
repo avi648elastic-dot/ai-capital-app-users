@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Capital Test</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 0.5rem;
+            color: #f1f5f9;
+            margin-bottom: 1rem;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="card">
+            <h1>AI-Capital Test Page</h1>
+            <p>This is a minimal test to check if basic styling works.</p>
+            <input type="email" class="input-field" placeholder="Email" />
+            <input type="password" class="input-field" placeholder="Password" />
+            <button class="btn-primary">Test Button</button>
+            <div id="api-status" style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 0.5rem;">
+                Testing API connection...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test API connectivity
+        fetch('https://ai-capital-app7.onrender.com/healthz')
+            .then(response => {
+                document.getElementById('api-status').innerHTML = 
+                    '✅ Backend API: ' + response.status + ' OK';
+            })
+            .catch(error => {
+                document.getElementById('api-status').innerHTML = 
+                    '❌ Backend API Error: ' + error.message;
+            });
+
+        // Test environment variables
+        console.log('Environment check:');
+        console.log('NEXT_PUBLIC_API_URL:', 'https://ai-capital-app7.onrender.com');
+        console.log('NEXT_PUBLIC_GOOGLE_CLIENT_ID:', '749170274091-iekr52ik39mg0gvs7amd67naiuqnr998.apps.googleusercontent.com');
+    </script>
+</body>
+</html>

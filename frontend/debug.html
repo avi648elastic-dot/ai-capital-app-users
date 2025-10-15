@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test Page</h1>
+    <div id="status">Loading...</div>
+    <script>
+        // Test API connectivity
+        fetch('https://ai-capital-app7.onrender.com/healthz')
+            .then(response => {
+                document.getElementById('status').innerHTML = 'Backend: ' + response.status;
+            })
+            .catch(error => {
+                document.getElementById('status').innerHTML = 'Backend Error: ' + error.message;
+            });
+    </script>
+</body>
+</html>
