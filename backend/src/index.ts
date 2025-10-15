@@ -29,6 +29,7 @@ import userRoutes from './routes/user';
 import notificationRoutes from './routes/notifications';
 import watchlistRoutes from './routes/watchlist';
 import stripeRoutes from './routes/stripe';
+import stripeWebhookRoutes from './routes/stripeWebhooks';
 import leaderboardRoutes from './routes/leaderboard';
 import transactionsRoutes from './routes/transactions';
 import { schedulerService } from './services/schedulerService';
@@ -259,6 +260,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/stripe', stripeWebhookRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/transactions', transactionsRoutes);
 
@@ -575,6 +577,71 @@ app.get('/api/debug/benchmark', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Benchmark failed',
+      message: error.message
+    });
+  }
+});
+
+// 🔴 Redis debug endpoint
+app.get('/api/debug/redis', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    const user = await User.findById((req as any).user?.id);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { redisService } = await import('./services/redisService');
+    
+    // Test Redis connection
+    const startTime = Date.now();
+    let redisStatus = 'disconnected';
+    let responseTime = 0;
+    let error = null;
+
+    try {
+      await redisService.ping();
+      redisStatus = 'connected';
+      responseTime = Date.now() - startTime;
+    } catch (err: any) {
+      redisStatus = 'error';
+      error = err.message;
+      responseTime = Date.now() - startTime;
+    }
+
+    // Get Redis info if connected
+    let redisInfo = null;
+    if (redisStatus === 'connected') {
+      try {
+        redisInfo = await redisService.info();
+      } catch (err) {
+        // Ignore info errors
+      }
+    }
+
+    res.json({
+      success: true,
+      redis: {
+        status: redisStatus,
+        responseTime,
+        error,
+        info: redisInfo ? {
+          version: redisInfo.redis_version,
+          uptime: redisInfo.uptime_in_seconds,
+          connectedClients: redisInfo.connected_clients,
+          usedMemory: redisInfo.used_memory_human,
+          keyspaceHits: redisInfo.keyspace_hits,
+          keyspaceMisses: redisInfo.keyspace_misses,
+          hitRate: redisInfo.keyspace_hits / (redisInfo.keyspace_hits + redisInfo.keyspace_misses) * 100
+        } : null
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    loggerService.error('Redis debug failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Redis debug failed',
       message: error.message
     });
   }

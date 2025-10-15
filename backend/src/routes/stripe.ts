@@ -378,4 +378,99 @@ router.get('/plans', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * Get user subscription
+ * GET /api/stripe/subscription
+ */
+router.get('/subscription', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user._id || (req as any).user.id;
+    const subscription = await stripeService.getSubscription(userId);
+    
+    res.json({
+      success: true,
+      subscription
+    });
+  } catch (error: any) {
+    loggerService.error('❌ [STRIPE] Error fetching subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch subscription'
+    });
+  }
+});
+
+/**
+ * Cancel subscription
+ * POST /api/stripe/cancel-subscription
+ */
+router.post('/cancel-subscription', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user._id || (req as any).user.id;
+    await stripeService.cancelSubscription(userId);
+    
+    res.json({
+      success: true,
+      message: 'Subscription cancelled successfully'
+    });
+  } catch (error: any) {
+    loggerService.error('❌ [STRIPE] Error cancelling subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to cancel subscription'
+    });
+  }
+});
+
+/**
+ * Reactivate subscription
+ * POST /api/stripe/reactivate-subscription
+ */
+router.post('/reactivate-subscription', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user._id || (req as any).user.id;
+    await stripeService.reactivateSubscription(userId);
+    
+    res.json({
+      success: true,
+      message: 'Subscription reactivated successfully'
+    });
+  } catch (error: any) {
+    loggerService.error('❌ [STRIPE] Error reactivating subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to reactivate subscription'
+    });
+  }
+});
+
+/**
+ * Create billing portal session
+ * POST /api/stripe/create-portal-session
+ */
+router.post('/create-portal-session', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user._id || (req as any).user.id;
+    const userEmail = (req as any).user.email;
+    const returnUrl = req.body.returnUrl || `${process.env.FRONTEND_URL}/dashboard`;
+    
+    const session = await stripeService.createBillingPortalSession({
+      userId,
+      userEmail,
+      returnUrl
+    });
+    
+    res.json({
+      success: true,
+      url: session.url
+    });
+  } catch (error: any) {
+    loggerService.error('❌ [STRIPE] Error creating portal session:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create billing portal session'
+    });
+  }
+});
+
 export default router;

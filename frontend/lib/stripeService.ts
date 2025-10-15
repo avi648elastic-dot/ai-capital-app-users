@@ -262,6 +262,109 @@ class StripeService {
     };
     return descriptions[planId] || '';
   }
+
+  /**
+   * Get current subscription
+   */
+  async getSubscription(): Promise<any> {
+    try {
+      const token = this.getAuthToken();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/subscription`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to fetch subscription');
+      }
+      
+      return data.subscription;
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancel subscription
+   */
+  async cancelSubscription(): Promise<void> {
+    try {
+      const token = this.getAuthToken();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/cancel-subscription`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to cancel subscription');
+      }
+    } catch (error) {
+      console.error('Error canceling subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reactivate subscription
+   */
+  async reactivateSubscription(): Promise<void> {
+    try {
+      const token = this.getAuthToken();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/reactivate-subscription`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to reactivate subscription');
+      }
+    } catch (error) {
+      console.error('Error reactivating subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create billing portal session
+   */
+  async createBillingPortal(): Promise<string> {
+    try {
+      const token = this.getAuthToken();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/stripe/create-portal-session`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to create portal session');
+      }
+      
+      return data.url;
+    } catch (error) {
+      console.error('Error creating billing portal:', error);
+      throw error;
+    }
+  }
 }
 
 export const stripeService = new StripeService();

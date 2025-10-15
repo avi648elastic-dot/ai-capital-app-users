@@ -1,55 +1,89 @@
 # 🔴 Redis Setup Guide for AI Capital
 
-## 📋 **Overview**
-
-Redis is used in AI Capital for:
-- **Distributed Cron Job Locking**: Prevents duplicate execution across multiple instances
-- **Session Management**: Fast session storage and retrieval
-- **API Response Caching**: Reduces external API calls and improves performance
-- **Rate Limiting**: Tracks API request counts per user/IP
+**Last Updated:** October 15, 2025  
+**Version:** 2.0
 
 ---
 
-## 🚀 **Local Development Setup**
+## 📋 Overview
 
-### **Option 1: Docker Compose (Recommended)**
+Redis is used in AI Capital for caching, distributed locks, and session management. The application is designed to work with or without Redis, providing graceful degradation when Redis is unavailable.
 
-The project includes a Redis container in `docker-compose.yml`:
+---
 
+## 🚀 Quick Setup (Render)
+
+### Option 1: Render Redis (Recommended)
+1. **Go to Render Dashboard**
+   - Visit [render.com](https://render.com)
+   - Sign in to your account
+
+2. **Create Redis Instance**
+   - Click "New +" → "Redis"
+   - Choose "Free" plan (30MB storage)
+   - Name: `ai-capital-redis`
+   - Region: Choose closest to your backend
+   - Click "Create Redis"
+
+3. **Get Connection Details**
+   - Copy the "Internal Database URL"
+   - Format: `redis://red-xxxxx:6379`
+
+4. **Add to Environment Variables**
+   - Go to your backend service settings
+   - Add environment variable:
+     - Key: `REDIS_URL`
+     - Value: `redis://red-xxxxx:6379`
+
+5. **Redeploy Backend**
+   - Trigger a new deployment
+   - Check logs for: `✅ Redis connected successfully`
+
+---
+
+### Option 2: External Redis (Upstash)
+1. **Create Upstash Account**
+   - Visit [upstash.com](https://upstash.com)
+   - Sign up for free account
+
+2. **Create Redis Database**
+   - Click "Create Database"
+   - Name: `ai-capital`
+   - Region: Choose closest to your backend
+   - Click "Create"
+
+3. **Get Connection Details**
+   - Copy the "REST URL" or "Redis URL"
+   - Format: `redis://default:password@host:port`
+
+4. **Add to Environment Variables**
+   - Add to your backend service:
+     - Key: `REDIS_URL`
+     - Value: Your Upstash Redis URL
+
+---
+
+## 🔧 Local Development Setup
+
+### 1. Install Redis Locally
+
+#### Windows (WSL2)
 ```bash
-# Start Redis with MongoDB and backend
-docker-compose up -d redis
-
-# Check Redis is running
-docker ps | grep redis
-
-# Test Redis connection
-docker exec -it aicapital-redis redis-cli ping
-# Expected output: PONG
-```
-
-**Redis Configuration:**
-- **Port**: `6379`
-- **Password**: `redispassword`
-- **Connection URL**: `redis://:redispassword@localhost:6379`
-
-### **Option 2: Local Redis Installation**
-
-#### **Windows:**
-```powershell
-# Download Redis for Windows from: https://github.com/microsoftarchive/redis/releases
-# Or use WSL2 with Linux installation
-
-# Via Chocolatey
-choco install redis-64
+# Install Redis in WSL2
+sudo apt update
+sudo apt install redis-server
 
 # Start Redis
-redis-server
+sudo service redis-server start
+
+# Test connection
+redis-cli ping
+# Should return: PONG
 ```
 
-#### **macOS:**
+#### macOS (Homebrew)
 ```bash
-# Install via Homebrew
+# Install Redis
 brew install redis
 
 # Start Redis
@@ -57,340 +91,310 @@ brew services start redis
 
 # Test connection
 redis-cli ping
+# Should return: PONG
 ```
 
-#### **Linux (Ubuntu/Debian):**
+#### Docker (All Platforms)
 ```bash
-# Install Redis
-sudo apt update
-sudo apt install redis-server
-
-# Start Redis
-sudo systemctl start redis-server
-sudo systemctl enable redis-server
+# Run Redis in Docker
+docker run -d --name redis -p 6379:6379 redis:alpine
 
 # Test connection
-redis-cli ping
+docker exec -it redis redis-cli ping
+# Should return: PONG
+```
+
+### 2. Environment Variables
+```bash
+# .env.local
+REDIS_URL=redis://localhost:6379
 ```
 
 ---
 
-## ☁️ **Production Deployment**
+## 🧪 Testing Redis Connection
 
-### **Render.com Setup**
-
-1. **Create Redis Instance:**
-   - Go to [Render Dashboard](https://dashboard.render.com/)
-   - Click **"New +"** → **"Redis"**
-   - Choose plan:
-     - **Free**: 25MB (good for testing)
-     - **Starter**: $7/mo, 256MB (recommended for production)
-     - **Standard**: $15/mo, 1GB (for high-traffic apps)
-   - Name: `aicapital-redis`
-   - Click **"Create Redis"**
-
-2. **Get Connection Details:**
-   - After creation, copy the **Internal Redis URL**
-   - Format: `redis://red-xxxxx:6379`
-
-3. **Configure Environment Variable:**
-   - Go to your backend service on Render
-   - Navigate to **Environment** tab
-   - Add variable:
-     ```
-     REDIS_URL=redis://red-xxxxx:6379
-     ```
-   - Click **"Save Changes"**
-
-4. **Verify Connection:**
-   - Check deployment logs for:
-     ```
-     ✅ [REDIS] Connected successfully
-     ```
-
-### **AWS ElastiCache Setup**
-
+### 1. Backend Health Check
 ```bash
-# Create ElastiCache Redis cluster
-aws elasticache create-cache-cluster \
-  --cache-cluster-id aicapital-redis \
-  --engine redis \
-  --cache-node-type cache.t3.micro \
-  --num-cache-nodes 1
+# Check if Redis is connected
+curl https://ai-capital-app7.onrender.com/api/health
 
-# Get endpoint
-aws elasticache describe-cache-clusters \
-  --cache-cluster-id aicapital-redis \
-  --show-cache-node-info
-
-# Set environment variable
-REDIS_URL=redis://aicapital-redis.xxxxx.cache.amazonaws.com:6379
-```
-
-### **Heroku Redis**
-
-```bash
-# Add Redis add-on
-heroku addons:create heroku-redis:mini -a aicapital
-
-# Get connection URL
-heroku config:get REDIS_URL -a aicapital
-
-# Environment variable is automatically set as REDIS_URL
-```
-
----
-
-## 🔧 **Configuration in AI Capital**
-
-### **Environment Variables**
-
-Add to your `.env` file:
-
-```bash
-# Local Development
-REDIS_URL=redis://:redispassword@localhost:6379
-
-# Production (Render/Heroku/AWS)
-REDIS_URL=redis://your-redis-url:6379
-```
-
-### **Backend Integration**
-
-The Redis service is automatically initialized in `backend/src/services/redisService.ts`:
-
-```typescript
-import { createClient } from 'redis';
-
-const client = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
-  socket: {
-    reconnectStrategy: (retries) => {
-      if (retries > 10) return new Error('Max retries reached');
-      return Math.min(retries * 100, 3000);
-    }
+# Response should include:
+{
+  "status": "OK",
+  "redis": {
+    "status": "connected",
+    "responseTime": 5
   }
-});
+}
+```
 
-await client.connect();
+### 2. Debug Endpoint
+```bash
+# Check Redis status (admin only)
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  https://ai-capital-app7.onrender.com/api/debug/redis
+```
+
+### 3. Manual Testing
+```bash
+# Connect to Redis CLI
+redis-cli
+
+# Test basic operations
+SET test "Hello Redis"
+GET test
+# Should return: "Hello Redis"
+
+# Test expiration
+SET key "value" EX 10
+TTL key
+# Should return: 10
+
+# Exit
+EXIT
 ```
 
 ---
 
-## 🔒 **Distributed Cron Job Locking**
+## 📊 Redis Usage in AI Capital
 
-### **How It Works**
-
-AI Capital uses Redis to ensure cron jobs run only once across multiple instances:
-
+### 1. **Caching**
 ```typescript
-// Acquire lock before running job
-const lockKey = `cron:lock:${jobName}`;
-const lockAcquired = await redisService.set(
-  lockKey, 
-  'locked', 
-  { NX: true, EX: 300 } // 5-minute lock
-);
+// Stock data caching (20 seconds TTL)
+await redis.set(`stock:${ticker}`, JSON.stringify(data), 20);
 
-if (!lockAcquired) {
-  console.log('Job already running in another instance');
-  return;
-}
+// Portfolio caching (5 minutes TTL)
+await redis.set(`portfolio:${userId}`, JSON.stringify(portfolio), 300);
+```
 
-try {
-  // Run job
-  await updatePortfolioMetrics();
-} finally {
-  // Release lock
-  await redisService.del(lockKey);
+### 2. **Distributed Locks**
+```typescript
+// Prevent duplicate operations
+const lockKey = `lock:portfolio:${userId}`;
+const acquired = await redis.set(lockKey, 'locked', 'PX', 30000, 'NX');
+
+if (acquired) {
+  try {
+    // Perform operation
+  } finally {
+    await redis.del(lockKey);
+  }
 }
 ```
 
-### **Cron Jobs Using Redis**
+### 3. **Session Management**
+```typescript
+// Store user sessions
+await redis.set(`session:${sessionId}`, JSON.stringify(userData), 3600);
 
-1. **Daily Portfolio Updates** (`schedulerService.ts`)
-   - Lock: `cron:lock:portfolio-update`
-   - Frequency: Daily at 4 PM EST
-   - Timeout: 5 minutes
-
-2. **Watchlist Alert Checks** (`watchlistAlertService.ts`)
-   - Lock: `cron:lock:watchlist-alerts`
-   - Frequency: Every 5 minutes
-   - Timeout: 2 minutes
-
-3. **Notification Cleanup** (`notificationService.ts`)
-   - Lock: `cron:lock:notification-cleanup`
-   - Frequency: Daily at midnight
-   - Timeout: 5 minutes
+// Rate limiting
+const key = `rate_limit:${ip}`;
+const current = await redis.incr(key);
+if (current === 1) {
+  await redis.expire(key, 60);
+}
+```
 
 ---
 
-## 📊 **Monitoring & Troubleshooting**
+## 🔍 Monitoring & Debugging
 
-### **Check Redis Status**
-
+### 1. **Redis Commands**
 ```bash
-# Via Redis CLI
-redis-cli ping
-redis-cli info stats
-
-# Via Docker
-docker exec -it aicapital-redis redis-cli ping
-
-# Check key count
-redis-cli DBSIZE
-
-# View all keys (use carefully in production!)
-redis-cli KEYS "*"
-```
-
-### **Common Issues**
-
-#### **Connection Refused**
-
-```bash
-# Symptom
-Error: connect ECONNREFUSED 127.0.0.1:6379
-
-# Solution
-# 1. Check Redis is running
-docker ps | grep redis
-redis-cli ping
-
-# 2. Verify REDIS_URL environment variable
-echo $REDIS_URL
-
-# 3. Check firewall/security groups
-```
-
-#### **Authentication Failed**
-
-```bash
-# Symptom
-Error: NOAUTH Authentication required
-
-# Solution
-# Update connection URL with password
-REDIS_URL=redis://:yourpassword@localhost:6379
-```
-
-#### **Lock Not Releasing**
-
-```bash
-# Symptom
-Cron job not running, logs show "lock held"
-
-# Solution
-# Manually release lock (emergency only!)
-redis-cli DEL "cron:lock:portfolio-update"
-
-# Or flush all locks
-redis-cli KEYS "cron:lock:*" | xargs redis-cli DEL
-```
-
-### **Performance Monitoring**
-
-```bash
-# Monitor commands in real-time
+# Monitor all commands in real-time
 redis-cli MONITOR
 
-# Get memory usage
+# Get Redis info
+redis-cli INFO
+
+# Check memory usage
 redis-cli INFO memory
 
-# Check slowlog
-redis-cli SLOWLOG GET 10
+# List all keys
+redis-cli KEYS "*"
+
+# Check specific key
+redis-cli GET "stock:AAPL"
 ```
 
----
-
-## 🧪 **Testing Redis Connection**
-
-### **Simple Connection Test**
-
+### 2. **Application Logs**
 ```bash
-# Create test script
-cat > test-redis.js << 'EOF'
-const { createClient } = require('redis');
+# Check backend logs for Redis status
+# Look for these messages:
+✅ Redis connected successfully
+❌ Redis connection failed
+⚠️ Redis operation failed, using fallback
+```
 
-(async () => {
-  const client = createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379'
-  });
+### 3. **Performance Metrics**
+```bash
+# Check Redis performance
+redis-cli INFO stats
 
-  client.on('error', (err) => console.error('Redis Error:', err));
-  
-  await client.connect();
-  console.log('✅ Connected to Redis');
-  
-  await client.set('test-key', 'Hello Redis!');
-  const value = await client.get('test-key');
-  console.log('✅ Test value:', value);
-  
-  await client.del('test-key');
-  await client.quit();
-  console.log('✅ Test completed');
-})();
-EOF
-
-# Run test
-node test-redis.js
+# Key metrics to monitor:
+# - connected_clients
+# - used_memory
+# - keyspace_hits
+# - keyspace_misses
+# - instantaneous_ops_per_sec
 ```
 
 ---
 
-## 🔐 **Security Best Practices**
+## 🚨 Troubleshooting
 
-1. **Use Strong Passwords**
-   ```bash
-   # Generate secure password
-   openssl rand -base64 32
-   ```
+### Common Issues
 
-2. **Enable TLS in Production**
-   ```typescript
-   const client = createClient({
-     url: process.env.REDIS_URL,
-     socket: {
-       tls: true,
-       rejectUnauthorized: true
-     }
-   });
-   ```
+#### 1. **Connection Refused**
+```
+Error: connect ECONNREFUSED 127.0.0.1:6379
+```
+**Solution:**
+- Ensure Redis is running: `redis-cli ping`
+- Check Redis URL in environment variables
+- Verify firewall settings
 
-3. **Restrict Access**
-   - Use VPC/private networks
-   - Configure firewall rules
-   - Limit access to backend instances only
+#### 2. **Authentication Failed**
+```
+Error: NOAUTH Authentication required
+```
+**Solution:**
+- Check if Redis requires password
+- Update REDIS_URL to include password: `redis://:password@host:port`
 
-4. **Set Max Memory Policy**
-   ```bash
-   # In redis.conf
-   maxmemory 256mb
-   maxmemory-policy allkeys-lru
-   ```
+#### 3. **Memory Limit Exceeded**
+```
+Error: OOM command not allowed when used memory > 'maxmemory'
+```
+**Solution:**
+- Increase Redis memory limit
+- Implement key expiration
+- Use Redis eviction policies
 
----
-
-## 📚 **Additional Resources**
-
-- [Redis Documentation](https://redis.io/documentation)
-- [Node Redis Client](https://github.com/redis/node-redis)
-- [Render Redis Guide](https://render.com/docs/redis)
-- [AWS ElastiCache](https://aws.amazon.com/elasticache/)
-
----
-
-## ✅ **Checklist for Production**
-
-- [ ] Redis instance created on Render/AWS/Heroku
-- [ ] `REDIS_URL` environment variable set
-- [ ] Backend successfully connects to Redis
-- [ ] Cron jobs acquire/release locks correctly
-- [ ] Monitoring and alerts configured
-- [ ] Backup strategy in place
-- [ ] Security rules applied (passwords, TLS, firewall)
+#### 4. **Timeout Errors**
+```
+Error: Redis connection timeout
+```
+**Solution:**
+- Check network connectivity
+- Increase timeout settings
+- Verify Redis server is responsive
 
 ---
 
-**Need help?** Check the [Runbook.md](./Runbook.md) for troubleshooting steps or reach out to the development team.
+## ⚡ Performance Optimization
 
+### 1. **Connection Pooling**
+```typescript
+// Configure Redis connection pool
+const redis = new Redis({
+  host: 'localhost',
+  port: 6379,
+  maxRetriesPerRequest: 3,
+  retryDelayOnFailover: 100,
+  enableReadyCheck: false,
+  maxLoadingTimeout: 1000,
+  lazyConnect: true,
+  keepAlive: 30000,
+  family: 4,
+  db: 0
+});
+```
+
+### 2. **Memory Optimization**
+```typescript
+// Use appropriate data types
+// Instead of storing large objects as strings
+await redis.hset(`user:${id}`, {
+  name: 'John',
+  email: 'john@example.com'
+});
+
+// Use expiration for temporary data
+await redis.setex(`temp:${id}`, 300, 'data');
+```
+
+### 3. **Batch Operations**
+```typescript
+// Use pipeline for multiple operations
+const pipeline = redis.pipeline();
+pipeline.set('key1', 'value1');
+pipeline.set('key2', 'value2');
+pipeline.set('key3', 'value3');
+await pipeline.exec();
+```
+
+---
+
+## 🔒 Security Best Practices
+
+### 1. **Network Security**
+- Use Redis AUTH for password protection
+- Bind Redis to localhost only in development
+- Use SSL/TLS in production
+- Implement firewall rules
+
+### 2. **Data Security**
+- Don't store sensitive data in Redis
+- Use appropriate expiration times
+- Implement key naming conventions
+- Regular security audits
+
+### 3. **Access Control**
+```typescript
+// Use namespaced keys
+const key = `app:${environment}:${userId}:${resource}`;
+
+// Implement key patterns
+const pattern = `app:prod:user:*:portfolio`;
+const keys = await redis.keys(pattern);
+```
+
+---
+
+## 📈 Scaling Considerations
+
+### 1. **Redis Clustering**
+- For high availability
+- Automatic failover
+- Horizontal scaling
+- Data sharding
+
+### 2. **Redis Sentinel**
+- Monitoring
+- Notifications
+- Automatic failover
+- Configuration management
+
+### 3. **Memory Management**
+- Monitor memory usage
+- Implement eviction policies
+- Use appropriate data types
+- Regular cleanup
+
+---
+
+## 🎯 Production Checklist
+
+- [ ] Redis instance created and configured
+- [ ] Environment variables set correctly
+- [ ] Connection tested and verified
+- [ ] Monitoring and alerting configured
+- [ ] Backup strategy implemented
+- [ ] Security measures in place
+- [ ] Performance monitoring active
+- [ ] Documentation updated
+
+---
+
+## 📚 Related Documentation
+
+- [Architecture](./Architecture.md) - System overview
+- [Runbook](./Runbook.md) - Operations guide
+- [API Reference](./API.md) - Endpoint documentation
+
+---
+
+**Last Updated:** October 15, 2025  
+**Maintained by:** AI Capital Development Team

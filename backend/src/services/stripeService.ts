@@ -452,6 +452,191 @@ class StripeService {
     
     return planType === 'premium' ? premiumPriceId : premiumPlusPriceId;
   }
+
+  /**
+   * Handle invoice payment succeeded
+   */
+  async handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
+    try {
+      const subscriptionId = invoice.subscription as string;
+      if (!subscriptionId) {
+        loggerService.warn(`⚠️ [STRIPE] Payment succeeded without subscription`, { invoiceId: invoice.id });
+        return;
+      }
+
+      loggerService.info(`✅ [STRIPE] Payment succeeded`, { 
+        invoiceId: invoice.id,
+        subscriptionId,
+        amount: invoice.amount_paid
+      });
+
+      // Update user subscription status
+      await User.findOneAndUpdate(
+        { stripeSubscriptionId: subscriptionId },
+        { 
+          subscriptionStatus: 'active',
+          subscriptionActive: true,
+          lastPaymentDate: new Date()
+        }
+      );
+    } catch (error) {
+      loggerService.error(`❌ [STRIPE] Error handling payment succeeded`, { error, invoiceId: invoice.id });
+    }
+  }
+
+  /**
+   * Handle invoice payment failed
+   */
+  async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+    try {
+      const subscriptionId = invoice.subscription as string;
+      if (!subscriptionId) {
+        loggerService.warn(`⚠️ [STRIPE] Payment failed without subscription`, { invoiceId: invoice.id });
+        return;
+      }
+
+      loggerService.info(`❌ [STRIPE] Payment failed`, { 
+        invoiceId: invoice.id,
+        subscriptionId,
+        amount: invoice.amount_due
+      });
+
+      // Update user subscription status
+      await User.findOneAndUpdate(
+        { stripeSubscriptionId: subscriptionId },
+        { 
+          subscriptionStatus: 'past_due',
+          subscriptionActive: false
+        }
+      );
+    } catch (error) {
+      loggerService.error(`❌ [STRIPE] Error handling payment failed`, { error, invoiceId: invoice.id });
+    }
+  }
+
+  /**
+   * Handle trial will end
+   */
+  async handleTrialWillEnd(subscription: Stripe.Subscription): Promise<void> {
+    try {
+      const userId = subscription.metadata?.userId;
+      if (!userId) {
+        loggerService.warn(`⚠️ [STRIPE] Trial ending without user ID`, { subscriptionId: subscription.id });
+        return;
+      }
+
+      loggerService.info(`⚠️ [STRIPE] Trial ending soon`, { 
+        subscriptionId: subscription.id,
+        userId,
+        trialEnd: subscription.trial_end
+      });
+
+      // Here you could send an email notification to the user
+      // For now, just log it
+    } catch (error) {
+      loggerService.error(`❌ [STRIPE] Error handling trial will end`, { error, subscriptionId: subscription.id });
+    }
+  }
+
+  /**
+   * Get user subscription
+   */
+  async getSubscription(userId: string): Promise<any> {
+    try {
+      const user = await User.findById(userId);
+      if (!user || !user.stripeSubscriptionId) {
+        return null;
+      }
+
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      
+      return {
+        id: subscription.id,
+        status: subscription.status,
+        currentPeriodStart: subscription.current_period_start,
+        currentPeriodEnd: subscription.current_period_end,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+        planType: this.getPlanTypeFromPriceId(subscription.items.data[0]?.price.id || ''),
+        price: subscription.items.data[0]?.price.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0
+      };
+    } catch (error: any) {
+      loggerService.error('❌ [STRIPE] Error getting subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancel subscription
+   */
+  async cancelSubscription(userId: string): Promise<void> {
+    try {
+      const user = await User.findById(userId);
+      if (!user || !user.stripeSubscriptionId) {
+        throw new Error('No active subscription found');
+      }
+
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true
+      });
+
+      loggerService.info(`✅ [STRIPE] Subscription cancelled for user ${userId}`, {
+        subscriptionId: user.stripeSubscriptionId
+      });
+    } catch (error: any) {
+      loggerService.error('❌ [STRIPE] Error cancelling subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reactivate subscription
+   */
+  async reactivateSubscription(userId: string): Promise<void> {
+    try {
+      const user = await User.findById(userId);
+      if (!user || !user.stripeSubscriptionId) {
+        throw new Error('No active subscription found');
+      }
+
+      await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: false
+      });
+
+      loggerService.info(`✅ [STRIPE] Subscription reactivated for user ${userId}`, {
+        subscriptionId: user.stripeSubscriptionId
+      });
+    } catch (error: any) {
+      loggerService.error('❌ [STRIPE] Error reactivating subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create billing portal session
+   */
+  async createBillingPortalSession(data: {
+    userId: string;
+    userEmail: string;
+    returnUrl: string;
+  }): Promise<Stripe.BillingPortal.Session> {
+    try {
+      const user = await User.findById(data.userId);
+      if (!user || !user.stripeCustomerId) {
+        throw new Error('No Stripe customer found');
+      }
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: data.returnUrl
+      });
+
+      loggerService.info(`✅ [STRIPE] Billing portal session created for user ${data.userId}`);
+      return session;
+    } catch (error: any) {
+      loggerService.error('❌ [STRIPE] Error creating billing portal session:', error);
+      throw error;
+    }
+  }
 }
 
 export const stripeService = new StripeService();
