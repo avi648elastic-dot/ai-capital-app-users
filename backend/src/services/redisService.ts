@@ -306,6 +306,39 @@ class RedisService {
       });
     }
   }
+
+  /**
+   * Ping Redis server
+   */
+  async ping(): Promise<string> {
+    if (!this.client || !this.isConnected) {
+      throw new Error('Redis is not connected');
+    }
+    return await this.client.ping();
+  }
+
+  /**
+   * Get Redis server info
+   */
+  async info(): Promise<any> {
+    if (!this.client || !this.isConnected) {
+      throw new Error('Redis is not connected');
+    }
+    const infoStr = await this.client.info();
+    
+    // Parse info string into object
+    const lines = infoStr.split('\r\n');
+    const info: any = {};
+    
+    for (const line of lines) {
+      if (line && !line.startsWith('#') && line.includes(':')) {
+        const [key, value] = line.split(':');
+        info[key] = value;
+      }
+    }
+    
+    return info;
+  }
 }
 
 // Export singleton instance

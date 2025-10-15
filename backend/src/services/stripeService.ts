@@ -458,7 +458,8 @@ class StripeService {
    */
   async handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
     try {
-      const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+      const subscription = (invoice as any).subscription;
+      const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
       if (!subscriptionId) {
         loggerService.warn(`⚠️ [STRIPE] Payment succeeded without subscription`, { invoiceId: invoice.id });
         return;
@@ -489,7 +490,8 @@ class StripeService {
    */
   async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     try {
-      const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+      const subscription = (invoice as any).subscription;
+      const subscriptionId = typeof subscription === 'string' ? subscription : subscription?.id;
       if (!subscriptionId) {
         loggerService.warn(`⚠️ [STRIPE] Payment failed without subscription`, { invoiceId: invoice.id });
         return;
@@ -549,12 +551,13 @@ class StripeService {
       }
 
       const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+      const subscriptionData = subscription as any;
       
       return {
         id: subscription.id,
         status: subscription.status,
-        currentPeriodStart: subscription.current_period_start,
-        currentPeriodEnd: subscription.current_period_end,
+        currentPeriodStart: subscriptionData.current_period_start,
+        currentPeriodEnd: subscriptionData.current_period_end,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         planType: this.getPlanTypeFromPriceId(subscription.items.data[0]?.price.id || ''),
         price: subscription.items.data[0]?.price.unit_amount ? subscription.items.data[0].price.unit_amount / 100 : 0
