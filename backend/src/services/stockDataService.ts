@@ -38,8 +38,8 @@ class StockDataService {
   private readonly circuitBreakerTimeout = 60000; // 1 minute
 
   constructor() {
-    this.finnhubApiKey = process.env.FINNHUB_API_KEY || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g';
-    this.fmpApiKey = process.env.FMP_API_KEY || 'DPQXLdd8vdBNFA1tl5HWXt8Fd7D0Lw6G';
+    this.finnhubApiKey = process.env.FINNHUB_API_KEY_1 || process.env.FINNHUB_API_KEY;
+    this.fmpApiKey = process.env.FMP_API_KEY_1 || process.env.FMP_API_KEY;
     
     // Initialize LRU Cache with 20s TTL
     this.cache = new LRUCache<string, StockData>({

@@ -33,7 +33,7 @@ class HistoricalDataService {
           resolution: 'D',
           from: from,
           to: to,
-          token: process.env.FINNHUB_API_KEY
+          token: process.env.FINNHUB_API_KEY_1 || process.env.FINNHUB_API_KEY
         }
       });
 

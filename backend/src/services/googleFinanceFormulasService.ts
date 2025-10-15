@@ -59,27 +59,27 @@ class GoogleFinanceFormulasService {
   constructor() {
     // 🔑 MAJOR'S SMART ENGINE - Multiple API Keys with aggressive rotation
     this.alphaVantageKeys = [
-      process.env.ALPHA_VANTAGE_API_KEY_1 || '1A7DIQSD5MV44PWM',
-      process.env.ALPHA_VANTAGE_API_KEY_2 || 'YY3YQ3UYVJHNPOIY', 
-      process.env.ALPHA_VANTAGE_API_KEY_3 || 'PSQ2LTRVWO99SZN0',
-      process.env.ALPHA_VANTAGE_API_KEY_4 || 'WR0EI5H42PWWAUJ0'
-    ].filter(key => key && key !== 'demo'); // Remove any invalid keys
+      process.env.ALPHA_VANTAGE_API_KEY_1,
+      process.env.ALPHA_VANTAGE_API_KEY_2, 
+      process.env.ALPHA_VANTAGE_API_KEY_3,
+      process.env.ALPHA_VANTAGE_API_KEY_4
+    ].filter(key => key && key !== 'demo' && key.length > 10); // Remove any invalid keys
     
     // Multiple Finnhub keys for rotation - MAJOR'S ADDITIONS
     this.finnhubApiKeys = [
-      process.env.FINNHUB_API_KEY_1 || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g',
-      process.env.FINNHUB_API_KEY_2 || 'd3l2ggpr01qp3ucq6850d3l2ggpr01qp3ucq685g',
-      process.env.FINNHUB_API_KEY_3 || 'ctpf30pr01qil9oedjr0ctpf30pr01qil9oedjrg',
-      process.env.FINNHUB_API_KEY_4 || 'cqm8uf9r01qj5qsj2nkgcqm8uf9r01qj5qsj2nl0'
+      process.env.FINNHUB_API_KEY_1,
+      process.env.FINNHUB_API_KEY_2,
+      process.env.FINNHUB_API_KEY_3,
+      process.env.FINNHUB_API_KEY_4
     ].filter(key => key && key.length > 10); // Filter out invalid keys
     this.currentFinnhubIndex = 0;
     
     // Multiple FMP keys for rotation - MAJOR'S ADDITIONS
     this.fmpApiKeys = [
-      process.env.FMP_API_KEY_1 || 'DPQXLdd8vdBNFA1tl5HWXt8Fd7D0Lw6G',
-      process.env.FMP_API_KEY_2 || 'dly9ZAPDVSkLZ9173zNLPuTIfDpKDtFi',
-      process.env.FMP_API_KEY_3 || 'AKoWLqwNXQKqmJg5Z4wXvlmn96C3DDKB',
-      process.env.FMP_API_KEY_4 || 'OkSKxQHHjXKRE9fQLVa2XgvnTh7lGHvf'
+      process.env.FMP_API_KEY_1,
+      process.env.FMP_API_KEY_2,
+      process.env.FMP_API_KEY_3,
+      process.env.FMP_API_KEY_4
     ].filter(key => key && key.length > 10); // Filter out invalid keys
     this.currentFmpIndex = 0;
     

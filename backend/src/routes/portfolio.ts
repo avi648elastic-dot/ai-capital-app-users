@@ -95,7 +95,7 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
       let exchange = '—';
       try {
         const { default: axios } = await import('axios');
-        const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g';
+        const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY_1 || process.env.FINNHUB_API_KEY;
         
         // Quick mapping by suffix first
         if (item.ticker.endsWith('.TO')) exchange = 'TSX';

@@ -503,6 +503,33 @@ app.get('/api/test-stock/:symbol', async (req, res) => {
   }
 });
 
+// 🔑 Debug API keys endpoint
+app.get('/api/debug/keys', (req, res) => {
+  const keys = {
+    ALPHA_VANTAGE_API_KEY_1: process.env.ALPHA_VANTAGE_API_KEY_1 ? 'SET' : 'NOT SET',
+    ALPHA_VANTAGE_API_KEY_2: process.env.ALPHA_VANTAGE_API_KEY_2 ? 'SET' : 'NOT SET',
+    ALPHA_VANTAGE_API_KEY_3: process.env.ALPHA_VANTAGE_API_KEY_3 ? 'SET' : 'NOT SET',
+    ALPHA_VANTAGE_API_KEY_4: process.env.ALPHA_VANTAGE_API_KEY_4 ? 'SET' : 'NOT SET',
+    FINNHUB_API_KEY_1: process.env.FINNHUB_API_KEY_1 ? 'SET' : 'NOT SET',
+    FINNHUB_API_KEY_2: process.env.FINNHUB_API_KEY_2 ? 'SET' : 'NOT SET',
+    FINNHUB_API_KEY_3: process.env.FINNHUB_API_KEY_3 ? 'SET' : 'NOT SET',
+    FINNHUB_API_KEY_4: process.env.FINNHUB_API_KEY_4 ? 'SET' : 'NOT SET',
+    FMP_API_KEY_1: process.env.FMP_API_KEY_1 ? 'SET' : 'NOT SET',
+    FMP_API_KEY_2: process.env.FMP_API_KEY_2 ? 'SET' : 'NOT SET',
+    FMP_API_KEY_3: process.env.FMP_API_KEY_3 ? 'SET' : 'NOT SET',
+    FMP_API_KEY_4: process.env.FMP_API_KEY_4 ? 'SET' : 'NOT SET',
+    FINNHUB_API_KEY: process.env.FINNHUB_API_KEY ? 'SET' : 'NOT SET',
+    FMP_API_KEY: process.env.FMP_API_KEY ? 'SET' : 'NOT SET',
+    ALPHA_VANTAGE_API_KEY: process.env.ALPHA_VANTAGE_API_KEY ? 'SET' : 'NOT SET'
+  };
+  
+  res.json({
+    success: true,
+    keys,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // 📊 Scheduler status endpoint
 app.get('/api/scheduler/status', (req, res) => {
   const status = schedulerService.getStatus();

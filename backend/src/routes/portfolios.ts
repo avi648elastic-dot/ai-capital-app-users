@@ -48,7 +48,7 @@ router.get('/', authenticateToken, requireSubscription, async (req, res) => {
             let exchange = '—';
             try {
               const { default: axios } = await import('axios');
-              const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY || 'd3crne9r01qmnfgf0q70d3crne9r01qmnfgf0q7g';
+              const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY_1 || process.env.FINNHUB_API_KEY;
               
               // Quick mapping by suffix first
               if (stock.ticker.endsWith('.TO')) exchange = 'TSX';
