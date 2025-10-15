@@ -241,9 +241,9 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       }
       
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-      console.log(`📖 Marking all notifications as read via ${apiUrl}/api/notifications/mark-all-read`);
+      console.log(`📖 Marking all notifications as read via ${apiUrl}/api/notifications/read-all`);
       
-      await axios.put(`${apiUrl}/api/notifications/mark-all-read`, {}, {
+      await axios.put(`${apiUrl}/api/notifications/read-all`, {}, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -326,10 +326,20 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       // If forbidden or not found (global/admin notifications), mark-as-read then dismiss locally
       if (status === 403 || status === 404) {
         try {
-          const token = localStorage.getItem('token');
+          let token2 = localStorage.getItem('token');
+          if (!token2) {
+            const cookies = document.cookie.split(';');
+            const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('token='));
+            if (tokenCookie) token2 = tokenCookie.split('=')[1];
+          }
           const id = String(notificationId);
           await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/${id}/read`, {}, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { 
+              Authorization: `Bearer ${token2}`,
+              'Content-Type': 'application/json'
+            },
+            withCredentials: true,
+            timeout: 15000
           });
         } catch (markErr) {
           // ignore
