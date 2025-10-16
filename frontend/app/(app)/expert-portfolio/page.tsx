@@ -48,6 +48,23 @@ interface ExpertInfo {
   averageReturn?: number;
 }
 
+interface DeletedTransaction {
+  _id: string;
+  ticker: string;
+  amount: number;
+  portfolioId: string;
+  deletedAt: string;
+  reason: string;
+  beforeSnapshot: {
+    shares: number;
+    entryPrice: number;
+    stopLoss?: number;
+    takeProfit?: number;
+    action: string;
+    notes?: string;
+  };
+}
+
 export default function ExpertPortfolioPage() {
   const { t } = useLanguage();
   const router = useRouter();
@@ -59,11 +76,13 @@ export default function ExpertPortfolioPage() {
     totalPnL: 0,
     totalPnLPercent: 0
   });
+  const [deletedTransactions, setDeletedTransactions] = useState<DeletedTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchExpertPortfolio();
+    fetchDeletedTransactions();
     const interval = setInterval(fetchExpertPortfolio, 30000); // Update every 30s
     return () => clearInterval(interval);
   }, []);
@@ -93,6 +112,25 @@ export default function ExpertPortfolioPage() {
       setError(err.response?.data?.message || 'Failed to load expert portfolio');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDeletedTransactions = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      const token = Cookies.get('token');
+      
+      if (!token) return;
+
+      const response = await axios.get(`${apiUrl}/api/transactions/audit/deleted`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data.success) {
+        setDeletedTransactions(response.data.transactions || []);
+      }
+    } catch (err: any) {
+      console.error('Error fetching deleted transactions:', err);
     }
   };
 
@@ -463,6 +501,119 @@ export default function ExpertPortfolioPage() {
             </p>
           </div>
         </div>
+
+        {/* Deleted Transactions Section */}
+        {deletedTransactions.length > 0 && (
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white flex items-center">
+                <AlertCircle className="w-6 h-6 mr-3 text-red-400" />
+                Expert's Closed Positions
+              </h2>
+              <span className="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
+                {deletedTransactions.length} closed positions
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {deletedTransactions.map((transaction) => {
+                const realizedPnL = transaction.amount - (transaction.beforeSnapshot.shares * transaction.beforeSnapshot.entryPrice);
+                const realizedPnLPercent = transaction.beforeSnapshot.entryPrice > 0 
+                  ? (realizedPnL / (transaction.beforeSnapshot.shares * transaction.beforeSnapshot.entryPrice)) * 100 
+                  : 0;
+
+                return (
+                  <div key={transaction._id} className="bg-slate-900/50 border border-slate-700 rounded-xl p-4 hover:border-red-500/30 transition-all duration-200">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg font-bold text-white">{transaction.ticker}</span>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          realizedPnL >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
+                        }`}>
+                          {realizedPnL >= 0 ? 'WIN' : 'LOSS'}
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-500">
+                        {new Date(transaction.deletedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    {/* Position Details */}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Shares:</span>
+                        <span className="text-white">{transaction.beforeSnapshot.shares}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Entry Price:</span>
+                        <span className="text-white">${transaction.beforeSnapshot.entryPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Exit Value:</span>
+                        <span className="text-white">${transaction.amount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Realized P&L:</span>
+                        <span className={`font-semibold ${realizedPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          ${realizedPnL.toFixed(2)} ({realizedPnLPercent.toFixed(1)}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Stop Loss & Take Profit */}
+                    {(transaction.beforeSnapshot.stopLoss || transaction.beforeSnapshot.takeProfit) && (
+                      <div className="border-t border-slate-700 pt-3 mb-3">
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          {transaction.beforeSnapshot.stopLoss && (
+                            <div className="text-center">
+                              <span className="text-slate-400">Stop Loss</span>
+                              <div className="text-red-400 font-semibold">${transaction.beforeSnapshot.stopLoss.toFixed(2)}</div>
+                            </div>
+                          )}
+                          {transaction.beforeSnapshot.takeProfit && (
+                            <div className="text-center">
+                              <span className="text-slate-400">Take Profit</span>
+                              <div className="text-green-400 font-semibold">${transaction.beforeSnapshot.takeProfit.toFixed(2)}</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Reason for Closure */}
+                    <div className="border-t border-slate-700 pt-3">
+                      <div className="text-xs text-slate-400 mb-1">Reason for closure:</div>
+                      <div className="text-sm text-slate-300">{transaction.reason}</div>
+                    </div>
+
+                    {/* Notes */}
+                    {transaction.beforeSnapshot.notes && (
+                      <div className="mt-3 pt-3 border-t border-slate-700">
+                        <div className="text-xs text-slate-400 mb-1">Expert's notes:</div>
+                        <div className="text-sm text-slate-300 italic">"{transaction.beforeSnapshot.notes}"</div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Deleted Transactions Disclaimer */}
+            <div className="mt-6 bg-red-900/20 border border-red-500/30 rounded-xl p-4">
+              <h4 className="text-sm font-semibold text-red-300 mb-2 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Closed Positions Disclaimer
+              </h4>
+              <p className="text-xs text-red-200 leading-relaxed">
+                These are the expert's previously closed positions for educational purposes only. 
+                Past performance does not guarantee future results. The expert's reasoning and 
+                exit strategies are shared to help you learn, but you should never blindly follow 
+                any trading strategy. Always do your own research and risk management.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Disclaimer */}
         <div className="mt-8 bg-slate-900/50 border border-slate-700 rounded-xl p-6">
