@@ -9,6 +9,11 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import StockForm from '@/components/StockForm';
 import Header from '@/components/Header';
 import MobileHeader from '@/components/MobileHeader';
+import MobileNavigationEnhanced from '@/components/MobileNavigationEnhanced';
+import PortfolioCardSwipeable from '@/components/PortfolioCardSwipeable';
+import DashboardWidgets from '@/components/DashboardWidgets';
+import AccessibilityEnhancements from '@/components/AccessibilityEnhancements';
+import InteractiveTutorial, { useTutorial } from '@/components/InteractiveTutorial';
 import { getSubscriptionLimits, canCreatePortfolio, canAddStock, getUpgradeMessage } from '@/utils/subscriptionLimits';
 import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';
 import CreatePortfolioModal from '@/components/CreatePortfolioModal';
@@ -66,6 +71,9 @@ export default function Dashboard() {
     totalPnLPercent: 0,
   });
   const loading = userLoading || portfolioLoading;
+  
+  // Tutorial management
+  const { isOpen: isTutorialOpen, startTutorial, closeTutorial, completeTutorial } = useTutorial('dashboard-intro');
   const [showStockForm, setShowStockForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'solid' | 'risky'>('solid');
   const [debugInfo, setDebugInfo] = useState<any>(null);
@@ -159,7 +167,6 @@ export default function Dashboard() {
       // Just proceed to fetch portfolio data directly
       if (error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') {
         console.log('🔍 [DASHBOARD] Onboarding check failed due to network - proceeding to fetch portfolio');
-        fetchUserData();
         fetchPortfolio();
       return;
     }
@@ -654,7 +661,9 @@ export default function Dashboard() {
 
         {/* Portfolio Summary */}
         <ErrorBoundary label="summary">
-          <LazyPortfolioSummary totals={totals} />
+          <div data-tutorial="portfolio-summary">
+            <LazyPortfolioSummary totals={totals} />
+          </div>
         </ErrorBoundary>
 
       {/* Action Buttons with Stock/Portfolio Counters - AGGRESSIVE Mobile Optimization */}
@@ -989,10 +998,35 @@ export default function Dashboard() {
           userTier={user?.subscriptionTier || 'free'}
           onSuccess={() => {
             // Refresh dashboard data when new portfolio/stock is added
-            fetchUserData();
+            // User data is handled by SWR
           }}
         />
       </div>
+
+      {/* Enhanced Mobile Navigation */}
+      <MobileNavigationEnhanced
+        userName={user?.name}
+        subscriptionTier={user?.subscriptionTier}
+        onLogout={() => {
+          Cookies.remove('token');
+          router.push('/');
+        }}
+        unreadCount={0}
+        onNotificationClick={() => {
+          // Handle notification click
+        }}
+      />
+
+      {/* Accessibility Enhancements */}
+      <AccessibilityEnhancements />
+
+      {/* Interactive Tutorial */}
+      <InteractiveTutorial
+        isOpen={isTutorialOpen}
+        onClose={closeTutorial}
+        onComplete={completeTutorial}
+        tutorialId="dashboard-intro"
+      />
     </div>
   );
 }

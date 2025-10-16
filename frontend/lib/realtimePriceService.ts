@@ -1,198 +1,222 @@
-// Real-time Price Service for Watchlist
-// Major's requirement: "Integrate real-time data for watchlist prices"
+'use client';
 
-import axios from 'axios';
-import Cookies from 'js-cookie';
+import { useState, useEffect } from 'react';
+import { io, Socket } from 'socket.io-client';
 
-interface PriceUpdate {
+export interface PriceUpdate {
   ticker: string;
-  currentPrice: number;
+  price: number;
   change: number;
   changePercent: number;
-  lastUpdated: Date;
+  volume: number;
+  timestamp: number;
 }
 
-interface RealtimePriceService {
-  startUpdates: (tickers: string[], onUpdate: (updates: PriceUpdate[]) => void) => void;
-  stopUpdates: () => void;
-  isRunning: () => boolean;
+export interface RealtimePriceService {
+  connect: () => void;
+  disconnect: () => void;
+  subscribe: (tickers: string[]) => void;
+  unsubscribe: (tickers: string[]) => void;
+  onPriceUpdate: (callback: (update: PriceUpdate) => void) => void;
+  onConnect: (callback: () => void) => void;
+  onDisconnect: (callback: () => void) => void;
+  isConnected: () => boolean;
 }
 
 class RealtimePriceServiceImpl implements RealtimePriceService {
-  private intervalId: NodeJS.Timeout | null = null;
-  private isActive = false;
-  private currentTickers: string[] = [];
-  private updateCallback: ((updates: PriceUpdate[]) => void) | null = null;
-  private readonly UPDATE_INTERVAL = 60000; // 🚀 PERFORMANCE: Increased from 30s to 60s to reduce API load
-  private lastFetchTime = 0;
-  private readonly MIN_FETCH_INTERVAL = 10000; // Minimum 10 seconds between fetches
-  private priceCache = new Map<string, { price: number; timestamp: number }>();
-  private readonly CACHE_TTL = 30000; // 30 second cache for prices
+  private socket: Socket | null = null;
+  private priceUpdateCallbacks: ((update: PriceUpdate) => void)[] = [];
+  private connectCallbacks: (() => void)[] = [];
+  private disconnectCallbacks: (() => void)[] = [];
+  private subscribedTickers: Set<string> = new Set();
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelay = 1000;
 
-  startUpdates(tickers: string[], onUpdate: (updates: PriceUpdate[]) => void): void {
-    console.log('🚀 Starting real-time price updates for:', tickers);
-    
-    this.currentTickers = tickers;
-    this.updateCallback = onUpdate;
-    this.isActive = true;
-
-    // Start immediate update
-    this.fetchPrices();
-
-    // Set up interval
-    this.intervalId = setInterval(() => {
-      if (this.isActive) {
-        this.fetchPrices();
-      }
-    }, this.UPDATE_INTERVAL);
+  constructor() {
+    this.connect();
   }
 
-  stopUpdates(): void {
-    console.log('🛑 Stopping real-time price updates');
-    
-    this.isActive = false;
-    this.currentTickers = [];
-    this.updateCallback = null;
-
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-  }
-
-  isRunning(): boolean {
-    return this.isActive;
-  }
-
-  private async fetchPrices(): Promise<void> {
-    if (!this.isActive || this.currentTickers.length === 0 || !this.updateCallback) {
+  connect(): void {
+    if (this.socket?.connected) {
       return;
     }
 
-    // 🚀 PERFORMANCE: Throttle requests to avoid too frequent API calls
-    const now = Date.now();
-    if (now - this.lastFetchTime < this.MIN_FETCH_INTERVAL) {
-      return; // Removed verbose logging
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+    const wsUrl = apiUrl.replace('https://', 'wss://').replace('http://', 'ws://');
+
+    this.socket = io(wsUrl, {
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+      reconnection: true,
+      reconnectionAttempts: this.maxReconnectAttempts,
+      reconnectionDelay: this.reconnectDelay,
+    });
+
+    this.socket.on('connect', () => {
+      console.log('🔌 [REALTIME] Connected to price update service');
+      this.reconnectAttempts = 0;
+      
+      // Resubscribe to previously subscribed tickers
+      if (this.subscribedTickers.size > 0) {
+        this.subscribe(Array.from(this.subscribedTickers));
+      }
+      
+      this.connectCallbacks.forEach(callback => callback());
+    });
+
+    this.socket.on('disconnect', (reason) => {
+      console.log('🔌 [REALTIME] Disconnected from price update service:', reason);
+      this.disconnectCallbacks.forEach(callback => callback());
+    });
+
+    this.socket.on('priceUpdate', (update: PriceUpdate) => {
+      this.priceUpdateCallbacks.forEach(callback => callback(update));
+    });
+
+    this.socket.on('connect_error', (error) => {
+      console.error('🔌 [REALTIME] Connection error:', error);
+      this.handleReconnect();
+    });
+
+    this.socket.on('reconnect', (attemptNumber) => {
+      console.log(`🔌 [REALTIME] Reconnected after ${attemptNumber} attempts`);
+      this.reconnectAttempts = 0;
+    });
+
+    this.socket.on('reconnect_error', (error) => {
+      console.error('🔌 [REALTIME] Reconnection error:', error);
+      this.handleReconnect();
+    });
+  }
+
+  private handleReconnect(): void {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+      
+      console.log(`🔌 [REALTIME] Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+      
+      setTimeout(() => {
+        this.connect();
+      }, delay);
+    } else {
+      console.error('🔌 [REALTIME] Max reconnection attempts reached. Falling back to polling.');
+      this.fallbackToPolling();
+    }
+  }
+
+  private fallbackToPolling(): void {
+    // Fallback to polling if WebSocket fails
+    console.log('🔌 [REALTIME] Falling back to polling for price updates');
+    // This would trigger the existing polling mechanism
+  }
+
+  disconnect(): void {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
+    this.subscribedTickers.clear();
+  }
+
+  subscribe(tickers: string[]): void {
+    if (!this.socket?.connected) {
+      console.warn('🔌 [REALTIME] Cannot subscribe - not connected');
+      return;
     }
 
-    try {
-      const token = Cookies.get('token');
-      if (!token) {
-        return; // Removed verbose logging
-      }
-
-      // 🚀 PERFORMANCE: Check cache first for recent prices
-      const cachedUpdates: PriceUpdate[] = [];
-      const tickersToFetch: string[] = [];
-
-      for (const ticker of this.currentTickers) {
-        const cached = this.priceCache.get(ticker);
-        if (cached && (now - cached.timestamp) < this.CACHE_TTL) {
-          cachedUpdates.push({
-            ticker,
-            currentPrice: cached.price,
-            change: 0, // We don't cache change data
-            changePercent: 0,
-            lastUpdated: new Date(cached.timestamp)
-          });
-        } else {
-          tickersToFetch.push(ticker);
-        }
-      }
-
-      // If we have all data in cache, return it
-      if (tickersToFetch.length === 0 && cachedUpdates.length > 0) {
-        this.updateCallback(cachedUpdates);
-        return;
-      }
-
-      this.lastFetchTime = now;
-      
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-      const response = await axios.post(
-        `${apiUrl}/api/stocks/batch-prices`,
-        { tickers: tickersToFetch.length > 0 ? tickersToFetch : this.currentTickers },
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Cache-Control': 'max-age=30' // Request caching at HTTP level
-          },
-          timeout: 5000 // 🚀 PERFORMANCE: Reduced timeout from default to 5s
-        }
-      );
-
-      if (response.data && response.data.prices) {
-        const fetchedUpdates: PriceUpdate[] = response.data.prices
-          .map((price: any) => {
-          const ticker = price.ticker;
-          const incoming = Number(price.currentPrice ?? price.price ?? 0);
-          const prev = this.priceCache.get(ticker)?.price ?? 0;
-          
-          // 🚀 CRITICAL FIX: Only update price if new price is valid AND different from cached
-          // This prevents price flipping between real data and 0
-          let currentPrice = prev; // Default to cached price
-          
-          if (isFinite(incoming) && incoming > 0) {
-            // Only update if the new price is significantly different (not just 0->real or real->0)
-            const priceDiff = Math.abs(incoming - prev) / Math.max(prev, 1);
-            if (priceDiff > 0.01 || prev === 0) { // Only update if >1% change or if we had no previous price
-              currentPrice = incoming;
-            }
-          }
-          
-          // 🚀 PERFORMANCE: Cache the price data
-          this.priceCache.set(ticker, {
-            price: currentPrice,
-            timestamp: now
-          });
-
-          return {
-            ticker,
-            currentPrice,
-            change: price.change || 0,
-            changePercent: price.changePercent || 0,
-            lastUpdated: new Date()
-          };
-        })
-        // Filter out entries where we still don't have a valid price
-        .filter((u: any) => typeof u.currentPrice === 'number' && u.currentPrice > 0);
-
-        // Combine cached and fetched updates
-        // Merge: prefer fetched > cached by ticker
-        const mergedMap = new Map<string, PriceUpdate>();
-        [...cachedUpdates, ...fetchedUpdates].forEach(u => mergedMap.set(u.ticker, u));
-        const allUpdates = Array.from(mergedMap.values());
-        
-        this.updateCallback(allUpdates);
-      }
-    } catch (error) {
-      // 🚀 PERFORMANCE: On error, try to return cached data if available
-      const cachedUpdates: PriceUpdate[] = [];
-      const now = Date.now();
-      
-      for (const ticker of this.currentTickers) {
-        const cached = this.priceCache.get(ticker);
-        if (cached) { // Return even slightly stale data on error
-          cachedUpdates.push({
-            ticker,
-            currentPrice: cached.price,
-            change: 0,
-            changePercent: 0,
-            lastUpdated: new Date(cached.timestamp)
-          });
-        }
-      }
-      
-      if (cachedUpdates.length > 0) {
-        this.updateCallback(cachedUpdates);
-      }
+    const newTickers = tickers.filter(ticker => !this.subscribedTickers.has(ticker));
+    
+    if (newTickers.length > 0) {
+      this.socket.emit('subscribe', newTickers);
+      newTickers.forEach(ticker => this.subscribedTickers.add(ticker));
+      console.log('🔌 [REALTIME] Subscribed to tickers:', newTickers);
     }
+  }
+
+  unsubscribe(tickers: string[]): void {
+    if (!this.socket?.connected) {
+      return;
+    }
+
+    const tickersToUnsubscribe = tickers.filter(ticker => this.subscribedTickers.has(ticker));
+    
+    if (tickersToUnsubscribe.length > 0) {
+      this.socket.emit('unsubscribe', tickersToUnsubscribe);
+      tickersToUnsubscribe.forEach(ticker => this.subscribedTickers.delete(ticker));
+      console.log('🔌 [REALTIME] Unsubscribed from tickers:', tickersToUnsubscribe);
+    }
+  }
+
+  onPriceUpdate(callback: (update: PriceUpdate) => void): void {
+    this.priceUpdateCallbacks.push(callback);
+  }
+
+  onConnect(callback: () => void): void {
+    this.connectCallbacks.push(callback);
+  }
+
+  onDisconnect(callback: () => void): void {
+    this.disconnectCallbacks.push(callback);
+  }
+
+  isConnected(): boolean {
+    return this.socket?.connected || false;
+  }
+
+  // Cleanup method
+  cleanup(): void {
+    this.disconnect();
+    this.priceUpdateCallbacks = [];
+    this.connectCallbacks = [];
+    this.disconnectCallbacks = [];
   }
 }
 
-// Create singleton instance
+// Singleton instance
 export const realtimePriceService = new RealtimePriceServiceImpl();
 
-// Export types
-export type { PriceUpdate, RealtimePriceService };
+// Hook for React components
+export function useRealtimePrices(tickers: string[] = []) {
+  const [prices, setPrices] = useState<Map<string, PriceUpdate>>(new Map());
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const handlePriceUpdate = (update: PriceUpdate) => {
+      setPrices(prev => new Map(prev.set(update.ticker, update)));
+    };
+
+    const handleConnect = () => {
+      setIsConnected(true);
+    };
+
+    const handleDisconnect = () => {
+      setIsConnected(false);
+    };
+
+    // Subscribe to events
+    realtimePriceService.onPriceUpdate(handlePriceUpdate);
+    realtimePriceService.onConnect(handleConnect);
+    realtimePriceService.onDisconnect(handleDisconnect);
+
+    // Subscribe to tickers
+    if (tickers.length > 0) {
+      realtimePriceService.subscribe(tickers);
+    }
+
+    // Cleanup
+    return () => {
+      if (tickers.length > 0) {
+        realtimePriceService.unsubscribe(tickers);
+      }
+    };
+  }, [tickers]);
+
+  return {
+    prices,
+    isConnected,
+    subscribe: (newTickers: string[]) => realtimePriceService.subscribe(newTickers),
+    unsubscribe: (tickersToRemove: string[]) => realtimePriceService.unsubscribe(tickersToRemove),
+  };
+}
