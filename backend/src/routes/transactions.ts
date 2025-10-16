@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import Transaction from '../models/Transaction';
 import User from '../models/User';
+import DeletedTransactionAudit from '../models/DeletedTransactionAudit';
 
 const router = express.Router();
 
@@ -14,86 +15,27 @@ router.get('/audit/deleted', authenticateToken, async (req: Request, res: Respon
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    const { search, portfolioId, startDate, endDate } = req.query;
+    const { search, portfolioId, startDate, endDate } = req.query as any;
 
-    // Build query for deleted transactions
-    const query: any = {
-      userId,
-      type: 'delete'
-    };
-
-    if (portfolioId) {
-      query.portfolioId = portfolioId;
-    }
-
+    const query: any = { userId };
+    if (portfolioId) query.portfolioId = portfolioId;
     if (startDate || endDate) {
       query.deletedAt = {};
-      if (startDate) {
-        query.deletedAt.$gte = new Date(startDate as string);
-      }
-      if (endDate) {
-        query.deletedAt.$lte = new Date(endDate as string);
-      }
+      if (startDate) query.deletedAt.$gte = new Date(startDate);
+      if (endDate) query.deletedAt.$lte = new Date(endDate);
     }
 
-    // For now, we'll create mock data since we don't have a deleted transactions collection
-    // In a real implementation, you'd have a separate DeletedTransaction model
-    const mockDeletedTransactions = [
-      {
-        _id: '1',
-        userId,
-        transactionId: 'tx_123',
-        type: 'delete',
-        beforeSnapshot: {
-          ticker: 'AAPL',
-          amount: 1000,
-          price: 150.00,
-          type: 'buy',
-          date: new Date('2024-01-15')
-        },
-        amount: 1000,
-        ticker: 'AAPL',
-        portfolioId: 'portfolio_1',
-        deletedBy: userId,
-        deletedAt: new Date('2024-01-20'),
-        reason: 'User requested deletion'
-      },
-      {
-        _id: '2',
-        userId,
-        transactionId: 'tx_124',
-        type: 'delete',
-        beforeSnapshot: {
-          ticker: 'GOOGL',
-          amount: 500,
-          price: 2800.00,
-          type: 'sell',
-          date: new Date('2024-01-18')
-        },
-        amount: 500,
-        ticker: 'GOOGL',
-        portfolioId: 'portfolio_1',
-        deletedBy: userId,
-        deletedAt: new Date('2024-01-22'),
-        reason: 'Duplicate transaction'
-      }
-    ];
-
-    // Filter by search term if provided
-    let filteredTransactions = mockDeletedTransactions;
+    let transactions = await DeletedTransactionAudit.find(query).sort({ deletedAt: -1 }).lean();
     if (search) {
-      const searchTerm = (search as string).toLowerCase();
-      filteredTransactions = mockDeletedTransactions.filter(tx => 
-        tx.ticker.toLowerCase().includes(searchTerm) ||
-        tx.reason?.toLowerCase().includes(searchTerm)
+      const term = String(search).toLowerCase();
+      transactions = transactions.filter((tx: any) =>
+        tx.ticker.toLowerCase().includes(term) ||
+        (tx.reason || '').toLowerCase().includes(term) ||
+        (tx.beforeSnapshot?.notes || '').toLowerCase().includes(term)
       );
     }
 
-    res.json({
-      success: true,
-      transactions: filteredTransactions,
-      total: filteredTransactions.length
-    });
+    res.json({ success: true, transactions, total: transactions.length });
 
   } catch (error: any) {
     console.error('Error fetching deleted transactions:', error);
@@ -113,23 +55,33 @@ router.get('/audit/deleted/summary', authenticateToken, async (req: Request, res
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    // Mock summary data
-    const summary = {
-      totalDeletedCount: 2,
-      totalDeletedAmount: 1500,
-      byTicker: {
-        'AAPL': { count: 1, amount: 1000 },
-        'GOOGL': { count: 1, amount: 500 }
-      },
-      byPortfolio: {
-        'portfolio_1': { count: 2, amount: 1500 }
-      }
-    };
+    const { portfolioId, startDate, endDate } = req.query as any;
+    const match: any = { userId };
+    if (portfolioId) match.portfolioId = portfolioId;
+    if (startDate || endDate) {
+      match.deletedAt = {};
+      if (startDate) match.deletedAt.$gte = new Date(startDate);
+      if (endDate) match.deletedAt.$lte = new Date(endDate);
+    }
 
-    res.json({
-      success: true,
-      ...summary
+    const docs = await DeletedTransactionAudit.find(match).lean();
+    const totalDeletedCount = docs.length;
+    const totalDeletedAmount = docs.reduce((s: number, d: any) => s + (d.amount || 0), 0);
+
+    const byTicker: Record<string, { count: number; amount: number }> = {};
+    const byPortfolio: Record<string, { count: number; amount: number }> = {};
+    docs.forEach((d: any) => {
+      if (!byTicker[d.ticker]) byTicker[d.ticker] = { count: 0, amount: 0 };
+      byTicker[d.ticker].count++;
+      byTicker[d.ticker].amount += d.amount || 0;
+
+      const pid = d.portfolioId || 'default';
+      if (!byPortfolio[pid]) byPortfolio[pid] = { count: 0, amount: 0 };
+      byPortfolio[pid].count++;
+      byPortfolio[pid].amount += d.amount || 0;
     });
+
+    res.json({ success: true, totalDeletedCount, totalDeletedAmount, byTicker, byPortfolio });
 
   } catch (error: any) {
     console.error('Error fetching deleted transactions summary:', error);

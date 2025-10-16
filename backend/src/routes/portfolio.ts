@@ -11,6 +11,7 @@ import { stockSchema, updatePortfolioSchema, portfolioQuerySchema } from '../sch
 import { portfolioCache } from '../middleware/performanceCache';
 import { checkPortfolioLimits, checkStockLimits } from '../middleware/portfolioLimits';
 import { z } from 'zod';
+import DeletedTransactionAudit from '../models/DeletedTransactionAudit';
 
 const router = express.Router();
 
@@ -460,6 +461,24 @@ router.delete('/:id', authenticateToken, requireSubscription, async (req, res) =
     } catch (reputationError) {
       console.error('⚠️ [PORTFOLIO DELETE] Reputation update failed:', reputationError);
       // Continue with deletion even if reputation update fails
+    }
+
+    // Write audit log BEFORE deletion
+    try {
+      await DeletedTransactionAudit.create({
+        userId: req.user!._id,
+        transactionId: id,
+        type: 'delete',
+        beforeSnapshot: portfolioItem.toObject(),
+        amount: (finalExitPrice - portfolioItem.entryPrice) * portfolioItem.shares,
+        ticker: portfolioItem.ticker,
+        portfolioId: portfolioItem.portfolioId,
+        deletedBy: req.user!._id,
+        deletedAt: new Date(),
+        reason: 'manual_delete'
+      });
+    } catch (auditErr) {
+      console.warn('⚠️ [AUDIT] Failed to write delete audit:', (auditErr as Error).message);
     }
 
     // Now delete the portfolio item
