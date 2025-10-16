@@ -3,10 +3,13 @@
  * Optimizes bundle size, loading performance, and runtime efficiency
  */
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Performance optimizations
-  swcMinify: true, // Use SWC for faster minification
   compress: true, // Enable gzip compression
   
   // Bundle optimization
@@ -190,4 +193,4 @@ const nextConfig = {
   generateEtags: false,
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

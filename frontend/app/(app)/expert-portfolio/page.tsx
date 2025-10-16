@@ -7,6 +7,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useExpertPortfolio, useDeletedTransactions } from '@/hooks/useSWRData';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -68,71 +69,23 @@ interface DeletedTransaction {
 export default function ExpertPortfolioPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const [portfolio, setPortfolio] = useState<ExpertPortfolioItem[]>([]);
-  const [expert, setExpert] = useState<ExpertInfo | null>(null);
-  const [totals, setTotals] = useState({
-    initial: 0,
-    current: 0,
-    totalPnL: 0,
-    totalPnLPercent: 0
-  });
-  const [deletedTransactions, setDeletedTransactions] = useState<DeletedTransaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { expert, portfolio, totals, loading: expertLoading, error: expertError, refresh: refreshExpert } = useExpertPortfolio();
+  const { transactions: deletedTransactions, loading: deletedLoading, error: deletedError, refresh: refreshDeleted } = useDeletedTransactions();
   const [error, setError] = useState<string | null>(null);
+  const loading = expertLoading || deletedLoading;
 
   useEffect(() => {
-    fetchExpertPortfolio();
-    fetchDeletedTransactions();
-    const interval = setInterval(fetchExpertPortfolio, 30000); // Update every 30s
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchExpertPortfolio = async () => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-      const token = Cookies.get('token');
-      
-      if (!token) {
-        router.push('/');
-        return;
-      }
-
-      const response = await axios.get(`${apiUrl}/api/expert-portfolio`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (response.data.success) {
-        setPortfolio(response.data.portfolio);
-        setExpert(response.data.expert);
-        setTotals(response.data.totals);
-        setError(null);
-      }
-    } catch (err: any) {
-      console.error('Error fetching expert portfolio:', err);
-      setError(err.response?.data?.message || 'Failed to load expert portfolio');
-    } finally {
-      setLoading(false);
+    // SWR handles automatic refreshing, no need for manual intervals
+    if (expertError) {
+      setError(expertError.message || 'Failed to load expert portfolio');
+    } else if (deletedError) {
+      setError(deletedError.message || 'Failed to load deleted transactions');
+    } else {
+      setError(null);
     }
-  };
+  }, [expertError, deletedError]);
 
-  const fetchDeletedTransactions = async () => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-      const token = Cookies.get('token');
-      
-      if (!token) return;
-
-      const response = await axios.get(`${apiUrl}/api/transactions/audit/deleted`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (response.data.success) {
-        setDeletedTransactions(response.data.transactions || []);
-      }
-    } catch (err: any) {
-      console.error('Error fetching deleted transactions:', err);
-    }
-  };
+  // SWR handles all data fetching automatically
 
   const calculatePnL = (item: ExpertPortfolioItem) => {
     const pnl = item.shares * (item.currentPrice - item.entryPrice);

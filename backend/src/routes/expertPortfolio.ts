@@ -4,6 +4,7 @@ import User from '../models/User';
 import { authenticateToken } from '../middleware/auth';
 import { stockDataService } from '../services/stockDataService';
 import { loggerService } from '../services/loggerService';
+import { expertPortfolioCache } from '../middleware/cache';
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ const router = express.Router();
  * Get expert trader's portfolio
  * GET /api/expert-portfolio
  */
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateToken, expertPortfolioCache, async (req, res) => {
   try {
     loggerService.info('🎓 [EXPERT PORTFOLIO] Fetching expert portfolio');
 

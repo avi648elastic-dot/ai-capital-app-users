@@ -8,10 +8,10 @@ import { volatilityService } from '../services/volatilityService';
 import { reputationService } from '../services/reputationService';
 import { validate, validatePartial } from '../middleware/validate';
 import { stockSchema, updatePortfolioSchema, portfolioQuerySchema } from '../schemas/portfolio';
-import { portfolioCache } from '../middleware/performanceCache';
 import { checkPortfolioLimits, checkStockLimits } from '../middleware/portfolioLimits';
 import { z } from 'zod';
 import DeletedTransactionAudit from '../models/DeletedTransactionAudit';
+import { portfolioCache } from '../middleware/cache';
 
 const router = express.Router();
 

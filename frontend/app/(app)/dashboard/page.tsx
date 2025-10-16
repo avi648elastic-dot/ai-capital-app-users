@@ -4,13 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import PortfolioTable from '@/components/PortfolioTable';
-import PortfolioSummary from '@/components/PortfolioSummary';
+import { LazyPortfolioTable, LazyPortfolioSummary, LazyMarketOverview, LazyMultiPortfolioDashboard } from '@/components/LazyComponents';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import StockForm from '@/components/StockForm';
-import Charts from '@/components/Charts';
 import Header from '@/components/Header';
-import MarketOverview from '@/components/MarketOverview';
 import MobileHeader from '@/components/MobileHeader';
 import { getSubscriptionLimits, canCreatePortfolio, canAddStock, getUpgradeMessage } from '@/utils/subscriptionLimits';
 import MultiPortfolioDashboard from '@/components/MultiPortfolioDashboard';
@@ -23,6 +20,7 @@ import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
 import Tooltip from '@/components/Tooltip';
 import NotificationBanner from '@/components/NotificationBanner';
 import MobileFloatingActionButton from '@/components/MobileFloatingActionButton';
+import { usePortfolio, useUserProfile } from '@/hooks/useSWRData';
 
 interface User {
   id: string;
@@ -59,15 +57,15 @@ interface PortfolioTotals {
 
 export default function Dashboard() {
   const { t } = useLanguage();
-  const [user, setUser] = useState<User | null>(null);
-  const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const { user, loading: userLoading, error: userError } = useUserProfile();
+  const { portfolio, loading: portfolioLoading, error: portfolioError, refresh: refreshPortfolio } = usePortfolio();
   const [totals, setTotals] = useState<PortfolioTotals>({
     initial: 0,
     current: 0,
     totalPnL: 0,
     totalPnLPercent: 0,
   });
-  const [loading, setLoading] = useState(true);
+  const loading = userLoading || portfolioLoading;
   const [showStockForm, setShowStockForm] = useState(false);
   const [activeTab, setActiveTab] = useState<'solid' | 'risky'>('solid');
   const [debugInfo, setDebugInfo] = useState<any>(null);
@@ -99,7 +97,6 @@ export default function Dashboard() {
     if (hasVisitedDashboard) {
       console.log('🔍 [DASHBOARD] User has visited dashboard before - skipping onboarding check');
       sessionStorage.setItem('dashboard-visited', 'true');
-      fetchUserData();
       fetchPortfolio();
       return;
     }
@@ -184,32 +181,11 @@ export default function Dashboard() {
     
     // Only reach here if onboarding is completed successfully
     console.log('🔍 [DASHBOARD] Onboarding check passed - fetching user data and portfolio');
-    fetchUserData();
     fetchPortfolio();
     fetchUserReputation();
   };
 
-  const fetchUserData = async () => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-      const response = await axios.get(`${apiUrl}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
-        timeout: 10000
-      });
-      setUser(response.data.user);
-      // Auto-select tab based on the user's portfolioType (free users)
-      const pt = response.data.user?.portfolioType as 'solid' | 'risky' | undefined;
-      const tier = response.data.user?.subscriptionTier as 'free' | 'premium' | undefined;
-      
-      if (pt && tier === 'free') {
-        setActiveTab(pt);
-      }
-    } catch (error: any) {
-      console.error('Error fetching user data:', error);
-      Cookies.remove('token');
-      router.push('/');
-    }
-  };
+  // User data is now handled by SWR hooks
 
   const fetchUserReputation = async () => {
     try {
@@ -672,13 +648,13 @@ export default function Dashboard() {
         {/* Markets Overview placed below subscription banner, above summary */}
         <div className="mb-6">
           <ErrorBoundary label="markets">
-            <MarketOverview />
+            <LazyMarketOverview />
           </ErrorBoundary>
         </div>
 
         {/* Portfolio Summary */}
         <ErrorBoundary label="summary">
-          <PortfolioSummary totals={totals} />
+          <LazyPortfolioSummary totals={totals} />
         </ErrorBoundary>
 
       {/* Action Buttons with Stock/Portfolio Counters - AGGRESSIVE Mobile Optimization */}
@@ -787,7 +763,7 @@ export default function Dashboard() {
         {/* Portfolio Display - Multi-Portfolio for Premium, Single for Free */}
         {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio ? (
           <>
-            <MultiPortfolioDashboard
+            <LazyMultiPortfolioDashboard
               user={user}
               onAddStock={(portfolioId) => {
                 setSelectedPortfolioId(portfolioId);
@@ -818,7 +794,7 @@ export default function Dashboard() {
                       {selectedMultiPortfolio.portfolioName} - Stock Details
                     </h3>
                     <ErrorBoundary label="table">
-                      <PortfolioTable
+                      <LazyPortfolioTable
                         portfolio={selectedMultiPortfolio.stocks || []}
                         onUpdate={handleUpdateStock}
                         onDelete={handleDeleteStock}
@@ -920,7 +896,7 @@ export default function Dashboard() {
           <>
             {/* Portfolio Table */}
             <ErrorBoundary label="table">
-              <PortfolioTable
+              <LazyPortfolioTable
                 portfolio={filteredPortfolio}
                 onUpdate={handleUpdateStock}
                 onDelete={handleDeleteStock}
