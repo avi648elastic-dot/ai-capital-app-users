@@ -57,13 +57,11 @@ router.get('/', authenticateToken, async (req, res) => {
     const priceUpdates = await Promise.allSettled(
       tickers.map(async ticker => {
         try {
-          const stockData = await stockDataService.getStockData(ticker);
-          return {
-            ticker,
-            currentPrice: stockData.price,
-            change: stockData.change,
-            changePercent: stockData.changePercent
-          };
+          const stockData: any = await stockDataService.getStockData(ticker);
+          const current = (stockData && (stockData.current ?? stockData.price)) || 0;
+          const change = (stockData && stockData.change) || 0;
+          const changePercent = (stockData && stockData.changePercent) || 0;
+          return { ticker, currentPrice: current, change, changePercent };
         } catch (error) {
           loggerService.warn(`Failed to get price for ${ticker}:`, error);
           return null;
@@ -149,7 +147,7 @@ router.get('/history', authenticateToken, async (req, res) => {
 
     // Get closed positions from transaction history or closed portfolio items
     // This would require a transaction history model, for now return empty
-    const history = [];
+    const history: any[] = [];
 
     res.json({
       success: true,
