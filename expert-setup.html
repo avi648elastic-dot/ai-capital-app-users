@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Capital - Expert Portfolio Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            color: #fbbf24;
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .info-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            color: #60a5fa;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .info-box p {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ul {
+            color: #94a3b8;
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin-bottom: 5px;
+        }
+        
+        .big-button {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #000;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin: 20px 0;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+        }
+        
+        .big-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(251, 191, 36, 0.4);
+        }
+        
+        .big-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #065f46;
+            border: 1px solid #10b981;
+            color: #d1fae5;
+            display: block;
+        }
+        
+        .result.error {
+            background: #7f1d1d;
+            border: 1px solid #ef4444;
+            color: #fecaca;
+            display: block;
+        }
+        
+        .result.loading {
+            background: #1e3a8a;
+            border: 1px solid #3b82f6;
+            color: #dbeafe;
+            display: block;
+        }
+        
+        .emoji {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .steps {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .step {
+            color: #cbd5e1;
+            margin-bottom: 10px;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .step::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🎓</div>
+        <h1>
+            Expert Portfolio Setup
+        </h1>
+        <p class="subtitle">
+            Click the button below to make your portfolio visible to all users as educational content
+        </p>
+        
+        <div class="info-box">
+            <h3>📋 What This Does:</h3>
+            <p>When you click the button, your account (avi648elastic@gmail.com) will be designated as the "Expert Trader" and:</p>
+            <ul>
+                <li>✅ Your portfolio becomes visible to ALL users</li>
+                <li>✅ Users can see your stop loss and take profit levels</li>
+                <li>✅ They can read your analysis and reasoning</li>
+                <li>✅ You get upgraded to Premium+ (free)</li>
+                <li>✅ You get admin role</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>🎯 What Users Will See:</h3>
+            <p>Your portfolio will appear in the "Expert Portfolio" section with:</p>
+            <ul>
+                <li>📊 Every stock position you own</li>
+                <li>🛡️ Your stop loss levels (red cards)</li>
+                <li>🎯 Your take profit targets (green cards)</li>
+                <li>📈 Risk/reward ratios</li>
+                <li>💭 Your notes and analysis</li>
+                <li>⚡ Real-time price updates</li>
+            </ul>
+        </div>
+
+        <button class="big-button" onclick="setupExpertPortfolio()">
+            🚀 CLICK HERE TO ACTIVATE EXPERT PORTFOLIO
+        </button>
+
+        <div id="result" class="result"></div>
+
+        <div class="steps" style="display: none;" id="next-steps">
+            <h3 style="color: #fbbf24; margin-bottom: 15px;">✅ Next Steps:</h3>
+            <div class="step">Go to your app: <strong>https://ai-capital-app7.vercel.app</strong></div>
+            <div class="step">Login with your account: <strong>avi648elastic@gmail.com</strong></div>
+            <div class="step">Click "Expert Portfolio" button (gold button with 🎓)</div>
+            <div class="step">You'll see YOUR portfolio displayed to all users!</div>
+        </div>
+    </div>
+
+    <script>
+        async function setupExpertPortfolio() {
+            const button = document.querySelector('.big-button');
+            const resultDiv = document.getElementById('result');
+            const nextStepsDiv = document.getElementById('next-steps');
+            
+            // Disable button
+            button.disabled = true;
+            button.textContent = '⏳ Setting up...';
+            
+            // Show loading
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 20px; height: 20px; border: 3px solid #93c5fd; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <span>Connecting to backend and updating your account...</span>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('https://ai-capital-app7.onrender.com/api/admin-setup/set-expert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'avi648elastic@gmail.com',
+                        secretKey: 'change-this-secret-key-in-production'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Success!
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3 style="font-size: 24px; margin-bottom: 15px;">🎉 SUCCESS!</h3>
+                        <p style="margin-bottom: 10px;"><strong>Your account is now the Expert Trader!</strong></p>
+                        <p style="margin-bottom: 5px;">📧 Email: ${data.user.email}</p>
+                        <p style="margin-bottom: 5px;">👤 Name: ${data.user.name}</p>
+                        <p style="margin-bottom: 5px;">🏆 Role: ${data.user.role}</p>
+                        <p style="margin-bottom: 5px;">⭐ Tier: ${data.user.subscriptionTier}</p>
+                        <p style="margin-bottom: 5px;">🎓 Expert Trader: ${data.user.isExpertTrader}</p>
+                    `;
+                    
+                    nextStepsDiv.style.display = 'block';
+                    button.textContent = '✅ ALREADY ACTIVATED';
+                } else {
+                    // Error from API
+                    throw new Error(data.error || 'Unknown error');
+                }
+
+            } catch (error) {
+                // Error!
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3 style="font-size: 20px; margin-bottom: 10px;">❌ Error</h3>
+                    <p>${error.message}</p>
+                    <p style="margin-top: 10px; font-size: 14px;">Make sure your backend is deployed and running.</p>
+                `;
+                
+                button.disabled = false;
+                button.textContent = '🔄 TRY AGAIN';
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>
+
