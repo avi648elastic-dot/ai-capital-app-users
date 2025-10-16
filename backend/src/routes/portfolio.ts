@@ -465,20 +465,27 @@ router.delete('/:id', authenticateToken, requireSubscription, async (req, res) =
 
     // Write audit log BEFORE deletion
     try {
-      await DeletedTransactionAudit.create({
+      const auditEntry = await DeletedTransactionAudit.create({
         userId: req.user!._id,
         transactionId: id,
         type: 'delete',
         beforeSnapshot: portfolioItem.toObject(),
-        amount: (finalExitPrice - portfolioItem.entryPrice) * portfolioItem.shares,
+        amount: finalExitPrice * portfolioItem.shares, // Total exit value, not P&L
         ticker: portfolioItem.ticker,
         portfolioId: portfolioItem.portfolioId,
         deletedBy: req.user!._id,
         deletedAt: new Date(),
         reason: 'manual_delete'
       });
+      console.log('✅ [AUDIT] Deleted transaction audit logged:', {
+        ticker: portfolioItem.ticker,
+        amount: auditEntry.amount,
+        shares: portfolioItem.shares,
+        exitPrice: finalExitPrice
+      });
     } catch (auditErr) {
-      console.warn('⚠️ [AUDIT] Failed to write delete audit:', (auditErr as Error).message);
+      console.error('❌ [AUDIT] Failed to write delete audit:', (auditErr as Error).message);
+      console.error('❌ [AUDIT] Error details:', auditErr);
     }
 
     // Now delete the portfolio item
