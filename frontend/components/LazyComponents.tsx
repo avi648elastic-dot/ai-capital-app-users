@@ -13,27 +13,11 @@ const LoadingSpinner = ({ height = 'h-64' }: { height?: string }) => (
   </div>
 );
 
-// Lazy load heavy chart components
-export const LazyPortfolioChart = dynamic(
-  () => import('./Charts').then(mod => ({ default: mod.PortfolioChart })),
+// Lazy load Charts component
+export const LazyCharts = dynamic(
+  () => import('./Charts'),
   { 
     loading: () => <LoadingSpinner height="h-64" />,
-    ssr: false 
-  }
-);
-
-export const LazyPerformanceChart = dynamic(
-  () => import('./Charts').then(mod => ({ default: mod.PerformanceChart })),
-  { 
-    loading: () => <LoadingSpinner height="h-80" />,
-    ssr: false 
-  }
-);
-
-export const LazyRiskMetrics = dynamic(
-  () => import('./Charts').then(mod => ({ default: mod.RiskMetrics })),
-  { 
-    loading: () => <LoadingSpinner height="h-48" />,
     ssr: false 
   }
 );

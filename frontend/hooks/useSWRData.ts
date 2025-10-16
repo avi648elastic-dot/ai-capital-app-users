@@ -1,10 +1,20 @@
 'use client';
 
 import useSWR from 'swr';
-import { api } from '@/lib/api';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 // Fetcher function for SWR
-const fetcher = (url: string) => api.request({ url, method: 'GET' });
+const fetcher = async (url: string) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+  const token = Cookies.get('token');
+  
+  const response = await axios.get(`${apiUrl}${url}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  
+  return response.data;
+};
 
 // Portfolio data hook
 export function usePortfolio() {
