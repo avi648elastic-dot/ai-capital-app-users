@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import { LazyPortfolioTable, LazyPortfolioSummary, LazyMarketOverview, LazyMultiPortfolioDashboard } from '@/components/LazyComponents';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import StockForm from '@/components/StockForm';
+import Charts from '@/components/Charts';
 import Header from '@/components/Header';
 import MobileHeader from '@/components/MobileHeader';
 import MobileNavigationEnhanced from '@/components/MobileNavigationEnhanced';
@@ -246,23 +247,24 @@ export default function Dashboard() {
       });
       
       if (response.data && response.data.portfolio) {
-        setPortfolio(response.data.portfolio);
+        // Portfolio state is managed by SWR, just refresh it
+        refreshPortfolio();
         setTotals(response.data.totals || { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
       } else {
-        setPortfolio([]);
+        // Portfolio state is managed by SWR
         setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
       }
     } catch (error: any) {
       // Handle different types of errors - ONLY clear data on auth errors
       if (error.response?.status === 401) {
-        setPortfolio([]);
+        // Portfolio state is managed by SWR
         setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
         Cookies.remove('token');
         router.push('/');
         return;
       } else if (error.response?.status === 403) {
         alert('Subscription required to access portfolio features');
-        setPortfolio([]);
+        // Portfolio state is managed by SWR
         setTotals({ initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
         return;
       } else if (error.code === 'ECONNABORTED') {
@@ -303,6 +305,7 @@ export default function Dashboard() {
     } catch (error: any) {
       console.error('❌ [DASHBOARD] Error fetching analytics:', error);
       // Don't show error to user, just use portfolio data as fallback
+      // Analytics state remains local
       setPortfolioPerformance([]);
       setSectorPerformance([]);
     } finally {
@@ -321,49 +324,24 @@ export default function Dashboard() {
   useEffect(() => {
     if (portfolio.length === 0) return;
 
-    const tickers = Array.from(new Set(portfolio.map(item => item.ticker)));
+    const tickers: string[] = Array.from(new Set(portfolio.map((item: any) => item.ticker as string)));
     console.log(`📊 [DASHBOARD] Starting real-time updates for ${tickers.length} stocks`);
 
-    realtimePriceService.startUpdates(tickers, (updates: PriceUpdate[]) => {
-      console.log(`📈 [DASHBOARD] Received ${updates.length} price updates`);
-      
-      setPortfolio(prevPortfolio => 
-        prevPortfolio.map(item => {
-          const update = updates.find(u => u.ticker === item.ticker);
-          if (update) {
-            console.log(`💹 [DASHBOARD] Updated ${item.ticker}: $${item.currentPrice} → $${update.currentPrice}`);
-            return { ...item, currentPrice: update.currentPrice };
-          }
-          return item;
-        })
-      );
+    // Subscribe to price updates via WebSocket
+    realtimePriceService.subscribe(tickers);
 
-      // Recalculate totals after price updates
-      const newTotals = portfolio.reduce((acc, item) => {
-        const update = updates.find(u => u.ticker === item.ticker);
-        const currentPrice = update?.currentPrice || item.currentPrice;
-        const currentValue = currentPrice * item.shares;
-        const initialValue = item.entryPrice * item.shares;
-        const pnl = currentValue - initialValue;
-        
-        return {
-          initial: acc.initial + initialValue,
-          current: acc.current + currentValue,
-          totalPnL: acc.totalPnL + pnl,
-          totalPnLPercent: 0 // Will calculate after
-        };
-      }, { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
+    // Set up price update handler
+    const handlePriceUpdate = (update: PriceUpdate) => {
+      console.log(`📈 [DASHBOARD] Price update for ${update.ticker}: $${update.price}`);
+      // Trigger SWR refresh to get latest data
+      refreshPortfolio();
+    };
 
-      newTotals.totalPnLPercent = newTotals.initial > 0 
-        ? (newTotals.totalPnL / newTotals.initial) * 100 
-        : 0;
-
-      setTotals(newTotals);
-    });
+    realtimePriceService.onPriceUpdate(handlePriceUpdate);
 
     return () => {
-      console.log('📊 [DASHBOARD] Stopping real-time price updates');
-      realtimePriceService.stopUpdates();
+      console.log('📊 [DASHBOARD] Unsubscribing from real-time price updates');
+      realtimePriceService.unsubscribe(tickers);
     };
   }, [portfolio.length]);
 
@@ -438,7 +416,7 @@ export default function Dashboard() {
       console.log('🏆 [DASHBOARD] Deleting stock with reputation tracking:', id);
       
       // Find the stock to get current price for reputation calculation
-      const stockToDelete = portfolio.find(item => item._id === id);
+      const stockToDelete = portfolio.find((item: any) => item._id === id);
       const exitPrice = stockToDelete?.currentPrice || 0;
       
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
@@ -476,8 +454,8 @@ export default function Dashboard() {
       
       if (response.data.isPremium) {
         alert('🎉 Successfully upgraded to Premium! You now have access to all features.');
-        // Refresh user data
-        fetchUserData();
+        // User data will be refreshed by SWR automatically
+        window.location.reload();
       }
     } catch (error: any) {
       console.error('Error upgrading subscription:', error);
@@ -505,7 +483,7 @@ export default function Dashboard() {
   };
 
   // Filter portfolio based on selected portfolio or tab/type
-  const filteredPortfolio = portfolio.filter(item => {
+  const filteredPortfolio = portfolio.filter((item: any) => {
     console.log('🔍 [EMERGENCY DEBUG] Portfolio item:', item);
     console.log('🔍 [EMERGENCY DEBUG] showMultiPortfolio:', showMultiPortfolio);
     console.log('🔍 [EMERGENCY DEBUG] selectedPortfolioId:', selectedPortfolioId);
@@ -856,7 +834,7 @@ export default function Dashboard() {
                 }`}></div>
                 <span>Solid Portfolio</span>
                 <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
-                  {portfolio.filter(p => p.portfolioType === 'solid').length}
+                  {portfolio.filter((p: any) => p.portfolioType === 'solid').length}
                 </span>
                 {user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported' && (
                   <span className="text-yellow-400">🔒</span>
@@ -886,7 +864,7 @@ export default function Dashboard() {
                 }`}></div>
                 <span>Risky Portfolio</span>
                 <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
-                  {portfolio.filter(p => p.portfolioType === 'risky').length}
+                  {portfolio.filter((p: any) => p.portfolioType === 'risky').length}
                 </span>
                 {user?.subscriptionTier === 'free' && user?.portfolioType !== 'risky' && (
                   <span className="text-yellow-400">🔒</span>
