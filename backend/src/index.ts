@@ -229,11 +229,12 @@ app.use((req, res, next) => {
 
 // CSRF Protection - Apply to all routes except health checks and auth
 app.use((req, res, next) => {
-  // Skip CSRF for health checks, auth endpoints, and webhooks
+  // Skip CSRF for health checks, auth endpoints, webhooks, and admin setup
   if (req.path.startsWith('/api/health') || 
       req.path.startsWith('/api/auth') || 
       req.path.startsWith('/api/stripe/webhook') ||
-      req.path.startsWith('/api/debug')) {
+      req.path.startsWith('/api/debug') ||
+      req.path.startsWith('/api/admin-setup')) {
     return next();
   }
   return csrfProtection(req, res, next);
