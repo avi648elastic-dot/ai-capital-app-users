@@ -20,7 +20,8 @@ import {
   FileText,
   Bell,
   CreditCard,
-  AlertTriangle
+  AlertTriangle,
+  Award
 } from 'lucide-react';
 import FeaturePreviewTooltip from './ui/FeaturePreviewTooltip';
 import { FeaturePreviewImages, getFeatureDescription } from './ui/FeaturePreviewImages';
