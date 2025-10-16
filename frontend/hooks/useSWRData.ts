@@ -81,10 +81,31 @@ export function useExpertPortfolio() {
   };
 }
 
-// Deleted transactions hook
+// Deleted transactions hook (for current user)
 export function useDeletedTransactions() {
   const { data, error, mutate, isLoading } = useSWR(
     '/api/transactions/audit/deleted',
+    fetcher,
+    {
+      refreshInterval: 120000, // 2 minutes
+      revalidateOnFocus: true,
+      dedupingInterval: 60000, // 1 minute
+    }
+  );
+
+  return {
+    transactions: data?.transactions || [],
+    count: data?.count || 0,
+    loading: isLoading,
+    error,
+    refresh: mutate
+  };
+}
+
+// Expert deleted transactions hook (for expert portfolio page)
+export function useExpertDeletedTransactions() {
+  const { data, error, mutate, isLoading } = useSWR(
+    '/api/expert-portfolio/deleted-transactions',
     fetcher,
     {
       refreshInterval: 120000, // 2 minutes

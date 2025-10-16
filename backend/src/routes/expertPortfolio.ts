@@ -1,10 +1,11 @@
 import express from 'express';
 import Portfolio from '../models/Portfolio';
 import User from '../models/User';
+import DeletedTransactionAudit from '../models/DeletedTransactionAudit';
 import { authenticateToken } from '../middleware/auth';
 import { stockDataService } from '../services/stockDataService';
 import { loggerService } from '../services/loggerService';
-import { expertPortfolioCache } from '../middleware/cache';
+import { expertPortfolioCache, deletedTransactionsCache } from '../middleware/cache';
 
 const router = express.Router();
 
@@ -235,6 +236,50 @@ router.get('/stats', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch expert portfolio stats',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * Get expert trader's deleted transactions (closed positions)
+ * GET /api/expert-portfolio/deleted-transactions
+ */
+router.get('/deleted-transactions', authenticateToken, deletedTransactionsCache, async (req, res) => {
+  try {
+    loggerService.info('🎓 [EXPERT PORTFOLIO] Fetching expert deleted transactions');
+
+    // Find the expert trader
+    const expertUser = await User.findOne({ isExpertTrader: true });
+    
+    if (!expertUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'No expert trader found'
+      });
+    }
+
+    // Get expert's deleted transactions
+    const deletedTransactions = await DeletedTransactionAudit.find({ 
+      userId: expertUser._id,
+      type: 'delete'
+    })
+    .sort({ deletedAt: -1 })
+    .limit(50); // Limit to last 50 closed positions
+
+    loggerService.info(`🎓 [EXPERT PORTFOLIO] Found ${deletedTransactions.length} deleted transactions for expert`);
+
+    res.json({
+      success: true,
+      transactions: deletedTransactions,
+      count: deletedTransactions.length
+    });
+
+  } catch (error: any) {
+    loggerService.error('❌ [EXPERT PORTFOLIO] Error fetching deleted transactions:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch expert deleted transactions',
       message: error.message
     });
   }

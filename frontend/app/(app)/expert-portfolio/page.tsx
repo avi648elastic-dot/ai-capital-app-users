@@ -7,7 +7,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useExpertPortfolio, useDeletedTransactions } from '@/hooks/useSWRData';
+import { useExpertPortfolio, useExpertDeletedTransactions } from '@/hooks/useSWRData';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -70,7 +70,7 @@ export default function ExpertPortfolioPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const { expert, portfolio, totals, loading: expertLoading, error: expertError, refresh: refreshExpert } = useExpertPortfolio();
-  const { transactions: deletedTransactions, loading: deletedLoading, error: deletedError, refresh: refreshDeleted } = useDeletedTransactions();
+  const { transactions: deletedTransactions, loading: deletedLoading, error: deletedError, refresh: refreshDeleted } = useExpertDeletedTransactions();
   const [error, setError] = useState<string | null>(null);
   const loading = expertLoading || deletedLoading;
 
