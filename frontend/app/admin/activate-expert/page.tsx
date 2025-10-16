@@ -29,7 +29,7 @@ export default function ActivateExpertPage() {
         alert('🎉 SUCCESS! Your account is now the Expert Trader!\n\nRefresh the page and click "Expert Portfolio".');
       }
     } catch (error) {
-      setResult({ success: false, error: error.message });
+      setResult({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }
