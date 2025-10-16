@@ -57,6 +57,13 @@ export default function Navigation({ userName, subscriptionTier, isAdmin, onLogo
       href: '/dashboard'
     },
     {
+      id: 'expert-portfolio',
+      label: 'Expert Portfolio',
+      icon: Award,
+      href: '/expert-portfolio',
+      badge: '🎓'
+    },
+    {
       id: 'analytics',
       label: 'Analytics',
       icon: PieChart,

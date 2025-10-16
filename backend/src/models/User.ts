@@ -11,6 +11,7 @@ export interface IUser extends Document {
   onboardingCompleted: boolean;
   isAdmin?: boolean;
   role?: 'user' | 'admin'; // User role
+  isExpertTrader?: boolean; // Expert trader whose portfolio is featured
   isEmailVerified?: boolean; // Email verification status
   featuredTickers?: string[];
   portfolioType?: string;
@@ -57,6 +58,7 @@ const UserSchema: Schema<IUser> = new Schema(
     onboardingCompleted: { type: Boolean, default: false },
     isAdmin: { type: Boolean, default: false },
     role: { type: String, enum: ['user', 'admin'], default: 'user' }, // User role
+    isExpertTrader: { type: Boolean, default: false }, // Expert trader featured portfolio
     isEmailVerified: { type: Boolean, default: false }, // Email verification status
     featuredTickers: { type: [String], default: undefined },
     portfolioType: { type: String },

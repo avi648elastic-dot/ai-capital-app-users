@@ -12,7 +12,8 @@ import {
   Crown,
   AlertTriangle,
   BarChart3,
-  FileText
+  FileText,
+  Award
 } from 'lucide-react';
 
 interface MobileNavigationProps {
@@ -40,6 +41,12 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
       label: 'Dashboard',
       icon: Home,
       href: '/dashboard'
+    },
+    {
+      id: 'expert-portfolio',
+      label: 'Expert Portfolio',
+      icon: Award,
+      href: '/expert-portfolio'
     },
     {
       id: 'analytics',

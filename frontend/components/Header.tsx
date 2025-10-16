@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LogOut, User, Settings, TrendingUp, BarChart3 } from 'lucide-react';
+import { LogOut, User, Settings, TrendingUp, BarChart3, Award } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { logout } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -108,6 +108,17 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                   />
                 )}
               </div>
+              
+              {/* Expert Portfolio Link */}
+              <button
+                onClick={() => router.push('/expert-portfolio')}
+                className="hidden sm:flex items-center space-x-2 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg px-3 py-2 border border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-200 group"
+                title="View Expert Portfolio & Learn Trading Strategies"
+              >
+                <Award className="w-5 h-5 text-yellow-400 group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-semibold text-yellow-400 hidden lg:block">Expert Portfolio</span>
+                <span className="text-xs bg-yellow-400/20 text-yellow-300 px-2 py-0.5 rounded-full hidden xl:block">🎓 Learn</span>
+              </button>
               
               {/* Theme Toggle */}
               <ThemeToggle />

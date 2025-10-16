@@ -33,6 +33,7 @@ import stripeRoutes from './routes/stripe';
 import stripeWebhookRoutes from './routes/stripeWebhooks';
 import leaderboardRoutes from './routes/leaderboard';
 import transactionsRoutes from './routes/transactions';
+import expertPortfolioRoutes from './routes/expertPortfolio';
 import { schedulerService } from './services/schedulerService';
 import { watchlistMonitorService } from './services/watchlistMonitorService';
 import { watchlistAlertService } from './services/watchlistAlertService';
@@ -264,6 +265,7 @@ app.use('/api/stripe', stripeRoutes);
 app.use('/api/stripe', stripeWebhookRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/transactions', transactionsRoutes);
+app.use('/api/expert-portfolio', expertPortfolioRoutes);
 
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {
