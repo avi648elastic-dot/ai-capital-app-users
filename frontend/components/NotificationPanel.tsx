@@ -99,7 +99,10 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
             console.log('✅ [NOTIFICATIONS] Successfully loaded real notifications:', normalizedNotifications.length);
             return; // Success! Exit the function
           } else {
-            // Create some sample notifications for the user
+            // Get deleted notification IDs from localStorage
+            const deletedIds = JSON.parse(localStorage.getItem('deleted-notification-ids') || '[]');
+            
+            // Create some sample notifications for the user (excluding deleted ones)
             const sampleNotifications: Notification[] = [
               {
                 id: 'sample-welcome',
@@ -130,9 +133,12 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
               }
             ];
             
-            setNotifications(sampleNotifications);
-            setUnreadCount(sampleNotifications.length);
-            console.log('✅ [NOTIFICATIONS] Showing sample notifications');
+            // Filter out deleted sample notifications
+            const filteredSamples = sampleNotifications.filter(n => !deletedIds.includes(n.id));
+            
+            setNotifications(filteredSamples);
+            setUnreadCount(filteredSamples.length);
+            console.log('✅ [NOTIFICATIONS] Showing sample notifications (filtered):', filteredSamples.length);
             return; // Success with samples
           }
           
@@ -265,8 +271,16 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       // Handle sample notifications locally
       const id = String(notificationId);
       if (id.startsWith('sample') || id.startsWith('error')) {
+        // Store deleted ID in localStorage so it doesn't reappear
+        const deletedIds = JSON.parse(localStorage.getItem('deleted-notification-ids') || '[]');
+        if (!deletedIds.includes(id)) {
+          deletedIds.push(id);
+          localStorage.setItem('deleted-notification-ids', JSON.stringify(deletedIds));
+        }
+        
         setNotifications(prev => prev.filter(n => String(n.id) !== id));
         setUnreadCount(prev => Math.max(0, prev - 1));
+        console.log('✅ [NOTIFICATIONS] Sample notification deleted permanently:', id);
         return;
       }
       
