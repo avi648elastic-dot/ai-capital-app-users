@@ -35,6 +35,7 @@ import leaderboardRoutes from './routes/leaderboard';
 import transactionsRoutes from './routes/transactions';
 import expertPortfolioRoutes from './routes/expertPortfolio';
 import adminSetupRoutes from './routes/adminSetup';
+import aiInsightsRoutes from './routes/aiInsights';
 import { schedulerService } from './services/schedulerService';
 import { watchlistMonitorService } from './services/watchlistMonitorService';
 import { watchlistAlertService } from './services/watchlistAlertService';
@@ -269,6 +270,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/transactions', transactionsRoutes);
 app.use('/api/expert-portfolio', expertPortfolioRoutes);
 app.use('/api/admin-setup', adminSetupRoutes);
+app.use('/api/ai-insights', aiInsightsRoutes);
 
 // 🩺 בדיקת בריאות השרת
 app.get('/api/health', (req, res) => {

@@ -181,7 +181,6 @@ export default function Dashboard() {
       
       // For other errors, just proceed to fetch portfolio
       console.log('🔍 [DASHBOARD] Onboarding check failed - proceeding to fetch portfolio anyway');
-    fetchUserData();
     fetchPortfolio();
       return;
     }
@@ -229,7 +228,7 @@ export default function Dashboard() {
   // 🚀 PERFORMANCE OPTIMIZED: Portfolio fetching with caching and shorter timeout
   const fetchPortfolio = async (useCache = true) => {
     try {
-      setLoading(true);
+      // Loading state is managed by SWR
       const token = Cookies.get('token');
       if (!token) {
         router.push('/');
@@ -278,7 +277,7 @@ export default function Dashboard() {
         return; // Exit early - don't clear portfolio
       }
     } finally {
-      setLoading(false);
+      // Loading state is managed by SWR
     }
   };
 
