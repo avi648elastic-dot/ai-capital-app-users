@@ -85,9 +85,9 @@ export default function Watchlist() {
 
   // Real-time price updates - MAJOR'S REQUIREMENT
   useEffect(() => {
-    if (watchlist.length > 0) {
-      const tickers = watchlist.map(item => item.ticker);
-      
+    const tickers = watchlist.map(item => item.ticker);
+    
+    if (tickers.length > 0) {
       const handlePriceUpdate = (updates: PriceUpdate[]) => {
         console.log('📊 Real-time price updates received:', updates);
         
@@ -96,21 +96,27 @@ export default function Watchlist() {
           if (update) {
             return {
               ...item,
-              currentPrice: update.currentPrice,
+              currentPrice: update.price,
               change: update.change,
               changePercent: update.changePercent,
-              lastChecked: update.lastUpdated.toISOString()
+              lastChecked: new Date().toISOString()
             };
           }
           return item;
         }));
       };
 
-      realtimePriceService.startUpdates(tickers, handlePriceUpdate);
+      // Subscribe to price updates
+      realtimePriceService.subscribe(tickers);
+      realtimePriceService.onPriceUpdate((update: PriceUpdate) => {
+        handlePriceUpdate([update]);
+      });
     }
 
     return () => {
-      realtimePriceService.stopUpdates();
+      if (tickers.length > 0) {
+        realtimePriceService.unsubscribe(tickers);
+      }
     };
   }, [watchlist.length]); // Only restart when watchlist length changes
 

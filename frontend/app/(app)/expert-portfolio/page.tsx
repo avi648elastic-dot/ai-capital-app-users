@@ -255,7 +255,7 @@ export default function ExpertPortfolioPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {portfolio.map(item => {
+            {portfolio.map((item: any) => {
               const { pnl, pnlPercent } = calculatePnL(item);
               const stopLossDistance = getStopLossDistance(item);
               const takeProfitDistance = getTakeProfitDistance(item);
@@ -469,7 +469,7 @@ export default function ExpertPortfolioPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {deletedTransactions.map((transaction) => {
+              {deletedTransactions.map((transaction: any) => {
                 const realizedPnL = transaction.amount - (transaction.beforeSnapshot.shares * transaction.beforeSnapshot.entryPrice);
                 const realizedPnLPercent = transaction.beforeSnapshot.entryPrice > 0 
                   ? (realizedPnL / (transaction.beforeSnapshot.shares * transaction.beforeSnapshot.entryPrice)) * 100 

@@ -14,7 +14,8 @@ import {
   Clock,
   Eye,
   Settings,
-  X
+  X,
+  Plus
 } from 'lucide-react';
 import { useRealtimePrices } from '@/lib/realtimePriceService';
 
