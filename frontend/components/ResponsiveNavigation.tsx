@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   BarChart3, Home, TrendingUp, Target, Shield, 
   Crown, Menu, X, LogOut, Eye, PieChart,
-  Activity, AlertTriangle, Star, User, Settings, Sparkles
+  Activity, AlertTriangle, Star, User, Settings, Sparkles, Award
 } from 'lucide-react';
 import { logout } from '@/lib/auth';
 import { useDevice } from '@/hooks/useDevice';
@@ -44,6 +44,7 @@ export default function ResponsiveNavigation({
 
   const navigationItems = [
     { id: 'dashboard', label: t('navigation.dashboard'), icon: Home, href: '/dashboard' },
+    { id: 'expert-portfolio', label: 'Expert Portfolio', icon: Award, href: '/expert-portfolio', badge: '🎓' },
     { 
       id: 'analytics', 
       label: t('navigation.analytics'), 
@@ -192,6 +193,11 @@ export default function ResponsiveNavigation({
                 >
                   <Icon className="w-5 h-5" />
                   <span className="text-sm font-medium">{item.label}</span>
+                  {(item as any).badge && (
+                    <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full">
+                      {(item as any).badge}
+                    </span>
+                  )}
                 </button>
                 
                     {item.children && (
@@ -395,6 +401,11 @@ export default function ResponsiveNavigation({
                     >
                       <Icon className="w-5 h-5" />
                       <span className="text-sm font-medium">{item.label}</span>
+                      {(item as any).badge && (
+                        <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full">
+                          {(item as any).badge}
+                        </span>
+                      )}
                     </button>
                     
                     {item.children && (
