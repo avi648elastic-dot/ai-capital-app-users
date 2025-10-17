@@ -292,8 +292,24 @@ class GoogleFinanceFormulasService {
           return staleCached;
         }
         
-        // Last resort: throw error so the portfolio can handle the missing stock gracefully
-        throw new Error(`Unable to fetch data for ${symbol} - all APIs unavailable`);
+        // Last resort: return basic fallback data instead of throwing error
+        loggerService.warn(`⚠️ [FALLBACK] Creating basic fallback data for ${symbol} due to API failures`);
+        const fallbackData: StockMetrics = {
+          symbol: symbol,
+          current: 0, // Will be updated by portfolio service with current price
+          top30D: 0,
+          top60D: 0,
+          thisMonthPercent: 0,
+          lastMonthPercent: 0,
+          volatility: 0.02, // Default 2% volatility
+          marketCap: 0,
+          timestamp: Date.now(),
+          dataSource: 'FALLBACK - APIs unavailable'
+        };
+        
+        // Cache the fallback data
+        this.cache.set(symbol, fallbackData);
+        return fallbackData;
       }
       
       // Cache the result
@@ -305,7 +321,25 @@ class GoogleFinanceFormulasService {
       loggerService.error(`❌ [GOOGLE FINANCE FORMULAS] Error fetching metrics for ${symbol}`, {
         error: (error as Error).message || 'Unknown error'
       });
-      throw error; // Re-throw to show error to user
+      
+      // Instead of throwing error, return fallback data
+      loggerService.warn(`⚠️ [FALLBACK] Creating emergency fallback data for ${symbol} due to error`);
+      const fallbackData: StockMetrics = {
+        symbol: symbol,
+        current: 0, // Will be updated by portfolio service with current price
+        top30D: 0,
+        top60D: 0,
+        thisMonthPercent: 0,
+        lastMonthPercent: 0,
+        volatility: 0.02, // Default 2% volatility
+        marketCap: 0,
+        timestamp: Date.now(),
+        dataSource: 'FALLBACK - Error occurred'
+      };
+      
+      // Cache the fallback data
+      this.cache.set(symbol, fallbackData);
+      return fallbackData;
     }
   }
 

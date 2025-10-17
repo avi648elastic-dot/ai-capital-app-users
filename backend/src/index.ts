@@ -536,6 +536,31 @@ app.get('/api/test-stock/:symbol', async (req, res) => {
   }
 });
 
+// 🧪 Test Google Finance service endpoint
+app.get('/api/test-google-finance/:symbol', async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    console.log(`🧪 [GOOGLE FINANCE TEST] Testing Google Finance service for ${symbol}`);
+    
+    const { googleFinanceFormulasService } = await import('./services/googleFinanceFormulasService');
+    const metrics = await googleFinanceFormulasService.getStockMetrics(symbol);
+    
+    res.json({
+      status: 'OK',
+      symbol: metrics.symbol,
+      data: metrics,
+      message: 'Google Finance service data fetched successfully'
+    });
+  } catch (error: any) {
+    console.error('❌ [GOOGLE FINANCE TEST] Error:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      symbol: req.params.symbol,
+      message: error.message || 'Internal server error'
+    });
+  }
+});
+
 // 🔑 Debug API keys endpoint
 app.get('/api/debug/keys', (req, res) => {
   const keys = {
