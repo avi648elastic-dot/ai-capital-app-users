@@ -77,16 +77,26 @@ router.get('/price/:symbol', async (req, res) => {
         timestamp: new Date(metrics.timestamp).toISOString()
       });
     } else {
-      res.status(404).json({
-        success: false,
-        message: `No price found for ${symbol}`
+      // Return fallback data instead of 404
+      res.json({
+        success: true,
+        symbol: symbol,
+        price: 0,
+        dataSource: 'FALLBACK - No data available',
+        timestamp: new Date().toISOString()
       });
     }
   } catch (error) {
-    loggerService.error(`❌ [STOCKS] Error fetching price`, { error: error instanceof Error ? error.message : 'Unknown error' });
-    res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+    loggerService.error(`❌ [STOCKS] Error fetching price for ${req.params.symbol}`, { error: error instanceof Error ? error.message : 'Unknown error' });
+    
+    // Return fallback data instead of 500 error
+    res.json({
+      success: true,
+      symbol: req.params.symbol,
+      price: 0,
+      dataSource: 'FALLBACK - Error occurred',
+      timestamp: new Date().toISOString(),
+      warning: 'Using fallback data due to API error'
     });
   }
 });
