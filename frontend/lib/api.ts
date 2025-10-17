@@ -135,13 +135,21 @@ class ApiClient {
           }
         }
 
-        // Handle auth errors
-        if (error.response?.status === 401) {
-          // Clear invalid token
-          Cookies.remove('token');
-          localStorage.removeItem('token');
-          // Redirect to login
-          window.location.href = '/';
+        // Handle auth errors (both 401 and 403)
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          // Check if it's an authentication error
+          const isAuthError = error.response?.data?.message?.includes('token') || 
+                             error.response?.data?.message?.includes('Authentication') ||
+                             error.response?.data?.message?.includes('Invalid') ||
+                             error.response?.data?.message?.includes('expired');
+          
+          if (isAuthError) {
+            // Clear invalid token
+            Cookies.remove('token');
+            localStorage.removeItem('token');
+            // Redirect to login
+            window.location.href = '/';
+          }
         }
 
         return Promise.reject(error);
