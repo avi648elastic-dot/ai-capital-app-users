@@ -166,33 +166,16 @@ const isAllowedOrigin = (origin?: string) => {
 // Force CORS to allow all origins temporarily for debugging
 const forceAllowOrigin = true;
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow non-browser clients
-      if (forceAllowOrigin) return callback(null, true); // Force allow all origins for debugging
-      if (isAllowedOrigin(origin)) return callback(null, true);
-      return callback(new Error('CORS: Origin not allowed'));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'Accept',
-      'Origin',
-      'Access-Control-Request-Method',
-      'Access-Control-Request-Headers',
-      'X-CSRF-Token',
-      'Cache-Control',
-      'Pragma'
-    ],
-    exposedHeaders: ['Content-Length', 'X-Request-Id'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204
-  })
-);
+// ULTRA-PERMISSIVE CORS for immediate fix
+app.use(cors({
+  origin: true, // Allow all origins
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['*'], // Allow all headers
+  exposedHeaders: ['*'], // Expose all headers
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+}));
 
 // 🧠 Body Parser
 app.use(express.json({ limit: '10mb' }));
