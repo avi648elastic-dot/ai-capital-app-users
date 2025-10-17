@@ -561,6 +561,46 @@ app.get('/api/test-google-finance/:symbol', async (req, res) => {
   }
 });
 
+// 🧪 Simple stock price endpoint (bypasses problematic service)
+app.get('/api/simple-price/:symbol', async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    console.log(`🧪 [SIMPLE PRICE] Getting simple price for ${symbol}`);
+    
+    // Use the working stockDataService instead
+    const { stockDataService } = await import('./services/stockDataService');
+    const stockData = await stockDataService.getStockData(symbol);
+    
+    if (stockData) {
+      res.json({
+        success: true,
+        symbol: stockData.symbol,
+        price: stockData.current,
+        dataSource: 'stockDataService',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.json({
+        success: true,
+        symbol: symbol,
+        price: 0,
+        dataSource: 'FALLBACK - No data',
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error: any) {
+    console.error('❌ [SIMPLE PRICE] Error:', error);
+    res.json({
+      success: true,
+      symbol: req.params.symbol,
+      price: 0,
+      dataSource: 'FALLBACK - Error',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
+});
+
 // 🔑 Debug API keys endpoint
 app.get('/api/debug/keys', (req, res) => {
   const keys = {
