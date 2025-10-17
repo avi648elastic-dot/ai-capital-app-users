@@ -18,7 +18,7 @@ export interface StockMetrics {
   volatility: number;       // Standard deviation of daily returns
   marketCap: number;        // Estimated market cap
   timestamp: number;        // Cache timestamp
-  dataSource: 'alpha_vantage' | 'finnhub' | 'fmp'; // Which API provided the data
+  dataSource: 'alpha_vantage' | 'finnhub' | 'fmp' | 'fallback' | 'error'; // Which API provided the data
 }
 
 interface DailyPrice {
@@ -304,7 +304,7 @@ class GoogleFinanceFormulasService {
           volatility: 0.02, // Default 2% volatility
           marketCap: 0,
           timestamp: Date.now(),
-          dataSource: 'FALLBACK - APIs unavailable'
+          dataSource: 'fallback'
         };
         
         // Cache the fallback data
@@ -334,7 +334,7 @@ class GoogleFinanceFormulasService {
         volatility: 0.02, // Default 2% volatility
         marketCap: 0,
         timestamp: Date.now(),
-        dataSource: 'FALLBACK - Error occurred'
+        dataSource: 'error'
       };
       
       // Cache the fallback data
