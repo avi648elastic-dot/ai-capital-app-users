@@ -166,16 +166,27 @@ const isAllowedOrigin = (origin?: string) => {
 // Force CORS to allow all origins temporarily for debugging
 const forceAllowOrigin = true;
 
-// ULTRA-PERMISSIVE CORS for immediate fix
+// ULTRA-PERMISSIVE CORS for immediate fix - MAXIMUM PERMISSIVENESS
 app.use(cors({
   origin: true, // Allow all origins
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  methods: ['*'], // Allow all methods
   allowedHeaders: ['*'], // Allow all headers
   exposedHeaders: ['*'], // Expose all headers
   preflightContinue: false,
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
+  maxAge: 86400 // Cache preflight for 24 hours
 }));
+
+// Additional CORS headers for maximum compatibility
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
+  next();
+});
 
 // 🧠 Body Parser
 app.use(express.json({ limit: '10mb' }));
