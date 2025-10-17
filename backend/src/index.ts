@@ -188,12 +188,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Force deployment trigger - CORS fix v4
-console.log('🚀 CORS FIX V4 DEPLOYED - Maximum permissiveness enabled');
-console.log('🚀 CORS FIX V4 DEPLOYED - Maximum permissiveness enabled');
-console.log('🚀 CORS FIX V4 DEPLOYED - Maximum permissiveness enabled');
-console.log('🚀 CORS FIX V4 DEPLOYED - Maximum permissiveness enabled');
-console.log('🚀 CORS FIX V4 DEPLOYED - Maximum permissiveness enabled');
+// Force deployment trigger - CORS fix v5
+console.log('🚀 CORS FIX V5 DEPLOYED - Maximum permissiveness enabled');
+console.log('🚀 CORS FIX V5 DEPLOYED - Maximum permissiveness enabled');
+console.log('🚀 CORS FIX V5 DEPLOYED - Maximum permissiveness enabled');
+console.log('🚀 CORS FIX V5 DEPLOYED - Maximum permissiveness enabled');
+console.log('🚀 CORS FIX V5 DEPLOYED - Maximum permissiveness enabled');
+console.log('🚀 CORS FIX V5 DEPLOYED - Maximum permissiveness enabled');
+console.log('🚀 CORS FIX V5 DEPLOYED - Maximum permissiveness enabled');
 
 // 🧠 Body Parser
 app.use(express.json({ limit: '10mb' }));
