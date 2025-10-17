@@ -188,8 +188,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Force deployment trigger - CORS fix v2
-console.log('🚀 CORS FIX V2 DEPLOYED - Maximum permissiveness enabled');
+// Force deployment trigger - CORS fix v3
+console.log('🚀 CORS FIX V3 DEPLOYED - Maximum permissiveness enabled');
+console.log('🚀 CORS FIX V3 DEPLOYED - Maximum permissiveness enabled');
+console.log('🚀 CORS FIX V3 DEPLOYED - Maximum permissiveness enabled');
 
 // 🧠 Body Parser
 app.use(express.json({ limit: '10mb' }));
