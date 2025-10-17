@@ -157,6 +157,8 @@ const isAllowedOrigin = (origin?: string) => {
     /^https?:\/\/127\.0\.0\.1:(3000|3001)$/,
     /^https?:\/\/([a-z0-9-]+)\.vercel\.app$/i,
     /^https?:\/\/(.*\.)?ai-capital\.info$/i,
+    /^https?:\/\/ai-capital-app7\.vercel\.app$/i, // Add specific Vercel domain
+    /^https?:\/\/ai-capital-app7\.onrender\.com$/i, // Add Render domain
   ];
   return patterns.some((p) => p.test(origin));
 };

@@ -93,4 +93,74 @@ router.get('/audit/deleted/summary', authenticateToken, async (req: Request, res
   }
 });
 
+// Get historical transactions (deleted transactions formatted for frontend)
+router.get('/historical', authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    console.log('🔍 [HISTORICAL] Fetching historical transactions for user:', userId);
+
+    const { portfolioId, startDate, endDate, limit = 50 } = req.query as any;
+    
+    const query: any = { userId };
+    if (portfolioId) query.portfolioId = portfolioId;
+    if (startDate || endDate) {
+      query.deletedAt = {};
+      if (startDate) query.deletedAt.$gte = new Date(startDate);
+      if (endDate) query.deletedAt.$lte = new Date(endDate);
+    }
+
+    const deletedTransactions = await DeletedTransactionAudit.find(query)
+      .sort({ deletedAt: -1 })
+      .limit(parseInt(limit))
+      .lean();
+
+    // Format transactions for frontend display
+    const historicalTransactions = deletedTransactions.map((tx: any) => {
+      const snapshot = tx.beforeSnapshot || {};
+      const entryPrice = snapshot.entryPrice || 0;
+      const shares = snapshot.shares || 0;
+      const exitPrice = tx.amount / shares || snapshot.currentPrice || 0;
+      const pnl = (exitPrice - entryPrice) * shares;
+      const pnlPercent = entryPrice > 0 ? (pnl / (entryPrice * shares)) * 100 : 0;
+
+      return {
+        id: tx._id,
+        action: 'SELL', // All historical transactions are sells
+        ticker: tx.ticker,
+        shares: shares,
+        entry: entryPrice,
+        exit: exitPrice,
+        pnl: pnl,
+        pnlPercent: pnlPercent,
+        date: tx.deletedAt,
+        portfolioId: tx.portfolioId || 'default',
+        reason: tx.reason || 'Position closed',
+        deletedBy: tx.deletedBy,
+        deletedAt: tx.deletedAt
+      };
+    });
+
+    console.log(`✅ [HISTORICAL] Found ${historicalTransactions.length} historical transactions`);
+
+    res.json({ 
+      success: true, 
+      transactions: historicalTransactions,
+      total: historicalTransactions.length,
+      message: 'Historical transactions fetched successfully'
+    });
+
+  } catch (error: any) {
+    console.error('❌ [HISTORICAL] Error fetching historical transactions:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch historical transactions',
+      message: error.message 
+    });
+  }
+});
+
 export default router;

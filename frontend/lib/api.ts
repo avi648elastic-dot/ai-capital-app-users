@@ -429,6 +429,34 @@ class ApiClient {
       ),
   };
 
+  // Historical transactions endpoints
+  transactions = {
+    getHistorical: (params?: { portfolioId?: string; startDate?: string; endDate?: string; limit?: number }) =>
+      this.request(
+        { method: 'GET', url: '/api/transactions/historical', params },
+        z.object({
+          success: z.boolean(),
+          transactions: z.array(z.object({
+            id: z.string(),
+            action: z.string(),
+            ticker: z.string(),
+            shares: z.number(),
+            entry: z.number(),
+            exit: z.number(),
+            pnl: z.number(),
+            pnlPercent: z.number(),
+            date: z.string(),
+            portfolioId: z.string(),
+            reason: z.string(),
+            deletedBy: z.string(),
+            deletedAt: z.string(),
+          })),
+          total: z.number(),
+          message: z.string(),
+        })
+      ),
+  };
+
   // Health check
   health = {
     check: () =>
