@@ -163,10 +163,14 @@ const isAllowedOrigin = (origin?: string) => {
   return patterns.some((p) => p.test(origin));
 };
 
+// Force CORS to allow all origins temporarily for debugging
+const forceAllowOrigin = true;
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true); // allow non-browser clients
+      if (forceAllowOrigin) return callback(null, true); // Force allow all origins for debugging
       if (isAllowedOrigin(origin)) return callback(null, true);
       return callback(new Error('CORS: Origin not allowed'));
     },
