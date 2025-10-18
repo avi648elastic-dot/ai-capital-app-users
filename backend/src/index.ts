@@ -189,38 +189,7 @@ app.use(express.urlencoded({ extended: true }));
 // 📁 Serve static files (for avatar uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// 🚨 EMERGENCY FIX: Explicit preflight handler for login
-app.options('*', (req, res) => {
-  const origin = req.headers.origin as string | undefined;
-  
-  console.log(`🔄 [PREFLIGHT] Handling OPTIONS request for: ${req.url} from origin: ${origin}`);
-  
-  if (origin && isAllowedOrigin(origin)) {
-    // Set all necessary CORS headers for allowed origin
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, X-CSRF-Token, Cache-Control, Pragma');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Max-Age', '86400'); // 24 hours
-    
-    console.log(`✅ [PREFLIGHT] CORS headers set for allowed origin: ${origin}`);
-    res.status(204).send();
-  } else {
-    console.log(`❌ [PREFLIGHT] Origin not allowed: ${origin}`);
-    res.status(403).json({ error: 'Origin not allowed' });
-  }
-});
-
-// 🚨 EMERGENCY FIX: Additional CORS headers for all responses
-app.use((req, res, next) => {
-  const origin = req.headers.origin as string | undefined;
-  
-  if (origin && isAllowedOrigin(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Access-Control-Allow-Credentials', 'true');
-  }
-  next();
-});
+// Old CORS handlers removed - using nuclear CORS fix above
 
 // CSRF Protection - Apply to all routes except health checks and auth
 app.use((req, res, next) => {
