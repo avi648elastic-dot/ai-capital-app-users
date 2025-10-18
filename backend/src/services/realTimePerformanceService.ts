@@ -230,32 +230,44 @@ class RealTimePerformanceService {
    * Get performance metrics for multiple stocks
    */
   async getMultipleStockMetrics(symbols: string[], days: number): Promise<Map<string, StockMetrics>> {
-    loggerService.info(`🔍 [REAL TIME] Calculating metrics for ${symbols.length} stocks over ${days} days`);
-    
-    const results = new Map<string, StockMetrics>();
-    const errors: string[] = [];
+    try {
+      loggerService.info(`🔍 [REAL TIME] Calculating metrics for ${symbols.length} stocks over ${days} days`);
+      console.log(`🔍 [REAL TIME] Symbols: ${symbols.join(', ')}, Days: ${days}`);
+      
+      const results = new Map<string, StockMetrics>();
+      const errors: string[] = [];
 
-    // Process in parallel
-    const promises = symbols.map(async (symbol) => {
-      try {
-        const metrics = await this.getStockMetrics(symbol, days);
-        results.set(symbol, metrics);
-      } catch (error) {
-        const errorMsg = `${symbol}: ${(error as Error).message || 'Unknown error'}`;
-        errors.push(errorMsg);
-        loggerService.error(`❌ [REAL TIME] Failed to calculate ${symbol}`, { error: errorMsg });
+      // Process in parallel
+      const promises = symbols.map(async (symbol) => {
+        try {
+          console.log(`🔍 [REAL TIME] Processing ${symbol}...`);
+          const metrics = await this.getStockMetrics(symbol, days);
+          results.set(symbol, metrics);
+          console.log(`✅ [REAL TIME] Successfully processed ${symbol}`);
+        } catch (error) {
+          const errorMsg = `${symbol}: ${(error as Error).message || 'Unknown error'}`;
+          errors.push(errorMsg);
+          console.error(`❌ [REAL TIME] Failed to calculate ${symbol}:`, error);
+          loggerService.error(`❌ [REAL TIME] Failed to calculate ${symbol}`, { error: errorMsg });
+        }
+      });
+
+      await Promise.all(promises);
+
+      loggerService.info(`✅ [REAL TIME] Successfully calculated ${results.size}/${symbols.length} stocks`);
+      console.log(`✅ [REAL TIME] Results: ${results.size}/${symbols.length} stocks calculated`);
+      
+      if (errors.length > 0) {
+        loggerService.warn(`⚠️ [REAL TIME] Failed stocks: ${errors.join(', ')}`);
+        console.warn(`⚠️ [REAL TIME] Errors: ${errors.join(', ')}`);
       }
-    });
 
-    await Promise.all(promises);
-
-    loggerService.info(`✅ [REAL TIME] Successfully calculated ${results.size}/${symbols.length} stocks`);
-    
-    if (errors.length > 0) {
-      loggerService.warn(`⚠️ [REAL TIME] Failed stocks: ${errors.join(', ')}`);
+      return results;
+    } catch (error) {
+      console.error('❌ [REAL TIME] Critical error in getMultipleStockMetrics:', error);
+      loggerService.error('❌ [REAL TIME] Critical error in getMultipleStockMetrics:', error);
+      throw error;
     }
-
-    return results;
   }
 
   /**

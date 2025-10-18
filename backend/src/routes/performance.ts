@@ -175,19 +175,38 @@ router.get('/', authenticateToken, async (req, res) => {
     
     // Fetch real daily price data for all stocks using Yahoo Finance
     loggerService.info(`🔍 [PERFORMANCE] Fetching real daily data for ${tickers.length} stocks: ${tickers.join(', ')}`);
+    console.log(`🔍 [PERFORMANCE] Tickers: ${tickers.join(', ')}, Days: ${days}`);
     
-    // Add timeout for the stock metrics fetching
-    const stockMetricsPromise = realTimePerformanceService.getMultipleStockMetrics(tickers, days);
-    const timeoutPromise = new Promise<Map<string, any>>((_, reject) => {
-      setTimeout(() => reject(new Error('Stock metrics fetch timeout')), 35000); // 35 seconds
-    });
+    let stockMetricsMap: Map<string, any> = new Map();
     
-    let stockMetricsMap: Map<string, any>;
     try {
+      // Add timeout for the stock metrics fetching
+      const stockMetricsPromise = realTimePerformanceService.getMultipleStockMetrics(tickers, days);
+      const timeoutPromise = new Promise<Map<string, any>>((_, reject) => {
+        setTimeout(() => reject(new Error('Stock metrics fetch timeout')), 35000); // 35 seconds
+      });
+      
       stockMetricsMap = await Promise.race([stockMetricsPromise, timeoutPromise]);
+      console.log(`✅ [PERFORMANCE] Successfully fetched data for ${stockMetricsMap.size} stocks`);
     } catch (error) {
-      loggerService.warn(`⚠️ [PERFORMANCE] Stock metrics fetch timed out or failed, using fallback data`);
-      stockMetricsMap = new Map();
+      console.error(`❌ [PERFORMANCE] Real-time service failed:`, error);
+      loggerService.warn(`⚠️ [PERFORMANCE] Real-time service failed, using fallback data:`, error);
+      
+      // Fallback to Google Finance service
+      try {
+        console.log(`🔄 [PERFORMANCE] Trying Google Finance fallback...`);
+        const fallbackPromise = googleFinanceFormulasService.getMultipleStockMetrics(tickers);
+        const fallbackTimeout = new Promise<Map<string, any>>((_, reject) => {
+          setTimeout(() => reject(new Error('Fallback timeout')), 15000); // 15 seconds
+        });
+        
+        stockMetricsMap = await Promise.race([fallbackPromise, fallbackTimeout]);
+        console.log(`✅ [PERFORMANCE] Fallback successful for ${stockMetricsMap.size} stocks`);
+      } catch (fallbackError) {
+        console.error(`❌ [PERFORMANCE] Fallback also failed:`, fallbackError);
+        loggerService.error(`❌ [PERFORMANCE] Both real-time and fallback failed:`, fallbackError);
+        stockMetricsMap = new Map();
+      }
     }
     
     loggerService.info(`📊 [PERFORMANCE] Retrieved data for ${stockMetricsMap.size}/${tickers.length} stocks`);
@@ -392,10 +411,21 @@ router.get('/', authenticateToken, async (req, res) => {
     clearTimeout(timeout);
     
     loggerService.error('❌ [PERFORMANCE] Error calculating performance metrics:', error);
+    console.error('❌ [PERFORMANCE] Full error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code
+    });
     
     res.status(500).json({
       message: 'Failed to calculate performance metrics',
-      error: error.message
+      error: error.message,
+      debug: process.env.NODE_ENV === 'development' ? {
+        stack: error.stack,
+        name: error.name,
+        code: error.code
+      } : undefined
     });
   }
 });
