@@ -159,6 +159,8 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
       const pnl = value - cost;
       const pnlPercent = cost > 0 ? (pnl / cost) * 100 : 0;
 
+      console.log(`💰 [PORTFOLIO TOTALS] ${item.ticker}: Cost=$${cost.toFixed(2)}, Value=$${value.toFixed(2)}, PnL=$${pnl.toFixed(2)}`);
+
       return {
         initial: acc.initial + cost,
         current: acc.current + value,
@@ -166,6 +168,14 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
         totalPnLPercent: acc.initial > 0 ? (acc.totalPnL / acc.initial) * 100 : 0,
       };
     }, { initial: 0, current: 0, totalPnL: 0, totalPnLPercent: 0 });
+
+    console.log('💰 [PORTFOLIO TOTALS] Final totals:', {
+      initial: totals.initial,
+      current: totals.current,
+      totalPnL: totals.totalPnL,
+      totalPnLPercent: totals.totalPnLPercent,
+      portfolioCount: updatedPortfolio.length
+    });
 
     // Calculate and add volatility data to each portfolio item
     try {

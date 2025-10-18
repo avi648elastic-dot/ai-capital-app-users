@@ -317,21 +317,31 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const userId = req.user!._id.toString();
     
+    console.log('🗑️ [NOTIFICATION DELETE] Attempting to delete notification:', {
+      notificationId: id,
+      userId: userId,
+      userEmail: req.user?.email
+    });
+    
     const deleted = await notificationService.deleteNotification(id, userId);
     
+    console.log('🗑️ [NOTIFICATION DELETE] Deletion result:', { deleted });
+    
     if (!deleted) {
+      console.log('❌ [NOTIFICATION DELETE] Notification not found or not owned by user');
       return res.status(404).json({
         success: false,
         message: 'Notification not found'
       });
     }
 
+    console.log('✅ [NOTIFICATION DELETE] Notification deleted successfully');
     res.json({
       success: true,
       message: 'Notification deleted successfully'
     });
   } catch (error) {
-    console.error('Delete notification error:', error);
+    console.error('❌ [NOTIFICATION DELETE] Delete notification error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to delete notification'
