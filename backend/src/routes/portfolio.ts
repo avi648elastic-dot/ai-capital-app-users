@@ -288,37 +288,26 @@ router.post('/add', async (req, res) => {
 
     console.log('🔍 [PORTFOLIO ADD] Portfolio item created:', portfolioItem);
 
-    // Get decision for this stock - with better error handling
-    try {
-      console.log('🔍 [PORTFOLIO ADD] Calling decision engine...');
-      const decision = await decisionEngine.decideActionEnhanced({
-        ticker: portfolioItem.ticker,
-        entryPrice: portfolioItem.entryPrice,
-        currentPrice: portfolioItem.currentPrice,
-        stopLoss: portfolioItem.stopLoss,
-        takeProfit: portfolioItem.takeProfit,
-      });
-
-      portfolioItem.action = decision.action;
-      portfolioItem.reason = decision.reason;
-      portfolioItem.color = decision.color;
-
-      console.log('🔍 [PORTFOLIO ADD] Decision made:', decision);
-    } catch (decisionError: any) {
-      console.warn('⚠️ [PORTFOLIO ADD] Decision engine error, using defaults:', decisionError);
-      console.warn('⚠️ [PORTFOLIO ADD] Decision error details:', {
-        name: decisionError?.name || 'Unknown',
-        message: decisionError?.message || 'Unknown error',
-        stack: decisionError?.stack || 'No stack trace'
-      });
-      portfolioItem.action = 'HOLD';
-      portfolioItem.reason = 'Added to portfolio';
-      portfolioItem.color = 'yellow';
-    }
+    // SIMPLIFIED: Skip decision engine for now to isolate the issue
+    console.log('🔍 [PORTFOLIO ADD] Skipping decision engine for debugging');
+    portfolioItem.action = 'HOLD';
+    portfolioItem.reason = 'Added to portfolio';
+    portfolioItem.color = 'yellow';
 
     console.log('🔍 [PORTFOLIO ADD] Saving portfolio item...');
-    await portfolioItem.save();
-    console.log('✅ [PORTFOLIO ADD] Portfolio item saved successfully');
+    try {
+      await portfolioItem.save();
+      console.log('✅ [PORTFOLIO ADD] Portfolio item saved successfully');
+    } catch (saveError: any) {
+      console.error('❌ [PORTFOLIO ADD] Database save error:', saveError);
+      console.error('❌ [PORTFOLIO ADD] Save error details:', {
+        name: saveError?.name || 'Unknown',
+        message: saveError?.message || 'Unknown error',
+        code: saveError?.code || 'No code',
+        stack: saveError?.stack || 'No stack trace'
+      });
+      throw saveError; // Re-throw to be caught by outer try-catch
+    }
 
     res.status(201).json({ 
       message: 'Stock added successfully', 
