@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import Portfolio from '../models/Portfolio';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { decisionEngine } from '../services/decisionEngine';
@@ -222,9 +223,9 @@ router.post('/add', async (req, res) => {
     console.log('🎯 [PORTFOLIO ADD] ===== REQUEST RECEIVED =====');
     console.log('🔍 [PORTFOLIO ADD] Request body:', JSON.stringify(req.body, null, 2));
     
-    // Create temporary user for testing
+    // Create temporary user for testing with valid ObjectId
     const tempUser = {
-      _id: 'temp-user-id',
+      _id: new mongoose.Types.ObjectId().toHexString(),
       email: 'avi648elastic@gmail.com',
       name: 'Temporary User',
       subscriptionTier: 'premium',
