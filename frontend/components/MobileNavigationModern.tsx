@@ -19,6 +19,7 @@ import {
   X,
   Sparkles
 } from 'lucide-react';
+import NotificationPanel from './NotificationPanel';
 
 interface MobileNavigationModernProps {
   user?: any;
@@ -30,6 +31,7 @@ const MobileNavigationModern: React.FC<MobileNavigationModernProps> = ({
   notificationCount = 0
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -242,8 +244,11 @@ const MobileNavigationModern: React.FC<MobileNavigationModernProps> = ({
                   })}
                 </div>
 
-                {/* Notifications */}
-                <div className="mt-8 p-4 bg-white/10 rounded-2xl border border-white/20">
+                {/* Notifications - Clickable */}
+                <button
+                  onClick={() => setShowNotificationPanel(true)}
+                  className="mt-8 w-full p-4 bg-white/10 rounded-2xl border border-white/20 hover:bg-white/20 transition-all duration-200 active:scale-95"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 bg-yellow-500/20 rounded-lg">
@@ -252,14 +257,14 @@ const MobileNavigationModern: React.FC<MobileNavigationModernProps> = ({
                       <span className="text-white font-semibold">Notifications</span>
                     </div>
                     {notificationCount > 0 && (
-                      <div className="px-3 py-1 bg-red-500 rounded-full">
+                      <div className="px-3 py-1 bg-red-500 rounded-full animate-pulse">
                         <span className="text-white text-sm font-bold">
                           {notificationCount > 99 ? '99+' : notificationCount}
                         </span>
                       </div>
                     )}
                   </div>
-                </div>
+                </button>
 
                 {/* Footer */}
                 <div className="mt-6 pt-6 border-t border-white/20">
@@ -278,6 +283,15 @@ const MobileNavigationModern: React.FC<MobileNavigationModernProps> = ({
           </>
         )}
       </AnimatePresence>
+
+      {/* Notification Panel */}
+      {showNotificationPanel && (
+        <NotificationPanel 
+          isVisible={showNotificationPanel}
+          onClose={() => setShowNotificationPanel(false)}
+          isMobile={true}
+        />
+      )}
     </>
   );
 };

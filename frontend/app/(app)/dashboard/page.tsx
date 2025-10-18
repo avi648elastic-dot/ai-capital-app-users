@@ -555,6 +555,10 @@ export default function Dashboard() {
       <MobileHeader 
         title={`${t('dashboard.welcomeBack')} ${user?.name || 'User'}`}
         subtitle={t('dashboard.portfolioOverview')}
+        unreadCount={0}
+        onNotificationClick={() => {
+          // Handle notification click
+        }}
       />
       
       {/* Professional Header */}

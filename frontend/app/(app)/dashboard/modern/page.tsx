@@ -316,6 +316,12 @@ const ModernDashboard: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Mobile Navigation */}
+      <MobileNavigationModern
+        user={user}
+        notificationCount={0}
+      />
     </div>
   );
 };
