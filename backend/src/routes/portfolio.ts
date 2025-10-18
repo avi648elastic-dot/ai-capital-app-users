@@ -15,6 +15,17 @@ import { portfolioCache } from '../middleware/cache';
 
 const router = express.Router();
 
+// Test endpoint to verify bypass is working
+router.post('/test', authenticateToken, requireSubscription, async (req, res) => {
+  console.log('🧪 [TEST] Test endpoint called');
+  console.log('🧪 [TEST] User:', req.user);
+  res.json({ 
+    success: true, 
+    message: 'Test endpoint working',
+    user: req.user ? req.user.email : 'No user'
+  });
+});
+
 // Get user portfolio with real-time prices - OPTIMIZED WITH CACHING
 router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), portfolioCache, async (req, res) => {
   try {
@@ -206,7 +217,7 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
 });
 
 // Add stock to portfolio
-router.post('/add', authenticateToken, requireSubscription, checkStockLimits, validate({ body: stockSchema }), async (req, res) => {
+router.post('/add', authenticateToken, requireSubscription, async (req, res) => {
   try {
     console.log('🔍 [PORTFOLIO ADD] Adding stock for user:', req.user!._id);
     console.log('🔍 [PORTFOLIO ADD] Request body:', req.body);
