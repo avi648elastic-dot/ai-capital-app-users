@@ -232,6 +232,7 @@ router.post('/add', (req, res) => {
     success: true,
     message: 'EMERGENCY SUCCESS - Stock added without processing',
     data: req.body
+  });
 });
 
 // Update stock in portfolio
