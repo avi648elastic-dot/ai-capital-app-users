@@ -149,54 +149,26 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// 🚨 EMERGENCY FIX: Ultra-permissive CORS for immediate login fix
-const isAllowedOrigin = (origin?: string) => {
-  if (!origin) return false;
-  const patterns = [
-    /^https?:\/\/localhost:(3000|3001)$/,
-    /^https?:\/\/127\.0\.0\.1:(3000|3001)$/,
-    /^https?:\/\/([a-z0-9-]+)\.vercel\.app$/i,
-    /^https?:\/\/(.*\.)?ai-capital\.info$/i,
-    /^https?:\/\/ai-capital-app7\.vercel\.app$/i, // Add specific Vercel domain
-    /^https?:\/\/ai-capital-app7\.onrender\.com$/i, // Add Render domain
-  ];
-  return patterns.some((p) => p.test(origin));
-};
-
-// Force CORS to allow all origins temporarily for debugging
-const forceAllowOrigin = true;
-
-// ULTRA-PERMISSIVE CORS for immediate fix - MAXIMUM PERMISSIVENESS
-app.use(cors({
-  origin: true, // Allow all origins
-  credentials: true,
-  methods: ['*'], // Allow all methods
-  allowedHeaders: ['*'], // Allow all headers
-  exposedHeaders: ['*'], // Expose all headers
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-  maxAge: 86400 // Cache preflight for 24 hours
-}));
-
-// Additional CORS headers for maximum compatibility
+// NUCLEAR CORS FIX - Complete replacement with basic setup
 app.use((req, res, next) => {
+  console.log('🔍 [CORS] Request from origin:', req.headers.origin);
+  console.log('🔍 [CORS] Request method:', req.method);
+  console.log('🔍 [CORS] Request URL:', req.url);
+  
+  // Set CORS headers for ALL requests
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-Token, X-API-Key');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Max-Age', '86400');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('🔍 [CORS] Handling OPTIONS preflight request');
+    return res.status(200).end();
+  }
+  
   next();
-});
-
-// Explicit OPTIONS handler for preflight requests
-app.options('*', (req, res) => {
-  console.log('🔍 [CORS] Handling OPTIONS preflight request for:', req.url);
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-Token');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Max-Age', '86400');
-  res.status(200).end();
 });
 
 // Force deployment trigger - CORS fix v6
