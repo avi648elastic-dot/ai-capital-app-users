@@ -289,7 +289,7 @@ router.get('/deleted-transactions', authenticateToken, deletedTransactionsCache,
  * Add historical positions manually
  * POST /api/expert-portfolio/add-historical
  */
-router.post('/add-historical', authenticateToken, async (req, res) => {
+router.post('/add-historical', async (req, res) => {
   try {
     loggerService.info('🎓 [EXPERT PORTFOLIO] Adding historical positions');
 
