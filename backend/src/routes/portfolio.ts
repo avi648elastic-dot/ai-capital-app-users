@@ -304,12 +304,12 @@ router.post('/add', async (req, res) => {
       portfolioItem.color = decision.color;
 
       console.log('🔍 [PORTFOLIO ADD] Decision made:', decision);
-    } catch (decisionError) {
+    } catch (decisionError: any) {
       console.warn('⚠️ [PORTFOLIO ADD] Decision engine error, using defaults:', decisionError);
       console.warn('⚠️ [PORTFOLIO ADD] Decision error details:', {
-        name: decisionError.name,
-        message: decisionError.message,
-        stack: decisionError.stack
+        name: decisionError?.name || 'Unknown',
+        message: decisionError?.message || 'Unknown error',
+        stack: decisionError?.stack || 'No stack trace'
       });
       portfolioItem.action = 'HOLD';
       portfolioItem.reason = 'Added to portfolio';
