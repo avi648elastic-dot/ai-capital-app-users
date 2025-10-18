@@ -244,7 +244,7 @@ router.post('/add', async (req, res) => {
 
     console.log('🔍 [PORTFOLIO ADD] Parsed data:', { ticker, shares, entryPrice, currentPrice });
 
-    // SIMPLIFIED VALIDATION - Just check if fields exist
+    // ULTRA SIMPLIFIED VALIDATION - Just check if fields exist
     console.log('🔍 [PORTFOLIO ADD] Quick validation check:', {
       ticker: ticker,
       shares: shares,
@@ -252,10 +252,32 @@ router.post('/add', async (req, res) => {
       currentPrice: currentPrice
     });
 
-    if (!ticker || !shares || !entryPrice || !currentPrice) {
-      console.error('❌ [PORTFOLIO ADD] Missing required fields');
+    // Check each field individually with detailed logging
+    if (!ticker) {
+      console.error('❌ [PORTFOLIO ADD] Missing ticker');
       return res.status(400).json({ 
-        message: 'Missing required fields',
+        message: 'Missing ticker',
+        received: { ticker, shares, entryPrice, currentPrice }
+      });
+    }
+    if (!shares) {
+      console.error('❌ [PORTFOLIO ADD] Missing shares');
+      return res.status(400).json({ 
+        message: 'Missing shares',
+        received: { ticker, shares, entryPrice, currentPrice }
+      });
+    }
+    if (!entryPrice) {
+      console.error('❌ [PORTFOLIO ADD] Missing entryPrice');
+      return res.status(400).json({ 
+        message: 'Missing entryPrice',
+        received: { ticker, shares, entryPrice, currentPrice }
+      });
+    }
+    if (!currentPrice) {
+      console.error('❌ [PORTFOLIO ADD] Missing currentPrice');
+      return res.status(400).json({ 
+        message: 'Missing currentPrice',
         received: { ticker, shares, entryPrice, currentPrice }
       });
     }
@@ -280,7 +302,7 @@ router.post('/add', async (req, res) => {
     console.log('🔍 [PORTFOLIO ADD] Using portfolio type:', finalPortfolioType);
     console.log('🔍 [PORTFOLIO ADD] Using portfolio ID:', finalPortfolioId);
 
-    // SIMPLIFIED NUMERIC VALIDATION
+    // ULTRA SIMPLIFIED NUMERIC VALIDATION
     const numericShares = Number(shares);
     const numericEntryPrice = Number(entryPrice);
     const numericCurrentPrice = Number(currentPrice);
@@ -291,15 +313,18 @@ router.post('/add', async (req, res) => {
       currentPrice: numericCurrentPrice
     });
 
-    // Just check if they're valid numbers
-    if (isNaN(numericShares) || numericShares <= 0) {
-      return res.status(400).json({ message: 'Invalid shares' });
+    // Just check if they're valid numbers - be more permissive
+    if (isNaN(numericShares)) {
+      console.error('❌ [PORTFOLIO ADD] Invalid shares:', shares);
+      return res.status(400).json({ message: 'Invalid shares', received: shares });
     }
-    if (isNaN(numericEntryPrice) || numericEntryPrice <= 0) {
-      return res.status(400).json({ message: 'Invalid entry price' });
+    if (isNaN(numericEntryPrice)) {
+      console.error('❌ [PORTFOLIO ADD] Invalid entry price:', entryPrice);
+      return res.status(400).json({ message: 'Invalid entry price', received: entryPrice });
     }
-    if (isNaN(numericCurrentPrice) || numericCurrentPrice <= 0) {
-      return res.status(400).json({ message: 'Invalid current price' });
+    if (isNaN(numericCurrentPrice)) {
+      console.error('❌ [PORTFOLIO ADD] Invalid current price:', currentPrice);
+      return res.status(400).json({ message: 'Invalid current price', received: currentPrice });
     }
 
     // Validate optional fields with corrected names
