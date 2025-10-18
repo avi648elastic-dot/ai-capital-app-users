@@ -6,6 +6,7 @@ import { volatilityService } from '../services/volatilityService';
 import { loggerService } from '../services/loggerService';
 import { historicalDataService } from '../services/historicalDataService';
 import { redisService } from '../services/redisService';
+import { realTimePerformanceService } from '../services/realTimePerformanceService';
 
 const router = express.Router();
 
@@ -146,6 +147,9 @@ router.get('/', authenticateToken, async (req, res) => {
       return res.json(JSON.parse(cached));
     }
 
+    // Clear real-time service cache for different timeframes
+    realTimePerformanceService.clearCache();
+
     // Get user's portfolio
     const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
     
@@ -169,11 +173,11 @@ router.get('/', authenticateToken, async (req, res) => {
     const tickers = [...new Set(portfolio.map(item => item.ticker))];
     loggerService.info(`🔍 [PERFORMANCE] Analyzing ${tickers.length} stocks: ${tickers.join(', ')}`);
     
-    // Fetch 90-day data for all stocks using our Google Finance service
-    loggerService.info(`🔍 [PERFORMANCE] Fetching 90-day data for ${tickers.length} stocks: ${tickers.join(', ')}`);
+    // Fetch real daily price data for all stocks using Yahoo Finance
+    loggerService.info(`🔍 [PERFORMANCE] Fetching real daily data for ${tickers.length} stocks: ${tickers.join(', ')}`);
     
     // Add timeout for the stock metrics fetching
-    const stockMetricsPromise = googleFinanceFormulasService.getMultipleStockMetrics(tickers);
+    const stockMetricsPromise = realTimePerformanceService.getMultipleStockMetrics(tickers, days);
     const timeoutPromise = new Promise<Map<string, any>>((_, reject) => {
       setTimeout(() => reject(new Error('Stock metrics fetch timeout')), 35000); // 35 seconds
     });
@@ -198,7 +202,7 @@ router.get('/', authenticateToken, async (req, res) => {
       }
     }
     
-    // Calculate metrics for each stock using the 90-day data
+    // Use real-time calculated metrics directly
     const stockMetrics: Record<string, any> = {};
     let totalPortfolioValue = 0;
     let totalPortfolioReturn = 0;
@@ -208,7 +212,7 @@ router.get('/', authenticateToken, async (req, res) => {
     for (const stock of portfolio) {
       const stockData = stockMetricsMap.get(stock.ticker);
       if (!stockData) {
-        loggerService.warn(`⚠️ [PERFORMANCE] No 90-day data for ${stock.ticker} - skipping calculation`);
+        loggerService.warn(`⚠️ [PERFORMANCE] No real-time data for ${stock.ticker} - using fallback`);
         
         // Add placeholder data so frontend doesn't break
         const estimatedReturn = (Math.random() - 0.5) * 40; // -20% to +20% random return
@@ -222,117 +226,50 @@ router.get('/', authenticateToken, async (req, res) => {
           volatilityMetrics: null,
           sharpeRatio: estimatedSharpe,
           maxDrawdown: estimatedMaxDD,
-          topPrice: stock.currentPrice * (1 + Math.abs(estimatedReturn) / 100), // Higher than current
+          topPrice: stock.currentPrice * (1 + Math.abs(estimatedReturn) / 100),
           currentPrice: stock.currentPrice,
-          error: 'No 90-day data available'
+          error: 'No real-time data available'
         };
         continue;
       }
 
-      // Calculate performance for the requested timeframe from real close prices (fallback to service est.)
-      let timeframeReturn = calculateTimeframeReturn(stockData, days);
-      try {
-        const history = await historicalDataService.getStockHistory(stock.ticker, 90);
-        if (history.length >= 2) {
-          // Compute returns based on close prices
-          const recentSlice = history.slice(-Math.min(days, history.length));
-          const first = recentSlice[0].price;
-          const last = recentSlice[recentSlice.length - 1].price;
-          timeframeReturn = first > 0 ? ((last - first) / first) * 100 : timeframeReturn;
-        }
-      } catch {}
-      
-      // Get detailed volatility metrics from our volatility service
-      let volatilityMetrics = null;
-      let volatility = 0;
-      
-      try {
-        volatilityMetrics = await volatilityService.calculateStockVolatility(stock.ticker);
-        if (volatilityMetrics) {
-          volatility = volatilityMetrics.volatility;
-          loggerService.info(`📊 [VOLATILITY] ${stock.ticker}: ${volatility.toFixed(2)}% (${volatilityMetrics.riskLevel})`);
-        } else {
-          // FIXED: Use Google Finance volatility (already in percentage)
-          volatility = stockData.volatility || 0;
-          loggerService.warn(`⚠️ [VOLATILITY] No detailed volatility metrics for ${stock.ticker}, using Google Finance: ${volatility.toFixed(2)}%`);
-        }
-      } catch (error) {
-        loggerService.error(`❌ [VOLATILITY] Error calculating volatility for ${stock.ticker}:`, error);
-        // FIXED: Use Google Finance volatility (already in percentage)
-        volatility = stockData.volatility || 0;
-        loggerService.info(`📊 [VOLATILITY] ${stock.ticker}: Using Google Finance volatility: ${volatility.toFixed(2)}%`);
-      }
-      
-      // CORRECT FORMULA: Sharpe = ((mean(r_t) - rf/252) / stdev(r_t)) * sqrt(252)
-      const riskFreeRate = 0.02; // 2% annual risk-free rate as decimal
-      const dailyRiskFreeRate = riskFreeRate / 252; // Daily risk-free rate
-      const dailyReturn = timeframeReturn / 100 / days; // Convert to daily return
-      const dailyVolatility = volatility / 100 / Math.sqrt(252); // Convert to daily volatility
-      const sharpeRatio = dailyVolatility > 0 ? ((dailyReturn - dailyRiskFreeRate) / dailyVolatility) * Math.sqrt(252) : 0;
-      
-      // Calculate max drawdown for the timeframe
-      // Calculate top price from 90d closes
-      let topPrice = stockData.current;
-      try {
-        const history = await historicalDataService.getStockHistory(stock.ticker, 90);
-        if (history.length > 0) {
-          topPrice = Math.max(...history.map(h => h.price));
-        }
-      } catch {}
-      const maxDrawdown = calculateMaxDrawdown(stockData, days);
-
-      // Use portfolio current price if API data is 0 or invalid
-      let currentPrice = stockData.current > 0 ? stockData.current : stock.currentPrice;
-      
-      // If both are 0, try to fetch real-time price as last resort
-      if (currentPrice <= 0) {
-        try {
-          loggerService.warn(`⚠️ [PERFORMANCE] Both API and portfolio prices are 0 for ${stock.ticker}, attempting real-time fetch`);
-          // Use a simple fallback price based on entry price
-          currentPrice = stock.entryPrice * 1.05; // 5% above entry price as fallback
-          loggerService.info(`📊 [PERFORMANCE] Using fallback price for ${stock.ticker}: $${currentPrice.toFixed(2)}`);
-        } catch (error) {
-          loggerService.error(`❌ [PERFORMANCE] Failed to get fallback price for ${stock.ticker}:`, error);
-          currentPrice = stock.entryPrice; // Use entry price as absolute fallback
-        }
-      }
-      
+      // Use the pre-calculated metrics from real-time service
       const metrics = {
-        totalReturn: timeframeReturn,
-        volatility,
-        volatilityMetrics, // Include detailed volatility data
-        sharpeRatio,
-        maxDrawdown,
-        topPrice,
-        currentPrice: currentPrice
+        totalReturn: stockData.totalReturn,
+        volatility: stockData.volatility,
+        volatilityMetrics: null,
+        sharpeRatio: stockData.sharpeRatio,
+        maxDrawdown: stockData.maxDrawdown,
+        topPrice: stockData.topPrice,
+        currentPrice: stockData.currentPrice
       };
 
-      loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} calculated from 90-day data:`, {
+      loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} real-time metrics:`, {
         timeframe: `${days}d`,
-        return: timeframeReturn.toFixed(2) + '%',
-        topPrice: '$' + stockData.top60D.toFixed(2),
-        currentPrice: '$' + stockData.current.toFixed(2),
-        volatility: volatility.toFixed(2) + '%',
-        sharpe: sharpeRatio.toFixed(2),
+        return: stockData.totalReturn.toFixed(2) + '%',
+        volatility: stockData.volatility.toFixed(2) + '%',
+        sharpe: stockData.sharpeRatio.toFixed(2),
+        maxDD: stockData.maxDrawdown.toFixed(2) + '%',
+        currentPrice: '$' + stockData.currentPrice.toFixed(2),
         dataSource: stockData.dataSource
       });
 
       stockMetrics[stock.ticker] = metrics;
 
-      // Calculate portfolio-weighted metrics using corrected current price
-      const stockValue = currentPrice * stock.shares;
+      // Calculate portfolio-weighted metrics
+      const stockValue = stockData.currentPrice * stock.shares;
       const totalPortfolioValueCalc = portfolio.reduce((sum, s) => {
         const data = stockMetricsMap.get(s.ticker);
-        const correctedPrice = data && data.current > 0 ? data.current : s.currentPrice;
+        const correctedPrice = data ? data.currentPrice : s.currentPrice;
         return sum + correctedPrice * s.shares;
       }, 0);
       
       const stockWeight = totalPortfolioValueCalc > 0 ? stockValue / totalPortfolioValueCalc : 0;
       
       totalPortfolioValue += stockValue;
-      totalPortfolioReturn += timeframeReturn * stockWeight;
-      totalWeightedVolatility += volatility * stockWeight;
-      portfolioMaxDrawdown = Math.max(portfolioMaxDrawdown, maxDrawdown);
+      totalPortfolioReturn += stockData.totalReturn * stockWeight;
+      totalWeightedVolatility += stockData.volatility * stockWeight;
+      portfolioMaxDrawdown = Math.max(portfolioMaxDrawdown, stockData.maxDrawdown);
     }
 
     // Calculate portfolio Sharpe ratio
@@ -378,7 +315,7 @@ router.get('/', authenticateToken, async (req, res) => {
       portfolioMetrics,
       stockMetrics,
       timeframe: `${days}d`,
-      dataSource: 'Google Finance 90-Day Data',
+      dataSource: 'Yahoo Finance Real-Time Data',
       timestamp: new Date().toISOString(),
       dataPoints: Array.from(stockMetricsMap.keys()),
       cacheStats: googleFinanceFormulasService.getCacheStats(),
@@ -662,7 +599,7 @@ router.get('/volatility', authenticateToken, async (req, res) => {
       res.json({
         volatilities: result,
         timestamp: new Date().toISOString(),
-        dataSource: 'Google Finance 90-Day Data'
+        dataSource: 'Yahoo Finance Real-Time Data'
       });
       
     } else if (portfolioId) {
@@ -689,7 +626,7 @@ router.get('/volatility', authenticateToken, async (req, res) => {
         volatilityMetrics: portfolioVolatility,
         stockCount: portfolio.length,
         timestamp: new Date().toISOString(),
-        dataSource: 'Google Finance 90-Day Data'
+        dataSource: 'Yahoo Finance Real-Time Data'
       });
       
     } else {
@@ -731,7 +668,7 @@ router.get('/volatility', authenticateToken, async (req, res) => {
         portfolioVolatilities,
         totalPortfolios: Object.keys(portfolioVolatilities).length,
         timestamp: new Date().toISOString(),
-        dataSource: 'Google Finance 90-Day Data'
+        dataSource: 'Yahoo Finance Real-Time Data'
       });
     }
 
