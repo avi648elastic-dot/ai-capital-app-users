@@ -616,22 +616,24 @@ class GoogleFinanceFormulasService {
   }
 
   /**
-   * Calculate volatility (standard deviation of daily returns)
+   * Calculate volatility (standard deviation of daily log returns)
    */
   private calculateVolatility(prices: DailyPrice[]): number {
     if (prices.length < 2) return 0;
 
-    const returns: number[] = [];
+    // CORRECT FORMULA: Use log returns r_t = ln(P_t / P_{t-1})
+    const logReturns: number[] = [];
     for (let i = 0; i < prices.length - 1; i++) {
-      const dailyReturn = (prices[i].price - prices[i + 1].price) / prices[i + 1].price;
-      returns.push(dailyReturn);
+      const logReturn = Math.log(prices[i].price / prices[i + 1].price);
+      logReturns.push(logReturn);
     }
 
-    const avgReturn = returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
-    const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - avgReturn, 2), 0) / returns.length;
+    // Calculate standard deviation of log returns
+    const avgReturn = logReturns.reduce((sum, ret) => sum + ret, 0) / logReturns.length;
+    const variance = logReturns.reduce((sum, ret) => sum + Math.pow(ret - avgReturn, 2), 0) / logReturns.length;
     const dailyVolatility = Math.sqrt(variance);
     
-    // FIXED: Annualize volatility and return as percentage
+    // CORRECT FORMULA: Annualize with sqrt(252)
     const annualizedVolatility = dailyVolatility * Math.sqrt(252) * 100; // Convert to percentage
     
     return annualizedVolatility;
