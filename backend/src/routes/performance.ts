@@ -80,6 +80,20 @@ router.get('/stock', authenticateToken, async (req, res) => {
 
 // Get real performance analytics using Google Finance 90-day data
 router.get('/', authenticateToken, async (req, res) => {
+  // Set a timeout for the entire request
+  const timeout = setTimeout(() => {
+    if (!res.headersSent) {
+      res.status(408).json({
+        error: 'Request timeout',
+        message: 'Performance calculation took too long. Please try again with fewer stocks or check your internet connection.',
+        debug: {
+          userId: (req as any).user?._id,
+          timestamp: new Date().toISOString()
+        }
+      });
+    }
+  }, 45000); // 45 seconds timeout
+
   try {
     const userId = (req as any).user!._id;
     const days = parseInt(req.query.days as string) || 30;
@@ -119,7 +133,20 @@ router.get('/', authenticateToken, async (req, res) => {
     // Fetch 90-day data for all stocks using our Google Finance service
     loggerService.info(`🔍 [PERFORMANCE] Fetching 90-day data for ${tickers.length} stocks: ${tickers.join(', ')}`);
     
-    const stockMetricsMap = await googleFinanceFormulasService.getMultipleStockMetrics(tickers);
+    // Add timeout for the stock metrics fetching
+    const stockMetricsPromise = googleFinanceFormulasService.getMultipleStockMetrics(tickers);
+    const timeoutPromise = new Promise<Map<string, any>>((_, reject) => {
+      setTimeout(() => reject(new Error('Stock metrics fetch timeout')), 35000); // 35 seconds
+    });
+    
+    let stockMetricsMap: Map<string, any>;
+    try {
+      stockMetricsMap = await Promise.race([stockMetricsPromise, timeoutPromise]);
+    } catch (error) {
+      loggerService.warn(`⚠️ [PERFORMANCE] Stock metrics fetch timed out or failed, using fallback data`);
+      stockMetricsMap = new Map();
+    }
+    
     loggerService.info(`📊 [PERFORMANCE] Retrieved data for ${stockMetricsMap.size}/${tickers.length} stocks`);
     
     // Debug: Log which stocks have data and which don't
@@ -350,9 +377,15 @@ router.get('/', authenticateToken, async (req, res) => {
     
     // Cache successful response for 10 minutes
     await redisService.set(cacheKey, JSON.stringify(response), 10 * 60 * 1000);
+    
+    // Clear timeout since request completed successfully
+    clearTimeout(timeout);
     res.json(response);
 
   } catch (error: any) {
+    // Clear timeout since request failed
+    clearTimeout(timeout);
+    
     loggerService.error('❌ [PERFORMANCE] Error calculating performance metrics:', error);
     
     res.status(500).json({

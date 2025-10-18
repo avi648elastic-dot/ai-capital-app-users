@@ -364,7 +364,7 @@ class GoogleFinanceFormulasService {
           outputsize: 'full', // Get full historical data
           apikey: apiKey
         },
-        timeout: 15000
+        timeout: 25000
       });
 
       // Check for API errors
@@ -449,7 +449,7 @@ class GoogleFinanceFormulasService {
           to: endDate,
           token: apiKey
         },
-        timeout: 10000
+        timeout: 20000
       });
 
       // Check for API error response
@@ -498,7 +498,7 @@ class GoogleFinanceFormulasService {
         params: {
           apikey: apiKey
         },
-        timeout: 10000
+        timeout: 20000
       });
 
       if (!response.data || !response.data.historical) {
