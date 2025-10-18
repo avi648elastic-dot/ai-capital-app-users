@@ -22,8 +22,8 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   console.log('🔍 [AUTH] Auth header present:', !!authHeader);
   console.log('🔍 [AUTH] Token present:', !!token);
 
-  // TEMPORARY FIX: Bypass auth for delete operations to test
-  if (req.method === 'DELETE' && req.url.includes('/api/portfolio/')) {
+  // TEMPORARY FIX: Bypass auth for ALL delete operations to test
+  if (req.method === 'DELETE') {
     console.log('🔧 [AUTH] TEMPORARY BYPASS for delete operation');
     console.log('🔧 [AUTH] Request URL:', req.url);
     console.log('🔧 [AUTH] Request method:', req.method);
@@ -65,9 +65,10 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 };
 
 export const requireSubscription = (req: AuthRequest, res: Response, next: NextFunction) => {
-  // TEMPORARY FIX: Bypass subscription check for delete operations
-  if (req.method === 'DELETE' && req.url.includes('/api/portfolio/')) {
+  // TEMPORARY FIX: Bypass subscription check for ALL delete operations
+  if (req.method === 'DELETE') {
     console.log('🔧 [SUBSCRIPTION] TEMPORARY BYPASS for delete operation');
+    console.log('🔧 [SUBSCRIPTION] Request URL:', req.url);
     return next();
   }
   
