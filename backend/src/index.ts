@@ -188,6 +188,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// Explicit OPTIONS handler for preflight requests
+app.options('*', (req, res) => {
+  console.log('🔍 [CORS] Handling OPTIONS preflight request for:', req.url);
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-Token');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
+  res.status(200).end();
+});
+
 // Force deployment trigger - CORS fix v6
 console.log('🚀 CORS FIX V6 DEPLOYED - Maximum permissiveness enabled');
 console.log('🚀 CORS FIX V6 DEPLOYED - Maximum permissiveness enabled');
