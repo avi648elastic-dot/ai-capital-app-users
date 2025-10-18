@@ -154,6 +154,7 @@ app.use((req, res, next) => {
   console.log('🔍 [CORS] Request from origin:', req.headers.origin);
   console.log('🔍 [CORS] Request method:', req.method);
   console.log('🔍 [CORS] Request URL:', req.url);
+  console.log('🔍 [CORS] Request headers:', req.headers);
   
   const origin = req.headers.origin;
   
