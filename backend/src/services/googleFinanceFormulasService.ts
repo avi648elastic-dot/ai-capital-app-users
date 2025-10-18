@@ -629,9 +629,12 @@ class GoogleFinanceFormulasService {
 
     const avgReturn = returns.reduce((sum, ret) => sum + ret, 0) / returns.length;
     const variance = returns.reduce((sum, ret) => sum + Math.pow(ret - avgReturn, 2), 0) / returns.length;
-    const volatility = Math.sqrt(variance);
-
-    return volatility;
+    const dailyVolatility = Math.sqrt(variance);
+    
+    // FIXED: Annualize volatility and return as percentage
+    const annualizedVolatility = dailyVolatility * Math.sqrt(252) * 100; // Convert to percentage
+    
+    return annualizedVolatility;
   }
 
   /**
@@ -855,8 +858,8 @@ class GoogleFinanceFormulasService {
     const thisMonthPercent = (Math.random() - 0.5) * 20; // -10% to +10%
     const lastMonthPercent = (Math.random() - 0.5) * 25; // -12.5% to +12.5%
     
-    // Volatility (standard deviation)
-    const volatility = Math.random() * 0.5 + 0.1; // 10% to 60%
+    // Volatility (standard deviation) - FIXED: Return as percentage
+    const volatility = (Math.random() * 0.5 + 0.1) * 100; // 10% to 60% as percentage
     
     // Market cap (estimated)
     const marketCap = current * (1000000 + Math.random() * 9000000); // 1M to 10M shares

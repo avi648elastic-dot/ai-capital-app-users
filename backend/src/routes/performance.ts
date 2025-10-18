@@ -252,15 +252,15 @@ router.get('/', authenticateToken, async (req, res) => {
           volatility = volatilityMetrics.volatility;
           loggerService.info(`📊 [VOLATILITY] ${stock.ticker}: ${volatility.toFixed(2)}% (${volatilityMetrics.riskLevel})`);
         } else {
-          // FIXED: Calculate volatility from actual price data
-          volatility = calculateVolatilityFromPrices(stockData, days);
-          loggerService.warn(`⚠️ [VOLATILITY] No detailed volatility metrics for ${stock.ticker}, calculated from price data: ${volatility.toFixed(2)}%`);
+          // FIXED: Use Google Finance volatility (already in percentage)
+          volatility = stockData.volatility || 0;
+          loggerService.warn(`⚠️ [VOLATILITY] No detailed volatility metrics for ${stock.ticker}, using Google Finance: ${volatility.toFixed(2)}%`);
         }
       } catch (error) {
         loggerService.error(`❌ [VOLATILITY] Error calculating volatility for ${stock.ticker}:`, error);
-        // FIXED: Calculate volatility from actual price data as fallback
-        volatility = calculateVolatilityFromPrices(stockData, days);
-        loggerService.info(`📊 [VOLATILITY] ${stock.ticker}: Using calculated volatility: ${volatility.toFixed(2)}%`);
+        // FIXED: Use Google Finance volatility (already in percentage)
+        volatility = stockData.volatility || 0;
+        loggerService.info(`📊 [VOLATILITY] ${stock.ticker}: Using Google Finance volatility: ${volatility.toFixed(2)}%`);
       }
       
       // FIXED: Calculate Sharpe ratio correctly
