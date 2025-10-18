@@ -227,12 +227,29 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
 
     console.log('🔍 [PORTFOLIO ADD] Parsed data:', { ticker, shares, entryPrice, currentPrice });
 
-    // Basic validation
+    // Basic validation with detailed logging
+    console.log('🔍 [PORTFOLIO ADD] Validation check:', {
+      ticker: !!ticker,
+      shares: !!shares,
+      entryPrice: !!entryPrice,
+      currentPrice: !!currentPrice,
+      tickerValue: ticker,
+      sharesValue: shares,
+      entryPriceValue: entryPrice,
+      currentPriceValue: currentPrice
+    });
+
     if (!ticker || !shares || !entryPrice || !currentPrice) {
       console.error('❌ [PORTFOLIO ADD] Missing required fields');
       return res.status(400).json({ 
         message: 'Ticker, shares, entry price, and current price are required',
-        received: { ticker, shares, entryPrice, currentPrice }
+        received: { ticker, shares, entryPrice, currentPrice },
+        validation: {
+          ticker: !!ticker,
+          shares: !!shares,
+          entryPrice: !!entryPrice,
+          currentPrice: !!currentPrice
+        }
       });
     }
 
@@ -249,21 +266,42 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
     console.log('🔍 [PORTFOLIO ADD] Using portfolio type:', finalPortfolioType);
     console.log('🔍 [PORTFOLIO ADD] Using portfolio ID:', finalPortfolioId);
 
-    // Validate numeric values
+    // Validate numeric values with detailed logging
     const numericShares = Number(shares);
     const numericEntryPrice = Number(entryPrice);
     const numericCurrentPrice = Number(currentPrice);
 
+    console.log('🔍 [PORTFOLIO ADD] Numeric validation:', {
+      shares: { original: shares, numeric: numericShares, isValid: !isNaN(numericShares) && numericShares > 0 },
+      entryPrice: { original: entryPrice, numeric: numericEntryPrice, isValid: !isNaN(numericEntryPrice) && numericEntryPrice > 0 },
+      currentPrice: { original: currentPrice, numeric: numericCurrentPrice, isValid: !isNaN(numericCurrentPrice) && numericCurrentPrice > 0 }
+    });
+
     if (isNaN(numericShares) || numericShares <= 0) {
-      return res.status(400).json({ message: 'Shares must be a positive number' });
+      console.error('❌ [PORTFOLIO ADD] Invalid shares:', shares, '->', numericShares);
+      return res.status(400).json({ 
+        message: 'Shares must be a positive number',
+        received: shares,
+        converted: numericShares
+      });
     }
 
     if (isNaN(numericEntryPrice) || numericEntryPrice <= 0) {
-      return res.status(400).json({ message: 'Entry price must be a positive number' });
+      console.error('❌ [PORTFOLIO ADD] Invalid entry price:', entryPrice, '->', numericEntryPrice);
+      return res.status(400).json({ 
+        message: 'Entry price must be a positive number',
+        received: entryPrice,
+        converted: numericEntryPrice
+      });
     }
 
     if (isNaN(numericCurrentPrice) || numericCurrentPrice <= 0) {
-      return res.status(400).json({ message: 'Current price must be a positive number' });
+      console.error('❌ [PORTFOLIO ADD] Invalid current price:', currentPrice, '->', numericCurrentPrice);
+      return res.status(400).json({ 
+        message: 'Current price must be a positive number',
+        received: currentPrice,
+        converted: numericCurrentPrice
+      });
     }
 
     // Validate optional fields
