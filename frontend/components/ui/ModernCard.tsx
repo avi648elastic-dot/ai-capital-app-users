@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { LucideIcon } from 'lucide-react';
 
 interface ModernCardProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   variant?: 'default' | 'gradient' | 'glass' | 'neon';
   size?: 'sm' | 'md' | 'lg' | 'xl';
@@ -113,7 +113,7 @@ const ModernCard: React.FC<ModernCardProps> = ({
               )}
             </div>
           )}
-          {children}
+          {children && children}
         </>
       )}
     </CardComponent>

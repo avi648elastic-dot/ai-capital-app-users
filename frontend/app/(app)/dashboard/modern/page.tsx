@@ -21,7 +21,8 @@ import {
   Plus,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 
 interface User {
