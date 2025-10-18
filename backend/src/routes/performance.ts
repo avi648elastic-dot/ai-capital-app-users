@@ -574,7 +574,10 @@ router.get('/test-simple', async (req, res) => {
     res.json(testData);
   } catch (error) {
     console.error('❌ [SIMPLE TEST] Error:', error);
-    res.status(500).json({ error: 'Simple test failed', message: error.message });
+    res.status(500).json({ 
+      error: 'Simple test failed', 
+      message: error instanceof Error ? error.message : 'Unknown error' 
+    });
   }
 });
 
