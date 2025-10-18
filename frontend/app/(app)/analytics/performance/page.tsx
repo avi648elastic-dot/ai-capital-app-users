@@ -91,7 +91,7 @@ export default function Performance() {
       
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/performance?days=${days}`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
-        timeout: 30000 // 30 second timeout for calculations
+        timeout: 60000 // 60 second timeout for calculations (increased to match backend)
       });
 
       console.log('📊 [PERFORMANCE] Received real performance data:', response.data);
@@ -119,8 +119,19 @@ export default function Performance() {
       console.error('❌ [PERFORMANCE] Error calculating metrics:', error);
       console.error('❌ [PERFORMANCE] Error details:', error instanceof Error ? error.message : 'Unknown error');
       
-      // Show error message to user
-      alert(`Performance calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}. Check browser console for details.`);
+      // Check if it's a timeout error
+      const isTimeout = error instanceof Error && (
+        error.message.includes('timeout') || 
+        error.message.includes('ECONNABORTED') ||
+        error.message.includes('exceeded')
+      );
+      
+      // Show specific error message to user
+      if (isTimeout) {
+        alert(`Performance calculation timed out after 60 seconds. The server is processing your request but it's taking longer than expected. Please try again in a moment.`);
+      } else {
+        alert(`Performance calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}. Check browser console for details.`);
+      }
       
       // Reset to empty state on error
       setPortfolioMetrics(null);

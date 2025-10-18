@@ -243,7 +243,7 @@ export default function Dashboard() {
           Authorization: `Bearer ${token}`,
           'Cache-Control': useCache ? 'max-age=15' : 'no-cache'
         },
-        timeout: 30000
+        timeout: 60000
       });
       
       if (response.data && response.data.portfolio) {
@@ -293,7 +293,7 @@ export default function Dashboard() {
       
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics`, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
-        timeout: 30000 // 30 second timeout for analytics
+        timeout: 60000 // 30 second timeout for analytics
       });
       
       console.log('✅ [DASHBOARD] Analytics data fetched:', response.data);
