@@ -225,7 +225,9 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
 
     const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes, portfolioType, portfolioId } = req.body;
 
-    // Enhanced validation
+    console.log('🔍 [PORTFOLIO ADD] Parsed data:', { ticker, shares, entryPrice, currentPrice });
+
+    // Basic validation
     if (!ticker || !shares || !entryPrice || !currentPrice) {
       console.error('❌ [PORTFOLIO ADD] Missing required fields');
       return res.status(400).json({ 
@@ -234,61 +236,18 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       });
     }
 
-    // Validate portfolio type
-    const validPortfolioTypes = ['solid', 'risky'];
-    const finalPortfolioType = portfolioType && validPortfolioTypes.includes(portfolioType) ? portfolioType : 'solid';
-
-    // Check stock limits based on subscription tier
-    const User = (await import('../models/User')).default;
-    const user = await User.findById(req.user!._id);
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    // Ensure user exists
+    if (!req.user || !req.user._id) {
+      console.error('❌ [PORTFOLIO ADD] No user found in request');
+      return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    // Determine portfolioId - use provided or default to first portfolio
-    const finalPortfolioId = portfolioId || `${finalPortfolioType}-1`;
+    // Simplified portfolio type
+    const finalPortfolioType = portfolioType || 'solid';
+    const finalPortfolioId = portfolioId || 'solid-1';
 
-    // Count existing stocks in the target portfolio
-    const existingStocksCount = await Portfolio.countDocuments({ 
-      userId: req.user!._id,
-      portfolioId: finalPortfolioId
-    });
-
-    console.log('🔍 [PORTFOLIO ADD] User tier:', user.subscriptionTier);
-    console.log('🔍 [PORTFOLIO ADD] Existing stocks in', finalPortfolioType, ':', existingStocksCount);
-
-    // Enforce limits
-    if (user.subscriptionTier === 'free') {
-      // Free users: max 10 stocks per portfolio
-      if (existingStocksCount >= 10) {
-        return res.status(403).json({ 
-          message: '🔒 Free users are limited to 10 stocks per portfolio. Upgrade to Premium to add up to 15 stocks per portfolio and manage up to 3 portfolios of each type!',
-          limit: 10,
-          current: existingStocksCount,
-          tier: 'free'
-        });
-      }
-
-      // Enforce portfolio type for free users
-      if (user.portfolioType !== finalPortfolioType) {
-        return res.status(403).json({ 
-          message: `🔒 Free users can only add stocks to their ${user.portfolioType} portfolio. Upgrade to Premium to unlock both portfolio types!`,
-          allowedType: user.portfolioType,
-          requestedType: finalPortfolioType
-        });
-      }
-    } else if (user.subscriptionTier === 'premium') {
-      // Premium users: max 15 stocks per portfolio
-      if (existingStocksCount >= 15) {
-        return res.status(403).json({ 
-          message: '⭐ Premium users are limited to 15 stocks per portfolio. Upgrade to Premium+ for up to 20 stocks per portfolio and 5 portfolios of each type!',
-          limit: 15,
-          current: existingStocksCount,
-          tier: 'premium'
-        });
-      }
-    }
+    console.log('🔍 [PORTFOLIO ADD] Using portfolio type:', finalPortfolioType);
+    console.log('🔍 [PORTFOLIO ADD] Using portfolio ID:', finalPortfolioId);
 
     // Validate numeric values
     const numericShares = Number(shares);
