@@ -225,7 +225,11 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
     console.log('🔍 [PORTFOLIO ADD] User object:', req.user);
     console.log('🔍 [PORTFOLIO ADD] Headers:', req.headers);
 
-    const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes, portfolioType, portfolioId } = req.body;
+    const { ticker, shares, entryPrice, currentPrice, stopLoss, stoploss, takeProfit, takeprofit, notes, portfolioType, portfolioId } = req.body;
+    
+    // Handle field name variations
+    const finalStopLoss = stopLoss || stoploss;
+    const finalTakeProfit = takeProfit || takeprofit;
 
     console.log('🔍 [PORTFOLIO ADD] Parsed data:', { ticker, shares, entryPrice, currentPrice });
 
@@ -287,17 +291,17 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       return res.status(400).json({ message: 'Invalid current price' });
     }
 
-    // Validate optional fields
+    // Validate optional fields with corrected names
     let numericStopLoss, numericTakeProfit;
-    if (stopLoss) {
-      numericStopLoss = Number(stopLoss);
+    if (finalStopLoss) {
+      numericStopLoss = Number(finalStopLoss);
       if (isNaN(numericStopLoss) || numericStopLoss <= 0) {
         return res.status(400).json({ message: 'Stop loss must be a positive number' });
       }
     }
 
-    if (takeProfit) {
-      numericTakeProfit = Number(takeProfit);
+    if (finalTakeProfit) {
+      numericTakeProfit = Number(finalTakeProfit);
       if (isNaN(numericTakeProfit) || numericTakeProfit <= 0) {
         return res.status(400).json({ message: 'Take profit must be a positive number' });
       }
