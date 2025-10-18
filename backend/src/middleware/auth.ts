@@ -18,21 +18,31 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  console.log('🔍 [AUTH] Authenticating token for:', req.url);
+  console.log('🔍 [AUTH] Auth header present:', !!authHeader);
+  console.log('🔍 [AUTH] Token present:', !!token);
+
   if (!token) {
+    console.log('❌ [AUTH] No token provided');
     return res.status(401).json({ message: 'Access token required' });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
+    console.log('🔍 [AUTH] Token decoded successfully for user:', decoded.id);
+    
     const user = await User.findById(decoded.id).select('-password');
     
     if (!user) {
+      console.log('❌ [AUTH] User not found for ID:', decoded.id);
       return res.status(401).json({ message: 'Invalid token' });
     }
 
+    console.log('✅ [AUTH] User authenticated successfully:', user.email);
     req.user = user;
     next();
   } catch (error) {
+    console.log('❌ [AUTH] Token verification failed:', error);
     return res.status(403).json({ message: 'Invalid or expired token' });
   }
 };
