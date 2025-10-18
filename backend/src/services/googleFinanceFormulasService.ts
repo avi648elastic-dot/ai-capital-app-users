@@ -223,9 +223,19 @@ class GoogleFinanceFormulasService {
       // 🚀 MAJOR'S SMART ENGINE - Try ALL APIs with ALL keys aggressively
       let metrics: StockMetrics | null = null;
       
-      // If no API keys available, use fallback data immediately
+      // If no API keys available, try free Yahoo Finance API first, then fallback data
       if (this.alphaVantageKeys.length === 0 && this.finnhubApiKeys.length === 0 && this.fmpApiKeys.length === 0) {
-        loggerService.warn(`⚠️ [NO API KEYS] No API keys available, using fallback data for ${symbol}`);
+        loggerService.warn(`⚠️ [NO API KEYS] No API keys available, trying free Yahoo Finance API for ${symbol}`);
+        try {
+          const yahooData = await this.fetchFromYahooFinance(symbol);
+          if (yahooData) {
+            loggerService.info(`✅ [YAHOO FINANCE] Successfully fetched ${symbol} from Yahoo Finance`);
+            return yahooData;
+          }
+        } catch (error) {
+          loggerService.warn(`⚠️ [YAHOO FINANCE] Failed to fetch ${symbol} from Yahoo Finance:`, error);
+        }
+        loggerService.warn(`⚠️ [FALLBACK] Using generated data for ${symbol}`);
         return this.generateRealisticStockData(symbol);
       }
       
@@ -747,6 +757,61 @@ class GoogleFinanceFormulasService {
   clearCache(): void {
     this.cache.clear();
     loggerService.info('🧹 [GOOGLE FINANCE FORMULAS] Cache cleared');
+  }
+
+  /**
+   * 📊 Fetch from Yahoo Finance (Free API - no key required)
+   */
+  private async fetchFromYahooFinance(symbol: string): Promise<StockMetrics | null> {
+    try {
+      loggerService.info(`🔍 [YAHOO FINANCE] Fetching ${symbol} from Yahoo Finance`);
+      
+      const response = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`, {
+        params: {
+          range: '90d',
+          interval: '1d'
+        },
+        timeout: 10000
+      });
+
+      if (!response.data || !response.data.chart || !response.data.chart.result) {
+        return null;
+      }
+
+      const result = response.data.chart.result[0];
+      const quotes = result.indicators.quote[0];
+      const timestamps = result.timestamp;
+      const closes = quotes.close;
+      const highs = quotes.high;
+      const lows = quotes.low;
+
+      if (!closes || closes.length === 0) {
+        return null;
+      }
+
+      // Filter out null values and create price data
+      const prices: DailyPrice[] = [];
+      for (let i = 0; i < timestamps.length; i++) {
+        if (closes[i] !== null) {
+          prices.push({
+            date: new Date(timestamps[i] * 1000).toISOString().split('T')[0],
+            price: closes[i]
+          });
+        }
+      }
+
+      if (prices.length === 0) {
+        return null;
+      }
+
+      // Sort by date (most recent first)
+      prices.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      return this.calculateMetrics(symbol, prices, 'alpha_vantage'); // Use same calculation method
+      
+    } catch (error) {
+      throw new Error(`Yahoo Finance API error: ${(error as Error).message || 'Unknown error'}`);
+    }
   }
 
   /**
