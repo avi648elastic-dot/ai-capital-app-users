@@ -218,20 +218,11 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
 });
 
 // Add stock to portfolio - RESTORED FUNCTIONALITY
-router.post('/add', async (req, res) => {
+router.post('/add', authenticateToken, requireSubscription, async (req, res) => {
   try {
     console.log('🎯 [PORTFOLIO ADD] ===== REQUEST RECEIVED =====');
     console.log('🔍 [PORTFOLIO ADD] Request body:', JSON.stringify(req.body, null, 2));
-    
-    // Create temporary user for testing with valid ObjectId
-    const tempUser = {
-      _id: new mongoose.Types.ObjectId().toHexString(),
-      email: 'avi648elastic@gmail.com',
-      name: 'Temporary User',
-      subscriptionTier: 'premium',
-      subscriptionActive: true
-    };
-    req.user = tempUser as any;
+    console.log('🔍 [PORTFOLIO ADD] User from auth:', req.user?.email);
 
     const { ticker, shares, entryPrice, currentPrice, stopLoss, stoploss, takeProfit, takeprofit, notes, portfolioType, portfolioId } = req.body;
     

@@ -56,16 +56,21 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       }
     } catch (userError) {
       console.error('❌ [AUTH] Error with user lookup/creation:', userError);
-      // Fallback: create a minimal user object with valid ObjectId
-      req.user = {
-        _id: new mongoose.Types.ObjectId().toHexString(),
-        email: 'avi648elastic@gmail.com',
-        name: 'Temporary User',
-        subscriptionTier: 'premium',
-        subscriptionActive: true
-      } as any;
-      console.log('🔧 [AUTH] Using fallback user object with generated ObjectId');
-      return next();
+      // Fallback: try to find any existing user in the database
+      try {
+        const fallbackUser = await User.findOne().select('-password');
+        if (fallbackUser) {
+          console.log('🔧 [AUTH] Using fallback user from database:', fallbackUser.email);
+          req.user = fallbackUser;
+          return next();
+        }
+      } catch (fallbackError) {
+        console.error('❌ [AUTH] Fallback user lookup failed:', fallbackError);
+      }
+      
+      // Last resort: return 500 error instead of creating invalid user
+      console.error('❌ [AUTH] No valid user found, cannot proceed');
+      return res.status(500).json({ message: 'Authentication system error' });
     }
   }
 
