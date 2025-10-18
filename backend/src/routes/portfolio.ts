@@ -288,8 +288,9 @@ router.post('/add', async (req, res) => {
 
     console.log('🔍 [PORTFOLIO ADD] Portfolio item created:', portfolioItem);
 
-    // Get decision for this stock
+    // Get decision for this stock - with better error handling
     try {
+      console.log('🔍 [PORTFOLIO ADD] Calling decision engine...');
       const decision = await decisionEngine.decideActionEnhanced({
         ticker: portfolioItem.ticker,
         entryPrice: portfolioItem.entryPrice,
@@ -305,6 +306,11 @@ router.post('/add', async (req, res) => {
       console.log('🔍 [PORTFOLIO ADD] Decision made:', decision);
     } catch (decisionError) {
       console.warn('⚠️ [PORTFOLIO ADD] Decision engine error, using defaults:', decisionError);
+      console.warn('⚠️ [PORTFOLIO ADD] Decision error details:', {
+        name: decisionError.name,
+        message: decisionError.message,
+        stack: decisionError.stack
+      });
       portfolioItem.action = 'HOLD';
       portfolioItem.reason = 'Added to portfolio';
       portfolioItem.color = 'yellow';
@@ -320,9 +326,17 @@ router.post('/add', async (req, res) => {
     });
   } catch (error: any) {
     console.error('❌ [PORTFOLIO ADD] Error adding stock:', error);
+    console.error('❌ [PORTFOLIO ADD] Error stack:', error.stack);
+    console.error('❌ [PORTFOLIO ADD] Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code
+    });
+    
     res.status(500).json({ 
       message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
