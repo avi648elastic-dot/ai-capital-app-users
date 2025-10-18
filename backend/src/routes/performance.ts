@@ -570,15 +570,22 @@ router.get('/test/:symbol', authenticateToken, async (req, res) => {
     // Calculate metrics for the test
     const timeframeReturn = calculateTimeframeReturn(stockData, days);
     const maxDrawdown = calculateMaxDrawdown(stockData, days);
+    const volatility = stockData.volatility || 0;
+    const sharpeRatio = volatility > 0 ? (timeframeReturn * (365 / days) - 2.0) / volatility : 0;
     
     res.json({
       symbol,
       days,
       stockData,
       calculatedMetrics: {
-        timeframeReturn,
-        maxDrawdown,
-        volatility: stockData.volatility * 100
+        timeframeReturn: timeframeReturn.toFixed(2) + '%',
+        maxDrawdown: maxDrawdown.toFixed(2) + '%',
+        volatility: volatility.toFixed(2) + '%',
+        sharpeRatio: sharpeRatio.toFixed(2),
+        currentPrice: '$' + stockData.current.toFixed(2),
+        topPrice: '$' + (stockData.top60D || stockData.top30D || stockData.current).toFixed(2),
+        thisMonthPercent: stockData.thisMonthPercent.toFixed(2) + '%',
+        lastMonthPercent: stockData.lastMonthPercent.toFixed(2) + '%'
       },
       timestamp: new Date().toISOString(),
       dataSource: stockData.dataSource,
