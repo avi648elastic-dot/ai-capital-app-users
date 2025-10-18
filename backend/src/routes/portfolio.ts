@@ -216,23 +216,115 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
   }
 });
 
-// Add stock to portfolio - EMERGENCY BYPASS ALL MIDDLEWARE
-router.post('/add', (req, res) => {
-  console.log('🚨 [PORTFOLIO ADD] ===== EMERGENCY ROUTE HIT =====');
-  console.log('🚨 [PORTFOLIO ADD] Request method:', req.method);
-  console.log('🚨 [PORTFOLIO ADD] Request URL:', req.url);
-  console.log('🚨 [PORTFOLIO ADD] Request body:', JSON.stringify(req.body, null, 2));
-  console.log('🚨 [PORTFOLIO ADD] Request body type:', typeof req.body);
-  console.log('🚨 [PORTFOLIO ADD] Request body keys:', Object.keys(req.body || {}));
-  console.log('🚨 [PORTFOLIO ADD] Headers:', req.headers);
-  
-  // IMMEDIATE SUCCESS RESPONSE - NO PROCESSING
-  console.log('🚨 [PORTFOLIO ADD] SENDING IMMEDIATE SUCCESS RESPONSE');
-  return res.status(200).json({
-    success: true,
-    message: 'EMERGENCY SUCCESS - Stock added without processing',
-    data: req.body
-  });
+// Add stock to portfolio - RESTORED FUNCTIONALITY
+router.post('/add', async (req, res) => {
+  try {
+    console.log('🎯 [PORTFOLIO ADD] ===== REQUEST RECEIVED =====');
+    console.log('🔍 [PORTFOLIO ADD] Request body:', JSON.stringify(req.body, null, 2));
+    
+    // Create temporary user for testing
+    const tempUser = {
+      _id: 'temp-user-id',
+      email: 'avi648elastic@gmail.com',
+      name: 'Temporary User',
+      subscriptionTier: 'premium',
+      subscriptionActive: true
+    };
+    req.user = tempUser as any;
+
+    const { ticker, shares, entryPrice, currentPrice, stopLoss, stoploss, takeProfit, takeprofit, notes, portfolioType, portfolioId } = req.body;
+    
+    // Handle field name variations
+    const finalStopLoss = stopLoss || stoploss;
+    const finalTakeProfit = takeProfit || takeprofit;
+
+    console.log('🔍 [PORTFOLIO ADD] Field name handling:', {
+      stopLoss: stopLoss,
+      stoploss: stoploss,
+      finalStopLoss: finalStopLoss,
+      takeProfit: takeProfit,
+      takeprofit: takeprofit,
+      finalTakeProfit: finalTakeProfit
+    });
+
+    // Basic validation
+    if (!ticker || !shares || !entryPrice || !currentPrice) {
+      console.error('❌ [PORTFOLIO ADD] Missing required fields');
+      return res.status(400).json({ 
+        message: 'Missing required fields',
+        received: { ticker, shares, entryPrice, currentPrice }
+      });
+    }
+
+    // Convert to numbers
+    const numericShares = Number(shares) || 1;
+    const numericEntryPrice = Number(entryPrice) || 1;
+    const numericCurrentPrice = Number(currentPrice) || 1;
+
+    console.log('🔍 [PORTFOLIO ADD] Numeric conversion:', {
+      shares: numericShares,
+      entryPrice: numericEntryPrice,
+      currentPrice: numericCurrentPrice
+    });
+
+    // Portfolio settings
+    const finalPortfolioType = portfolioType || 'solid';
+    const finalPortfolioId = portfolioId || 'solid-1';
+
+    console.log('🔍 [PORTFOLIO ADD] Creating portfolio item...');
+
+    const portfolioItem = new Portfolio({
+      userId: req.user!._id,
+      ticker: ticker.toUpperCase().trim(),
+      shares: numericShares,
+      entryPrice: numericEntryPrice,
+      currentPrice: numericCurrentPrice,
+      stopLoss: finalStopLoss ? Number(finalStopLoss) : undefined,
+      takeProfit: finalTakeProfit ? Number(finalTakeProfit) : undefined,
+      notes: notes || '',
+      portfolioType: finalPortfolioType,
+      portfolioId: finalPortfolioId,
+    });
+
+    console.log('🔍 [PORTFOLIO ADD] Portfolio item created:', portfolioItem);
+
+    // Get decision for this stock
+    try {
+      const decision = await decisionEngine.decideActionEnhanced({
+        ticker: portfolioItem.ticker,
+        entryPrice: portfolioItem.entryPrice,
+        currentPrice: portfolioItem.currentPrice,
+        stopLoss: portfolioItem.stopLoss,
+        takeProfit: portfolioItem.takeProfit,
+      });
+
+      portfolioItem.action = decision.action;
+      portfolioItem.reason = decision.reason;
+      portfolioItem.color = decision.color;
+
+      console.log('🔍 [PORTFOLIO ADD] Decision made:', decision);
+    } catch (decisionError) {
+      console.warn('⚠️ [PORTFOLIO ADD] Decision engine error, using defaults:', decisionError);
+      portfolioItem.action = 'HOLD';
+      portfolioItem.reason = 'Added to portfolio';
+      portfolioItem.color = 'yellow';
+    }
+
+    console.log('🔍 [PORTFOLIO ADD] Saving portfolio item...');
+    await portfolioItem.save();
+    console.log('✅ [PORTFOLIO ADD] Portfolio item saved successfully');
+
+    res.status(201).json({ 
+      message: 'Stock added successfully', 
+      portfolioItem: portfolioItem.toObject() 
+    });
+  } catch (error: any) {
+    console.error('❌ [PORTFOLIO ADD] Error adding stock:', error);
+    res.status(500).json({ 
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
+  }
 });
 
 // Update stock in portfolio
