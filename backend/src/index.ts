@@ -155,8 +155,16 @@ app.use((req, res, next) => {
   console.log('🔍 [CORS] Request method:', req.method);
   console.log('🔍 [CORS] Request URL:', req.url);
   
+  const origin = req.headers.origin;
+  
   // Set CORS headers for ALL requests
-  res.header('Access-Control-Allow-Origin', '*');
+  // Use specific origin instead of * when credentials are included
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    res.header('Access-Control-Allow-Origin', '*');
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-Token, X-API-Key');
   res.header('Access-Control-Allow-Credentials', 'true');
