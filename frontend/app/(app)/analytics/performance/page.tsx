@@ -37,6 +37,7 @@ export default function Performance() {
   const [portfolio, setPortfolio] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(60);
   const [timeframe, setTimeframe] = useState('30d');
   const [portfolioMetrics, setPortfolioMetrics] = useState<PortfolioMetrics | null>(null);
   const [stockMetrics, setStockMetrics] = useState<Record<string, PerformanceMetrics>>({});
@@ -84,6 +85,19 @@ export default function Performance() {
     }
     
     setCalculating(true);
+    setTimeRemaining(60);
+    
+    // Start countdown timer
+    const countdownInterval = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
     try {
       const days = parseInt(timeframe.replace('d', ''));
       console.log(`🔍 [PERFORMANCE] Calculating real metrics for ${days} days with ${portfolio.length} stocks`);
@@ -138,7 +152,9 @@ export default function Performance() {
       setStockMetrics({});
       setDataSource('');
     } finally {
+      clearInterval(countdownInterval);
       setCalculating(false);
+      setTimeRemaining(60);
     }
   };
 
@@ -185,7 +201,9 @@ export default function Performance() {
             {calculating && (
               <div className="flex items-center">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500 mr-2"></div>
-                <span className="text-sm text-primary-400">Calculating real metrics...</span>
+                <span className="text-sm text-primary-400">
+                  Calculating real metrics... ({timeRemaining}s remaining)
+                </span>
               </div>
             )}
             {portfolio.length > 0 && !calculating && (
