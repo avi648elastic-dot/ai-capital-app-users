@@ -180,20 +180,10 @@ router.get('/', authenticateToken, async (req, res) => {
     let stockMetricsMap: Map<string, any> = new Map();
     
     try {
-      // TEMPORARY: Skip real-time service and use Google Finance directly
-      console.log(`🔄 [PERFORMANCE] Using Google Finance service directly...`);
-      const stockMetricsPromise = googleFinanceFormulasService.getMultipleStockMetrics(tickers);
-      const timeoutPromise = new Promise<Map<string, any>>((_, reject) => {
-        setTimeout(() => reject(new Error('Stock metrics fetch timeout')), 35000); // 35 seconds
-      });
+      // TEMPORARY: Skip Google Finance and use placeholder data directly
+      console.log(`🔄 [PERFORMANCE] Using placeholder data directly...`);
       
-      stockMetricsMap = await Promise.race([stockMetricsPromise, timeoutPromise]);
-      console.log(`✅ [PERFORMANCE] Successfully fetched data for ${stockMetricsMap.size} stocks`);
-    } catch (error) {
-      console.error(`❌ [PERFORMANCE] Google Finance service failed:`, error);
-      loggerService.warn(`⚠️ [PERFORMANCE] Google Finance service failed, using placeholder data:`, error);
-      
-      // Create placeholder data
+      // Create placeholder data immediately
       stockMetricsMap = new Map();
       for (const ticker of tickers) {
         const placeholderData = {
@@ -208,6 +198,13 @@ router.get('/', authenticateToken, async (req, res) => {
         stockMetricsMap.set(ticker, placeholderData);
       }
       console.log(`✅ [PERFORMANCE] Created placeholder data for ${stockMetricsMap.size} stocks`);
+    } catch (error) {
+      console.error(`❌ [PERFORMANCE] Placeholder data creation failed:`, error);
+      loggerService.error(`❌ [PERFORMANCE] Placeholder data creation failed:`, error);
+      
+      // Last resort - empty map
+      stockMetricsMap = new Map();
+      console.log(`⚠️ [PERFORMANCE] Using empty data map`);
     }
     
     loggerService.info(`📊 [PERFORMANCE] Retrieved data for ${stockMetricsMap.size}/${tickers.length} stocks`);
@@ -253,15 +250,20 @@ router.get('/', authenticateToken, async (req, res) => {
         continue;
       }
 
-      // Use the pre-calculated metrics from real-time service
+      // Use simplified calculations for placeholder data
+      const timeframeReturn = calculateTimeframeReturn(stockData, days);
+      const volatility = stockData.volatility * 100; // Convert to percentage
+      const sharpeRatio = volatility > 0 ? (timeframeReturn - 2.0) / volatility : 0;
+      const maxDrawdown = calculateMaxDrawdown(stockData, days);
+      
       const metrics = {
-        totalReturn: stockData.totalReturn,
-        volatility: stockData.volatility,
+        totalReturn: timeframeReturn,
+        volatility: volatility,
         volatilityMetrics: null,
-        sharpeRatio: stockData.sharpeRatio,
-        maxDrawdown: stockData.maxDrawdown,
-        topPrice: stockData.topPrice,
-        currentPrice: stockData.currentPrice
+        sharpeRatio: sharpeRatio,
+        maxDrawdown: maxDrawdown,
+        topPrice: stockData.top60D || stockData.top30D || stockData.current,
+        currentPrice: stockData.current
       };
 
       loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} real-time metrics:`, {
