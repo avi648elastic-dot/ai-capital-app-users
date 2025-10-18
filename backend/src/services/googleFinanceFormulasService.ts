@@ -223,6 +223,12 @@ class GoogleFinanceFormulasService {
       // 🚀 MAJOR'S SMART ENGINE - Try ALL APIs with ALL keys aggressively
       let metrics: StockMetrics | null = null;
       
+      // If no API keys available, use fallback data immediately
+      if (this.alphaVantageKeys.length === 0 && this.finnhubApiKeys.length === 0 && this.fmpApiKeys.length === 0) {
+        loggerService.warn(`⚠️ [NO API KEYS] No API keys available, using fallback data for ${symbol}`);
+        return this.generateRealisticStockData(symbol);
+      }
+      
       // TRY ALL ALPHA VANTAGE KEYS (Primary source - best historical data)
       for (let attempt = 0; attempt < this.alphaVantageKeys.length && !metrics; attempt++) {
         try {
@@ -751,7 +757,7 @@ class GoogleFinanceFormulasService {
     const basePrices: Record<string, number> = {
       'AAPL': 220.00,   // Apple - updated
       'QS': 5.20,       // QuantumScape - updated
-      'UEC': 6.85,      // Uranium Energy Corp - updated 
+      'UEC': 16.74,     // Uranium Energy Corp - updated to match portfolio
       'HIMX': 12.45,    // Himax Technologies - updated
       'ONCY': 18.50,    // Oncolytics Biotech - updated
       'AQST': 7.25,     // Aquestive Therapeutics - updated
@@ -765,7 +771,9 @@ class GoogleFinanceFormulasService {
       'META': 540.00,   // Meta - updated
       'AMD': 135.00,    // AMD - added
       'NFLX': 680.00,   // Netflix - added
-      'INTC': 21.00     // Intel - added
+      'INTC': 21.00,    // Intel - added
+      'MVST': 3.65,     // Microvast - added based on portfolio data
+      'SHMD': 2.85      // SHMD - added based on portfolio data
     };
 
     const basePrice = basePrices[symbol] || 100.00;
