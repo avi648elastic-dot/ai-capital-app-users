@@ -219,9 +219,11 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
 // Add stock to portfolio
 router.post('/add', authenticateToken, requireSubscription, async (req, res) => {
   try {
+    console.log('🎯 [PORTFOLIO ADD] ===== REQUEST RECEIVED =====');
     console.log('🔍 [PORTFOLIO ADD] Adding stock for user:', req.user!._id);
-    console.log('🔍 [PORTFOLIO ADD] Request body:', req.body);
+    console.log('🔍 [PORTFOLIO ADD] Request body:', JSON.stringify(req.body, null, 2));
     console.log('🔍 [PORTFOLIO ADD] User object:', req.user);
+    console.log('🔍 [PORTFOLIO ADD] Headers:', req.headers);
 
     const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes, portfolioType, portfolioId } = req.body;
 
@@ -259,9 +261,16 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    // Simplified portfolio type
+    // Simplified portfolio type with better defaults
     const finalPortfolioType = portfolioType || 'solid';
     const finalPortfolioId = portfolioId || 'solid-1';
+    
+    console.log('🔍 [PORTFOLIO ADD] Portfolio settings:', {
+      portfolioType: portfolioType,
+      portfolioId: portfolioId,
+      finalPortfolioType,
+      finalPortfolioId
+    });
 
     console.log('🔍 [PORTFOLIO ADD] Using portfolio type:', finalPortfolioType);
     console.log('🔍 [PORTFOLIO ADD] Using portfolio ID:', finalPortfolioId);
