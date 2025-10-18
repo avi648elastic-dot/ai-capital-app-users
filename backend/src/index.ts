@@ -983,4 +983,5 @@ const startServer = async () => {
 
 startServer();
 F O R C E   D E P L O Y M E N T   V 8   -   B a c k e n d   5 0 2   F i x  
+ F O R C E   D E P L O Y M E N T   V 9   -   F i x   4 0 3   A u t h   E r r o r  
  
