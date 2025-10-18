@@ -267,9 +267,16 @@ router.post('/add', async (req, res) => {
       currentPrice: numericCurrentPrice
     });
 
-    // Portfolio settings
-    const finalPortfolioType = portfolioType || 'solid';
+    // Portfolio settings - map frontend values to valid database values
+    const validPortfolioTypes = ['solid', 'risky'];
+    const finalPortfolioType = validPortfolioTypes.includes(portfolioType) ? portfolioType : 'solid';
     const finalPortfolioId = portfolioId || 'solid-1';
+    
+    console.log('🔍 [PORTFOLIO ADD] Portfolio type mapping:', {
+      received: portfolioType,
+      mapped: finalPortfolioType,
+      validTypes: validPortfolioTypes
+    });
 
     console.log('🔍 [PORTFOLIO ADD] Creating portfolio item...');
 
