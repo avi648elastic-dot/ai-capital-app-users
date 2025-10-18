@@ -24,7 +24,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 
   // TEMPORARY FIX: Bypass auth for ALL delete and post operations to test
   if (req.method === 'DELETE' || req.method === 'POST') {
-    console.log('🔧 [AUTH] TEMPORARY BYPASS for delete operation');
+    console.log('🔧 [AUTH] TEMPORARY BYPASS for operation');
     console.log('🔧 [AUTH] Request URL:', req.url);
     console.log('🔧 [AUTH] Request method:', req.method);
     // Find user by email from a known user (temporary fix)
@@ -67,7 +67,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 export const requireSubscription = (req: AuthRequest, res: Response, next: NextFunction) => {
   // TEMPORARY FIX: Bypass subscription check for ALL delete and post operations
   if (req.method === 'DELETE' || req.method === 'POST') {
-    console.log('🔧 [SUBSCRIPTION] TEMPORARY BYPASS for delete operation');
+    console.log('🔧 [SUBSCRIPTION] TEMPORARY BYPASS for operation');
     console.log('🔧 [SUBSCRIPTION] Request URL:', req.url);
     return next();
   }

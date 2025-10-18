@@ -210,6 +210,7 @@ router.post('/add', authenticateToken, requireSubscription, checkStockLimits, va
   try {
     console.log('🔍 [PORTFOLIO ADD] Adding stock for user:', req.user!._id);
     console.log('🔍 [PORTFOLIO ADD] Request body:', req.body);
+    console.log('🔍 [PORTFOLIO ADD] User object:', req.user);
 
     const { ticker, shares, entryPrice, currentPrice, stopLoss, takeProfit, notes, portfolioType, portfolioId } = req.body;
 
@@ -360,6 +361,13 @@ router.post('/add', authenticateToken, requireSubscription, checkStockLimits, va
     });
   } catch (error: any) {
     console.error('❌ [PORTFOLIO ADD] Error adding stock:', error);
+    console.error('❌ [PORTFOLIO ADD] Error stack:', error.stack);
+    console.error('❌ [PORTFOLIO ADD] Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      user: req.user
+    });
     
     // Handle specific MongoDB errors
     if (error.name === 'ValidationError') {
@@ -378,7 +386,8 @@ router.post('/add', authenticateToken, requireSubscription, checkStockLimits, va
 
     res.status(500).json({ 
       message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
