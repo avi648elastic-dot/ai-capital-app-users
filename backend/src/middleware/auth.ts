@@ -25,12 +25,17 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   // TEMPORARY FIX: Bypass auth for delete operations to test
   if (req.method === 'DELETE' && req.url.includes('/api/portfolio/')) {
     console.log('🔧 [AUTH] TEMPORARY BYPASS for delete operation');
+    console.log('🔧 [AUTH] Request URL:', req.url);
+    console.log('🔧 [AUTH] Request method:', req.method);
     // Find user by email from a known user (temporary fix)
     const user = await User.findOne({ email: 'avi648elastic@gmail.com' }).select('-password');
     if (user) {
       console.log('🔧 [AUTH] Using temporary user:', user.email);
+      console.log('🔧 [AUTH] User ID:', user._id);
       req.user = user;
       return next();
+    } else {
+      console.log('❌ [AUTH] Temporary user not found!');
     }
   }
 
