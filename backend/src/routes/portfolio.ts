@@ -221,6 +221,8 @@ router.post('/add', async (req, res) => {
   try {
     console.log('🎯 [PORTFOLIO ADD] ===== REQUEST RECEIVED =====');
     console.log('🔍 [PORTFOLIO ADD] Request body:', JSON.stringify(req.body, null, 2));
+    console.log('🔍 [PORTFOLIO ADD] Request body type:', typeof req.body);
+    console.log('🔍 [PORTFOLIO ADD] Request body keys:', Object.keys(req.body || {}));
     console.log('🔍 [PORTFOLIO ADD] Headers:', req.headers);
     
     // TEMPORARY: Skip all middleware for testing
@@ -238,9 +240,18 @@ router.post('/add', async (req, res) => {
 
     const { ticker, shares, entryPrice, currentPrice, stopLoss, stoploss, takeProfit, takeprofit, notes, portfolioType, portfolioId } = req.body;
     
-    // Handle field name variations
+    // Handle field name variations - prioritize camelCase
     const finalStopLoss = stopLoss || stoploss;
     const finalTakeProfit = takeProfit || takeprofit;
+    
+    console.log('🔍 [PORTFOLIO ADD] Field name handling:', {
+      stopLoss: stopLoss,
+      stoploss: stoploss,
+      finalStopLoss: finalStopLoss,
+      takeProfit: takeProfit,
+      takeprofit: takeprofit,
+      finalTakeProfit: finalTakeProfit
+    });
 
     console.log('🔍 [PORTFOLIO ADD] Parsed data:', { ticker, shares, entryPrice, currentPrice });
 
