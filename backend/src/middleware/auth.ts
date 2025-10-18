@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import User, { IUser } from '../models/User';
 
 declare global {
@@ -55,15 +56,15 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       }
     } catch (userError) {
       console.error('❌ [AUTH] Error with user lookup/creation:', userError);
-      // Fallback: create a minimal user object
+      // Fallback: create a minimal user object with valid ObjectId
       req.user = {
-        _id: 'temp-user-id',
+        _id: new mongoose.Types.ObjectId().toHexString(),
         email: 'avi648elastic@gmail.com',
         name: 'Temporary User',
         subscriptionTier: 'premium',
         subscriptionActive: true
       } as any;
-      console.log('🔧 [AUTH] Using fallback user object');
+      console.log('🔧 [AUTH] Using fallback user object with generated ObjectId');
       return next();
     }
   }
