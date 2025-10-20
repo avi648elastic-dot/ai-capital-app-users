@@ -326,17 +326,15 @@ router.delete('/test', async (req, res) => {
  * @desc Delete notification
  * @access Private
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // TEMPORARY: Use a default user ID for testing
-    const userId = req.user?._id?.toString() || '68e4e00c7e9494905465843b';
+    const userId = req.user!._id.toString();
     
     console.log('🗑️ [NOTIFICATION DELETE] Attempting to delete notification:', {
       notificationId: id,
       userId: userId,
-      userEmail: req.user?.email || 'bypass-user'
+      userEmail: req.user?.email
     });
     
     const deleted = await notificationService.deleteNotification(id, userId);
@@ -347,7 +345,7 @@ router.delete('/:id', async (req, res) => {
       console.log('❌ [NOTIFICATION DELETE] Notification not found or not owned by user');
       return res.status(404).json({
         success: false,
-        message: 'Notification not found'
+        message: 'Notification not found or you do not have permission to delete it'
       });
     }
 
@@ -434,6 +432,76 @@ router.post('/cleanup-invalid', authenticateAdmin, async (req, res) => {
 });
 
 /**
+ * @route DELETE /api/notifications/admin/clear-all
+ * @desc Clear all notifications for all users (Admin only)
+ * @access Admin
+ */
+router.delete('/admin/clear-all', authenticateAdmin, async (req, res) => {
+  try {
+    const deletedCount = await notificationService.clearAllNotifications();
+
+    res.json({
+      success: true,
+      data: { deletedCount },
+      message: `${deletedCount} notifications cleared for all users`
+    });
+  } catch (error) {
+    console.error('Clear all notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to clear all notifications'
+    });
+  }
+});
+
+/**
+ * @route DELETE /api/notifications/admin/user/:userId
+ * @desc Clear all notifications for a specific user (Admin only)
+ * @access Admin
+ */
+router.delete('/admin/user/:userId', authenticateAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const deletedCount = await notificationService.clearUserNotifications(userId);
+
+    res.json({
+      success: true,
+      data: { deletedCount, userId },
+      message: `${deletedCount} notifications cleared for user ${userId}`
+    });
+  } catch (error) {
+    console.error('Clear user notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to clear user notifications'
+    });
+  }
+});
+
+/**
+ * @route POST /api/notifications/admin/cleanup-irrelevant
+ * @desc Clean up notifications for stocks not in user's portfolio (Admin only)
+ * @access Admin
+ */
+router.post('/admin/cleanup-irrelevant', authenticateAdmin, async (req, res) => {
+  try {
+    const deletedCount = await notificationService.cleanupIrrelevantNotifications();
+
+    res.json({
+      success: true,
+      data: { deletedCount },
+      message: `${deletedCount} irrelevant notifications cleaned up (stocks not in user portfolios)`
+    });
+  } catch (error) {
+    console.error('Cleanup irrelevant notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cleanup irrelevant notifications'
+    });
+  }
+});
+
+/**
  * @route POST /api/notifications/test
  * @desc Create a test notification for the current user
  * @access Private
@@ -466,6 +534,71 @@ router.post('/test', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to create test notification'
+    });
+  }
+});
+
+/**
+ * @route POST /api/notifications/admin/fix-all
+ * @desc Fix all notification issues at once (Admin only)
+ * @access Admin
+ */
+router.post('/admin/fix-all', authenticateAdmin, async (req, res) => {
+  try {
+    console.log('🔧 [ADMIN] Starting comprehensive notification fix...');
+    
+    const results = {
+      invalidNotifications: 0,
+      irrelevantNotifications: 0,
+      expiredNotifications: 0,
+      totalFixed: 0
+    };
+
+    // 1. Clean up invalid portfolio notifications (BUY/HOLD actions)
+    try {
+      results.invalidNotifications = await notificationService.cleanupInvalidPortfolioNotifications();
+      console.log(`✅ [ADMIN] Cleaned up ${results.invalidNotifications} invalid notifications`);
+    } catch (error) {
+      console.error('❌ [ADMIN] Error cleaning invalid notifications:', error);
+    }
+
+    // 2. Clean up irrelevant notifications (stocks not in portfolios)
+    try {
+      results.irrelevantNotifications = await notificationService.cleanupIrrelevantNotifications();
+      console.log(`✅ [ADMIN] Cleaned up ${results.irrelevantNotifications} irrelevant notifications`);
+    } catch (error) {
+      console.error('❌ [ADMIN] Error cleaning irrelevant notifications:', error);
+    }
+
+    // 3. Clean up expired notifications
+    try {
+      results.expiredNotifications = await notificationService.cleanupExpiredNotifications();
+      console.log(`✅ [ADMIN] Cleaned up ${results.expiredNotifications} expired notifications`);
+    } catch (error) {
+      console.error('❌ [ADMIN] Error cleaning expired notifications:', error);
+    }
+
+    results.totalFixed = results.invalidNotifications + results.irrelevantNotifications + results.expiredNotifications;
+
+    console.log(`🎉 [ADMIN] Notification fix complete! Total fixed: ${results.totalFixed}`);
+
+    res.json({
+      success: true,
+      data: results,
+      message: `Notification system fixed! Cleaned up ${results.totalFixed} problematic notifications`,
+      details: {
+        invalidNotifications: `${results.invalidNotifications} BUY/HOLD action notifications removed`,
+        irrelevantNotifications: `${results.irrelevantNotifications} notifications for stocks not in portfolios removed`,
+        expiredNotifications: `${results.expiredNotifications} expired notifications removed`,
+        totalFixed: `${results.totalFixed} total notifications cleaned up`
+      }
+    });
+  } catch (error) {
+    console.error('❌ [ADMIN] Error in comprehensive notification fix:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fix notification system',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });

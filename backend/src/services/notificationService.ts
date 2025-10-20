@@ -151,6 +151,7 @@ class NotificationService {
 
   /**
    * Get notifications for a user (only their own + global notifications)
+   * Enhanced with portfolio filtering to only show relevant notifications
    */
   async getUserNotifications(filters: NotificationFilters): Promise<{
     notifications: INotification[];
@@ -183,6 +184,21 @@ class NotificationService {
       { expiresAt: { $gt: new Date() } }
     ];
 
+    // Get user's portfolio to filter relevant notifications
+    let userPortfolioTickers: string[] = [];
+    if (filters.userId) {
+      try {
+        const { default: Portfolio } = await import('../models/Portfolio');
+        const portfolioItems = await Portfolio.find({ 
+          userId: filters.userId,
+          action: 'BUY' // Only BUY actions (actual holdings)
+        }).select('ticker');
+        userPortfolioTickers = portfolioItems.map(item => item.ticker);
+      } catch (error) {
+        console.warn('Failed to fetch user portfolio for notification filtering:', error);
+      }
+    }
+
     const [notifications, total, unreadCount] = await Promise.all([
       Notification.find(query)
         .sort({ createdAt: -1 })
@@ -192,7 +208,28 @@ class NotificationService {
       Notification.countDocuments({ ...query, readAt: { $exists: false } })
     ]);
 
-    return { notifications, total, unreadCount };
+    // Filter notifications to only show relevant ones
+    const filteredNotifications = notifications.filter(notification => {
+      // Always show global notifications (userId: null)
+      if (!notification.userId) return true;
+      
+      // Always show system notifications
+      if (notification.category === 'system') return true;
+      
+      // For portfolio/market notifications, only show if user has the stock
+      if (notification.actionData?.ticker) {
+        return userPortfolioTickers.includes(notification.actionData.ticker);
+      }
+      
+      // Show all other notifications
+      return true;
+    });
+
+    return { 
+      notifications: filteredNotifications, 
+      total: filteredNotifications.length, 
+      unreadCount: filteredNotifications.filter(n => !n.readAt).length 
+    };
   }
 
   /**
@@ -538,6 +575,67 @@ class NotificationService {
       }, {}),
       recentActivity
     };
+  }
+
+  /**
+   * Clear all notifications for all users (Admin only)
+   */
+  async clearAllNotifications(): Promise<number> {
+    const result = await Notification.deleteMany({});
+    console.log(`🗑️ [ADMIN] Cleared ${result.deletedCount} notifications for all users`);
+    return result.deletedCount;
+  }
+
+  /**
+   * Clear all notifications for a specific user (Admin only)
+   */
+  async clearUserNotifications(userId: string): Promise<number> {
+    const result = await Notification.deleteMany({ userId });
+    console.log(`🗑️ [ADMIN] Cleared ${result.deletedCount} notifications for user ${userId}`);
+    return result.deletedCount;
+  }
+
+  /**
+   * Clean up irrelevant notifications (stocks not in user's portfolio)
+   */
+  async cleanupIrrelevantNotifications(): Promise<number> {
+    try {
+      // Get all users and their portfolio tickers
+      const { default: User } = await import('../models/User');
+      const { default: Portfolio } = await import('../models/Portfolio');
+      
+      const users = await User.find({}).select('_id');
+      let totalDeleted = 0;
+      
+      for (const user of users) {
+        // Get user's portfolio tickers
+        const portfolioItems = await Portfolio.find({ 
+          userId: user._id,
+          action: 'BUY'
+        }).select('ticker');
+        const userTickers = portfolioItems.map(item => item.ticker);
+        
+        // Delete notifications for stocks not in user's portfolio
+        const result = await Notification.deleteMany({
+          userId: user._id,
+          'actionData.ticker': { $exists: true, $nin: userTickers },
+          category: { $in: ['portfolio', 'market'] }
+        });
+        
+        totalDeleted += result.deletedCount;
+        
+        if (result.deletedCount > 0) {
+          console.log(`🧹 [CLEANUP] Removed ${result.deletedCount} irrelevant notifications for user ${user._id}`);
+        }
+      }
+      
+      console.log(`✅ [CLEANUP] Total irrelevant notifications cleaned up: ${totalDeleted}`);
+      return totalDeleted;
+      
+    } catch (error) {
+      console.error('❌ [CLEANUP] Error cleaning up irrelevant notifications:', error);
+      throw error;
+    }
   }
 }
 

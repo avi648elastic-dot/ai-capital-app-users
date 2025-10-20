@@ -91,9 +91,23 @@ class WatchlistAlertService {
 
   /**
    * Check alert for a specific watchlist item
+   * Only create notifications for stocks in user's portfolio
    */
   private async checkItemAlert(item: any): Promise<void> {
     try {
+      // First check if user has this stock in their portfolio
+      const { default: Portfolio } = await import('../models/Portfolio');
+      const hasInPortfolio = await Portfolio.exists({
+        userId: item.userId,
+        ticker: item.ticker,
+        action: 'BUY' // Only BUY actions (actual holdings)
+      });
+
+      if (!hasInPortfolio) {
+        loggerService.info(`ℹ️ [WATCHLIST ALERTS] Skipping ${item.ticker} - not in user's portfolio`);
+        return;
+      }
+
       // Get current price
       const metrics = await googleFinanceFormulasService.getStockMetrics(item.ticker);
       
