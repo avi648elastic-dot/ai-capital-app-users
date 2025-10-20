@@ -409,6 +409,29 @@ router.post('/cleanup', authenticateAdmin, async (req, res) => {
 });
 
 /**
+ * @route POST /api/notifications/cleanup
+ * @desc Clean up expired notifications (Admin only) - Alternative endpoint
+ * @access Admin
+ */
+router.post('/admin/cleanup', authenticateAdmin, async (req, res) => {
+  try {
+    const deletedCount = await notificationService.cleanupExpiredNotifications();
+
+    res.json({
+      success: true,
+      data: { deletedCount },
+      message: `${deletedCount} expired notifications cleaned up`
+    });
+  } catch (error) {
+    console.error('Cleanup notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to cleanup notifications'
+    });
+  }
+});
+
+/**
  * @route POST /api/notifications/cleanup-invalid
  * @desc Clean up invalid portfolio notifications (non-SELL actions) (Admin only)
  * @access Admin
