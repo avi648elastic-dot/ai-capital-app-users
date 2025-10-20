@@ -156,6 +156,42 @@ export default function AdminNotificationsPage() {
     }
   };
 
+  const handleFixAll = async () => {
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/admin/fix-all`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert(`Fixed all notification issues! ${response.data.message}`);
+      fetchNotifications();
+      fetchStats();
+    } catch (error) {
+      console.error('Error fixing all notifications:', error);
+      alert('Failed to fix all notifications');
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!confirm('Are you sure you want to clear ALL notifications? This cannot be undone!')) {
+      return;
+    }
+    
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications/admin/clear-all`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      alert(`Cleared ${response.data.data.deletedCount} notifications for all users`);
+      fetchNotifications();
+      fetchStats();
+    } catch (error) {
+      console.error('Error clearing all notifications:', error);
+      alert('Failed to clear all notifications');
+    }
+  };
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'info': return 'bg-blue-100 text-blue-800';
@@ -259,6 +295,18 @@ export default function AdminNotificationsPage() {
           className="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition-colors"
         >
           🗑️ Cleanup Expired
+        </button>
+        <button
+          onClick={handleFixAll}
+          className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
+        >
+          🔧 Fix All Issues
+        </button>
+        <button
+          onClick={handleClearAll}
+          className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors"
+        >
+          🚨 Clear All
         </button>
         <button
           onClick={() => { fetchNotifications(); fetchStats(); }}

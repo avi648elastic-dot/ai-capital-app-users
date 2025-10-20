@@ -403,3 +403,5 @@ const StockFormModern: React.FC<StockFormModernProps> = ({
 };
 
 export default StockFormModern;
+
+
