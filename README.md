@@ -19,6 +19,7 @@
 - [📊 Professional Analytics Suite](#-professional-analytics-suite)
 - [🔧 Technology Stack](#-technology-stack)
 - [🚀 Quick Start & Deployment](#-quick-start--deployment)
+- [📚 Documentation](#-documentation)
 - [📡 Comprehensive API Documentation](#-comprehensive-api-documentation)
 - [🔒 Enterprise Security](#-enterprise-security)
 - [📈 Performance & Scalability](#-performance--scalability)
@@ -609,6 +610,48 @@ npm run dev
 2. **Configure Security**: Set up database users and IP whitelisting
 3. **Connection String**: Get connection string for application
 4. **Indexes**: Create necessary database indexes for performance
+
+---
+
+## 📚 Documentation
+
+All project documentation has been organized into the `/docs/` folder for easy navigation:
+
+### 📧 Email Setup
+- **[Start Here: Email Setup](docs/email/START_HERE_EMAIL_SETUP.md)** - Quick 5-minute guide
+- [Complete Email Setup Guide](docs/email/EMAIL_SETUP_GUIDE.md) - All providers (Gmail, SendGrid, AWS SES)
+- [Email Implementation](docs/email/EMAIL_IMPLEMENTATION_SUMMARY.md) - Technical details
+
+### 🚀 Deployment
+- [Render Deployment Guide](docs/deployment/RENDER_DEPLOYMENT_GUIDE.md) - Complete deployment instructions
+- [Deployment Fixes](docs/deployment/RENDER_DEPLOYMENT_FIX.md) - Common issues and solutions
+- [Deployment Status](docs/deployment/DEPLOYMENT_STATUS.md) - Current deployment state
+
+### 💳 Payments
+- [Stripe Setup Guide](docs/payments/STRIPE_SETUP_GUIDE.md) - Payment integration
+- [Complete Stripe Setup](docs/payments/STRIPE_COMPLETE_SETUP.md) - Full configuration
+
+### 📊 Project Management
+- [Current Sprint](docs/project-management/CURRENT_SPRINT.md) - Current work
+- [TODO List](docs/project-management/TODO_REMAINING.md) - Remaining tasks
+- [Sprint Status](docs/project-management/SPRINT_STATUS.md) - Progress tracking
+- [All Project Management Docs](docs/project-management/) - Complete list
+
+### ✨ Features
+- [Watchlist System](docs/features/WATCHLIST_SYSTEM_STATUS.md) - Watchlist feature
+- [Google Finance Integration](docs/features/GOOGLE_FINANCE_IMPLEMENTATION.md) - Data integration
+- [Mobile Roadmap](docs/features/GOOGLE_PLAY_ROADMAP.md) - Mobile plans
+- [All Feature Docs](docs/features/) - Complete list
+
+### 🏗️ Technical Architecture
+- [Architecture Overview](docs/Architecture.md) - System design
+- [Data Providers](docs/DataProviders.md) - API integration
+- [Decision Engine](docs/DecisionEngine.md) - AI algorithm details
+- [Redis Setup](docs/Redis-Setup.md) - Caching configuration
+- [Runbook](docs/Runbook.md) - Operational guide
+
+### 📖 Complete Documentation Index
+See [docs/README.md](docs/README.md) for a complete navigation guide to all documentation.
 
 ---
 

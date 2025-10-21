@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import User from '../models/User';
 import { validate } from '../middleware/validate';
 import { registerSchema, loginSchema, changePasswordSchema, changeEmailSchema } from '../schemas/auth';
+import emailService from '../services/emailService';
 
 const router = Router();
 
@@ -60,6 +61,18 @@ router.post('/signup', validate({ body: registerSchema }), async (req: Request, 
 
     await user.save();
     console.log('✅ [SIGNUP] User created successfully:', user.email);
+
+    // Send welcome email
+    try {
+      await emailService.sendWelcomeEmail({
+        name: user.name,
+        email: user.email
+      });
+      console.log('✅ [SIGNUP] Welcome email sent to:', user.email);
+    } catch (emailError) {
+      console.error('⚠️ [SIGNUP] Failed to send welcome email:', emailError);
+      // Don't fail registration if email fails
+    }
 
     const token = issueToken(String(user._id), user.email, res);
 
@@ -272,6 +285,18 @@ router.post('/google', async (req: Request, res: Response) => {
 
       await user.save();
       console.log('✅ [GOOGLE OAUTH] New user created:', user.email);
+      
+      // Send welcome email for new users
+      try {
+        await emailService.sendWelcomeEmail({
+          name: user.name,
+          email: user.email
+        });
+        console.log('✅ [GOOGLE OAUTH] Welcome email sent to:', user.email);
+      } catch (emailError) {
+        console.error('⚠️ [GOOGLE OAUTH] Failed to send welcome email:', emailError);
+        // Don't fail registration if email fails
+      }
     } else {
       console.log('✅ [GOOGLE OAUTH] Existing user found:', user.email);
     }

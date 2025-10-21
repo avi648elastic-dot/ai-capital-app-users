@@ -1,7 +1,7 @@
 import Notification, { INotification } from '../models/Notification';
 import User from '../models/User';
-import nodemailer from 'nodemailer';
 import pushNotificationService from './pushNotificationService';
+import emailService from './emailService';
 
 interface CreateNotificationData {
   userId?: string;
@@ -38,25 +38,9 @@ interface NotificationFilters {
 }
 
 class NotificationService {
-  private emailTransporter: nodemailer.Transporter | null = null;
-
   constructor() {
-    this.initializeEmailService();
-  }
-
-  private async initializeEmailService() {
-    try {
-      this.emailTransporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        }
-      });
-      console.log('✅ Email service initialized');
-    } catch (error) {
-      console.error('❌ Failed to initialize email service:', error);
-    }
+    // Email service is now initialized globally
+    console.log('📧 [NOTIFICATION SERVICE] Using professional email service');
   }
 
   /**
@@ -392,8 +376,8 @@ class NotificationService {
    * Send email notification
    */
   private async sendEmailNotification(notification: INotification): Promise<void> {
-    if (!this.emailTransporter) {
-      console.warn('Email service not available');
+    if (!emailService.isReady()) {
+      console.warn('⚠️ [EMAIL] Email service not available');
       return;
     }
 
@@ -405,34 +389,37 @@ class NotificationService {
       }
 
       if (!userEmail && notification.userId) {
-        console.warn('User email not found for notification:', notification._id);
+        console.warn('⚠️ [EMAIL] User email not found for notification:', notification._id);
         return;
       }
 
       // For global notifications, we would need to get all user emails
       // For now, skip email for global notifications
       if (!notification.userId) {
-        console.log('Skipping email for global notification');
+        console.log('ℹ️ [EMAIL] Skipping email for global notification');
         return;
       }
 
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: userEmail,
-        subject: `AiCapital: ${notification.title}`,
-        html: this.generateEmailTemplate(notification)
-      };
-
-      await this.emailTransporter.sendMail(mailOptions);
+      // Use the new email service
+      const success = await emailService.sendNotificationEmail(userEmail, {
+        title: notification.title,
+        message: notification.message,
+        type: notification.type,
+        actionData: notification.actionData
+      });
       
       await Notification.updateOne(
         { _id: notification._id },
-        { 'deliveryStatus.email': 'sent' }
+        { 'deliveryStatus.email': success ? 'sent' : 'failed' }
       );
 
-      console.log('✅ Email notification sent:', notification._id);
+      if (success) {
+        console.log('✅ [EMAIL] Email notification sent:', notification._id);
+      } else {
+        console.error('❌ [EMAIL] Failed to send email notification:', notification._id);
+      }
     } catch (error) {
-      console.error('❌ Failed to send email notification:', error);
+      console.error('❌ [EMAIL] Failed to send email notification:', error);
       
       await Notification.updateOne(
         { _id: notification._id },
@@ -441,73 +428,6 @@ class NotificationService {
     }
   }
 
-  /**
-   * Generate email template
-   */
-  private generateEmailTemplate(notification: INotification): string {
-    const actionColors = {
-      info: '#3B82F6',
-      warning: '#F59E0B',
-      success: '#10B981',
-      error: '#EF4444',
-      action: '#8B5CF6'
-    };
-
-    const color = actionColors[notification.type];
-
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${notification.title}</title>
-        </head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 30px; border-radius: 10px; margin-bottom: 20px;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">AiCapital</h1>
-            <p style="color: #94a3b8; margin: 5px 0 0 0;">Professional Portfolio Management</p>
-          </div>
-          
-          <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <div style="display: flex; align-items: center; margin-bottom: 20px;">
-              <div style="width: 40px; height: 40px; background: ${color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
-                <span style="color: white; font-weight: bold; font-size: 18px;">
-                  ${notification.type === 'action' ? '📈' : 
-                    notification.type === 'warning' ? '⚠️' :
-                    notification.type === 'success' ? '✅' :
-                    notification.type === 'error' ? '❌' : 'ℹ️'}
-                </span>
-              </div>
-              <h2 style="margin: 0; color: #1e293b; font-size: 20px;">${notification.title}</h2>
-            </div>
-            
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid ${color}; margin-bottom: 20px;">
-              <p style="margin: 0; color: #475569; font-size: 16px;">${notification.message}</p>
-            </div>
-            
-            ${notification.actionData ? `
-              <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 10px 0; color: #1e293b; font-size: 16px;">Action Details</h3>
-                ${notification.actionData.ticker ? `<p style="margin: 5px 0; color: #475569;"><strong>Ticker:</strong> ${notification.actionData.ticker}</p>` : ''}
-                ${notification.actionData.action ? `<p style="margin: 5px 0; color: #475569;"><strong>Action:</strong> <span style="color: ${color}; font-weight: bold;">${notification.actionData.action}</span></p>` : ''}
-                ${notification.actionData.reason ? `<p style="margin: 5px 0; color: #475569;"><strong>Reason:</strong> ${notification.actionData.reason}</p>` : ''}
-              </div>
-            ` : ''}
-            
-            <div style="text-align: center; margin-top: 30px;">
-              <a href="${process.env.FRONTEND_URL}/dashboard" style="background: ${color}; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Dashboard</a>
-            </div>
-          </div>
-          
-          <div style="text-align: center; margin-top: 20px; color: #64748b; font-size: 14px;">
-            <p>This is an automated message from AiCapital.</p>
-            <p>If you no longer wish to receive these notifications, please update your preferences in your dashboard.</p>
-          </div>
-        </body>
-      </html>
-    `;
-  }
 
   /**
    * Clean up expired notifications
