@@ -60,6 +60,9 @@ export default function PrivacyPolicyPage() {
                 <strong>Effective Date:</strong> January 1, 2025<br />
                 <strong>Last Updated:</strong> {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
               </p>
+              <p className="text-xs text-slate-500 mt-2">
+                Version 1.0 - Google Play Store Compliant
+              </p>
             </div>
           </div>
         </div>
