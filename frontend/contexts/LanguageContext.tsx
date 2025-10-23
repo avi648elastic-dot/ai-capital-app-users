@@ -840,21 +840,13 @@ const translations = {
   }
 };
 
-// Translation keys type
-export type TranslationKeys = 
-  | `common.${keyof typeof translations.en.common}`
-  | `auth.${keyof typeof translations.en.auth}`
-  | `dashboard.${keyof typeof translations.en.dashboard}`
-  | `settings.${keyof typeof translations.en.settings}`
-  | `navigation.${keyof typeof translations.en.navigation}`
-  | `portfolio.${keyof typeof translations.en.portfolio}`
-  | `landing.${keyof typeof translations.en.landing}`
-  | `about.${keyof typeof translations.en.about}`;
+// Translation keys type - using string to support nested objects
+export type TranslationKeys = string;
 
 interface LanguageContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: TranslationKeys, params?: Record<string, string>) => string;
+  t: (key: string, params?: Record<string, string>) => string;
   isRTL: boolean;
   fontClass: string;
 }
@@ -889,7 +881,7 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
     }
   };
 
-  const t = (key: TranslationKeys, params?: Record<string, string>): string => {
+  const t = (key: string, params?: Record<string, string>): string => {
     try {
       const keys = key.split('.');
       let text: any = translations[locale];
