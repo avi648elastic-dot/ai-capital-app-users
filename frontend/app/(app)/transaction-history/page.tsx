@@ -7,19 +7,17 @@ import { ArrowLeft, TrendingUp, TrendingDown } from 'lucide-react';
 import Link from 'next/link';
 
 interface TransactionHistoryItem {
-  id: string;
-  action: 'SELL' | 'BUY';
   ticker: string;
   shares: number;
-  entry: number;
-  exit: number;
-  pnl: number;
-  pnlPercent: number;
-  date: string;
-  portfolioId: string;
-  reason: string;
-  deletedBy?: string;
-  deletedAt: string;
+  entryPrice: number;
+  exitPrice: number;
+  realizedPnL: number;
+  realizedPnLPercent: number;
+  entryDate: string;
+  exitDate: string;
+  portfolioType: string;
+  exitReason: string;
+  isProfitable: boolean;
 }
 
 export default function TransactionHistoryPage() {
@@ -47,9 +45,9 @@ export default function TransactionHistoryPage() {
         setTransactionHistory(history);
         
         // Calculate summary stats
-        const totalPnLValue = history.reduce((sum: number, tx: TransactionHistoryItem) => sum + (tx.pnl || 0), 0);
+        const totalPnLValue = history.reduce((sum: number, tx: TransactionHistoryItem) => sum + (tx.realizedPnL || 0), 0);
         const totalTradesCount = history.length;
-        const winningTrades = history.filter((tx: TransactionHistoryItem) => (tx.pnl || 0) > 0).length;
+        const winningTrades = history.filter((tx: TransactionHistoryItem) => (tx.realizedPnL || 0) > 0).length;
         const winRateValue = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
         
         setTotalPnL(totalPnLValue);
@@ -164,47 +162,47 @@ export default function TransactionHistoryPage() {
           <div className="overflow-x-auto rounded-lg border border-slate-700 bg-slate-900/50">
             <table className="min-w-full text-sm">
               <thead className="bg-slate-800/60 text-slate-300">
-                <tr>
-                  <th className="px-6 py-4 text-left">Date</th>
-                  <th className="px-6 py-4 text-left">Ticker</th>
-                  <th className="px-6 py-4 text-left">Action</th>
-                  <th className="px-6 py-4 text-left">Shares</th>
-                  <th className="px-6 py-4 text-left">Entry Price</th>
-                  <th className="px-6 py-4 text-left">Exit Price</th>
-                  <th className="px-6 py-4 text-left">P&L</th>
-                  <th className="px-6 py-4 text-left">Reason</th>
-                </tr>
+                  <tr>
+                    <th className="px-6 py-4 text-left">Exit Date</th>
+                    <th className="px-6 py-4 text-left">Ticker</th>
+                    <th className="px-6 py-4 text-left">Portfolio</th>
+                    <th className="px-6 py-4 text-left">Shares</th>
+                    <th className="px-6 py-4 text-left">Entry Price</th>
+                    <th className="px-6 py-4 text-left">Exit Price</th>
+                    <th className="px-6 py-4 text-left">P&L</th>
+                    <th className="px-6 py-4 text-left">Reason</th>
+                  </tr>
               </thead>
               <tbody>
-                {transactionHistory.map((tx) => (
-                  <tr key={tx.id} className="border-t border-slate-700 hover:bg-slate-800/40 transition-colors">
+                {transactionHistory.map((tx, index) => (
+                  <tr key={`${tx.ticker}-${index}`} className="border-t border-slate-700 hover:bg-slate-800/40 transition-colors">
                     <td className="px-6 py-4 text-slate-300">
-                      {new Date(tx.date).toLocaleDateString()}
+                      {tx.exitDate ? new Date(tx.exitDate).toLocaleDateString() : 'N/A'}
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-white">{tx.ticker}</span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        tx.action === 'SELL' 
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
-                          : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                        tx.portfolioType === 'solid' 
+                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                          : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                       }`}>
-                        {tx.action}
+                        {tx.portfolioType || 'Unknown'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-300">{tx.shares || 0}</td>
-                    <td className="px-6 py-4 text-slate-300">${(tx.entry || 0).toFixed(2)}</td>
-                    <td className="px-6 py-4 text-slate-300">${(tx.exit || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-slate-300">${(tx.entryPrice || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-slate-300">${(tx.exitPrice || 0).toFixed(2)}</td>
                     <td className="px-6 py-4">
-                      <div className={`font-semibold ${(tx.pnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {(tx.pnl || 0) >= 0 ? '+' : ''}${(tx.pnl || 0).toFixed(2)}
+                      <div className={`font-semibold ${(tx.realizedPnL || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(tx.realizedPnL || 0) >= 0 ? '+' : ''}${(tx.realizedPnL || 0).toFixed(2)}
                       </div>
-                      <div className={`text-xs ${(tx.pnlPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {(tx.pnlPercent || 0) >= 0 ? '+' : ''}{(tx.pnlPercent || 0).toFixed(2)}%
+                      <div className={`text-xs ${(tx.realizedPnLPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(tx.realizedPnLPercent || 0) >= 0 ? '+' : ''}{(tx.realizedPnLPercent || 0).toFixed(2)}%
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-300">{tx.reason}</td>
+                    <td className="px-6 py-4 text-slate-300">{tx.exitReason || 'N/A'}</td>
                   </tr>
                 ))}
               </tbody>
