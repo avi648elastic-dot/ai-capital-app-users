@@ -67,7 +67,14 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
               <p className="text-sm text-slate-400">Top traders by realized P&L</p>
             </div>
           </div>
-          {/* Link to Deleted Transactions Audit */}
+          {/* Link to Transaction History */}
+          <a
+            href="/transaction-history"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-slate-600 text-slate-200 hover:bg-slate-800 transition-colors"
+            title="View your complete trading history"
+          >
+            📊 Trading History
+          </a>
           <a
             href="/analytics/deleted-transactions"
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-slate-600 text-slate-200 hover:bg-slate-800 transition-colors"
@@ -177,12 +184,18 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
           <p className="text-xs text-slate-400 text-center">
             Rankings based on total realized P&L from closed positions. Close positions to build your reputation!
           </p>
-          <div className="mt-3 text-center">
+          <div className="mt-3 text-center space-x-4">
+            <a
+              href="/transaction-history"
+              className="text-blue-400 hover:text-blue-300 text-xs underline"
+            >
+              View Trading History →
+            </a>
             <a
               href="/analytics/deleted-transactions"
               className="text-emerald-400 hover:text-emerald-300 text-xs underline"
             >
-              View Deleted Transactions Audit →
+              View Deleted Transactions →
             </a>
           </div>
         </div>

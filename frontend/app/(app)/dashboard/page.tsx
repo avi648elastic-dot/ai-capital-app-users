@@ -107,6 +107,7 @@ export default function Dashboard() {
       console.log('🔍 [DASHBOARD] User has visited dashboard before - skipping onboarding check');
       sessionStorage.setItem('dashboard-visited', 'true');
       fetchPortfolio();
+      fetchUserReputation(); // ✅ FIX: Fetch reputation on dashboard load
       return;
     }
 
@@ -202,9 +203,20 @@ export default function Dashboard() {
         timeout: 10000
       });
       
+      console.log('🏆 [DASHBOARD] User reputation fetched:', response.data.reputation);
       setUserReputation(response.data.reputation);
     } catch (error: any) {
-      // Don't show error to user - reputation is optional
+      console.error('❌ [DASHBOARD] Error fetching user reputation:', error);
+      // Set default reputation if fetch fails
+      setUserReputation({
+        reputation: 0,
+        totalPositionsClosed: 0,
+        winRate: 0,
+        averageWin: 0,
+        averageLoss: 0,
+        bestTrade: 0,
+        worstTrade: 0
+      });
     }
   };
 
@@ -218,6 +230,13 @@ export default function Dashboard() {
       }
     }
   }, [user]); // Only depend on user, not activeTab to avoid infinite loops
+
+  // ✅ FIX: Fetch reputation when user data loads
+  useEffect(() => {
+    if (user && !userReputation) {
+      fetchUserReputation();
+    }
+  }, [user]);
 
   // Clear selectedPortfolioId when switching to single view
   useEffect(() => {
