@@ -10,6 +10,31 @@ import pushNotificationService from '../services/pushNotificationService';
 
 const router = express.Router();
 
+// Direct avatar serving endpoint to bypass static file serving issues
+router.get('/avatar/:filename', async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, '../../uploads/avatars', filename);
+    
+    console.log('🔍 [USER] Serving avatar file:', filePath);
+    console.log('🔍 [USER] File exists:', fs.existsSync(filePath));
+    
+    if (fs.existsSync(filePath)) {
+      // Set proper headers for image serving
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+      res.setHeader('Access-Control-Allow-Origin', '*'); // Allow CORS
+      res.sendFile(filePath);
+    } else {
+      console.log('❌ [USER] Avatar file not found:', filePath);
+      res.status(404).json({ error: 'File not found', path: filePath });
+    }
+  } catch (error) {
+    console.error('❌ [USER] Avatar serving error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Test endpoint to check if static file serving is working
 router.get('/test-avatar/:filename', async (req, res) => {
   try {
@@ -117,6 +142,8 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
     // Save new avatar URL to user
     const avatar = `/uploads/avatars/${req.file.filename}`;
     console.log('💾 [USER] Saving avatar URL:', avatar);
+    console.log('📁 [USER] File saved to:', req.file.path);
+    console.log('🌐 [USER] Static URL should be:', `${process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com'}${avatar}`);
     
     const updatedUser = await User.findByIdAndUpdate(
       userId,
