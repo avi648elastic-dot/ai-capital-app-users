@@ -310,15 +310,18 @@ class GoogleFinanceFormulasService {
         
         // Last resort: return basic fallback data instead of throwing error
         loggerService.warn(`⚠️ [FALLBACK] Creating basic fallback data for ${symbol} due to API failures`);
+        // Check if we have predefined fallback data for this symbol
+        const predefinedFallback = this.generateRealisticStockData(symbol);
+        
         const fallbackData: StockMetrics = {
           symbol: symbol,
-          current: 0, // Will be updated by portfolio service with current price
-          top30D: 0,
-          top60D: 0,
+          current: predefinedFallback.current, // Use predefined price if available
+          top30D: predefinedFallback.top30D,
+          top60D: predefinedFallback.top60D,
           thisMonthPercent: 0,
           lastMonthPercent: 0,
           volatility: 0.02, // Default 2% volatility
-          marketCap: 0,
+          marketCap: predefinedFallback.marketCap,
           timestamp: Date.now(),
           dataSource: 'fallback'
         };
@@ -340,15 +343,18 @@ class GoogleFinanceFormulasService {
       
       // Instead of throwing error, return fallback data with realistic values
       loggerService.warn(`⚠️ [FALLBACK] Creating emergency fallback data for ${symbol} due to error`);
+      // Check if we have predefined fallback data for this symbol
+      const predefinedFallback = this.generateRealisticStockData(symbol);
+      
       const fallbackData: StockMetrics = {
         symbol: symbol,
-        current: 1.0, // Use $1 as fallback instead of 0
-        top30D: 1.2, // 20% higher than current
-        top60D: 1.5, // 50% higher than current
+        current: predefinedFallback.current, // Use predefined price if available
+        top30D: predefinedFallback.top30D,
+        top60D: predefinedFallback.top60D,
         thisMonthPercent: 0, // No change
         lastMonthPercent: 0, // No change
         volatility: 0.02, // Default 2% volatility
-        marketCap: 1000000, // $1M market cap
+        marketCap: predefinedFallback.marketCap,
         timestamp: Date.now(),
         dataSource: 'fallback'
       };
