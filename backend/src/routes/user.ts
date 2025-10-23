@@ -10,19 +10,51 @@ import pushNotificationService from '../services/pushNotificationService';
 
 const router = express.Router();
 
+// Test endpoint to check if static file serving is working
+router.get('/test-avatar/:filename', async (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, '../../uploads/avatars', filename);
+    
+    console.log('🔍 [USER] Testing avatar file:', filePath);
+    console.log('🔍 [USER] File exists:', fs.existsSync(filePath));
+    
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).json({ error: 'File not found', path: filePath });
+    }
+  } catch (error) {
+    console.error('❌ [USER] Test avatar error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Configure multer for avatar uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = path.join(__dirname, '../../uploads/avatars');
+    console.log('📁 [USER] Upload directory:', uploadDir);
+    
     if (!fs.existsSync(uploadDir)) {
+      console.log('📁 [USER] Creating upload directory:', uploadDir);
       fs.mkdirSync(uploadDir, { recursive: true });
     }
+    
+    // Check if directory exists after creation
+    if (fs.existsSync(uploadDir)) {
+      console.log('✅ [USER] Upload directory exists:', uploadDir);
+    } else {
+      console.log('❌ [USER] Upload directory creation failed:', uploadDir);
+    }
+    
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     const userId = (req as any).user._id;
     const ext = path.extname(file.originalname);
     const filename = `avatar_${userId}${ext}`;
+    console.log('📝 [USER] Generated filename:', filename);
     cb(null, filename);
   }
 });
@@ -48,26 +80,44 @@ const upload = multer({
 // Upload avatar endpoint
 router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
+    console.log('🔍 [USER] Avatar upload request received');
+    console.log('🔍 [USER] User from auth:', (req as any).user);
+    console.log('🔍 [USER] File received:', req.file);
+    
     const userId = (req as any).user._id;
     
     if (!req.file) {
+      console.log('❌ [USER] No file uploaded');
       return res.status(400).json({
         success: false,
         error: 'No file uploaded'
       });
     }
 
+    console.log('📁 [USER] File details:', {
+      filename: req.file.filename,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      path: req.file.path
+    });
+
     // Delete old avatar if exists
     const user = await User.findById(userId);
+    console.log('👤 [USER] Current user:', user ? { id: user._id, email: user.email, avatar: user.avatar } : 'Not found');
+    
     if (user && user.avatar) {
       const oldAvatarPath = path.join(__dirname, '../../uploads/avatars', path.basename(user.avatar));
       if (fs.existsSync(oldAvatarPath)) {
         fs.unlinkSync(oldAvatarPath);
+        console.log('🗑️ [USER] Deleted old avatar:', oldAvatarPath);
       }
     }
 
     // Save new avatar URL to user
     const avatar = `/uploads/avatars/${req.file.filename}`;
+    console.log('💾 [USER] Saving avatar URL:', avatar);
+    
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { avatar },
@@ -75,6 +125,7 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
     );
 
     console.log(`✅ [USER] Avatar updated for user ${userId}`);
+    console.log('👤 [USER] Updated user:', updatedUser ? { id: updatedUser._id, email: updatedUser.email, avatar: updatedUser.avatar } : 'Not found');
 
     res.json({
       success: true,
@@ -104,15 +155,24 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user._id;
+    console.log('🔍 [USER] Profile fetch request for user:', userId);
     
     const user = await User.findById(userId).select('-password');
     
     if (!user) {
+      console.log('❌ [USER] User not found:', userId);
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
+
+    console.log('👤 [USER] Profile data:', {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      avatar: user.avatar
+    });
 
     res.json({
       success: true,
