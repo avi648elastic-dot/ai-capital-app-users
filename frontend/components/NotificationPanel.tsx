@@ -26,9 +26,10 @@ interface NotificationPanelProps {
   isVisible: boolean;
   onClose: () => void;
   isMobile?: boolean;
+  onNotificationCountChange?: (count: number) => void;
 }
 
-export default function NotificationPanel({ isVisible, onClose, isMobile = false }: NotificationPanelProps) {
+export default function NotificationPanel({ isVisible, onClose, isMobile = false, onNotificationCountChange }: NotificationPanelProps) {
   const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,6 +40,13 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       fetchNotifications();
     }
   }, [isVisible]);
+
+  // Update parent component with notification count
+  useEffect(() => {
+    if (onNotificationCountChange) {
+      onNotificationCountChange(unreadCount);
+    }
+  }, [unreadCount, onNotificationCountChange]);
 
   const fetchNotifications = async () => {
     setLoading(true);

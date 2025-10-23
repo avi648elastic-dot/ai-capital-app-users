@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LogOut, User, Settings, TrendingUp, BarChart3, Award } from 'lucide-react';
 import Cookies from 'js-cookie';
 import { logout } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import axios from 'axios';
 import ThemeToggle from './ThemeToggle';
 import TechLogo from './TechLogo';
 import NotificationCenter from './NotificationCenter';
@@ -23,10 +24,36 @@ interface HeaderProps {
 export default function Header({ userName, showNavigation = true, isAdmin = false, userAvatar, userReputation }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const router = useRouter();
 
   const handleLogout = () => logout();
+
+  // Fetch initial notification count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const token = Cookies.get('token');
+        if (!token) return;
+
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/notifications?limit=50&unreadOnly=true`, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000
+        });
+
+        const notifications = response.data.data?.notifications || response.data.notifications || [];
+        const unreadCount = notifications.filter((n: any) => !n.readAt).length;
+        setNotificationCount(unreadCount);
+      } catch (error) {
+        console.error('Failed to fetch notification count:', error);
+        // Set to 0 if fetch fails
+        setNotificationCount(0);
+      }
+    };
+
+    fetchNotificationCount();
+  }, []);
 
   const Logo = () => (
     <div className="flex items-center space-x-3">
@@ -93,10 +120,12 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                   title="Notifications"
                 >
                   <span className="text-xl">🔔</span>
-                  {/* Unread count badge - will be updated by NotificationPanel */}
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                    64
-                  </span>
+                  {/* Unread count badge - dynamic count */}
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                      {notificationCount > 99 ? '99+' : notificationCount}
+                    </span>
+                  )}
                 </button>
                 
                 {/* Desktop Notification Panel */}
@@ -105,6 +134,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                     isVisible={showNotificationPanel}
                     onClose={() => setShowNotificationPanel(false)}
                     isMobile={false}
+                    onNotificationCountChange={setNotificationCount}
                   />
                 )}
               </div>
