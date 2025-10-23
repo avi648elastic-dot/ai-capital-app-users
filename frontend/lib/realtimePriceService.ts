@@ -44,6 +44,7 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
     this.fallbackToPolling();
     return;
 
+    /* WebSocket code disabled - uncomment when backend supports it
     if (this.socket?.connected) {
       return;
     }
@@ -94,6 +95,7 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
       console.error('🔌 [REALTIME] Reconnection error:', error);
       this.handleReconnect();
     });
+    */
   }
 
   private handleReconnect(): void {
