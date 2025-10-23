@@ -141,7 +141,7 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
                         <img
                           src={entry.avatar}
                           alt={entry.name}
-                          className="w-10 h-10 rounded-full border-2 border-slate-600"
+                          className="w-10 h-10 rounded-full border-2 border-slate-600 object-cover"
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold">
