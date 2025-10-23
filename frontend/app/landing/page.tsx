@@ -97,25 +97,29 @@ export default function LandingPage() {
       title: "Performance Analytics",
       icon: <LineChart className="w-6 h-6" />,
       description: "Track portfolio performance with detailed metrics and visualizations",
-      features: ["Return analysis", "Benchmark comparison", "Risk-adjusted returns", "Performance attribution"]
+      features: ["Return analysis", "Benchmark comparison", "Risk-adjusted returns", "Performance attribution"],
+      link: "/analytics/performance"
     },
     {
       title: "Portfolio Analysis",
       icon: <PieChart className="w-6 h-6" />,
       description: "Deep dive into portfolio composition and allocation analysis",
-      features: ["Asset allocation", "Sector analysis", "Geographic distribution", "Concentration risk"]
+      features: ["Asset allocation", "Sector analysis", "Geographic distribution", "Concentration risk"],
+      link: "/analytics/portfolio-analysis"
     },
     {
       title: "Watchlist Management",
       icon: <Eye className="w-6 h-6" />,
       description: "Advanced stock screening and watchlist management tools",
-      features: ["Custom filters", "Price alerts", "News tracking", "Technical indicators"]
+      features: ["Custom filters", "Price alerts", "News tracking", "Technical indicators"],
+      link: "/watchlist"
     },
     {
       title: "Risk Management",
       icon: <Shield className="w-6 h-6" />,
       description: "Comprehensive risk assessment and mitigation strategies",
-      features: ["VaR analysis", "Stress testing", "Correlation analysis", "Risk budgeting"]
+      features: ["VaR analysis", "Stress testing", "Correlation analysis", "Risk budgeting"],
+      link: "/risk-management"
     },
     {
       title: "Market Reports",
@@ -128,7 +132,8 @@ export default function LandingPage() {
       title: "Transaction History",
       icon: <Database className="w-6 h-6" />,
       description: "Complete trading history and transaction analytics",
-      features: ["Trade history", "Profit/loss analysis", "Tax reporting", "Performance tracking"]
+      features: ["Trade history", "Profit/loss analysis", "Tax reporting", "Performance tracking"],
+      link: "/transaction-history"
     }
   ];
 
@@ -341,7 +346,8 @@ export default function LandingPage() {
             {analyticsPages.map((page, index) => (
               <div
                 key={index}
-                className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-6 rounded-xl border border-slate-700/50 hover:border-blue-500/50 transition-all"
+                onClick={() => page.link && router.push(page.link)}
+                className={`bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-6 rounded-xl border border-slate-700/50 hover:border-blue-500/50 transition-all ${page.link ? 'cursor-pointer hover:scale-105' : 'cursor-default'}`}
               >
                 <div className="flex items-center mb-4">
                   <div className="text-blue-400 mr-3">{page.icon}</div>
@@ -356,9 +362,14 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-                {page.status === 'coming-soon' && (
+                {page.status === 'coming-soon' ? (
                   <div className="mt-4 px-3 py-1 bg-orange-500/20 text-orange-300 text-xs rounded-full border border-orange-500/30 inline-block">
                     Coming Soon
+                  </div>
+                ) : page.link && (
+                  <div className="mt-4 flex items-center text-blue-400 text-sm font-medium">
+                    <span>View Page</span>
+                    <ArrowRight className="w-4 h-4 ml-1" />
                   </div>
                 )}
               </div>

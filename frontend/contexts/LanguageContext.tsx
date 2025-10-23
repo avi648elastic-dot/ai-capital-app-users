@@ -289,6 +289,31 @@ const translations = {
         about: 'About',
         copyright: 'All rights reserved.'
       }
+    },
+    about: {
+      title: 'About AI-Capital',
+      subtitle: 'Professional portfolio management powered by artificial intelligence and real-time market data.',
+      missionTitle: 'Our Mission',
+      missionText: 'We believe that sophisticated portfolio management tools should be accessible to everyone, not just institutional investors. AI-Capital combines cutting-edge artificial intelligence with real-time market data to help you make smarter investment decisions.',
+      realtimeTitle: 'Real-Time Analytics',
+      realtimeDesc: 'Access professional-grade analytics with 7/30/60/90-day performance metrics, volatility analysis, and Sharpe ratios calculated from live market data.',
+      aiTitle: 'AI-Powered Decisions',
+      aiDesc: 'Our decision engine analyzes 90 days of historical data, market trends, and volatility to provide actionable BUY/HOLD/SELL recommendations for every stock.',
+      riskTitle: 'Risk Management',
+      riskDesc: 'Automatic stop-loss and take-profit tracking, portfolio volatility monitoring, and risk-adjusted returns help you protect your investments.',
+      alertsTitle: 'Price Alerts',
+      alertsDesc: 'Set custom price alerts on your watchlist and get instant notifications when stocks hit your target prices - never miss an opportunity.',
+      techTitle: 'Built with Cutting-Edge Technology',
+      apiKeys: '12 API Keys',
+      apiKeysDesc: 'Multi-provider system with automatic failover ensures 99.9% uptime',
+      realtimeData: 'Real-Time Data',
+      realtimeDataDesc: 'Live price updates every 30 seconds from Alpha Vantage, Finnhub, and FMP',
+      smartCaching: 'Smart Caching',
+      smartCachingDesc: '10-minute LRU cache reduces API calls and delivers lightning-fast responses',
+      ctaTitle: 'Ready to Get Started?',
+      ctaSubtitle: 'Join thousands of investors making smarter decisions with AI-Capital',
+      startFree: 'Start Free Today',
+      getStarted: 'Get Started'
     }
   },
   ar: {
@@ -525,6 +550,31 @@ const translations = {
         about: 'حول',
         copyright: 'جميع الحقوق محفوظة.'
       }
+    },
+    about: {
+      title: 'حول AI-Capital',
+      subtitle: 'إدارة المحافظ المهنية المدعومة بالذكاء الاصطناعي وبيانات السوق في الوقت الفعلي.',
+      missionTitle: 'مهمتنا',
+      missionText: 'نحن نؤمن بأن أدوات إدارة المحافظ المتطورة يجب أن تكون متاحة للجميع، وليس فقط للمستثمرين المؤسسيين. يجمع AI-Capital بين الذكاء الاصطناعي المتطور وبيانات السوق في الوقت الفعلي لمساعدتك على اتخاذ قرارات استثمارية أكثر ذكاءً.',
+      realtimeTitle: 'التحليلات في الوقت الفعلي',
+      realtimeDesc: 'الوصول إلى التحليلات ذات المستوى المهني مع مقاييس الأداء لمدة 7/30/60/90 يومًا، وتحليل التقلبات، ونسب شارب المحسوبة من بيانات السوق المباشرة.',
+      aiTitle: 'القرارات المدعومة بالذكاء الاصطناعي',
+      aiDesc: 'يقوم محرك القرار لدينا بتحليل 90 يومًا من البيانات التاريخية واتجاهات السوق والتقلبات لتقديم توصيات قابلة للتنفيذ للشراء/الاحتفاظ/البيع لكل سهم.',
+      riskTitle: 'إدارة المخاطر',
+      riskDesc: 'تتبع تلقائي لوقف الخسارة وجني الأرباح، ومراقبة تقلبات المحفظة، والعوائد المعدلة حسب المخاطر لمساعدتك على حماية استثماراتك.',
+      alertsTitle: 'تنبيهات الأسعار',
+      alertsDesc: 'قم بتعيين تنبيهات أسعار مخصصة على قائمة المراقبة الخاصة بك واحصل على إشعارات فورية عندما تصل الأسهم إلى أسعارك المستهدفة - لا تفوت أي فرصة.',
+      techTitle: 'مبني بتكنولوجيا متطورة',
+      apiKeys: '12 مفتاح API',
+      apiKeysDesc: 'نظام متعدد المزودين مع التبديل التلقائي يضمن 99.9٪ من وقت التشغيل',
+      realtimeData: 'بيانات في الوقت الفعلي',
+      realtimeDataDesc: 'تحديثات الأسعار المباشرة كل 30 ثانية من Alpha Vantage و Finnhub و FMP',
+      smartCaching: 'التخزين المؤقت الذكي',
+      smartCachingDesc: 'ذاكرة التخزين المؤقت LRU لمدة 10 دقائق تقلل من مكالمات API وتقدم استجابات سريعة للغاية',
+      ctaTitle: 'مستعد للبدء؟',
+      ctaSubtitle: 'انضم إلى آلاف المستثمرين الذين يتخذون قرارات أكثر ذكاءً مع AI-Capital',
+      startFree: 'ابدأ مجانًا اليوم',
+      getStarted: 'ابدأ'
     }
   },
   he: {
@@ -761,6 +811,31 @@ const translations = {
         about: 'אודות',
         copyright: 'כל הזכויות שמורות.'
       }
+    },
+    about: {
+      title: 'אודות AI-Capital',
+      subtitle: 'ניהול תיקים מקצועי המופעל על ידי בינה מלאכותית ונתוני שוק בזמן אמת.',
+      missionTitle: 'המשימה שלנו',
+      missionText: 'אנחנו מאמינים שכלי ניהול תיקים מתוחכמים צריכים להיות נגישים לכולם, לא רק למשקיעים מוסדיים. AI-Capital משלב בינה מלאכותית מתקדמת עם נתוני שוק בזמן אמת כדי לעזור לך לקבל החלטות השקעה חכמות יותר.',
+      realtimeTitle: 'אנליטיקה בזמן אמת',
+      realtimeDesc: 'גישה לאנליטיקה ברמה מקצועית עם מדדי ביצועים של 7/30/60/90 ימים, ניתוח תנודתיות ויחסי שארפ המחושבים מנתוני שוק חיים.',
+      aiTitle: 'החלטות מבוססות בינה מלאכותית',
+      aiDesc: 'מנוע ההחלטות שלנו מנתח 90 ימים של נתונים היסטוריים, מגמות שוק ותנודתיות כדי לספק המלצות פעולה לקנייה/החזקה/מכירה עבור כל מניה.',
+      riskTitle: 'ניהול סיכונים',
+      riskDesc: 'מעקב אוטומטי אחר סטופ-לוס וטייק-פרופיט, ניטור תנודתיות תיק ותשואות מותאמות סיכון עוזרים לך להגן על ההשקעות שלך.',
+      alertsTitle: 'התראות מחירים',
+      alertsDesc: 'הגדר התראות מחירים מותאמות אישית ברשימת המעקב שלך וקבל התראות מיידיות כאשר מניות מגיעות למחירי היעד שלך - לעולם אל תפספס הזדמנות.',
+      techTitle: 'נבנה עם טכנולוגיה מתקדמת',
+      apiKeys: '12 מפתחות API',
+      apiKeysDesc: 'מערכת רב-ספקים עם כשל אוטומטי מבטיחה זמינות של 99.9%',
+      realtimeData: 'נתונים בזמן אמת',
+      realtimeDataDesc: 'עדכוני מחירים חיים כל 30 שניות מ-Alpha Vantage, Finnhub ו-FMP',
+      smartCaching: 'מטמון חכם',
+      smartCachingDesc: 'מטמון LRU של 10 דקות מפחית קריאות API ומספק תגובות מהירות במיוחד',
+      ctaTitle: 'מוכן להתחיל?',
+      ctaSubtitle: 'הצטרף לאלפי משקיעים המקבלים החלטות חכמות יותר עם AI-Capital',
+      startFree: 'התחל בחינם היום',
+      getStarted: 'התחל'
     }
   }
 };
@@ -773,7 +848,8 @@ export type TranslationKeys =
   | `settings.${keyof typeof translations.en.settings}`
   | `navigation.${keyof typeof translations.en.navigation}`
   | `portfolio.${keyof typeof translations.en.portfolio}`
-  | `landing.${keyof typeof translations.en.landing}`;
+  | `landing.${keyof typeof translations.en.landing}`
+  | `about.${keyof typeof translations.en.about}`;
 
 interface LanguageContextType {
   locale: Locale;
