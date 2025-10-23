@@ -223,19 +223,22 @@ class GoogleFinanceFormulasService {
       // 🚀 MAJOR'S SMART ENGINE - Try ALL APIs with ALL keys aggressively
       let metrics: StockMetrics | null = null;
       
-      // If no API keys available, try free Yahoo Finance API first, then fallback data
-      if (this.alphaVantageKeys.length === 0 && this.finnhubApiKeys.length === 0 && this.fmpApiKeys.length === 0) {
-        loggerService.warn(`⚠️ [NO API KEYS] No API keys available, trying free Yahoo Finance API for ${symbol}`);
-        try {
-          const yahooData = await this.fetchFromYahooFinance(symbol);
-          if (yahooData) {
-            loggerService.info(`✅ [YAHOO FINANCE] Successfully fetched ${symbol} from Yahoo Finance`);
-            return yahooData;
-          }
-        } catch (error) {
-          loggerService.warn(`⚠️ [YAHOO FINANCE] Failed to fetch ${symbol} from Yahoo Finance:`, error);
+      // Always try Yahoo Finance API first (free and reliable)
+      loggerService.info(`🔍 [YAHOO FINANCE] Trying Yahoo Finance API for ${symbol} (free and reliable)`);
+      try {
+        const yahooData = await this.fetchFromYahooFinance(symbol);
+        if (yahooData) {
+          loggerService.info(`✅ [YAHOO FINANCE] Successfully fetched ${symbol} from Yahoo Finance`);
+          this.cache.set(symbol, yahooData);
+          return yahooData;
         }
-        loggerService.warn(`⚠️ [FALLBACK] Using generated data for ${symbol}`);
+      } catch (error) {
+        loggerService.warn(`⚠️ [YAHOO FINANCE] Failed to fetch ${symbol} from Yahoo Finance:`, error);
+      }
+      
+      // If no API keys available, use fallback data
+      if (this.alphaVantageKeys.length === 0 && this.finnhubApiKeys.length === 0 && this.fmpApiKeys.length === 0) {
+        loggerService.warn(`⚠️ [NO API KEYS] No paid API keys available, using fallback data for ${symbol}`);
         return this.generateRealisticStockData(symbol);
       }
       

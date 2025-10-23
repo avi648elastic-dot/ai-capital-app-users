@@ -15,6 +15,25 @@ import { googleFinanceFormulasService } from '../services/googleFinanceFormulasS
 
 const router = express.Router();
 
+// Test endpoint to debug stock price fetching
+router.get('/test-price/:ticker', authenticateToken, async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    loggerService.info(`🧪 [TEST] Testing price fetch for ${ticker}`);
+    
+    const metrics = await googleFinanceFormulasService.getStockMetrics(ticker);
+    
+    res.json({
+      ticker,
+      metrics,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    loggerService.error(`❌ [TEST] Error testing price fetch for ${req.params.ticker}`, { error });
+    res.status(500).json({ error: 'Failed to test price fetch' });
+  }
+});
+
 // Get user's watchlist
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -29,7 +48,14 @@ router.get('/', authenticateToken, async (req, res) => {
       watchlist.map(async (item) => {
         try {
           // Fetch current price from Google Finance service
+          loggerService.info(`🔍 [WATCHLIST] Fetching price for ${item.ticker}`);
           const metrics = await googleFinanceFormulasService.getStockMetrics(item.ticker);
+          
+          loggerService.info(`📊 [WATCHLIST] ${item.ticker} metrics:`, {
+            current: metrics?.current,
+            dataSource: metrics?.dataSource,
+            symbol: metrics?.symbol
+          });
           
           // Handle fallback data better - if current is 0 but we have fallback data, use a reasonable price
           let currentPrice = metrics?.current || item.lastPrice || 0;
