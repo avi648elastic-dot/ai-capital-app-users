@@ -38,6 +38,12 @@ class RealtimePriceServiceImpl implements RealtimePriceService {
   }
 
   connect(): void {
+    // DISABLE WebSocket connection - backend doesn't support it yet
+    // Use polling fallback instead
+    console.log('🔌 [REALTIME] WebSocket disabled - using polling fallback');
+    this.fallbackToPolling();
+    return;
+
     if (this.socket?.connected) {
       return;
     }
