@@ -15,7 +15,8 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
     isOpen: boolean;
     message: string;
     timeUntil: string;
-  }>({ isOpen: false, message: '', timeUntil: '' });
+    progressPercentage: number;
+  }>({ isOpen: false, message: '', timeUntil: '', progressPercentage: 0 });
 
   // Update time every second
   useEffect(() => {
@@ -48,7 +49,8 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
         return {
           isOpen: false,
           message: `${t('dashboard.marketClosed')} - ${t('common.weekend')}`,
-          timeUntil: `${t('dashboard.opensIn')} ${daysUntilMonday} ${t('common.day')}${daysUntilMonday > 1 ? 's' : ''}`
+          timeUntil: `${t('dashboard.opensIn')} ${daysUntilMonday} ${t('common.day')}${daysUntilMonday > 1 ? 's' : ''}`,
+          progressPercentage: 0 // Stay at left edge when closed
         };
       }
 
@@ -58,10 +60,16 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
         const hoursUntilClose = Math.floor(minutesUntilClose / 60);
         const minsUntilClose = minutesUntilClose % 60;
         
+        // Calculate progress percentage (0% = just opened, 100% = about to close)
+        const totalMarketMinutes = marketClose - marketOpen; // 6.5 hours = 390 minutes
+        const elapsedMinutes = currentMinutes - marketOpen;
+        const progressPercentage = Math.min(100, Math.max(0, (elapsedMinutes / totalMarketMinutes) * 100));
+        
         return {
           isOpen: true,
           message: t('dashboard.marketOpen'),
-          timeUntil: `${t('dashboard.closesIn')} ${hoursUntilClose}h ${minsUntilClose}m`
+          timeUntil: `${t('dashboard.closesIn')} ${hoursUntilClose}h ${minsUntilClose}m`,
+          progressPercentage
         };
       }
 
@@ -71,10 +79,16 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
         const hoursUntilOpen = Math.floor(minutesUntilOpen / 60);
         const minsUntilOpen = minutesUntilOpen % 60;
         
+        // Calculate progress percentage for pre-market (0% = midnight, 100% = market opens)
+        const totalPreMarketMinutes = marketOpen; // 9.5 hours = 570 minutes from midnight
+        const elapsedMinutes = currentMinutes;
+        const progressPercentage = Math.min(100, Math.max(0, (elapsedMinutes / totalPreMarketMinutes) * 100));
+        
         return {
           isOpen: false,
           message: `${t('dashboard.marketClosed')} - ${t('common.preMarket')}`,
-          timeUntil: `${t('dashboard.opensIn')} ${hoursUntilOpen}h ${minsUntilOpen}m`
+          timeUntil: `${t('dashboard.opensIn')} ${hoursUntilOpen}h ${minsUntilOpen}m`,
+          progressPercentage
         };
       }
 
@@ -85,7 +99,8 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
       return {
         isOpen: false,
         message: `${t('dashboard.marketClosed')} - ${t('common.afterHours')}`,
-        timeUntil: `${t('dashboard.opensIn')} ${hoursUntilNextOpen}h`
+        timeUntil: `${t('dashboard.opensIn')} ${hoursUntilNextOpen}h`,
+        progressPercentage: 0 // Stay at left edge when closed
       };
     };
 
@@ -138,15 +153,23 @@ export default function MarketStatusBar({ userTimezone }: MarketStatusBarProps) 
             {/* Status Line with Businessman */}
             <div className="relative flex items-center">
               {/* The Line */}
-              <div className={`h-1 w-48 md:w-64 rounded-full ${
+              <div className={`h-1 w-48 md:w-64 rounded-full relative ${
                 marketStatus.isOpen 
                   ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
                   : 'bg-gradient-to-r from-red-500 to-orange-500'
               }`}>
                 {/* Professional Businessman Indicator */}
-                <div className={`absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ${
-                  marketStatus.isOpen ? 'left-0' : 'left-1/2 -translate-x-1/2'
-                }`}>
+                <div 
+                  className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ease-out"
+                  style={{
+                    left: marketStatus.isOpen 
+                      ? `${marketStatus.progressPercentage}%` 
+                      : marketStatus.progressPercentage > 0 
+                        ? `${marketStatus.progressPercentage}%` 
+                        : '0%',
+                    transform: 'translateY(-50%) translateX(-50%)'
+                  }}
+                >
                   {marketStatus.isOpen ? (
                     // Active businessman - walking/moving during market hours
                     <div className="relative w-8 h-8 flex items-center justify-center">
