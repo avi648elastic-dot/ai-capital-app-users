@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   TrendingUp, 
   BarChart3, 
@@ -38,6 +39,7 @@ import {
 export default function LandingPage() {
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
+  const { t, isRTL, locale, setLocale } = useLanguage();
 
   useEffect(() => {
     setIsVisible(true);
@@ -48,43 +50,43 @@ export default function LandingPage() {
   const features = [
     {
       icon: <Brain className="w-8 h-8" />,
-      title: "AI-Powered Portfolio Management",
-      description: "Advanced artificial intelligence analyzes market trends and builds optimized portfolios automatically",
+      title: t('landing.features.aiPortfolio.title'),
+      description: t('landing.features.aiPortfolio.description'),
       status: "active",
       benefits: ["Smart stock selection", "Risk assessment", "Auto-rebalancing", "Performance optimization"]
     },
     {
       icon: <Eye className="w-8 h-8" />,
-      title: "Real-Time Watchlist & Tracking",
-      description: "Monitor your favorite stocks with instant price alerts and market updates",
+      title: t('landing.features.watchlist.title'),
+      description: t('landing.features.watchlist.description'),
       status: "active",
       benefits: ["Live price tracking", "Custom alerts", "Market notifications", "Portfolio monitoring"]
     },
     {
       icon: <BarChart3 className="w-8 h-8" />,
-      title: "Advanced Analytics Dashboard",
-      description: "Comprehensive analytics with performance metrics, risk analysis, and market insights",
+      title: t('landing.features.analytics.title'),
+      description: t('landing.features.analytics.description'),
       status: "active",
       benefits: ["Performance analytics", "Risk metrics", "Market insights", "Historical data"]
     },
     {
       icon: <Target className="w-8 h-8" />,
-      title: "Expert Portfolio Strategies",
-      description: "Access proven investment strategies from financial experts and AI algorithms",
+      title: t('landing.features.expert.title'),
+      description: t('landing.features.expert.description'),
       status: "active",
       benefits: ["Expert strategies", "AI recommendations", "Backtesting", "Strategy optimization"]
     },
     {
       icon: <Bell className="w-8 h-8" />,
-      title: "Smart Notifications & Alerts",
-      description: "Never miss important market movements with intelligent price and news alerts",
+      title: t('landing.features.notifications.title'),
+      description: t('landing.features.notifications.description'),
       status: "active",
       benefits: ["Price alerts", "News notifications", "Market updates", "Custom triggers"]
     },
     {
       icon: <Shield className="w-8 h-8" />,
-      title: "Risk Management Tools",
-      description: "Advanced risk assessment and portfolio protection features",
+      title: t('landing.features.risk.title'),
+      description: t('landing.features.risk.description'),
       status: "active",
       benefits: ["Risk scoring", "Stop-loss automation", "Portfolio protection", "Volatility analysis"]
     }
@@ -132,9 +134,9 @@ export default function LandingPage() {
 
   const subscriptionTiers = [
     {
-      name: "Free",
+      name: t('landing.pricing.free'),
       price: "$0",
-      period: "forever",
+      period: t('landing.pricing.forever'),
       icon: <Users className="w-8 h-8" />,
       features: [
         "Up to 5 stocks in watchlist",
@@ -149,9 +151,9 @@ export default function LandingPage() {
       }
     },
     {
-      name: "Premium",
+      name: t('landing.pricing.premium'),
       price: "$9.99",
-      period: "month",
+      period: t('landing.pricing.month'),
       icon: <Crown className="w-8 h-8" />,
       features: [
         "Up to 15 stocks per portfolio",
@@ -168,9 +170,9 @@ export default function LandingPage() {
       popular: true
     },
     {
-      name: "Premium+",
+      name: t('landing.pricing.premiumPlus'),
       price: "$19.99",
-      period: "month",
+      period: t('landing.pricing.month'),
       icon: <Rocket className="w-8 h-8" />,
       features: [
         "Unlimited stocks",
@@ -224,6 +226,18 @@ export default function LandingPage() {
               <span className="text-2xl font-bold text-white">AiCapital</span>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Language Switcher */}
+              <div className="relative">
+                <select
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as 'en' | 'ar' | 'he')}
+                  className="bg-slate-800 text-slate-300 border border-slate-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="en">English</option>
+                  <option value="ar">العربية</option>
+                  <option value="he">עברית</option>
+                </select>
+              </div>
               <button
                 onClick={() => router.push('/login')}
                 className="px-4 py-2 text-blue-400 hover:text-blue-300 transition-colors"
@@ -246,25 +260,24 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto text-center">
           <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6">
-              The Future of
-              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"> Investment</span>
+              {t('landing.hero.title')}
             </h1>
             <p className="text-xl sm:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto">
-              AI-powered portfolio management, real-time analytics, and expert strategies in one comprehensive platform
+              {t('landing.hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={() => router.push('/signup')}
                 className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-2xl"
               >
-                Start Your Journey
+                {t('landing.hero.startJourney')}
                 <ArrowRight className="w-5 h-5 ml-2 inline" />
               </button>
               <button
                 onClick={() => router.push('/demo')}
                 className="px-8 py-4 border-2 border-blue-400 text-blue-400 text-lg font-semibold rounded-xl hover:bg-blue-400 hover:text-white transition-all"
               >
-                View Demo
+                {t('landing.hero.viewDemo')}
               </button>
             </div>
           </div>
@@ -276,10 +289,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-              Why Choose AiCapital?
+              {t('landing.features.title')}
             </h2>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              We combine cutting-edge AI technology with proven investment strategies to give you an edge in the market
+              {t('landing.features.subtitle')}
             </p>
           </div>
 
@@ -386,10 +399,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-              Choose Your Plan
+              {t('landing.pricing.title')}
             </h2>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              Start free and upgrade as you grow. All plans include core features with additional benefits at higher tiers
+              {t('landing.pricing.subtitle')}
             </p>
           </div>
 
@@ -425,14 +438,14 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => tier.name === 'Free' ? router.push('/signup') : router.push('/upgrade')}
+                  onClick={() => tier.name === t('landing.pricing.free') ? router.push('/signup') : router.push('/upgrade')}
                   className={`w-full py-3 px-6 rounded-lg font-semibold transition-all ${
                     tier.popular
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
                       : 'border-2 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white'
                   }`}
                 >
-                  {tier.name === 'Free' ? 'Get Started Free' : 'Upgrade Now'}
+                  {tier.name === t('landing.pricing.free') ? t('landing.pricing.getStarted') : t('landing.pricing.upgradeNow')}
                 </button>
               </div>
             ))}
@@ -444,23 +457,23 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
-            Ready to Transform Your Investing?
+            {t('landing.cta.title')}
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Join thousands of investors who are already using AI to optimize their portfolios and maximize returns
+            {t('landing.cta.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => router.push('/signup')}
               className="px-8 py-4 bg-white text-blue-600 text-lg font-semibold rounded-xl hover:bg-blue-50 transition-all transform hover:scale-105"
             >
-              Start Free
+              {t('landing.cta.startFree')}
             </button>
             <button
               onClick={() => router.push('/demo')}
               className="px-8 py-4 border-2 border-white text-white text-lg font-semibold rounded-xl hover:bg-white hover:text-blue-600 transition-all"
             >
-              View Demo
+              {t('landing.cta.viewDemo')}
             </button>
           </div>
         </div>
@@ -482,35 +495,35 @@ export default function LandingPage() {
               </p>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-4">Features</h4>
+              <h4 className="text-white font-semibold mb-4">{t('landing.footer.features')}</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Portfolio Management</button></li>
-                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Analytics Dashboard</button></li>
-                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Watchlist Tracking</button></li>
-                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Expert Strategies</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">{t('landing.footer.portfolioManagement')}</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">{t('landing.footer.analyticsDashboard')}</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">{t('landing.footer.watchlistTracking')}</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">{t('landing.footer.expertStrategies')}</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-4">Support</h4>
+              <h4 className="text-white font-semibold mb-4">{t('landing.footer.support')}</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Help Center</button></li>
-                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Contact Us</button></li>
-                <li><button onClick={() => router.push('/pricing')} className="hover:text-white transition-colors">Pricing</button></li>
-                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Demo</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">{t('landing.footer.helpCenter')}</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">{t('landing.footer.contactUs')}</button></li>
+                <li><button onClick={() => router.push('/pricing')} className="hover:text-white transition-colors">{t('landing.footer.pricing')}</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">{t('landing.footer.demo')}</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
+              <h4 className="text-white font-semibold mb-4">{t('landing.footer.legal')}</h4>
               <ul className="space-y-2 text-slate-400">
-                <li><button onClick={() => router.push('/privacy')} className="hover:text-white transition-colors">Privacy Policy</button></li>
-                <li><button onClick={() => router.push('/legal/terms')} className="hover:text-white transition-colors">Terms of Service</button></li>
-                <li><button onClick={() => router.push('/privacy')} className="hover:text-white transition-colors">Cookie Policy</button></li>
-                <li><button onClick={() => router.push('/about')} className="hover:text-white transition-colors">About</button></li>
+                <li><button onClick={() => router.push('/privacy')} className="hover:text-white transition-colors">{t('landing.footer.privacyPolicy')}</button></li>
+                <li><button onClick={() => router.push('/legal/terms')} className="hover:text-white transition-colors">{t('landing.footer.termsOfService')}</button></li>
+                <li><button onClick={() => router.push('/privacy')} className="hover:text-white transition-colors">{t('landing.footer.cookiePolicy')}</button></li>
+                <li><button onClick={() => router.push('/about')} className="hover:text-white transition-colors">{t('landing.footer.about')}</button></li>
               </ul>
             </div>
           </div>
           <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
-            <p>&copy; 2024 AiCapital. All rights reserved.</p>
+            <p>&copy; 2024 AiCapital. {t('landing.footer.copyright')}</p>
           </div>
         </div>
       </footer>

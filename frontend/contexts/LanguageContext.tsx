@@ -187,6 +187,108 @@ const translations = {
       addStocksPrompt: 'Add some stocks to get started with AI-powered portfolio management',
       editStockDetails: 'Edit stock details',
       deleteStock: 'Delete stock'
+    },
+    landing: {
+      hero: {
+        title: 'The Future of Investment',
+        subtitle: 'AI-powered portfolio management, real-time analytics, and expert strategies in one comprehensive platform',
+        startJourney: 'Start Your Journey',
+        viewDemo: 'View Demo'
+      },
+      features: {
+        title: 'Why Choose AiCapital?',
+        subtitle: 'We combine cutting-edge AI technology with proven investment strategies to give you an edge in the market',
+        aiPortfolio: {
+          title: 'AI-Powered Portfolio Management',
+          description: 'Advanced artificial intelligence analyzes market trends and builds optimized portfolios automatically'
+        },
+        watchlist: {
+          title: 'Real-Time Watchlist & Tracking',
+          description: 'Monitor your favorite stocks with instant price alerts and market updates'
+        },
+        analytics: {
+          title: 'Advanced Analytics Dashboard',
+          description: 'Comprehensive analytics with performance metrics, risk analysis, and market insights'
+        },
+        expert: {
+          title: 'Expert Portfolio Strategies',
+          description: 'Access proven investment strategies from financial experts and AI algorithms'
+        },
+        notifications: {
+          title: 'Smart Notifications & Alerts',
+          description: 'Never miss important market movements with intelligent price and news alerts'
+        },
+        risk: {
+          title: 'Risk Management Tools',
+          description: 'Advanced risk assessment and portfolio protection features'
+        }
+      },
+      analytics: {
+        title: 'Comprehensive Analytics Suite',
+        subtitle: 'Deep insights and analysis tools that go beyond basic charts and reports',
+        performance: 'Performance Analytics',
+        portfolio: 'Portfolio Analysis',
+        watchlist: 'Watchlist Management',
+        risk: 'Risk Management',
+        reports: 'Market Reports',
+        transactions: 'Transaction History'
+      },
+      competitive: {
+        title: 'Why We\'re Different',
+        subtitle: 'While competitors show basic charts and reports, we provide comprehensive AI-powered investment intelligence',
+        ai: {
+          title: 'AI-Powered Intelligence',
+          description: 'Unlike competitors who rely on basic charts, we use advanced AI to analyze market patterns and optimize your investments'
+        },
+        analytics: {
+          title: 'Comprehensive Analytics',
+          description: 'Most platforms show basic reports. We provide deep analytics, risk management, and actionable insights'
+        },
+        expert: {
+          title: 'Expert Strategies',
+          description: 'Access proven investment strategies from financial experts, not just generic recommendations'
+        },
+        realtime: {
+          title: 'Real-Time Everything',
+          description: 'Live price tracking, instant alerts, and real-time portfolio updates - not delayed or limited data'
+        }
+      },
+      pricing: {
+        title: 'Choose Your Plan',
+        subtitle: 'Start free and upgrade as you grow. All plans include core features with additional benefits at higher tiers',
+        free: 'Free',
+        premium: 'Premium',
+        premiumPlus: 'Premium+',
+        forever: 'forever',
+        month: 'month',
+        getStarted: 'Get Started Free',
+        upgradeNow: 'Upgrade Now',
+        mostPopular: 'Most Popular'
+      },
+      cta: {
+        title: 'Ready to Transform Your Investing?',
+        subtitle: 'Join thousands of investors who are already using AI to optimize their portfolios and maximize returns',
+        startFree: 'Start Free',
+        viewDemo: 'View Demo'
+      },
+      footer: {
+        features: 'Features',
+        support: 'Support',
+        legal: 'Legal',
+        portfolioManagement: 'Portfolio Management',
+        analyticsDashboard: 'Analytics Dashboard',
+        watchlistTracking: 'Watchlist Tracking',
+        expertStrategies: 'Expert Strategies',
+        helpCenter: 'Help Center',
+        contactUs: 'Contact Us',
+        pricing: 'Pricing',
+        demo: 'Demo',
+        privacyPolicy: 'Privacy Policy',
+        termsOfService: 'Terms of Service',
+        cookiePolicy: 'Cookie Policy',
+        about: 'About',
+        copyright: 'All rights reserved.'
+      }
     }
   },
   ar: {
@@ -321,6 +423,108 @@ const translations = {
       addStocksPrompt: 'أضف بعض الأسهم للبدء في إدارة المحفظة بالذكاء الاصطناعي',
       editStockDetails: 'تعديل تفاصيل السهم',
       deleteStock: 'حذف السهم'
+    },
+    landing: {
+      hero: {
+        title: 'مستقبل الاستثمار',
+        subtitle: 'إدارة المحافظ المدعومة بالذكاء الاصطناعي، والتحليلات في الوقت الفعلي، والاستراتيجيات المتخصصة في منصة شاملة واحدة',
+        startJourney: 'ابدأ رحلتك',
+        viewDemo: 'عرض العرض التوضيحي'
+      },
+      features: {
+        title: 'لماذا تختار AiCapital؟',
+        subtitle: 'نحن نجمع بين تكنولوجيا الذكاء الاصطناعي المتطورة واستراتيجيات الاستثمار المجربة لمنحك ميزة في السوق',
+        aiPortfolio: {
+          title: 'إدارة المحافظ المدعومة بالذكاء الاصطناعي',
+          description: 'الذكاء الاصطناعي المتقدم يحلل اتجاهات السوق ويبني محافظ محسنة تلقائياً'
+        },
+        watchlist: {
+          title: 'قائمة المراقبة والتتبع في الوقت الفعلي',
+          description: 'راقب أسهمك المفضلة مع تنبيهات الأسعار الفورية وتحديثات السوق'
+        },
+        analytics: {
+          title: 'لوحة التحليلات المتقدمة',
+          description: 'تحليلات شاملة مع مقاييس الأداء وتحليل المخاطر ورؤى السوق'
+        },
+        expert: {
+          title: 'استراتيجيات المحافظ المتخصصة',
+          description: 'الوصول إلى استراتيجيات الاستثمار المجربة من الخبراء الماليين وخوارزميات الذكاء الاصطناعي'
+        },
+        notifications: {
+          title: 'التنبيهات والتنبيهات الذكية',
+          description: 'لا تفوت حركات السوق المهمة مع تنبيهات الأسعار والأخبار الذكية'
+        },
+        risk: {
+          title: 'أدوات إدارة المخاطر',
+          description: 'تقييم المخاطر المتقدم وميزات حماية المحفظة'
+        }
+      },
+      analytics: {
+        title: 'مجموعة التحليلات الشاملة',
+        subtitle: 'رؤى عميقة وأدوات تحليل تتجاوز المخططات والتقارير الأساسية',
+        performance: 'تحليلات الأداء',
+        portfolio: 'تحليل المحفظة',
+        watchlist: 'إدارة قائمة المراقبة',
+        risk: 'إدارة المخاطر',
+        reports: 'تقارير السوق',
+        transactions: 'تاريخ المعاملات'
+      },
+      competitive: {
+        title: 'لماذا نحن مختلفون',
+        subtitle: 'بينما يظهر المنافسون مخططات وتقارير أساسية، نحن نقدم ذكاء استثماري شامل مدعوم بالذكاء الاصطناعي',
+        ai: {
+          title: 'الذكاء المدعوم بالذكاء الاصطناعي',
+          description: 'على عكس المنافسين الذين يعتمدون على المخططات الأساسية، نحن نستخدم الذكاء الاصطناعي المتقدم لتحليل أنماط السوق وتحسين استثماراتك'
+        },
+        analytics: {
+          title: 'التحليلات الشاملة',
+          description: 'معظم المنصات تظهر تقارير أساسية. نحن نقدم تحليلات عميقة وإدارة مخاطر ورؤى قابلة للتنفيذ'
+        },
+        expert: {
+          title: 'الاستراتيجيات المتخصصة',
+          description: 'الوصول إلى استراتيجيات الاستثمار المجربة من الخبراء الماليين، وليس مجرد توصيات عامة'
+        },
+        realtime: {
+          title: 'كل شيء في الوقت الفعلي',
+          description: 'تتبع الأسعار المباشر والتنبيهات الفورية وتحديثات المحفظة في الوقت الفعلي - وليس بيانات متأخرة أو محدودة'
+        }
+      },
+      pricing: {
+        title: 'اختر خطتك',
+        subtitle: 'ابدأ مجاناً وارتقِ مع نموك. جميع الخطط تشمل الميزات الأساسية مع فوائد إضافية في المستويات الأعلى',
+        free: 'مجاني',
+        premium: 'متميز',
+        premiumPlus: 'متميز+',
+        forever: 'للأبد',
+        month: 'شهر',
+        getStarted: 'ابدأ مجاناً',
+        upgradeNow: 'ارتق الآن',
+        mostPopular: 'الأكثر شعبية'
+      },
+      cta: {
+        title: 'مستعد لتحويل استثماراتك؟',
+        subtitle: 'انضم إلى آلاف المستثمرين الذين يستخدمون بالفعل الذكاء الاصطناعي لتحسين محافظهم وتعظيم العوائد',
+        startFree: 'ابدأ مجاناً',
+        viewDemo: 'عرض العرض التوضيحي'
+      },
+      footer: {
+        features: 'الميزات',
+        support: 'الدعم',
+        legal: 'قانوني',
+        portfolioManagement: 'إدارة المحافظ',
+        analyticsDashboard: 'لوحة التحليلات',
+        watchlistTracking: 'تتبع قائمة المراقبة',
+        expertStrategies: 'الاستراتيجيات المتخصصة',
+        helpCenter: 'مركز المساعدة',
+        contactUs: 'اتصل بنا',
+        pricing: 'التسعير',
+        demo: 'العرض التوضيحي',
+        privacyPolicy: 'سياسة الخصوصية',
+        termsOfService: 'شروط الخدمة',
+        cookiePolicy: 'سياسة ملفات تعريف الارتباط',
+        about: 'حول',
+        copyright: 'جميع الحقوق محفوظة.'
+      }
     }
   },
   he: {
@@ -455,6 +659,108 @@ const translations = {
       addStocksPrompt: 'הוסף מניות כדי להתחיל בניהול תיק מבוסס בינה מלאכותית',
       editStockDetails: 'ערוך פרטי מניה',
       deleteStock: 'מחק מניה'
+    },
+    landing: {
+      hero: {
+        title: 'עתיד ההשקעות',
+        subtitle: 'ניהול תיקים מבוסס בינה מלאכותית, אנליטיקה בזמן אמת ואסטרטגיות מומחים בפלטפורמה מקיפה אחת',
+        startJourney: 'התחל את המסע שלך',
+        viewDemo: 'צפה בהדגמה'
+      },
+      features: {
+        title: 'למה לבחור ב-AiCapital?',
+        subtitle: 'אנחנו משלבים טכנולוגיית בינה מלאכותית מתקדמת עם אסטרטגיות השקעה מוכחות כדי לתת לך יתרון בשוק',
+        aiPortfolio: {
+          title: 'ניהול תיקים מבוסס בינה מלאכותית',
+          description: 'בינה מלאכותית מתקדמת מנתחת מגמות שוק ובונה תיקים מותאמים אוטומטית'
+        },
+        watchlist: {
+          title: 'רשימת מעקב ומעקב בזמן אמת',
+          description: 'עקוב אחר המניות האהובות עליך עם התראות מחירים מיידיות ועדכוני שוק'
+        },
+        analytics: {
+          title: 'לוח אנליטיקה מתקדם',
+          description: 'אנליטיקה מקיפה עם מדדי ביצועים, ניתוח סיכונים ותובנות שוק'
+        },
+        expert: {
+          title: 'אסטרטגיות תיק מומחים',
+          description: 'גישה לאסטרטגיות השקעה מוכחות ממומחים פיננסיים ואלגוריתמי בינה מלאכותית'
+        },
+        notifications: {
+          title: 'התראות והתראות חכמות',
+          description: 'אל תפספס תנועות שוק חשובות עם התראות מחירים וחדשות חכמות'
+        },
+        risk: {
+          title: 'כלי ניהול סיכונים',
+          description: 'הערכת סיכונים מתקדמת ותכונות הגנה על התיק'
+        }
+      },
+      analytics: {
+        title: 'חבילת אנליטיקה מקיפה',
+        subtitle: 'תובנות עמוקות וכלי ניתוח שמעבר לתרשימים ודוחות בסיסיים',
+        performance: 'אנליטיקת ביצועים',
+        portfolio: 'ניתוח תיק',
+        watchlist: 'ניהול רשימת מעקב',
+        risk: 'ניהול סיכונים',
+        reports: 'דוחות שוק',
+        transactions: 'היסטוריית עסקאות'
+      },
+      competitive: {
+        title: 'למה אנחנו שונים',
+        subtitle: 'בעוד המתחרים מציגים תרשימים ודוחות בסיסיים, אנחנו מספקים מודיעין השקעות מקיף מבוסס בינה מלאכותית',
+        ai: {
+          title: 'בינה מלאכותית מתקדמת',
+          description: 'בניגוד למתחרים שמסתמכים על תרשימים בסיסיים, אנחנו משתמשים בבינה מלאכותית מתקדמת לניתוח דפוסי שוק ואופטימיזציה של השקעותיך'
+        },
+        analytics: {
+          title: 'אנליטיקה מקיפה',
+          description: 'רוב הפלטפורמות מציגות דוחות בסיסיים. אנחנו מספקים אנליטיקה עמוקה, ניהול סיכונים ותובנות ברורות'
+        },
+        expert: {
+          title: 'אסטרטגיות מומחים',
+          description: 'גישה לאסטרטגיות השקעה מוכחות ממומחים פיננסיים, לא רק המלצות כלליות'
+        },
+        realtime: {
+          title: 'הכל בזמן אמת',
+          description: 'מעקב מחירים חי, התראות מיידיות ועדכוני תיק בזמן אמת - לא נתונים מושהים או מוגבלים'
+        }
+      },
+      pricing: {
+        title: 'בחר את התוכנית שלך',
+        subtitle: 'התחל בחינם ושדרג ככל שאתה גדל. כל התוכניות כוללות תכונות ליבה עם יתרונות נוספים ברמות הגבוהות יותר',
+        free: 'חינם',
+        premium: 'פרימיום',
+        premiumPlus: 'פרימיום+',
+        forever: 'לנצח',
+        month: 'חודש',
+        getStarted: 'התחל בחינם',
+        upgradeNow: 'שדרג עכשיו',
+        mostPopular: 'הכי פופולרי'
+      },
+      cta: {
+        title: 'מוכן לשנות את ההשקעות שלך?',
+        subtitle: 'הצטרף לאלפי משקיעים שכבר משתמשים בבינה מלאכותית לאופטימיזציה של התיקים שלהם ומקסום התשואות',
+        startFree: 'התחל בחינם',
+        viewDemo: 'צפה בהדגמה'
+      },
+      footer: {
+        features: 'תכונות',
+        support: 'תמיכה',
+        legal: 'משפטי',
+        portfolioManagement: 'ניהול תיקים',
+        analyticsDashboard: 'לוח אנליטיקה',
+        watchlistTracking: 'מעקב רשימת מעקב',
+        expertStrategies: 'אסטרטגיות מומחים',
+        helpCenter: 'מרכז עזרה',
+        contactUs: 'צור קשר',
+        pricing: 'תמחור',
+        demo: 'הדגמה',
+        privacyPolicy: 'מדיניות פרטיות',
+        termsOfService: 'תנאי שירות',
+        cookiePolicy: 'מדיניות עוגיות',
+        about: 'אודות',
+        copyright: 'כל הזכויות שמורות.'
+      }
     }
   }
 };
@@ -466,7 +772,8 @@ export type TranslationKeys =
   | `dashboard.${keyof typeof translations.en.dashboard}`
   | `settings.${keyof typeof translations.en.settings}`
   | `navigation.${keyof typeof translations.en.navigation}`
-  | `portfolio.${keyof typeof translations.en.portfolio}`;
+  | `portfolio.${keyof typeof translations.en.portfolio}`
+  | `landing.${keyof typeof translations.en.landing}`;
 
 interface LanguageContextType {
   locale: Locale;
