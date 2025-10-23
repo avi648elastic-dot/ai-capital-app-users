@@ -47,9 +47,9 @@ export default function TransactionHistoryPage() {
         setTransactionHistory(history);
         
         // Calculate summary stats
-        const totalPnLValue = history.reduce((sum: number, tx: TransactionHistoryItem) => sum + tx.pnl, 0);
+        const totalPnLValue = history.reduce((sum: number, tx: TransactionHistoryItem) => sum + (tx.pnl || 0), 0);
         const totalTradesCount = history.length;
-        const winningTrades = history.filter((tx: TransactionHistoryItem) => tx.pnl > 0).length;
+        const winningTrades = history.filter((tx: TransactionHistoryItem) => (tx.pnl || 0) > 0).length;
         const winRateValue = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
         
         setTotalPnL(totalPnLValue);
@@ -193,15 +193,15 @@ export default function TransactionHistoryPage() {
                         {tx.action}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-300">{tx.shares}</td>
-                    <td className="px-6 py-4 text-slate-300">${tx.entry.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-slate-300">${tx.exit.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-slate-300">{tx.shares || 0}</td>
+                    <td className="px-6 py-4 text-slate-300">${(tx.entry || 0).toFixed(2)}</td>
+                    <td className="px-6 py-4 text-slate-300">${(tx.exit || 0).toFixed(2)}</td>
                     <td className="px-6 py-4">
-                      <div className={`font-semibold ${tx.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {tx.pnl >= 0 ? '+' : ''}${tx.pnl.toFixed(2)}
+                      <div className={`font-semibold ${(tx.pnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(tx.pnl || 0) >= 0 ? '+' : ''}${(tx.pnl || 0).toFixed(2)}
                       </div>
-                      <div className={`text-xs ${tx.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {tx.pnlPercent >= 0 ? '+' : ''}{tx.pnlPercent.toFixed(2)}%
+                      <div className={`text-xs ${(tx.pnlPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {(tx.pnlPercent || 0) >= 0 ? '+' : ''}{(tx.pnlPercent || 0).toFixed(2)}%
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-300">{tx.reason}</td>

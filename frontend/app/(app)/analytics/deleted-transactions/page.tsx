@@ -150,15 +150,15 @@ export default function DeletedTransactionsAuditPage() {
                           {tx.action}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-300">{tx.shares}</td>
-                      <td className="px-4 py-3 text-slate-300">${tx.entry.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-slate-300">${tx.exit.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-slate-300">{tx.shares || 0}</td>
+                      <td className="px-4 py-3 text-slate-300">${(tx.entry || 0).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-slate-300">${(tx.exit || 0).toFixed(2)}</td>
                       <td className="px-4 py-3">
-                        <div className={`font-semibold ${tx.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {tx.pnl >= 0 ? '+' : ''}${tx.pnl.toFixed(2)}
+                        <div className={`font-semibold ${(tx.pnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(tx.pnl || 0) >= 0 ? '+' : ''}${(tx.pnl || 0).toFixed(2)}
                         </div>
-                        <div className={`text-xs ${tx.pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {tx.pnlPercent >= 0 ? '+' : ''}{tx.pnlPercent.toFixed(2)}%
+                        <div className={`text-xs ${(tx.pnlPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(tx.pnlPercent || 0) >= 0 ? '+' : ''}{(tx.pnlPercent || 0).toFixed(2)}%
                         </div>
                       </td>
                       <td className="px-4 py-3 text-slate-300">{tx.reason}</td>
