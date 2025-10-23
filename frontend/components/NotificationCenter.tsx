@@ -25,9 +25,10 @@ interface Notification {
 
 interface NotificationCenterProps {
   userId: string;
+  onNotificationCountChange?: (count: number) => void;
 }
 
-export default function NotificationCenter({ userId }: NotificationCenterProps) {
+export default function NotificationCenter({ userId, onNotificationCountChange }: NotificationCenterProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -39,6 +40,13 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
   }, [userId]);
+
+  // Update parent component with notification count
+  useEffect(() => {
+    if (onNotificationCountChange) {
+      onNotificationCountChange(unreadCount);
+    }
+  }, [unreadCount, onNotificationCountChange]);
 
   const fetchNotifications = async () => {
     try {
@@ -79,7 +87,13 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
             : n
         )
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      const newCount = Math.max(0, unreadCount - 1);
+      setUnreadCount(newCount);
+      
+      // Notify parent component of count change
+      if (onNotificationCountChange) {
+        onNotificationCountChange(newCount);
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -97,6 +111,11 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
         prev.map(n => ({ ...n, readAt: new Date().toISOString(), status: 'read' as const }))
       );
       setUnreadCount(0);
+      
+      // Notify parent component of count change
+      if (onNotificationCountChange) {
+        onNotificationCountChange(0);
+      }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
@@ -117,7 +136,13 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
       
       // Update local state
       setNotifications(prev => prev.filter(n => n._id !== notificationId));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      const newCount = Math.max(0, unreadCount - 1);
+      setUnreadCount(newCount);
+      
+      // Notify parent component of count change
+      if (onNotificationCountChange) {
+        onNotificationCountChange(newCount);
+      }
     } catch (error: any) {
       console.error('Error deleting notification:', error);
       const status = error?.response?.status;
@@ -130,7 +155,13 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
           });
         } catch {}
         setNotifications(prev => prev.filter(n => n._id !== notificationId));
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        const newCount = Math.max(0, unreadCount - 1);
+        setUnreadCount(newCount);
+        
+        // Notify parent component of count change
+        if (onNotificationCountChange) {
+          onNotificationCountChange(newCount);
+        }
       }
     }
   };
@@ -205,11 +236,7 @@ export default function NotificationCenter({ userId }: NotificationCenterProps) 
           className="relative p-2 text-slate-300 hover:text-white transition-colors"
         >
           <Bell className="w-6 h-6" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          )}
+          {/* Badge removed - using Header notification badge instead */}
         </button>
 
         {/* Dropdown - DESKTOP */}

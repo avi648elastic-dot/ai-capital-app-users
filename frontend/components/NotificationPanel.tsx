@@ -205,7 +205,13 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
         setNotifications(prev => 
           prev.map(n => String(n.id) === id ? { ...n, readAt: new Date().toISOString() } : n)
         );
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        const newCount = Math.max(0, unreadCount - 1);
+        setUnreadCount(newCount);
+        
+        // Notify parent component of count change
+        if (onNotificationCountChange) {
+          onNotificationCountChange(newCount);
+        }
         return;
       }
       
@@ -217,7 +223,13 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       setNotifications(prev => 
         prev.map(n => String(n.id) === id ? { ...n, readAt: new Date().toISOString() } : n)
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      const newCount = Math.max(0, unreadCount - 1);
+      setUnreadCount(newCount);
+      
+      // Notify parent component of count change
+      if (onNotificationCountChange) {
+        onNotificationCountChange(newCount);
+      }
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
@@ -225,6 +237,8 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   const markAllAsRead = async () => {
     try {
+      console.log('📖 [NOTIFICATIONS] Marking all notifications as read...');
+      
       // Get token from both localStorage and cookies
       let token = localStorage.getItem('token');
       if (!token) {
@@ -241,7 +255,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       }
       
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-      console.log(`📖 Marking all notifications as read via ${apiUrl}/api/notifications/read-all`);
+      console.log(`📖 [NOTIFICATIONS] Marking all notifications as read via ${apiUrl}/api/notifications/read-all`);
       
       await axios.put(`${apiUrl}/api/notifications/read-all`, {}, {
         headers: { 
@@ -252,19 +266,38 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
         withCredentials: true
       });
       
-      console.log('✅ All notifications marked as read successfully');
+      console.log('✅ [NOTIFICATIONS] All notifications marked as read successfully');
+      
+      // Update local state immediately
       setNotifications(prev => 
         prev.map(n => ({ ...n, readAt: new Date().toISOString() }))
       );
       setUnreadCount(0);
+      
+      // Notify parent component of count change
+      if (onNotificationCountChange) {
+        onNotificationCountChange(0);
+      }
+      
     } catch (error: any) {
-      console.error('❌ Failed to mark all as read:', error);
-      console.error('❌ Error details:', {
+      console.error('❌ [NOTIFICATIONS] Failed to mark all as read:', error);
+      console.error('❌ [NOTIFICATIONS] Error details:', {
         message: error.message,
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data
       });
+      
+      // Even if API fails, update local state for sample notifications
+      setNotifications(prev => 
+        prev.map(n => ({ ...n, readAt: new Date().toISOString() }))
+      );
+      setUnreadCount(0);
+      
+      // Notify parent component of count change
+      if (onNotificationCountChange) {
+        onNotificationCountChange(0);
+      }
     }
   };
 
@@ -287,7 +320,14 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
         }
         
         setNotifications(prev => prev.filter(n => String(n.id) !== id));
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        const newCount = Math.max(0, unreadCount - 1);
+        setUnreadCount(newCount);
+        
+        // Notify parent component of count change
+        if (onNotificationCountChange) {
+          onNotificationCountChange(newCount);
+        }
+        
         console.log('✅ [NOTIFICATIONS] Sample notification deleted permanently:', id);
         return;
       }
@@ -321,7 +361,13 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       
       console.log('✅ Notification deleted successfully:', response.data);
       setNotifications(prev => prev.filter(n => String(n.id) !== id));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      const newCount = Math.max(0, unreadCount - 1);
+      setUnreadCount(newCount);
+      
+      // Notify parent component of count change
+      if (onNotificationCountChange) {
+        onNotificationCountChange(newCount);
+      }
     } catch (error: any) {
       console.error('❌ Failed to delete notification:', error);
       console.error('❌ Error details:', {
@@ -354,7 +400,13 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
         }
         const id = String(notificationId);
         setNotifications(prev => prev.filter(n => String(n.id) !== id));
-        setUnreadCount(prev => Math.max(0, prev - 1));
+        const newCount = Math.max(0, unreadCount - 1);
+        setUnreadCount(newCount);
+        
+        // Notify parent component of count change
+        if (onNotificationCountChange) {
+          onNotificationCountChange(newCount);
+        }
         return;
       }
     }
