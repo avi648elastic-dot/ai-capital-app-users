@@ -10,73 +10,7 @@ import pushNotificationService from '../services/pushNotificationService';
 
 const router = express.Router();
 
-// Handle CORS preflight requests for avatar endpoint
-router.options('/avatar/:filename', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.status(200).end();
-});
-
-// Direct avatar serving endpoint to bypass static file serving issues
-router.get('/avatar/:filename', async (req, res) => {
-  try {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, '../../uploads/avatars', filename);
-    
-    console.log('🔍 [USER] Serving avatar file:', filePath);
-    console.log('🔍 [USER] File exists:', fs.existsSync(filePath));
-    console.log('🔍 [USER] Current working directory:', process.cwd());
-    console.log('🔍 [USER] __dirname:', __dirname);
-    
-    // List files in uploads directory for debugging
-    const uploadsDir = path.join(__dirname, '../../uploads/avatars');
-    if (fs.existsSync(uploadsDir)) {
-      const files = fs.readdirSync(uploadsDir);
-      console.log('📁 [USER] Files in uploads directory:', files);
-    } else {
-      console.log('❌ [USER] Uploads directory does not exist:', uploadsDir);
-    }
-    
-    if (fs.existsSync(filePath)) {
-      // Set proper headers for image serving
-      res.setHeader('Content-Type', 'image/jpeg');
-      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
-      res.setHeader('Access-Control-Allow-Origin', '*'); // Allow CORS
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-      
-      console.log('✅ [USER] Serving file:', filePath);
-      res.sendFile(filePath);
-    } else {
-      console.log('❌ [USER] Avatar file not found:', filePath);
-      res.status(404).json({ error: 'File not found', path: filePath });
-    }
-  } catch (error) {
-    console.error('❌ [USER] Avatar serving error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Test endpoint to check if static file serving is working
-router.get('/test-avatar/:filename', async (req, res) => {
-  try {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, '../../uploads/avatars', filename);
-    
-    console.log('🔍 [USER] Testing avatar file:', filePath);
-    console.log('🔍 [USER] File exists:', fs.existsSync(filePath));
-    
-    if (fs.existsSync(filePath)) {
-      res.sendFile(filePath);
-    } else {
-      res.status(404).json({ error: 'File not found', path: filePath });
-    }
-  } catch (error) {
-    console.error('❌ [USER] Test avatar error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+// Base64 avatar approach - no file serving needed!
 
 // Configure multer for avatar uploads
 const storage = multer.diskStorage({
@@ -125,7 +59,7 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-// Upload avatar endpoint
+// Upload avatar endpoint - BASE64 APPROACH
 router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, res) => {
   try {
     console.log('🔍 [USER] Avatar upload request received');
@@ -147,49 +81,35 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
       originalname: req.file.originalname,
       mimetype: req.file.mimetype,
       size: req.file.size,
-      path: req.file.path,
-      destination: req.file.destination
+      path: req.file.path
     });
-    
-    // Verify file was actually saved
-    if (fs.existsSync(req.file.path)) {
-      console.log('✅ [USER] File successfully saved to:', req.file.path);
-    } else {
-      console.log('❌ [USER] File was not saved to:', req.file.path);
-    }
 
-    // Delete old avatar if exists
-    const user = await User.findById(userId);
-    console.log('👤 [USER] Current user:', user ? { id: user._id, email: user.email, avatar: user.avatar } : 'Not found');
+    // Read file and convert to base64
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const base64String = fileBuffer.toString('base64');
+    const dataUrl = `data:${req.file.mimetype};base64,${base64String}`;
     
-    if (user && user.avatar) {
-      const oldAvatarPath = path.join(__dirname, '../../uploads/avatars', path.basename(user.avatar));
-      if (fs.existsSync(oldAvatarPath)) {
-        fs.unlinkSync(oldAvatarPath);
-        console.log('🗑️ [USER] Deleted old avatar:', oldAvatarPath);
-      }
-    }
+    console.log('🔄 [USER] Converted file to base64, length:', base64String.length);
+    
+    // Delete the temporary file since we're storing as base64
+    fs.unlinkSync(req.file.path);
+    console.log('🗑️ [USER] Deleted temporary file:', req.file.path);
 
-    // Save new avatar URL to user
-    const avatar = `/uploads/avatars/${req.file.filename}`;
-    console.log('💾 [USER] Saving avatar URL:', avatar);
-    console.log('📁 [USER] File saved to:', req.file.path);
-    console.log('🌐 [USER] Static URL should be:', `${process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com'}${avatar}`);
-    
+    // Save base64 avatar to user
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { avatar },
+      { avatar: dataUrl },
       { new: true, select: '-password' }
     );
 
-    console.log(`✅ [USER] Avatar updated for user ${userId}`);
-    console.log('👤 [USER] Updated user:', updatedUser ? { id: updatedUser._id, email: updatedUser.email, avatar: updatedUser.avatar } : 'Not found');
+    console.log(`✅ [USER] Avatar updated for user ${userId} (base64 stored)`);
+    console.log('👤 [USER] Updated user avatar length:', updatedUser?.avatar?.length || 0);
 
     res.json({
       success: true,
       message: 'Avatar updated successfully',
       user: updatedUser,
-      avatar: avatar
+      avatar: dataUrl
     });
 
   } catch (error: any) {

@@ -162,7 +162,7 @@ export default function Profile() {
                   return user?.avatar;
                 })() ? (
                   <img 
-                    src={`${process.env.NEXT_PUBLIC_API_URL}/api/user/avatar/${user.avatar.split('/').pop()}`}
+                    src={user.avatar}
                     alt="Profile"
                     className="w-full h-full rounded-full object-cover border-2 border-primary-500"
                     onLoad={() => console.log('✅ [PROFILE] Avatar image loaded successfully')}
