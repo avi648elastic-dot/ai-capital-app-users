@@ -314,6 +314,38 @@ const translations = {
       ctaSubtitle: 'Join thousands of investors making smarter decisions with AI-Capital',
       startFree: 'Start Free Today',
       getStarted: 'Get Started'
+    },
+    demo: {
+      title: 'Interactive Demo',
+      subtitle: 'Experience the power of AI-Capital with live demonstrations',
+      backToHome: 'Back to Home',
+      tryItNow: 'Try It Now',
+      signUp: 'Sign Up Free'
+    },
+    pricing: {
+      title: 'Simple, Transparent Pricing',
+      subtitle: 'Choose the plan that works best for you',
+      monthly: 'Monthly',
+      yearly: 'Yearly',
+      save25: 'Save 25%',
+      perMonth: '/month',
+      perYear: '/year',
+      billedMonthly: 'Billed monthly',
+      billedYearly: 'Billed yearly',
+      choosePlan: 'Choose Plan',
+      currentPlan: 'Current Plan',
+      features: 'Features',
+      allFeaturesInclude: 'All plans include',
+      support: '24/7 Support',
+      updates: 'Regular updates',
+      security: 'Bank-level security'
+    },
+    onboarding: {
+      step: 'Step',
+      of: 'of',
+      loading: 'Loading onboarding...',
+      welcome: 'Welcome to AI-Capital',
+      letsGetStarted: "Let's get you started with intelligent portfolio management"
     }
   },
   ar: {
@@ -575,6 +607,38 @@ const translations = {
       ctaSubtitle: 'انضم إلى آلاف المستثمرين الذين يتخذون قرارات أكثر ذكاءً مع AI-Capital',
       startFree: 'ابدأ مجانًا اليوم',
       getStarted: 'ابدأ'
+    },
+    demo: {
+      title: 'عرض تفاعلي',
+      subtitle: 'اختبر قوة AI-Capital مع عروض مباشرة',
+      backToHome: 'العودة للرئيسية',
+      tryItNow: 'جربه الآن',
+      signUp: 'سجل مجانًا'
+    },
+    pricing: {
+      title: 'تسعير بسيط وشفاف',
+      subtitle: 'اختر الخطة الأنسب لك',
+      monthly: 'شهري',
+      yearly: 'سنوي',
+      save25: 'وفر 25٪',
+      perMonth: '/شهر',
+      perYear: '/سنة',
+      billedMonthly: 'يتم الدفع شهريًا',
+      billedYearly: 'يتم الدفع سنويًا',
+      choosePlan: 'اختر الخطة',
+      currentPlan: 'الخطة الحالية',
+      features: 'الميزات',
+      allFeaturesInclude: 'تشمل جميع الخطط',
+      support: 'دعم 24/7',
+      updates: 'تحديثات منتظمة',
+      security: 'أمان على مستوى البنوك'
+    },
+    onboarding: {
+      step: 'خطوة',
+      of: 'من',
+      loading: 'جار تحميل الإعداد...',
+      welcome: 'مرحبًا بك في AI-Capital',
+      letsGetStarted: 'لنبدأ معًا في إدارة المحفظة الذكية'
     }
   },
   he: {
@@ -836,6 +900,38 @@ const translations = {
       ctaSubtitle: 'הצטרף לאלפי משקיעים המקבלים החלטות חכמות יותר עם AI-Capital',
       startFree: 'התחל בחינם היום',
       getStarted: 'התחל'
+    },
+    demo: {
+      title: 'הדגמה אינטראקטיבית',
+      subtitle: 'חווה את העוצמה של AI-Capital עם הדגמות חיות',
+      backToHome: 'חזרה לדף הבית',
+      tryItNow: 'נסה עכשיו',
+      signUp: 'הירשם בחינם'
+    },
+    pricing: {
+      title: 'תמחור פשוט ושקוף',
+      subtitle: 'בחר את התוכנית שמתאימה לך',
+      monthly: 'חודשי',
+      yearly: 'שנתי',
+      save25: 'חסוך 25%',
+      perMonth: '/חודש',
+      perYear: '/שנה',
+      billedMonthly: 'חיוב חודשי',
+      billedYearly: 'חיוב שנתי',
+      choosePlan: 'בחר תוכנית',
+      currentPlan: 'תוכנית נוכחית',
+      features: 'תכונות',
+      allFeaturesInclude: 'כל התוכניות כוללות',
+      support: 'תמיכה 24/7',
+      updates: 'עדכונים קבועים',
+      security: 'אבטחה ברמת בנק'
+    },
+    onboarding: {
+      step: 'שלב',
+      of: 'מתוך',
+      loading: 'טוען התחלה...',
+      welcome: 'ברוך הבא ל-AI-Capital',
+      letsGetStarted: 'בואו נתחיל עם ניהול תיק השקעות חכם'
     }
   }
 };
