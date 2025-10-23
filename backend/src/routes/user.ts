@@ -10,6 +10,14 @@ import pushNotificationService from '../services/pushNotificationService';
 
 const router = express.Router();
 
+// Handle CORS preflight requests for avatar endpoint
+router.options('/avatar/:filename', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).end();
+});
+
 // Direct avatar serving endpoint to bypass static file serving issues
 router.get('/avatar/:filename', async (req, res) => {
   try {
@@ -18,12 +26,27 @@ router.get('/avatar/:filename', async (req, res) => {
     
     console.log('🔍 [USER] Serving avatar file:', filePath);
     console.log('🔍 [USER] File exists:', fs.existsSync(filePath));
+    console.log('🔍 [USER] Current working directory:', process.cwd());
+    console.log('🔍 [USER] __dirname:', __dirname);
+    
+    // List files in uploads directory for debugging
+    const uploadsDir = path.join(__dirname, '../../uploads/avatars');
+    if (fs.existsSync(uploadsDir)) {
+      const files = fs.readdirSync(uploadsDir);
+      console.log('📁 [USER] Files in uploads directory:', files);
+    } else {
+      console.log('❌ [USER] Uploads directory does not exist:', uploadsDir);
+    }
     
     if (fs.existsSync(filePath)) {
       // Set proper headers for image serving
       res.setHeader('Content-Type', 'image/jpeg');
       res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
       res.setHeader('Access-Control-Allow-Origin', '*'); // Allow CORS
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      
+      console.log('✅ [USER] Serving file:', filePath);
       res.sendFile(filePath);
     } else {
       console.log('❌ [USER] Avatar file not found:', filePath);
@@ -124,8 +147,16 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
       originalname: req.file.originalname,
       mimetype: req.file.mimetype,
       size: req.file.size,
-      path: req.file.path
+      path: req.file.path,
+      destination: req.file.destination
     });
+    
+    // Verify file was actually saved
+    if (fs.existsSync(req.file.path)) {
+      console.log('✅ [USER] File successfully saved to:', req.file.path);
+    } else {
+      console.log('❌ [USER] File was not saved to:', req.file.path);
+    }
 
     // Delete old avatar if exists
     const user = await User.findById(userId);
