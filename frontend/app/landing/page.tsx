@@ -137,40 +137,54 @@ export default function LandingPage() {
       period: "forever",
       icon: <Users className="w-8 h-8" />,
       features: [
+        "Up to 5 stocks in watchlist",
         "Basic portfolio tracking",
-        "5 stocks in watchlist",
-        "Standard analytics",
-        "Email support"
+        "AI recommendations",
+        "Real-time price updates"
       ],
-      limitations: ["Limited stocks", "Basic features only"]
+      limits: {
+        portfolios: 1,
+        stocks: 5,
+        watchlist: 5
+      }
     },
     {
       name: "Premium",
-      price: "$29",
+      price: "$9.99",
       period: "month",
       icon: <Crown className="w-8 h-8" />,
       features: [
-        "Advanced AI recommendations",
-        "20 stocks in watchlist",
-        "Premium analytics",
-        "Real-time alerts",
-        "Priority support"
+        "Up to 15 stocks per portfolio",
+        "Advanced analytics",
+        "Risk management tools",
+        "Priority support",
+        "All Free features"
       ],
+      limits: {
+        portfolios: 3,
+        stocks: 15,
+        watchlist: 15
+      },
       popular: true
     },
     {
       name: "Premium+",
-      price: "$99",
+      price: "$19.99",
       period: "month",
       icon: <Rocket className="w-8 h-8" />,
       features: [
-        "Expert portfolio strategies",
         "Unlimited stocks",
-        "Advanced risk management",
+        "Advanced risk analysis",
+        "Multi-portfolio management",
         "Custom alerts",
-        "Personal account manager",
-        "API access"
-      ]
+        "API access",
+        "All Premium features"
+      ],
+      limits: {
+        portfolios: "Unlimited",
+        stocks: "Unlimited",
+        watchlist: "Unlimited"
+      }
     }
   ];
 
@@ -411,14 +425,14 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => router.push('/signup')}
+                  onClick={() => tier.name === 'Free' ? router.push('/signup') : router.push('/upgrade')}
                   className={`w-full py-3 px-6 rounded-lg font-semibold transition-all ${
                     tier.popular
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
                       : 'border-2 border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white'
                   }`}
                 >
-                  Get Started
+                  {tier.name === 'Free' ? 'Get Started Free' : 'Upgrade Now'}
                 </button>
               </div>
             ))}
@@ -440,13 +454,13 @@ export default function LandingPage() {
               onClick={() => router.push('/signup')}
               className="px-8 py-4 bg-white text-blue-600 text-lg font-semibold rounded-xl hover:bg-blue-50 transition-all transform hover:scale-105"
             >
-              Start Free Trial
+              Start Free
             </button>
             <button
               onClick={() => router.push('/demo')}
               className="px-8 py-4 border-2 border-white text-white text-lg font-semibold rounded-xl hover:bg-white hover:text-blue-600 transition-all"
             >
-              Watch Demo
+              View Demo
             </button>
           </div>
         </div>
@@ -470,28 +484,28 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-semibold mb-4">Features</h4>
               <ul className="space-y-2 text-slate-400">
-                <li>Portfolio Management</li>
-                <li>Analytics Dashboard</li>
-                <li>Watchlist Tracking</li>
-                <li>Expert Strategies</li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Portfolio Management</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Analytics Dashboard</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Watchlist Tracking</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Expert Strategies</button></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-slate-400">
-                <li>Help Center</li>
-                <li>Contact Us</li>
-                <li>API Documentation</li>
-                <li>Status Page</li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Help Center</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Contact Us</button></li>
+                <li><button onClick={() => router.push('/pricing')} className="hover:text-white transition-colors">Pricing</button></li>
+                <li><button onClick={() => router.push('/demo')} className="hover:text-white transition-colors">Demo</button></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-slate-400">
-                <li>Privacy Policy</li>
-                <li>Terms of Service</li>
-                <li>Cookie Policy</li>
-                <li>Security</li>
+                <li><button onClick={() => router.push('/privacy')} className="hover:text-white transition-colors">Privacy Policy</button></li>
+                <li><button onClick={() => router.push('/legal/terms')} className="hover:text-white transition-colors">Terms of Service</button></li>
+                <li><button onClick={() => router.push('/privacy')} className="hover:text-white transition-colors">Cookie Policy</button></li>
+                <li><button onClick={() => router.push('/about')} className="hover:text-white transition-colors">About</button></li>
               </ul>
             </div>
           </div>
