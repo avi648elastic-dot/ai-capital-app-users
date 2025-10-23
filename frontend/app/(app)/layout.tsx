@@ -84,7 +84,7 @@ export default function AppLayout({
       <ResponsiveNavigation 
         userName={user?.name || 'User'} 
         subscriptionTier={user?.subscriptionTier || 'free'}
-        userAvatar={user?.avatarUrl}
+        userAvatar={user?.avatar}
         isAdmin={user?.isAdmin || false}
         onLogout={handleLogout}
       />

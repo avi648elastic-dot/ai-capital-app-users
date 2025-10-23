@@ -80,7 +80,7 @@ router.post('/avatar', authenticateToken, upload.single('avatar'), async (req, r
       success: true,
       message: 'Avatar updated successfully',
       user: updatedUser,
-      avatar
+      avatar: avatar
     });
 
   } catch (error: any) {

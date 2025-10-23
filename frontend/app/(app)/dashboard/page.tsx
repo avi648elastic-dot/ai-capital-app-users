@@ -35,7 +35,7 @@ interface User {
   subscriptionTier: 'free' | 'premium' | 'premium+';
   isAdmin?: boolean;
   portfolioType?: 'solid' | 'risky' | 'imported';
-  avatarUrl?: string;
+  avatar?: string;
 }
 
 interface PortfolioItem {
@@ -581,7 +581,7 @@ export default function Dashboard() {
       />
       
       {/* Professional Header */}
-      <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatarUrl} userReputation={userReputation} />
+      <Header userName={user?.name || 'User'} isAdmin={user?.isAdmin || false} userAvatar={user?.avatar} userReputation={userReputation} />
       
       {/* CRITICAL FIX: Notification Banner - Below Header, Above Content */}
       <NotificationBanner isMobile={false} />

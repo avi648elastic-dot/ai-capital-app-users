@@ -64,7 +64,7 @@ export default function OptimizedDashboard({ user, isMobile = false }: Optimized
     id: user?.id || user?._id,
     name: user?.name || 'User',
     isAdmin: user?.isAdmin || false,
-    avatarUrl: user?.avatarUrl || user?.avatar,
+    avatar: user?.avatar,
     subscriptionTier: user?.subscriptionTier || 'free'
   }), [user]);
 

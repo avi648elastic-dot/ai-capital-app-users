@@ -32,7 +32,7 @@ interface User {
   subscriptionTier: 'free' | 'premium' | 'premium+';
   isAdmin?: boolean;
   portfolioType?: 'solid' | 'risky' | 'imported';
-  avatarUrl?: string;
+  avatar?: string;
 }
 
 interface PortfolioItem {

@@ -26,6 +26,9 @@ export default function Profile() {
       });
 
       const userData = response.data.user;
+      console.log('👤 [PROFILE] User data received:', userData);
+      console.log('🖼️ [PROFILE] Avatar field:', userData.avatar);
+      
       setUser(userData);
       setFormData({
         name: userData.name || '',
@@ -71,6 +74,8 @@ export default function Profile() {
       const formData = new FormData();
       formData.append('avatar', file);
 
+      console.log('📤 [PROFILE] Uploading avatar...', file.name);
+      
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/user/avatar`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -78,8 +83,17 @@ export default function Profile() {
         }
       });
 
+      console.log('✅ [PROFILE] Avatar upload response:', response.data);
+
       if (response.data.success) {
-        setUser({ ...user, avatarUrl: response.data.avatarUrl });
+        console.log('🔄 [PROFILE] Updating user state with avatar:', response.data.avatar);
+        
+        // Update user state with new avatar
+        setUser({ ...user, avatar: response.data.avatar });
+        
+        // Refresh user data to ensure consistency
+        await fetchUser();
+        
         alert('Avatar updated successfully!');
       }
     } catch (error) {
@@ -143,11 +157,16 @@ export default function Profile() {
           <div className="bg-slate-800 rounded-xl p-6 sm:p-8 border border-slate-700">
             <div className="flex flex-col items-center text-center">
               <div className="relative w-28 h-28 sm:w-32 sm:h-32 mb-6">
-                {user?.avatarUrl ? (
+                {(() => {
+                  console.log('🖼️ [PROFILE] Current avatar state:', user?.avatar);
+                  return user?.avatar;
+                })() ? (
                   <img 
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${user.avatarUrl}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}${user.avatar}`}
                     alt="Profile"
                     className="w-full h-full rounded-full object-cover border-2 border-primary-500"
+                    onLoad={() => console.log('✅ [PROFILE] Avatar image loaded successfully')}
+                    onError={(e) => console.error('❌ [PROFILE] Avatar image failed to load:', e)}
                   />
                 ) : (
                   <div className="w-full h-full rounded-full bg-slate-700 flex items-center justify-center border-2 border-primary-500">
