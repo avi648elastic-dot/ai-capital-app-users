@@ -370,56 +370,37 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       }));
       
       portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 30);
-      
-      // Calculate real-time portfolio totals from the fetched data
-      const totalPortfolioValue = portfolioData.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
-      const totalInitialInvestment = portfolioData.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
-      const totalPnL = totalPortfolioValue - totalInitialInvestment;
-      const totalPnLPercent = totalInitialInvestment > 0 ? (totalPnL / totalInitialInvestment) * 100 : 0;
-      
-      // Calculate performance metrics from real data
-      const winningStocks = portfolioData.filter(stock => stock.currentPrice > stock.entryPrice).length;
-      const losingStocks = portfolioData.filter(stock => stock.currentPrice < stock.entryPrice).length;
-      const avgVolatility = portfolioData.reduce((sum, stock) => sum + (stock.volatility || 0), 0) / portfolioData.length;
-      
-      // Update the portfolio analysis with real calculated values
-      realTimeMetrics = {
-        totalPortfolioValue,
-        totalInitialInvestment,
-        totalPnL,
-        totalPnLPercent,
-        winningStocks,
-        losingStocks,
-        avgVolatility,
-        stockCount: portfolioData.length
-      };
-      
-      console.log('✅ [ANALYTICS] Google Finance data fetched for', portfolioData.length, 'stocks');
-      console.log('✅ [ANALYTICS] Generated portfolio performance:', portfolioPerformance.length, 'days');
-    } catch (error: any) {
-      console.error('❌ [ANALYTICS] Google Finance formulas service failed:', error?.message || error);
-      
-      // Generate immediate fallback data to prevent hanging
-      console.log('🔄 [ANALYTICS] Generating immediate fallback data...');
-      portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolio, 30);
-      
-      // Calculate basic metrics from portfolio data
-      const totalPortfolioValue = portfolio.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
-      const totalInitialInvestment = portfolio.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
-      const totalPnL = totalPortfolioValue - totalInitialInvestment;
-      const totalPnLPercent = totalInitialInvestment > 0 ? (totalPnL / totalInitialInvestment) * 100 : 0;
-      
-      realTimeMetrics = {
-        totalPortfolioValue,
-        totalInitialInvestment,
-        totalPnL,
-        totalPnLPercent,
-        winningStocks: portfolio.filter(stock => stock.currentPrice > stock.entryPrice).length,
-        losingStocks: portfolio.filter(stock => stock.currentPrice < stock.entryPrice).length,
-        avgVolatility: 0,
-        stockCount: portfolio.length
-      };
     }
+    
+    // Calculate real-time portfolio totals from the fetched data
+    const totalPortfolioValue = portfolioData.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
+    const totalInitialInvestment = portfolioData.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
+    const totalPnL = totalPortfolioValue - totalInitialInvestment;
+    const totalPnLPercent = totalInitialInvestment > 0 ? (totalPnL / totalInitialInvestment) * 100 : 0;
+    
+    // Calculate performance metrics from real data
+    const winningStocks = portfolioData.filter(stock => stock.currentPrice > stock.entryPrice).length;
+    const losingStocks = portfolioData.filter(stock => stock.currentPrice < stock.entryPrice).length;
+    const avgVolatility = portfolioData.reduce((sum, stock) => sum + (stock.volatility || 0), 0) / portfolioData.length;
+    
+    // Update the portfolio analysis with real calculated values
+    realTimeMetrics = {
+      totalPortfolioValue,
+      totalInitialInvestment,
+      totalPnL,
+      totalPnLPercent,
+      winningStocks,
+      losingStocks,
+      avgVolatility,
+      stockCount: portfolioData.length
+    };
+    
+    console.log('✅ [ANALYTICS] Portfolio metrics calculated:', {
+      totalValue: totalPortfolioValue,
+      totalCost: totalInitialInvestment,
+      pnl: totalPnL,
+      pnlPercent: totalPnLPercent
+    });
 
     try {
       console.log('🔍 [ANALYTICS] Using real sector performance data...');
