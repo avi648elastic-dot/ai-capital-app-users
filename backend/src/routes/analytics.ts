@@ -370,10 +370,9 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       }));
       
       portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 30);
-    }
-    
-    // Calculate real-time portfolio totals from the fetched data
-    const totalPortfolioValue = portfolioData.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
+      
+      // Calculate real-time portfolio totals from the fetched data
+      const totalPortfolioValue = portfolioData.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
     const totalInitialInvestment = portfolioData.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
     const totalPnL = totalPortfolioValue - totalInitialInvestment;
     const totalPnLPercent = totalInitialInvestment > 0 ? (totalPnL / totalInitialInvestment) * 100 : 0;
@@ -397,6 +396,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       
       console.log('✅ [ANALYTICS] Google Finance data fetched for', portfolioData.length, 'stocks');
       console.log('✅ [ANALYTICS] Generated portfolio performance:', portfolioPerformance.length, 'days');
+    }
     } catch (error: any) {
       console.error('❌ [ANALYTICS] Google Finance formulas service failed:', error?.message || error);
       
