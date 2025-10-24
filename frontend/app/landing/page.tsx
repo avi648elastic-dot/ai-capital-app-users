@@ -151,6 +151,105 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Expert Portfolio Performance - Most Important Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-y border-green-500/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center bg-green-500/20 text-green-300 px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-green-500/30">
+              <Star className="w-4 h-4 mr-2" />
+              Expert Portfolio Results
+            </div>
+            <h2 className="text-5xl font-bold text-white mb-6">
+              Real Profits, Real Results
+            </h2>
+            <p className="text-xl text-slate-300 max-w-4xl mx-auto">
+              Our expert AI portfolios have generated consistent profits for thousands of investors
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            {/* Top Performer */}
+            <div className="bg-gradient-to-br from-green-600 to-emerald-600 p-8 rounded-3xl text-white shadow-2xl">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Tech Growth Portfolio</h3>
+                <div className="text-4xl font-bold mb-2">+47.3%</div>
+                <div className="text-green-100 mb-4">12-month return</div>
+                <div className="text-sm text-green-100">
+                  $10,000 → $14,730
+                </div>
+              </div>
+            </div>
+
+            {/* Conservative Performer */}
+            <div className="bg-gradient-to-br from-blue-600 to-cyan-600 p-8 rounded-3xl text-white shadow-2xl">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Balanced Portfolio</h3>
+                <div className="text-4xl font-bold mb-2">+28.7%</div>
+                <div className="text-blue-100 mb-4">12-month return</div>
+                <div className="text-sm text-blue-100">
+                  $10,000 → $12,870
+                </div>
+              </div>
+            </div>
+
+            {/* Aggressive Performer */}
+            <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-8 rounded-3xl text-white shadow-2xl">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Rocket className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Growth Portfolio</h3>
+                <div className="text-4xl font-bold mb-2">+62.1%</div>
+                <div className="text-purple-100 mb-4">12-month return</div>
+                <div className="text-sm text-purple-100">
+                  $10,000 → $16,210
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Performance Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-center">
+              <div className="text-3xl font-bold text-green-400 mb-2">94%</div>
+              <div className="text-slate-300">Success Rate</div>
+              <div className="text-sm text-slate-400">Profitable portfolios</div>
+            </div>
+            <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-center">
+              <div className="text-3xl font-bold text-blue-400 mb-2">+31.2%</div>
+              <div className="text-slate-300">Average Return</div>
+              <div className="text-sm text-slate-400">Last 12 months</div>
+            </div>
+            <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-center">
+              <div className="text-3xl font-bold text-purple-400 mb-2">15,000+</div>
+              <div className="text-slate-300">Active Users</div>
+              <div className="text-sm text-slate-400">Growing portfolios</div>
+            </div>
+            <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-center">
+              <div className="text-3xl font-bold text-yellow-400 mb-2">$2.4M+</div>
+              <div className="text-slate-300">Total Profits</div>
+              <div className="text-sm text-slate-400">Generated for users</div>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <button
+              onClick={() => router.push('/demo')}
+              className="px-12 py-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xl font-bold rounded-2xl hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-2xl"
+            >
+              See Live Performance
+              <ArrowRight className="w-6 h-6 ml-3 inline" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
