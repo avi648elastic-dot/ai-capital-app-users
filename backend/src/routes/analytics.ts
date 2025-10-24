@@ -373,26 +373,26 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       
       // Calculate real-time portfolio totals from the fetched data
       const totalPortfolioValue = portfolioData.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
-    const totalInitialInvestment = portfolioData.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
-    const totalPnL = totalPortfolioValue - totalInitialInvestment;
-    const totalPnLPercent = totalInitialInvestment > 0 ? (totalPnL / totalInitialInvestment) * 100 : 0;
-    
-    // Calculate performance metrics from real data
-    const winningStocks = portfolioData.filter(stock => stock.currentPrice > stock.entryPrice).length;
-    const losingStocks = portfolioData.filter(stock => stock.currentPrice < stock.entryPrice).length;
-    const avgVolatility = portfolioData.reduce((sum, stock) => sum + (stock.volatility || 0), 0) / portfolioData.length;
-    
-    // Update the portfolio analysis with real calculated values
-    realTimeMetrics = {
-      totalPortfolioValue,
-      totalInitialInvestment,
-      totalPnL,
-      totalPnLPercent,
-      winningStocks,
-      losingStocks,
-      avgVolatility,
-      stockCount: portfolioData.length
-    };
+      const totalInitialInvestment = portfolioData.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
+      const totalPnL = totalPortfolioValue - totalInitialInvestment;
+      const totalPnLPercent = totalInitialInvestment > 0 ? (totalPnL / totalInitialInvestment) * 100 : 0;
+      
+      // Calculate performance metrics from real data
+      const winningStocks = portfolioData.filter(stock => stock.currentPrice > stock.entryPrice).length;
+      const losingStocks = portfolioData.filter(stock => stock.currentPrice < stock.entryPrice).length;
+      const avgVolatility = portfolioData.reduce((sum, stock) => sum + (stock.volatility || 0), 0) / portfolioData.length;
+      
+      // Update the portfolio analysis with real calculated values
+      realTimeMetrics = {
+        totalPortfolioValue,
+        totalInitialInvestment,
+        totalPnL,
+        totalPnLPercent,
+        winningStocks,
+        losingStocks,
+        avgVolatility,
+        stockCount: portfolioData.length
+      };
       
       console.log('✅ [ANALYTICS] Google Finance data fetched for', portfolioData.length, 'stocks');
       console.log('✅ [ANALYTICS] Generated portfolio performance:', portfolioPerformance.length, 'days');
