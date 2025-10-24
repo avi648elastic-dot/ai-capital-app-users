@@ -184,35 +184,33 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       });
     }
 
-    // Get real sector performance data with timeout
+    // Get sector performance data with fallback
     const sectorPerformanceService = SectorPerformanceService.getInstance();
     let realSectorPerformance: any[] = [];
     let sectorAllocation: any[] = [];
     
     try {
-      // Add 15-second timeout for sector data
-      realSectorPerformance = await Promise.race([
-        sectorPerformanceService.getSectorPerformance(),
-        new Promise<any[]>((_, reject) => 
-          setTimeout(() => reject(new Error('Sector API timeout after 15 seconds')), 15000)
-        )
-      ]);
+      console.log('🔍 [ANALYTICS] Fetching sector performance data...');
+      realSectorPerformance = await sectorPerformanceService.getSectorPerformance();
+      console.log('✅ [ANALYTICS] Sector performance data fetched:', realSectorPerformance.length, 'sectors');
       
-      sectorAllocation = await Promise.race([
-        sectorPerformanceService.getSectorAllocation(portfolio),
-        new Promise<any[]>((_, reject) => 
-          setTimeout(() => reject(new Error('Sector allocation timeout after 15 seconds')), 15000)
-        )
-      ]);
+      sectorAllocation = await sectorPerformanceService.getSectorAllocation(portfolio);
+      console.log('✅ [ANALYTICS] Sector allocation data fetched:', sectorAllocation.length, 'sectors');
     } catch (error) {
-      console.error('❌ [ANALYTICS] Sector performance timeout:', error);
-      // Use fallback data
+      console.error('❌ [ANALYTICS] Sector performance error:', error);
+      // Use basic sector analysis as fallback
       realSectorPerformance = [];
       sectorAllocation = [];
     }
     
     // Get basic sector analysis for fallback
     const sectorAnalysis = await sectorService.analyzePortfolio(portfolio);
+    
+    // If advanced sector allocation failed, use basic sector analysis
+    if (sectorAllocation.length === 0 && sectorAnalysis.sectorAllocation) {
+      console.log('🔄 [ANALYTICS] Using basic sector analysis as fallback');
+      sectorAllocation = sectorAnalysis.sectorAllocation;
+    }
     
     // Try to get historical performance data with fallback
     let portfolioPerformance: any[] = [];

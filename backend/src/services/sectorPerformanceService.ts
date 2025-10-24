@@ -49,11 +49,76 @@ export class SectorPerformanceService {
 
   private async fetchStockData(symbol: string): Promise<any> {
     try {
-      // Using Alpha Vantage API (free tier)
-      const apiKey = process.env.ALPHA_VANTAGE_API_KEY || 'demo';
+      // Try multiple data sources for better reliability
+      const sources = [
+        () => this.fetchFromYahooFinance(symbol),
+        () => this.fetchFromAlphaVantage(symbol),
+        () => this.fetchFromFinnhub(symbol)
+      ];
+
+      for (const fetchFn of sources) {
+        try {
+          const data = await fetchFn();
+          if (data && data['Time Series (Daily)']) {
+            console.log(`✅ [SECTOR] Successfully fetched data for ${symbol}`);
+            return data;
+          }
+        } catch (error) {
+          console.warn(`⚠️ [SECTOR] Failed to fetch ${symbol} from source:`, error.message);
+          continue;
+        }
+      }
+
+      throw new Error('All data sources failed');
+    } catch (error) {
+      console.error(`❌ [SECTOR] All sources failed for ${symbol}:`, error);
+      // Fallback to mock data if all APIs fail
+      return this.generateMockData(symbol);
+    }
+  }
+
+  private async fetchFromYahooFinance(symbol: string): Promise<any> {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1y&interval=1d`;
+      const response = await axios.get(url, { timeout: 10000 });
+      
+      if (!response.data.chart.result) {
+        throw new Error('No data from Yahoo Finance');
+      }
+
+      const result = response.data.chart.result[0];
+      const timestamps = result.timestamp;
+      const closes = result.indicators.quote[0].close;
+
+      // Convert to Alpha Vantage format for compatibility
+      const timeSeries: any = {};
+      for (let i = 0; i < timestamps.length; i++) {
+        if (closes[i] !== null) {
+          const date = new Date(timestamps[i] * 1000).toISOString().split('T')[0];
+          timeSeries[date] = {
+            '4. close': closes[i].toFixed(2)
+          };
+        }
+      }
+
+      return {
+        'Time Series (Daily)': timeSeries,
+        'Meta Data': {
+          '2. Symbol': symbol,
+          '3. Last Refreshed': new Date().toISOString().split('T')[0]
+        }
+      };
+    } catch (error) {
+      throw new Error(`Yahoo Finance failed: ${error.message}`);
+    }
+  }
+
+  private async fetchFromAlphaVantage(symbol: string): Promise<any> {
+    try {
+      const apiKey = process.env.ALPHA_VANTAGE_API_KEY_1 || process.env.ALPHA_VANTAGE_API_KEY || 'demo';
       const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}&outputsize=compact`;
       
-      const response = await axios.get(url);
+      const response = await axios.get(url, { timeout: 10000 });
       
       if (response.data['Error Message']) {
         throw new Error(response.data['Error Message']);
@@ -65,9 +130,45 @@ export class SectorPerformanceService {
       
       return response.data;
     } catch (error) {
-      console.error(`Error fetching data for ${symbol}:`, error);
-      // Fallback to mock data if API fails
-      return this.generateMockData(symbol);
+      throw new Error(`Alpha Vantage failed: ${error.message}`);
+    }
+  }
+
+  private async fetchFromFinnhub(symbol: string): Promise<any> {
+    try {
+      const apiKey = process.env.FINNHUB_API_KEY_1 || process.env.FINNHUB_API_KEY;
+      if (!apiKey) {
+        throw new Error('No Finnhub API key');
+      }
+
+      const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=D&count=90&token=${apiKey}`;
+      const response = await axios.get(url, { timeout: 10000 });
+      
+      if (!response.data.c) {
+        throw new Error('No data from Finnhub');
+      }
+
+      // Convert to Alpha Vantage format
+      const timeSeries: any = {};
+      const timestamps = response.data.t;
+      const closes = response.data.c;
+
+      for (let i = 0; i < timestamps.length; i++) {
+        const date = new Date(timestamps[i] * 1000).toISOString().split('T')[0];
+        timeSeries[date] = {
+          '4. close': closes[i].toFixed(2)
+        };
+      }
+
+      return {
+        'Time Series (Daily)': timeSeries,
+        'Meta Data': {
+          '2. Symbol': symbol,
+          '3. Last Refreshed': new Date().toISOString().split('T')[0]
+        }
+      };
+    } catch (error) {
+      throw new Error(`Finnhub failed: ${error.message}`);
     }
   }
 

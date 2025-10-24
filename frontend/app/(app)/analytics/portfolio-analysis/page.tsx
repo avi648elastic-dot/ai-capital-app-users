@@ -249,6 +249,13 @@ export default function PortfolioAnalysis() {
   useEffect(() => {
     fetchPortfolio();
     fetchAnalyticsData();
+    
+    // Auto-refresh every 30 seconds like other pages
+    const interval = setInterval(() => {
+      fetchAnalyticsData();
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -346,22 +353,6 @@ export default function PortfolioAnalysis() {
               )}
             </p>
             </div>
-            <button
-              onClick={() => fetchAnalyticsData(true)}
-              disabled={refreshing}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
-            >
-              {refreshing ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  🔄 Refresh Data
-                </>
-              )}
-            </button>
           </div>
         </div>
 
