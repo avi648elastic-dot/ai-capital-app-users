@@ -396,7 +396,6 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       
       console.log('✅ [ANALYTICS] Google Finance data fetched for', portfolioData.length, 'stocks');
       console.log('✅ [ANALYTICS] Generated portfolio performance:', portfolioPerformance.length, 'days');
-    }
     } catch (error: any) {
       console.error('❌ [ANALYTICS] Google Finance formulas service failed:', error?.message || error);
       
