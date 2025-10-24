@@ -6,6 +6,7 @@ import { analyticsQuerySchema } from '../schemas/analytics';
 import { sectorService } from '../services/sectorService';
 import { historicalDataService } from '../services/historicalDataService';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
+import SectorPerformanceService from '../services/sectorPerformanceService';
 
 const router = express.Router();
 
@@ -182,7 +183,12 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       });
     }
 
-    // Get basic sector analysis
+    // Get real sector performance data
+    const sectorPerformanceService = SectorPerformanceService.getInstance();
+    const realSectorPerformance = await sectorPerformanceService.getSectorPerformance();
+    const sectorAllocation = await sectorPerformanceService.getSectorAllocation(portfolio);
+    
+    // Get basic sector analysis for fallback
     const sectorAnalysis = await sectorService.analyzePortfolio(portfolio);
     
     // Try to get historical performance data with fallback
@@ -317,16 +323,22 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     }
 
     try {
-      console.log('🔍 [ANALYTICS] Attempting to fetch sector performance data...');
-      sectorPerformance = await historicalDataService.calculateSectorPerformance(
-        sectorAnalysis.sectorAllocation,
-        90, // Last 90 days
-        userId.toString()
-      );
-      console.log('✅ [ANALYTICS] Historical sector data fetched:', sectorPerformance.length, 'sectors');
+      console.log('🔍 [ANALYTICS] Using real sector performance data...');
+      // Use the real sector performance data we already fetched
+      sectorPerformance = realSectorPerformance.map(sector => ({
+        sector: sector.sector,
+        performance7D: sector.performance7D,
+        performance30D: sector.performance30D,
+        performance60D: sector.performance60D,
+        performance90D: sector.performance90D,
+        currentPrice: sector.currentPrice,
+        change: sector.change,
+        changePercent: sector.changePercent,
+        color: 'bg-blue-500' // Default color, will be set by frontend
+      }));
+      console.log('✅ [ANALYTICS] Real sector performance data loaded:', sectorPerformance.length, 'sectors');
     } catch (error: any) {
-      console.error('❌ [ANALYTICS] Sector performance service failed:', error?.message || error);
-      // No fake data - return empty array with error info
+      console.error('❌ [ANALYTICS] Real sector performance service failed:', error?.message || error);
       sectorPerformance = [];
     }
 
@@ -348,7 +360,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     }
 
     const comprehensiveAnalysis = {
-      sectorAllocation: sectorAnalysis.sectorAllocation,
+      sectorAllocation: sectorAllocation, // Use real sector allocation data
       totalPortfolioValue: realTimeMetrics?.totalPortfolioValue || sectorAnalysis.totalValue,
       totalInitialInvestment: realTimeMetrics?.totalInitialInvestment || 0,
       totalPnL: realTimeMetrics?.totalPnL || 0,
@@ -363,7 +375,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       dataStatus,
       stockData: portfolioData || [], // Include detailed stock data from Google Finance
       realTimeMetrics, // Include the real-time calculated metrics
-      dataSource: portfolioData && portfolioData.length > 0 ? 'Google Finance APIs' : 'Fallback Data (APIs unavailable)'
+      dataSource: portfolioData && portfolioData.length > 0 ? 'Real Market Data (Alpha Vantage + Google Finance)' : 'Fallback Data (APIs unavailable)'
     };
 
     // Log data status for admin monitoring

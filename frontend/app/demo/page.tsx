@@ -16,7 +16,9 @@ import {
   ArrowLeft,
   Play,
   Pause,
-  RotateCcw
+  RotateCcw,
+  Star,
+  Rocket
 } from 'lucide-react';
 
 export default function DemoPage() {
