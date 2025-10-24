@@ -180,6 +180,117 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* AI Engines Explanation */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold text-white mb-6">
+              How Our AI Works
+            </h2>
+            <p className="text-xl text-slate-300">
+              Two powerful engines working together to optimize your investments
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Portfolio Building Engine */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl border border-blue-500/20">
+              <div className="flex items-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mr-4">
+                  <Brain className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Portfolio Building Engine</h3>
+                  <p className="text-slate-300">Creates your optimal portfolio</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Market Analysis</h4>
+                    <p className="text-slate-300 text-sm">Analyzes 10,000+ stocks across all sectors using real-time data</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Risk Assessment</h4>
+                    <p className="text-slate-300 text-sm">Calculates optimal risk-return balance based on your profile</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Diversification</h4>
+                    <p className="text-slate-300 text-sm">Automatically spreads investments across sectors and regions</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Optimization</h4>
+                    <p className="text-slate-300 text-sm">Uses advanced algorithms to maximize returns while minimizing risk</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Decision Engine */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl border border-purple-500/20">
+              <div className="flex items-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mr-4">
+                  <Target className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Decision Engine</h3>
+                  <p className="text-slate-300">Tells you what actions to take</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Buy/Sell Signals</h4>
+                    <p className="text-slate-300 text-sm">Analyzes market conditions to recommend when to buy or sell</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Rebalancing</h4>
+                    <p className="text-slate-300 text-sm">Monitors portfolio drift and suggests rebalancing when needed</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Risk Alerts</h4>
+                    <p className="text-slate-300 text-sm">Warns you about potential risks and market changes</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Opportunity Detection</h4>
+                    <p className="text-slate-300 text-sm">Identifies new investment opportunities as they arise</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 text-center">
+            <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold text-white mb-4">How They Work Together</h3>
+              <p className="text-lg text-slate-300 max-w-4xl mx-auto">
+                The Portfolio Building Engine creates your initial investment strategy, while the Decision Engine continuously monitors and adjusts your portfolio based on market conditions, ensuring you always have the optimal investment mix for maximum returns.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
         <div className="max-w-6xl mx-auto">

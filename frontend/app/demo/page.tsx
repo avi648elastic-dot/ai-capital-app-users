@@ -69,6 +69,53 @@ export default function DemoPage() {
     { metric: 'Max Drawdown', value: '-5.2%', change: 'Improved', positive: true }
   ];
 
+  const sectorPerformanceData = [
+    {
+      sector: 'Technology',
+      allocation: '45%',
+      performance: {
+        '7d': '+2.3%',
+        '30d': '+8.7%',
+        '60d': '+15.2%',
+        '90d': '+22.1%'
+      },
+      color: 'bg-blue-500'
+    },
+    {
+      sector: 'Healthcare',
+      allocation: '25%',
+      performance: {
+        '7d': '+1.8%',
+        '30d': '+5.4%',
+        '60d': '+9.8%',
+        '90d': '+12.6%'
+      },
+      color: 'bg-green-500'
+    },
+    {
+      sector: 'Finance',
+      allocation: '20%',
+      performance: {
+        '7d': '-0.5%',
+        '30d': '+2.1%',
+        '60d': '+4.3%',
+        '90d': '+7.9%'
+      },
+      color: 'bg-purple-500'
+    },
+    {
+      sector: 'Energy',
+      allocation: '10%',
+      performance: {
+        '7d': '+3.2%',
+        '30d': '+12.4%',
+        '60d': '+18.7%',
+        '90d': '+25.3%'
+      },
+      color: 'bg-orange-500'
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       {/* Header */}
@@ -207,7 +254,7 @@ export default function DemoPage() {
             <div>
               <h2 className="text-2xl font-bold text-white mb-6">Advanced Analytics Dashboard</h2>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-4">Performance Metrics</h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -226,34 +273,95 @@ export default function DemoPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-4">Portfolio Allocation</h3>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 bg-blue-500 rounded mr-3"></div>
-                        <span className="text-white">Technology</span>
+                    {sectorPerformanceData.map((sector, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className={`w-4 h-4 ${sector.color} rounded mr-3`}></div>
+                          <span className="text-white">{sector.sector}</span>
+                        </div>
+                        <span className="text-white font-semibold">{sector.allocation}</span>
                       </div>
-                      <span className="text-white font-semibold">45%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 bg-green-500 rounded mr-3"></div>
-                        <span className="text-white">Healthcare</span>
-                      </div>
-                      <span className="text-white font-semibold">25%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 bg-purple-500 rounded mr-3"></div>
-                        <span className="text-white">Finance</span>
-                      </div>
-                      <span className="text-white font-semibold">20%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-4 h-4 bg-orange-500 rounded mr-3"></div>
-                        <span className="text-white">Energy</span>
-                      </div>
-                      <span className="text-white font-semibold">10%</span>
-                    </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Sector Performance Analytics */}
+              <div className="bg-slate-700/30 rounded-2xl p-6 border border-slate-600/50">
+                <h3 className="text-xl font-bold text-white mb-6">Sector Performance Analysis</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-slate-600">
+                        <th className="text-left py-3 px-4 text-slate-300 font-semibold">Sector</th>
+                        <th className="text-center py-3 px-4 text-slate-300 font-semibold">Allocation</th>
+                        <th className="text-center py-3 px-4 text-slate-300 font-semibold">7 Days</th>
+                        <th className="text-center py-3 px-4 text-slate-300 font-semibold">30 Days</th>
+                        <th className="text-center py-3 px-4 text-slate-300 font-semibold">60 Days</th>
+                        <th className="text-center py-3 px-4 text-slate-300 font-semibold">90 Days</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sectorPerformanceData.map((sector, index) => (
+                        <tr key={index} className="border-b border-slate-700/50 hover:bg-slate-700/20 transition-colors">
+                          <td className="py-4 px-4">
+                            <div className="flex items-center">
+                              <div className={`w-3 h-3 ${sector.color} rounded mr-3`}></div>
+                              <span className="text-white font-medium">{sector.sector}</span>
+                            </div>
+                          </td>
+                          <td className="text-center py-4 px-4">
+                            <span className="text-white font-semibold">{sector.allocation}</span>
+                          </td>
+                          <td className="text-center py-4 px-4">
+                            <span className={`font-semibold ${
+                              sector.performance['7d'].startsWith('+') ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {sector.performance['7d']}
+                            </span>
+                          </td>
+                          <td className="text-center py-4 px-4">
+                            <span className={`font-semibold ${
+                              sector.performance['30d'].startsWith('+') ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {sector.performance['30d']}
+                            </span>
+                          </td>
+                          <td className="text-center py-4 px-4">
+                            <span className={`font-semibold ${
+                              sector.performance['60d'].startsWith('+') ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {sector.performance['60d']}
+                            </span>
+                          </td>
+                          <td className="text-center py-4 px-4">
+                            <span className={`font-semibold ${
+                              sector.performance['90d'].startsWith('+') ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {sector.performance['90d']}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-slate-800/50 p-4 rounded-lg">
+                    <div className="text-sm text-slate-400 mb-1">Best Performer</div>
+                    <div className="text-lg font-bold text-green-400">Energy (+25.3%)</div>
+                    <div className="text-sm text-slate-300">90-day performance</div>
+                  </div>
+                  <div className="bg-slate-800/50 p-4 rounded-lg">
+                    <div className="text-sm text-slate-400 mb-1">Most Stable</div>
+                    <div className="text-lg font-bold text-blue-400">Healthcare (+12.6%)</div>
+                    <div className="text-sm text-slate-300">Consistent growth</div>
+                  </div>
+                  <div className="bg-slate-800/50 p-4 rounded-lg">
+                    <div className="text-sm text-slate-400 mb-1">Risk Level</div>
+                    <div className="text-lg font-bold text-yellow-400">Medium</div>
+                    <div className="text-sm text-slate-300">Well diversified</div>
                   </div>
                 </div>
               </div>
