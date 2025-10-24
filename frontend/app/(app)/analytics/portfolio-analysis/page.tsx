@@ -98,20 +98,20 @@ const RealPortfolioChart = ({ data }: { data: any[] }) => {
       
       {/* Y-axis labels */}
       <text x="5" y="25" fill="#9ca3af" fontSize="10" fontWeight="500">
-        ${(chartMax / 1000).toFixed(0)}k
+        ${((chartMax || 0) / 1000).toFixed(0)}k
       </text>
       <text x="5" y="75" fill="#9ca3af" fontSize="10" fontWeight="500">
-        ${((chartMax + chartMin) / 2 / 1000).toFixed(0)}k
+        ${(((chartMax || 0) + (chartMin || 0)) / 2 / 1000).toFixed(0)}k
       </text>
       <text x="5" y="125" fill="#9ca3af" fontSize="10" fontWeight="500">
-        ${(chartMin / 1000).toFixed(0)}k
+        ${((chartMin || 0) / 1000).toFixed(0)}k
       </text>
       
       {/* Current value indicator */}
       {data.length > 0 && (
         <>
           <text x="345" y="15" fill="#10b981" fontSize="11" fontWeight="bold">
-            ${(data[data.length - 1].totalValue / 1000).toFixed(1)}k
+            ${((data[data.length - 1].totalValue || 0) / 1000).toFixed(1)}k
           </text>
           <line 
             x1={getX(data.length - 1)} 
@@ -707,7 +707,7 @@ export default function PortfolioAnalysis() {
                         portfolioPerformance.slice(-4).map((week, index) => (
                           <div key={index} className="text-center">
                             <div className="text-slate-300 font-medium">Week {index + 1}</div>
-                            <div className="text-xs text-slate-500">${(week.totalValue / 1000).toFixed(1)}k</div>
+                            <div className="text-xs text-slate-500">${((week.totalValue || 0) / 1000).toFixed(1)}k</div>
                           </div>
                         ))
                       ) : (
@@ -730,24 +730,24 @@ export default function PortfolioAnalysis() {
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Best Day</span>
                             <span className="text-green-400 font-bold">
-                              +{Math.max(...portfolioPerformance.map(p => p.dailyChangePercent)).toFixed(1)}%
+                              +{(Math.max(...portfolioPerformance.map(p => p.dailyChangePercent || 0)) || 0).toFixed(1)}%
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Worst Day</span>
                             <span className="text-red-400 font-bold">
-                              {Math.min(...portfolioPerformance.map(p => p.dailyChangePercent)).toFixed(1)}%
+                              {(Math.min(...portfolioPerformance.map(p => p.dailyChangePercent || 0)) || 0).toFixed(1)}%
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Total Return</span>
                             <span className={`font-bold ${
-                              portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent > 0 
+                              (portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent || 0) > 0 
                                 ? 'text-emerald-400' 
                                 : 'text-red-400'
                             }`}>
-                              {portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent > 0 ? '+' : ''}
-                              {portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent.toFixed(1)}%
+                              {(portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent || 0) > 0 ? '+' : ''}
+                              {(portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent || 0).toFixed(1)}%
                             </span>
                           </div>
                         </>
