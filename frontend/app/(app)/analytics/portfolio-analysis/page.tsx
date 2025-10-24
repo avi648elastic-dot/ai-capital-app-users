@@ -367,7 +367,7 @@ export default function PortfolioAnalysis() {
               {portfolio.length === 0 ? (
                 <p className="text-slate-400 text-center py-8">No stocks in portfolio</p>
               ) : (
-                portfolio.map((stock, index) => {
+                (portfolio || []).map((stock, index) => {
                   const value = stock.currentPrice * stock.shares;
                   const totalValue = portfolio.reduce((sum, s) => sum + (s.currentPrice * s.shares), 0);
                   const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0;
@@ -396,7 +396,7 @@ export default function PortfolioAnalysis() {
               Sector Segmentation
             </h3>
             <div className="space-y-4">
-              {sectorData.map((sector, index) => (
+              {(sectorData || []).map((sector, index) => (
                 <div key={index} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -415,7 +415,7 @@ export default function PortfolioAnalysis() {
                     ></div>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400">Stocks: {sector.stocks.join(', ')}</span>
+                    <span className="text-slate-400">Stocks: {(sector.stocks || []).join(', ')}</span>
                     <div className={`flex items-center space-x-1 ${
                       (sector.performance90D || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
@@ -631,7 +631,7 @@ export default function PortfolioAnalysis() {
               Sector Performance Summary (90 Days)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sectorPerformance.length > 0 ? (
+              {sectorPerformance && sectorPerformance.length > 0 ? (
                 sectorPerformance.map((sector, index) => (
                   <div key={index} className="bg-slate-800 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
@@ -649,7 +649,7 @@ export default function PortfolioAnalysis() {
                       {sector.percentage || 0}% of portfolio • ${(sector.value || 0).toLocaleString()}
                     </div>
                     <div className="text-xs text-slate-500">
-                      Stocks: {sector.stocks.join(', ')}
+                      Stocks: {(sector.stocks || []).join(', ')}
                     </div>
                   </div>
                 ))
@@ -694,7 +694,7 @@ export default function PortfolioAnalysis() {
                     
                     {/* Real performance indicators */}
                     <div className="flex justify-between text-sm">
-                      {portfolioPerformance.length > 0 ? (
+                      {portfolioPerformance && portfolioPerformance.length > 0 ? (
                         portfolioPerformance.slice(-4).map((week, index) => (
                           <div key={index} className="text-center">
                             <div className="text-slate-300 font-medium">Week {index + 1}</div>
@@ -721,13 +721,13 @@ export default function PortfolioAnalysis() {
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Best Day</span>
                             <span className="text-green-400 font-bold">
-                              +{(Math.max(...portfolioPerformance.map(p => p.dailyChangePercent || 0)) || 0).toFixed(1)}%
+                              +{(Math.max(...(portfolioPerformance || []).map(p => p.dailyChangePercent || 0)) || 0).toFixed(1)}%
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Worst Day</span>
                             <span className="text-red-400 font-bold">
-                              {(Math.min(...portfolioPerformance.map(p => p.dailyChangePercent || 0)) || 0).toFixed(1)}%
+                              {(Math.min(...(portfolioPerformance || []).map(p => p.dailyChangePercent || 0)) || 0).toFixed(1)}%
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
