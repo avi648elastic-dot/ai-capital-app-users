@@ -63,14 +63,14 @@ export class SectorPerformanceService {
             console.log(`✅ [SECTOR] Successfully fetched data for ${symbol}`);
             return data;
           }
-        } catch (error) {
-          console.warn(`⚠️ [SECTOR] Failed to fetch ${symbol} from source:`, error.message);
+        } catch (error: any) {
+          console.warn(`⚠️ [SECTOR] Failed to fetch ${symbol} from source:`, error?.message || error);
           continue;
         }
       }
 
       throw new Error('All data sources failed');
-    } catch (error) {
+    } catch (error: any) {
       console.error(`❌ [SECTOR] All sources failed for ${symbol}:`, error);
       // Fallback to mock data if all APIs fail
       return this.generateMockData(symbol);
@@ -108,8 +108,8 @@ export class SectorPerformanceService {
           '3. Last Refreshed': new Date().toISOString().split('T')[0]
         }
       };
-    } catch (error) {
-      throw new Error(`Yahoo Finance failed: ${error.message}`);
+    } catch (error: any) {
+      throw new Error(`Yahoo Finance failed: ${error?.message || error}`);
     }
   }
 
@@ -129,8 +129,8 @@ export class SectorPerformanceService {
       }
       
       return response.data;
-    } catch (error) {
-      throw new Error(`Alpha Vantage failed: ${error.message}`);
+    } catch (error: any) {
+      throw new Error(`Alpha Vantage failed: ${error?.message || error}`);
     }
   }
 
@@ -167,8 +167,8 @@ export class SectorPerformanceService {
           '3. Last Refreshed': new Date().toISOString().split('T')[0]
         }
       };
-    } catch (error) {
-      throw new Error(`Finnhub failed: ${error.message}`);
+    } catch (error: any) {
+      throw new Error(`Finnhub failed: ${error?.message || error}`);
     }
   }
 
