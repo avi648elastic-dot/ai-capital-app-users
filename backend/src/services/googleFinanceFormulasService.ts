@@ -474,7 +474,7 @@ class GoogleFinanceFormulasService {
           to: endDate,
           token: apiKey
         },
-        timeout: 20000
+        timeout: 5000 // Reduced from 20s to 5s
       });
 
       // Check for API error response
@@ -523,7 +523,7 @@ class GoogleFinanceFormulasService {
         params: {
           apikey: apiKey
         },
-        timeout: 20000
+        timeout: 5000 // Reduced from 20s to 5s
       });
 
       if (!response.data || !response.data.historical) {
@@ -785,7 +785,7 @@ class GoogleFinanceFormulasService {
           range: '90d',
           interval: '1d'
         },
-        timeout: 10000
+        timeout: 5000 // Reduced from 10s to 5s
       });
 
       if (!response.data || !response.data.chart || !response.data.chart.result) {
