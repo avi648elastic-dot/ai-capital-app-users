@@ -487,9 +487,14 @@ export default function ExpertPortfolioPage() {
                           {realizedPnL >= 0 ? 'WIN' : 'LOSS'}
                         </span>
                       </div>
-                      <span className="text-xs text-slate-500">
-                        {new Date(transaction.deletedAt).toLocaleDateString()}
-                      </span>
+                      <div className="text-right">
+                        <div className="text-xs text-slate-500">
+                          Added: {new Date(transaction.beforeSnapshot.createdAt || transaction.createdAt).toLocaleDateString()}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          Closed: {new Date(transaction.deletedAt).toLocaleDateString()}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Position Details */}
@@ -501,6 +506,10 @@ export default function ExpertPortfolioPage() {
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400">Entry Price:</span>
                         <span className="text-white">${transaction.beforeSnapshot.entryPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400">Exit Price:</span>
+                        <span className="text-white">${(transaction.amount / transaction.beforeSnapshot.shares).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400">Exit Value:</span>

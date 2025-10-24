@@ -289,7 +289,7 @@ export default function PortfolioAnalysis() {
       console.log('🔍 [ANALYTICS] Token exists:', !!token);
       console.log('🔍 [ANALYTICS] API URL:', process.env.NEXT_PUBLIC_API_URL);
       
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/portfolio-analysis`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
