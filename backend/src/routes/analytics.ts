@@ -8,6 +8,7 @@ import { historicalDataService } from '../services/historicalDataService';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 import { optimizedStockDataService } from '../services/optimizedStockDataService';
 import SectorPerformanceService from '../services/sectorPerformanceService';
+import YahooSectorService from '../services/yahooSectorService';
 
 const router = express.Router();
 
@@ -184,16 +185,18 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       });
     }
 
-    // Get sector performance data with fallback
-    const sectorPerformanceService = SectorPerformanceService.getInstance();
+    // Get sector performance data using Yahoo Finance (consistent with your Python script)
+    const yahooSectorService = YahooSectorService.getInstance();
     let realSectorPerformance: any[] = [];
     let sectorAllocation: any[] = [];
     
     try {
-      console.log('🔍 [ANALYTICS] Fetching sector performance data...');
-      realSectorPerformance = await sectorPerformanceService.getSectorPerformance();
-      console.log('✅ [ANALYTICS] Sector performance data fetched:', realSectorPerformance.length, 'sectors');
+      console.log('🔍 [ANALYTICS] Fetching real sector performance data from Yahoo Finance...');
+      realSectorPerformance = await yahooSectorService.getSectorPerformance();
+      console.log('✅ [ANALYTICS] Yahoo sector performance data fetched:', realSectorPerformance.length, 'sectors');
       
+      // Use the old service for sector allocation (portfolio-based)
+      const sectorPerformanceService = SectorPerformanceService.getInstance();
       sectorAllocation = await sectorPerformanceService.getSectorAllocation(portfolio);
       console.log('✅ [ANALYTICS] Sector allocation data fetched:', sectorAllocation.length, 'sectors');
     } catch (error) {

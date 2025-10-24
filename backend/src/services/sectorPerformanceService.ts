@@ -215,7 +215,8 @@ export class SectorPerformanceService {
     const currentPrice = prices[0];
     const pastPrice = prices[days];
     
-    return ((currentPrice - pastPrice) / pastPrice) * 100;
+    const performance = ((currentPrice - pastPrice) / pastPrice) * 100;
+    return Math.round(performance * 100) / 100; // Round to 2 decimal places
   }
 
   private extractPricesFromTimeSeries(timeSeries: any): number[] {
@@ -278,13 +279,13 @@ export class SectorPerformanceService {
         sectorPerformances.push({
           sector: sectorName,
           symbol: etfInfo.symbol,
-          performance7D: (Math.random() - 0.5) * 10,
-          performance30D: (Math.random() - 0.5) * 20,
-          performance60D: (Math.random() - 0.5) * 30,
-          performance90D: (Math.random() - 0.5) * 40,
-          currentPrice: 50 + Math.random() * 200,
-          change: (Math.random() - 0.5) * 5,
-          changePercent: (Math.random() - 0.5) * 5
+          performance7D: Math.round(((Math.random() - 0.5) * 10) * 100) / 100,
+          performance30D: Math.round(((Math.random() - 0.5) * 20) * 100) / 100,
+          performance60D: Math.round(((Math.random() - 0.5) * 30) * 100) / 100,
+          performance90D: Math.round(((Math.random() - 0.5) * 40) * 100) / 100,
+          currentPrice: Math.round((50 + Math.random() * 200) * 100) / 100,
+          change: Math.round(((Math.random() - 0.5) * 5) * 100) / 100,
+          changePercent: Math.round(((Math.random() - 0.5) * 5) * 100) / 100
         });
       }
     }
@@ -302,19 +303,41 @@ export class SectorPerformanceService {
       return [];
     }
 
-    // Map stocks to sectors (simplified mapping)
+    // Comprehensive sector mapping to eliminate "Other" categories
     const sectorMapping: { [key: string]: string[] } = {
-      'Technology': ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM'],
-      'Healthcare': ['JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR', 'BMY', 'AMGN'],
-      'Financials': ['JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'AXP', 'BLK', 'SPGI', 'V'],
-      'Energy': ['XOM', 'CVX', 'COP', 'EOG', 'SLB', 'KMI', 'PSX', 'VLO', 'MPC', 'OXY'],
-      'Consumer Discretionary': ['AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'SBUX', 'LOW', 'TJX', 'BKNG', 'CMG'],
-      'Consumer Staples': ['PG', 'KO', 'PEP', 'WMT', 'COST', 'CL', 'KMB', 'GIS', 'K', 'HSY'],
-      'Industrials': ['BA', 'CAT', 'HON', 'UPS', 'GE', 'MMM', 'LMT', 'RTX', 'DE', 'EMR'],
-      'Materials': ['LIN', 'APD', 'SHW', 'FCX', 'NEM', 'DOW', 'PPG', 'ECL', 'DD', 'IFF'],
-      'Real Estate': ['AMT', 'PLD', 'CCI', 'EQIX', 'PSA', 'EXR', 'AVB', 'EQR', 'MAA', 'UDR'],
-      'Utilities': ['NEE', 'DUK', 'SO', 'D', 'AEP', 'EXC', 'XEL', 'SRE', 'PEG', 'WEC'],
-      'Communication Services': ['GOOGL', 'META', 'NFLX', 'CMCSA', 'VZ', 'T', 'DIS', 'CHTR', 'TMUS', 'NFLX']
+      'Technology': [
+        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'INTC', 'AMD', 'QCOM', 'AVGO', 'TXN', 'CSCO', 'NOW', 'SNOW', 'PLTR', 'HIMX', 'SHMD'
+      ],
+      'Healthcare': [
+        'JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR', 'BMY', 'AMGN', 'LLY', 'CVS', 'CI', 'ANTM', 'GILD', 'BIIB', 'REGN', 'VRTX', 'ISRG', 'ZTS'
+      ],
+      'Financials': [
+        'JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'AXP', 'BLK', 'SPGI', 'V', 'MA', 'COF', 'USB', 'PNC', 'TFC', 'SCHW', 'CB', 'MMC', 'AON', 'ICE'
+      ],
+      'Energy': [
+        'XOM', 'CVX', 'COP', 'EOG', 'SLB', 'KMI', 'PSX', 'VLO', 'MPC', 'OXY', 'PXD', 'EOG', 'KOS', 'MRO', 'DVN', 'HES', 'FANG', 'PBF', 'VLO', 'MPC'
+      ],
+      'Consumer Discretionary': [
+        'AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'SBUX', 'LOW', 'TJX', 'BKNG', 'CMG', 'LMT', 'TGT', 'COST', 'WMT', 'DIS', 'NFLX', 'UBER', 'LYFT', 'ABNB', 'ETSY'
+      ],
+      'Consumer Staples': [
+        'PG', 'KO', 'PEP', 'WMT', 'COST', 'CL', 'KMB', 'GIS', 'K', 'HSY', 'WBA', 'CVS', 'KR', 'TGT', 'WMT', 'COST', 'CLX', 'CHD', 'K', 'CAG'
+      ],
+      'Industrials': [
+        'BA', 'CAT', 'HON', 'UPS', 'GE', 'MMM', 'LMT', 'RTX', 'DE', 'EMR', 'FDX', 'UPS', 'LMT', 'RTX', 'NOC', 'GD', 'TDG', 'ITW', 'ETN', 'PH'
+      ],
+      'Materials': [
+        'LIN', 'APD', 'SHW', 'FCX', 'NEM', 'DOW', 'PPG', 'ECL', 'DD', 'IFF', 'NUE', 'X', 'CLF', 'AA', 'FCX', 'NEM', 'GOLD', 'ABX', 'AEM', 'KGC'
+      ],
+      'Real Estate': [
+        'AMT', 'PLD', 'CCI', 'EQIX', 'PSA', 'EXR', 'AVB', 'EQR', 'MAA', 'UDR', 'SPG', 'O', 'WELL', 'PEAK', 'EXR', 'AVB', 'EQR', 'MAA', 'UDR', 'ESS'
+      ],
+      'Utilities': [
+        'NEE', 'DUK', 'SO', 'D', 'AEP', 'EXC', 'XEL', 'SRE', 'PEG', 'WEC', 'ED', 'ES', 'FE', 'AEE', 'LNT', 'CNP', 'ETR', 'CMS', 'DTE', 'PCG'
+      ],
+      'Communication Services': [
+        'GOOGL', 'META', 'NFLX', 'CMCSA', 'VZ', 'T', 'DIS', 'CHTR', 'TMUS', 'NFLX', 'TWTR', 'SNAP', 'PINS', 'ROKU', 'SPOT', 'MTCH', 'ZM', 'TEAM', 'OKTA', 'CRWD'
+      ]
     };
 
     const sectorTotals: { [key: string]: { value: number, stocks: string[] } } = {};
