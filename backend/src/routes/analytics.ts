@@ -192,14 +192,14 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       // Add 15-second timeout for sector data
       realSectorPerformance = await Promise.race([
         sectorPerformanceService.getSectorPerformance(),
-        new Promise((_, reject) => 
+        new Promise<any[]>((_, reject) => 
           setTimeout(() => reject(new Error('Sector API timeout after 15 seconds')), 15000)
         )
       ]);
       
       sectorAllocation = await Promise.race([
         sectorPerformanceService.getSectorAllocation(portfolio),
-        new Promise((_, reject) => 
+        new Promise<any[]>((_, reject) => 
           setTimeout(() => reject(new Error('Sector allocation timeout after 15 seconds')), 15000)
         )
       ]);
@@ -231,10 +231,10 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
             // Add 10-second timeout to prevent hanging
             const data = await Promise.race([
               googleFinanceFormulasService.getStockMetrics(stock.ticker),
-              new Promise((_, reject) => 
+              new Promise<any>((_, reject) => 
                 setTimeout(() => reject(new Error('API timeout after 10 seconds')), 10000)
               )
-            ]);
+            ]) as any;
             return {
               ticker: stock.ticker,
               shares: stock.shares,
