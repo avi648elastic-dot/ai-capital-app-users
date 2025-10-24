@@ -10,6 +10,13 @@ async function testStockAPIs() {
   
   console.log(`🔍 Testing APIs for ${symbol}...`);
   
+  // Debug: Check what environment variables are actually loaded
+  console.log('\n🔍 DEBUG: Environment variables:');
+  console.log('ALPHA_VANTAGE_API_KEY_1:', process.env.ALPHA_VANTAGE_API_KEY_1 ? 'SET' : 'NOT SET');
+  console.log('FINNHUB_API_KEY_1:', process.env.FINNHUB_API_KEY_1 ? 'SET' : 'NOT SET');
+  console.log('FMP_API_KEY_1:', process.env.FMP_API_KEY_1 ? 'SET' : 'NOT SET');
+  console.log('FMP_API_KEY_2:', process.env.FMP_API_KEY_2 ? 'SET' : 'NOT SET');
+  
   // Test Alpha Vantage
   console.log('\n📊 Testing Alpha Vantage...');
   try {

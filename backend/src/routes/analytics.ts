@@ -6,6 +6,7 @@ import { analyticsQuerySchema } from '../schemas/analytics';
 import { sectorService } from '../services/sectorService';
 import { historicalDataService } from '../services/historicalDataService';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
+import { optimizedStockDataService } from '../services/optimizedStockDataService';
 import SectorPerformanceService from '../services/sectorPerformanceService';
 
 const router = express.Router();
@@ -220,105 +221,156 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     let realTimeMetrics: any = null;
     
     try {
-      console.log('🔍 [ANALYTICS] Attempting to fetch data using Google Finance formulas service...');
+      console.log('🔍 [ANALYTICS] Attempting to fetch data using optimized stock data service...');
       console.log('🔍 [ANALYTICS] Portfolio stocks:', portfolio.map(p => p.ticker));
       
-      // Use our new Google Finance formulas service with multiple API keys
-      // Add timeout wrapper to prevent hanging
-      const portfolioData = await Promise.all(
-        portfolio.map(async (stock) => {
-          try {
-            // Add 10-second timeout to prevent hanging
-            const data = await Promise.race([
-              googleFinanceFormulasService.getStockMetrics(stock.ticker),
-              new Promise<any>((_, reject) => 
-                setTimeout(() => reject(new Error('API timeout after 10 seconds')), 10000)
-              )
-            ]) as any;
-            return {
-              ticker: stock.ticker,
-              shares: stock.shares,
-              entryPrice: stock.entryPrice,
-              currentPrice: data?.current || stock.entryPrice,
-              priceChange: data ? (data.current - stock.entryPrice) : 0,
-              priceChangePercent: data ? (((data.current - stock.entryPrice) / stock.entryPrice) * 100) : 0,
-              volume: 0, // Not available in current interface
-              marketCap: data?.marketCap || 0,
-              pe: 0, // Not available in current interface
-              pb: 0, // Not available in current interface
-              debtToEquity: 0, // Not available in current interface
-              roe: 0, // Not available in current interface
-              roa: 0, // Not available in current interface
-              grossMargin: 0, // Not available in current interface
-              operatingMargin: 0, // Not available in current interface
-              netMargin: 0, // Not available in current interface
-              revenueGrowth: 0, // Not available in current interface
-              earningsGrowth: 0, // Not available in current interface
-              dividendYield: 0, // Not available in current interface
-              beta: 1, // Not available in current interface
-              volatility: data?.volatility || 0,
-              sharpeRatio: 0, // Not available in current interface
-              maxDrawdown: 0, // Not available in current interface
-              rsi: 50, // Not available in current interface
-              macd: 0, // Not available in current interface
-              sma20: stock.entryPrice, // Not available in current interface
-              sma50: stock.entryPrice, // Not available in current interface
-              sma200: stock.entryPrice, // Not available in current interface
-              top30D: data?.top30D || stock.entryPrice,
-              top60D: data?.top60D || stock.entryPrice,
-              top90D: stock.entryPrice, // Not available in current interface
-              low30D: stock.entryPrice, // Not available in current interface
-              low60D: stock.entryPrice, // Not available in current interface
-              low90D: stock.entryPrice, // Not available in current interface
-              lastUpdated: data ? new Date(data.timestamp).toISOString() : new Date().toISOString(),
-              dataSource: data?.dataSource || 'unknown'
-            };
-          } catch (error) {
-            console.error(`❌ [ANALYTICS] Failed to fetch data for ${stock.ticker}:`, error);
-            // Return fallback data
-            return {
-              ticker: stock.ticker,
-              shares: stock.shares,
-              entryPrice: stock.entryPrice,
-              currentPrice: stock.entryPrice,
-              priceChange: 0,
-              priceChangePercent: 0,
-              volume: 0,
-              marketCap: 0,
-              pe: 0,
-              pb: 0,
-              debtToEquity: 0,
-              roe: 0,
-              roa: 0,
-              grossMargin: 0,
-              operatingMargin: 0,
-              netMargin: 0,
-              revenueGrowth: 0,
-              earningsGrowth: 0,
-              dividendYield: 0,
-              beta: 1,
-              volatility: 0,
-              sharpeRatio: 0,
-              maxDrawdown: 0,
-              rsi: 50,
-              macd: 0,
-              sma20: stock.entryPrice,
-              sma50: stock.entryPrice,
-              sma200: stock.entryPrice,
-              top30D: stock.entryPrice,
-              top60D: stock.entryPrice,
-              top90D: stock.entryPrice,
-              low30D: stock.entryPrice,
-              low60D: stock.entryPrice,
-              low90D: stock.entryPrice,
-              lastUpdated: new Date().toISOString()
-            };
-          }
-        })
-      );
+      // Use the same robust service as the dashboard with proper fallbacks
+      const tickers = [...new Set(portfolio.map(item => item.ticker))];
+      let realTimeData: Map<string, any>;
+      
+      try {
+        // Use optimized service with batch processing and proper fallbacks
+        realTimeData = await optimizedStockDataService.getMultipleStockData(tickers);
+        console.log('✅ [ANALYTICS] Fetched real-time data for', realTimeData.size, 'stocks (OPTIMIZED)');
+      } catch (stockDataError) {
+        console.error('❌ [ANALYTICS] Error fetching stock data, using stored prices:', stockDataError);
+        realTimeData = new Map(); // Empty map, will use stored prices as fallback
+      }
+      
+      // Process portfolio data using the same architecture as dashboard
+      const portfolioData = portfolio.map((stock) => {
+        const data = realTimeData.get(stock.ticker);
+        if (data) {
+          return {
+            ticker: stock.ticker,
+            shares: stock.shares,
+            entryPrice: stock.entryPrice,
+            currentPrice: data?.current || stock.entryPrice,
+            priceChange: data ? (data.current - stock.entryPrice) : 0,
+            priceChangePercent: data ? (((data.current - stock.entryPrice) / stock.entryPrice) * 100) : 0,
+            volume: 0, // Not available in current interface
+            marketCap: data?.marketCap || 0,
+            pe: 0, // Not available in current interface
+            pb: 0, // Not available in current interface
+            debtToEquity: 0, // Not available in current interface
+            roe: 0, // Not available in current interface
+            roa: 0, // Not available in current interface
+            grossMargin: 0, // Not available in current interface
+            operatingMargin: 0, // Not available in current interface
+            netMargin: 0, // Not available in current interface
+            revenueGrowth: 0, // Not available in current interface
+            earningsGrowth: 0, // Not available in current interface
+            dividendYield: 0, // Not available in current interface
+            beta: 1, // Not available in current interface
+            volatility: data?.volatility || 0,
+            sharpeRatio: 0, // Not available in current interface
+            maxDrawdown: 0, // Not available in current interface
+            rsi: 50, // Not available in current interface
+            macd: 0, // Not available in current interface
+            sma20: stock.entryPrice, // Not available in current interface
+            sma50: stock.entryPrice, // Not available in current interface
+            sma200: stock.entryPrice, // Not available in current interface
+            top30D: data?.top30D || stock.entryPrice,
+            top60D: data?.top60D || stock.entryPrice,
+            top90D: stock.entryPrice, // Not available in current interface
+            low30D: stock.entryPrice, // Not available in current interface
+            low60D: stock.entryPrice, // Not available in current interface
+            low90D: stock.entryPrice, // Not available in current interface
+            lastUpdated: data ? new Date(data.timestamp).toISOString() : new Date().toISOString(),
+            dataSource: data?.dataSource || 'unknown'
+          };
+        } else {
+          // Fallback data when no real-time data is available
+          return {
+            ticker: stock.ticker,
+            shares: stock.shares,
+            entryPrice: stock.entryPrice,
+            currentPrice: stock.entryPrice,
+            priceChange: 0,
+            priceChangePercent: 0,
+            volume: 0,
+            marketCap: 0,
+            pe: 0,
+            pb: 0,
+            debtToEquity: 0,
+            roe: 0,
+            roa: 0,
+            grossMargin: 0,
+            operatingMargin: 0,
+            netMargin: 0,
+            revenueGrowth: 0,
+            earningsGrowth: 0,
+            dividendYield: 0,
+            beta: 1,
+            volatility: 0,
+            sharpeRatio: 0,
+            maxDrawdown: 0,
+            rsi: 50,
+            macd: 0,
+            sma20: stock.entryPrice,
+            sma50: stock.entryPrice,
+            sma200: stock.entryPrice,
+            top30D: stock.entryPrice,
+            top60D: stock.entryPrice,
+            top90D: stock.entryPrice,
+            low30D: stock.entryPrice,
+            low60D: stock.entryPrice,
+            low90D: stock.entryPrice,
+            lastUpdated: new Date().toISOString(),
+            dataSource: 'fallback'
+          };
+        }
+      });
 
-    // Generate portfolio performance data from the fetched stock data
-    portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 30);
+      // Generate portfolio performance data from the fetched stock data
+      portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 30);
+      
+      console.log('✅ [ANALYTICS] Portfolio data processed successfully:', portfolioData.length, 'stocks');
+      
+    } catch (error) {
+      console.error('❌ [ANALYTICS] Error fetching portfolio data:', error);
+      // Use fallback data generation
+      portfolioData = portfolio.map(stock => ({
+        ticker: stock.ticker,
+        shares: stock.shares,
+        entryPrice: stock.entryPrice,
+        currentPrice: stock.entryPrice,
+        priceChange: 0,
+        priceChangePercent: 0,
+        volume: 0,
+        marketCap: 0,
+        pe: 0,
+        pb: 0,
+        debtToEquity: 0,
+        roe: 0,
+        roa: 0,
+        grossMargin: 0,
+        operatingMargin: 0,
+        netMargin: 0,
+        revenueGrowth: 0,
+        earningsGrowth: 0,
+        dividendYield: 0,
+        beta: 1,
+        volatility: 0,
+        sharpeRatio: 0,
+        maxDrawdown: 0,
+        rsi: 50,
+        macd: 0,
+        sma20: stock.entryPrice,
+        sma50: stock.entryPrice,
+        sma200: stock.entryPrice,
+        top30D: stock.entryPrice,
+        top60D: stock.entryPrice,
+        top90D: stock.entryPrice,
+        low30D: stock.entryPrice,
+        low60D: stock.entryPrice,
+        low90D: stock.entryPrice,
+        lastUpdated: new Date().toISOString(),
+        dataSource: 'fallback'
+      }));
+      
+      portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 30);
+    }
     
     // Calculate real-time portfolio totals from the fetched data
     const totalPortfolioValue = portfolioData.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
