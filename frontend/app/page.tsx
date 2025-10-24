@@ -189,6 +189,14 @@ export default function Page() {
             <p className="text-sm text-slate-400">
               🚀 {t('auth.aiPoweredDescription')}
             </p>
+            <div className="mt-4">
+              <button
+                onClick={() => router.push('/landing')}
+                className="text-blue-400 hover:text-blue-300 text-sm underline transition-colors"
+              >
+                Learn more about our features →
+              </button>
+            </div>
           </div>
 
           {/* Form Container */}
