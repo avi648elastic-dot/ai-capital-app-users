@@ -404,27 +404,27 @@ export default function PortfolioAnalysis() {
                       <span className="text-white font-medium">{sector.sector}</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-white font-semibold">{sector.percentage}%</div>
-                      <div className="text-sm text-slate-400">${sector.value.toLocaleString()}</div>
+                      <div className="text-white font-semibold">{sector.percentage || 0}%</div>
+                      <div className="text-sm text-slate-400">${(sector.value || 0).toLocaleString()}</div>
                     </div>
                   </div>
                   <div className="w-full bg-slate-700 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full ${sector.color}`}
-                      style={{ width: `${sector.percentage}%` }}
+                      style={{ width: `${sector.percentage || 0}%` }}
                     ></div>
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-400">Stocks: {sector.stocks.join(', ')}</span>
                     <div className={`flex items-center space-x-1 ${
-                      sector.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
+                      (sector.performance90D || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      {sector.performance90D >= 0 ? (
+                      {(sector.performance90D || 0) >= 0 ? (
                         <TrendingUp className="w-3 h-3" />
                       ) : (
                         <TrendingDown className="w-3 h-3" />
                       )}
-                      <span>{sector.performance90D >= 0 ? '+' : ''}{sector.performance90D}%</span>
+                      <span>{(sector.performance90D || 0) >= 0 ? '+' : ''}{sector.performance90D || 0}%</span>
                       <span className="text-slate-500">90D</span>
                     </div>
                   </div>
@@ -640,13 +640,13 @@ export default function PortfolioAnalysis() {
                         <span className="text-white font-medium text-sm">{sector.sector}</span>
                       </div>
                       <div className={`text-sm font-semibold ${
-                        sector.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
+                        (sector.performance90D || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
-                        {sector.performance90D >= 0 ? '+' : ''}{sector.performance90D}%
+                        {(sector.performance90D || 0) >= 0 ? '+' : ''}{sector.performance90D || 0}%
                       </div>
                     </div>
                     <div className="text-xs text-slate-400 mb-2">
-                      {sector.percentage}% of portfolio • ${sector.value.toLocaleString()}
+                      {sector.percentage || 0}% of portfolio • ${(sector.value || 0).toLocaleString()}
                     </div>
                     <div className="text-xs text-slate-500">
                       Stocks: {sector.stocks.join(', ')}
