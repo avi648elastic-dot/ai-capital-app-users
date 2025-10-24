@@ -54,7 +54,7 @@ export class YahooSectorService {
       const rows = lines.slice(1).map((line: string) => {
         const values = line.split(',');
         const row: any = {};
-        headers.forEach((header, index) => {
+        headers.forEach((header: string, index: number) => {
           row[header.trim()] = values[index]?.trim();
         });
         return row;
