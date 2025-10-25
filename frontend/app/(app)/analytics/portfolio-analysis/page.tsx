@@ -742,34 +742,34 @@ export default function PortfolioAnalysis() {
                       Performance Summary
                     </h5>
                     <div className="space-y-2 text-xs">
-                      {portfolioPerformance.length > 0 ? (
+                      {portfolioPerformance && portfolioPerformance.length > 0 ? (
                         <>
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Best Day</span>
                             <span className="text-green-400 font-bold">
-                              +{(Math.max(...(portfolioPerformance || []).map(p => p.dailyChangePercent || 0)) || 0).toFixed(1)}%
+                              +{(Math.max(...portfolioPerformance.map(p => parseFloat(p.dailyChangePercent) || 0)) || 0).toFixed(1)}%
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Worst Day</span>
                             <span className="text-red-400 font-bold">
-                              {(Math.min(...(portfolioPerformance || []).map(p => p.dailyChangePercent || 0)) || 0).toFixed(1)}%
+                              {(Math.min(...portfolioPerformance.map(p => parseFloat(p.dailyChangePercent) || 0)) || 0).toFixed(1)}%
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-slate-400">Total Return</span>
                             <span className={`font-bold ${
-                              (portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent || 0) > 0 
+                              (parseFloat(portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent) || 0) > 0 
                                 ? 'text-emerald-400' 
                                 : 'text-red-400'
                             }`}>
-                              {(portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent || 0) > 0 ? '+' : ''}
-                              {(portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent || 0).toFixed(1)}%
+                              {(parseFloat(portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent) || 0) > 0 ? '+' : ''}
+                              {(parseFloat(portfolioPerformance[portfolioPerformance.length - 1]?.totalPnLPercent) || 0).toFixed(1)}%
                             </span>
                           </div>
                         </>
                       ) : (
-                        <div className="text-slate-400 text-xs">Loading...</div>
+                        <div className="text-slate-400 text-xs">No performance data</div>
                       )}
                     </div>
                   </div>

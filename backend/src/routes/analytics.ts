@@ -11,6 +11,7 @@ import { optimizedStockDataService } from '../services/optimizedStockDataService
 import SectorPerformanceService from '../services/sectorPerformanceService';
 import YahooSectorService from '../services/yahooSectorService';
 import HistoricalPortfolioService from '../services/historicalPortfolioService';
+import BalanceSheetAnalysisService from '../services/balanceSheetAnalysisService';
 
 const router = express.Router();
 
@@ -738,6 +739,51 @@ router.get('/earnings-calendar', authenticateToken, async (req, res) => {
   }
 });
 
+// Get balance sheet analysis for a stock
+router.get('/balance-sheet/:ticker', authenticateToken, async (req, res) => {
+  try {
+    const { ticker } = req.params;
+    
+    const balanceSheetService = BalanceSheetAnalysisService.getInstance();
+    const analysis = await balanceSheetService.analyzeBalanceSheet(ticker.toUpperCase());
+    
+    if (!analysis) {
+      return res.status(404).json({ 
+        message: 'Could not fetch financial data for this ticker' 
+      });
+    }
+    
+    res.json(analysis);
+  } catch (error) {
+    console.error('❌ [ANALYTICS] Error in balance sheet analysis:', error);
+    res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
+  }
+});
+
+// Get balance sheet analysis for portfolio stocks
+router.get('/balance-sheet', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user!._id;
+    
+    // Get user's portfolio
+    const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
+    
+    if (portfolio.length === 0) {
+      return res.json({ analyses: [] });
+    }
+
+    const tickers = portfolio.map(item => item.ticker);
+    
+    const balanceSheetService = BalanceSheetAnalysisService.getInstance();
+    const analyses = await balanceSheetService.analyzeMultiple(tickers);
+    
+    res.json({ analyses });
+  } catch (error) {
+    console.error('❌ [ANALYTICS] Error in portfolio balance sheet analysis:', error);
+    res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
+  }
+});
+
 // Get news for portfolio stocks
 router.get('/news', authenticateToken, async (req, res) => {
   try {
@@ -753,6 +799,11 @@ router.get('/news', authenticateToken, async (req, res) => {
     const tickers = portfolio.map(item => item.ticker);
     const allNews: any[] = [];
 
+    // Calculate date range: one year ago to today
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const today = new Date();
+    
     // Fetch news from Alpha Vantage
     try {
       const apiKey = process.env.ALPHA_VANTAGE_API_KEY_1 || process.env.ALPHA_VANTAGE_API_KEY;
@@ -762,35 +813,51 @@ router.get('/news', authenticateToken, async (req, res) => {
         return res.json({ news: [] });
       }
 
-      // Fetch news for each ticker
-      for (const ticker of tickers.slice(0, 5)) { // Limit to 5 to avoid rate limits
+      // Fetch news for each ticker - filter to portfolio holdings only
+      for (const ticker of tickers) { // No limit - fetch for all portfolio stocks
         try {
           const response = await axios.get(
-            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=1`,
+            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=100`,
             { timeout: 5000 }
           );
 
           if (response.data && response.data.feed && response.data.feed.length > 0) {
-            const article = response.data.feed[0];
-            allNews.push({
-              title: article.title,
-              source: article.source,
-              date: article.time_published.slice(0, 10), // Format: YYYYMMDD -> YYYY-MM-DD
-              ticker: ticker,
-              url: article.url,
-              sentiment: article.overall_sentiment_score >= 0.35 ? 'positive' : 
-                         article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral'
+            response.data.feed.forEach((article: any) => {
+              // Parse article date (format: YYYYMMDDHHMMSS)
+              const articleDate = new Date(
+                article.time_published.slice(0, 4) + '-' +
+                article.time_published.slice(4, 6) + '-' +
+                article.time_published.slice(6, 8)
+              );
+              
+              // Only include articles from the last year
+              if (articleDate >= oneYearAgo && articleDate <= today) {
+                allNews.push({
+                  title: article.title,
+                  source: article.source,
+                  date: article.time_published.slice(0, 10), // Format: YYYYMMDD -> YYYY-MM-DD
+                  ticker: ticker, // Portfolio stock ticker
+                  url: article.url,
+                  sentiment: article.overall_sentiment_score >= 0.35 ? 'positive' : 
+                             article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral'
+                });
+              }
             });
           }
         } catch (error: any) {
           console.error(`Error fetching news for ${ticker}:`, error?.message);
         }
       }
+      
+      // Sort by date (most recent first) and limit to latest 20 articles
+      allNews.sort((a, b) => b.date.localeCompare(a.date));
+      const recentNews = allNews.slice(0, 20);
+      
+      res.json({ news: recentNews });
     } catch (error) {
       console.error('❌ [ANALYTICS] Error fetching news:', error);
+      res.json({ news: [] });
     }
-
-    res.json({ news: allNews });
   } catch (error) {
     console.error('❌ [ANALYTICS] Error in news endpoint:', error);
     res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
