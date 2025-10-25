@@ -1,4 +1,5 @@
 import express from 'express';
+import axios from 'axios';
 import Portfolio from '../models/Portfolio';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { validate } from '../middleware/validate';
@@ -679,5 +680,121 @@ function calculateRiskAssessment(portfolio: any[], sectorAnalysis: any) {
     recommendations
   };
 }
+
+// Get earnings calendar for portfolio stocks
+router.get('/earnings-calendar', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user!._id;
+    
+    // Get user's portfolio
+    const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
+    
+    if (portfolio.length === 0) {
+      return res.json({ earnings: [] });
+    }
+
+    const tickers = portfolio.map(item => item.ticker);
+    const earnings: any[] = [];
+
+    // Fetch real earnings calendar from FMP (Financial Modeling Prep)
+    for (const ticker of tickers) {
+      try {
+        const apiKey = process.env.FMP_API_KEY_1 || process.env.FMP_API_KEY;
+        if (!apiKey) {
+          console.warn('⚠️ No FMP API key found, skipping earnings fetch');
+          break;
+        }
+
+        const response = await axios.get(
+          `https://financialmodelingprep.com/api/v3/earning_calendar?symbol=${ticker}&apikey=${apiKey}`,
+          { timeout: 5000 }
+        );
+
+        if (response.data && response.data.length > 0) {
+          // Get the next upcoming earnings
+          const nextEarning = response.data
+            .filter((e: any) => new Date(e.date) > new Date())
+            .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+          
+          if (nextEarning) {
+            earnings.push({
+              ticker: ticker,
+              date: nextEarning.date.split(' ')[0], // Just the date part
+              time: nextEarning.time || 'After Market Close',
+              epsEstimate: nextEarning.epsEstimated || null,
+              revenueEstimate: nextEarning.revenueEstimated || null
+            });
+          }
+        }
+      } catch (error: any) {
+        console.error(`Error fetching earnings for ${ticker}:`, error?.message);
+      }
+    }
+
+    res.json({ earnings });
+  } catch (error) {
+    console.error('❌ [ANALYTICS] Error fetching earnings calendar:', error);
+    res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
+  }
+});
+
+// Get news for portfolio stocks
+router.get('/news', authenticateToken, async (req, res) => {
+  try {
+    const userId = (req as any).user!._id;
+    
+    // Get user's portfolio
+    const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
+    
+    if (portfolio.length === 0) {
+      return res.json({ news: [] });
+    }
+
+    const tickers = portfolio.map(item => item.ticker);
+    const allNews: any[] = [];
+
+    // Fetch news from Alpha Vantage
+    try {
+      const apiKey = process.env.ALPHA_VANTAGE_API_KEY_1 || process.env.ALPHA_VANTAGE_API_KEY;
+      
+      if (!apiKey) {
+        console.warn('⚠️ No Alpha Vantage API key found');
+        return res.json({ news: [] });
+      }
+
+      // Fetch news for each ticker
+      for (const ticker of tickers.slice(0, 5)) { // Limit to 5 to avoid rate limits
+        try {
+          const response = await axios.get(
+            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=1`,
+            { timeout: 5000 }
+          );
+
+          if (response.data && response.data.feed && response.data.feed.length > 0) {
+            const article = response.data.feed[0];
+            allNews.push({
+              title: article.title,
+              source: article.source,
+              date: article.time_published.slice(0, 10), // Format: YYYYMMDD -> YYYY-MM-DD
+              ticker: ticker,
+              url: article.url,
+              sentiment: article.overall_sentiment_score >= 0.35 ? 'positive' : 
+                         article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral'
+            });
+          }
+        } catch (error: any) {
+          console.error(`Error fetching news for ${ticker}:`, error?.message);
+        }
+      }
+    } catch (error) {
+      console.error('❌ [ANALYTICS] Error fetching news:', error);
+    }
+
+    res.json({ news: allNews });
+  } catch (error) {
+    console.error('❌ [ANALYTICS] Error in news endpoint:', error);
+    res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
+  }
+});
 
 export default router;

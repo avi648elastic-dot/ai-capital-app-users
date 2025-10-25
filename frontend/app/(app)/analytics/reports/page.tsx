@@ -12,6 +12,7 @@ export default function Reports() {
   const [news, setNews] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [portfolioMetrics, setPortfolioMetrics] = useState<any>(null);
+  const [earnings, setEarnings] = useState<any[]>([]);
 
   const handleLogout = () => {
     Cookies.remove('token');
@@ -58,45 +59,26 @@ export default function Reports() {
         console.error('Error fetching analytics:', analyticsError);
       }
 
-      // Fetch real-time stock data for portfolio stocks
-      if (portfolio.length > 0) {
-        const tickers = portfolio.map((s: any) => s.ticker).join(',');
-        
-        try {
-          // Fetch news for portfolio stocks
-          const newsPromises = portfolio.slice(0, 5).map((stock: any) => 
-            axios.get(`https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${stock.ticker}&apikey=${process.env.NEXT_PUBLIC_ALPHA_VANTAGE_KEY || 'demo'}&limit=1`)
-              .catch(() => null)
-          );
-          
-          const newsResults = await Promise.allSettled(newsPromises);
-          const allNews: any[] = [];
-          
-          newsResults.forEach((result, index) => {
-            if (result.status === 'fulfilled' && result.value?.data?.feed) {
-              result.value.data.feed.forEach((article: any) => {
-                allNews.push({
-                  id: allNews.length + 1,
-                  title: article.title,
-                  source: article.source,
-                  date: new Date(article.time_published).toISOString().split('T')[0],
-                  ticker: portfolio[index]?.ticker,
-                  type: article.overall_sentiment_score > 0 ? 'earnings' : 'news',
-                  url: article.url
-                });
-              });
-            }
-          });
-          
-          // Only set real news from API - no fallback to mock data
-          setNews(allNews);
-        } catch (newsError) {
-          console.error('Error fetching news:', newsError);
-          // Return empty array if API fails - no mock data
-          setNews([]);
-        }
-      } else {
+      // Fetch news from backend API
+      try {
+        const newsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/news`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setNews(newsRes.data.news || []);
+      } catch (newsError) {
+        console.error('Error fetching news:', newsError);
         setNews([]);
+      }
+
+      // Fetch earnings calendar from backend API
+      try {
+        const earningsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/earnings-calendar`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setEarnings(earningsRes.data.earnings || []);
+      } catch (earningsError) {
+        console.error('Error fetching earnings:', earningsError);
+        setEarnings([]);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -107,19 +89,7 @@ export default function Reports() {
   };
 
   const getUpcomingEarnings = () => {
-    // Generate upcoming earnings based on portfolio stocks
-    const now = new Date();
-    const earnings = portfolio.slice(0, 5).map((stock, index) => {
-      const futureDate = new Date(now);
-      futureDate.setDate(futureDate.getDate() + (index + 1) * 7); // One week apart
-      
-      return {
-        ticker: stock.ticker,
-        date: futureDate.toISOString().split('T')[0],
-        time: index % 2 === 0 ? 'After Market Close' : 'Before Market Open'
-      };
-    });
-    
+    // Use real earnings data from backend API
     return earnings;
   };
 
@@ -159,10 +129,10 @@ export default function Reports() {
                 {news.length === 0 ? (
                   <p className="text-slate-400 text-center py-8">No recent news available</p>
                 ) : (
-                  news.map((article) => (
-                    <div key={article.id} className="border-b border-slate-800 pb-4 last:border-b-0">
+                  news.map((article, index) => (
+                    <div key={index} className="border-b border-slate-800 pb-4 last:border-b-0">
                       <div className="flex items-start space-x-3">
-                        {getReportTypeIcon(article.type)}
+                        {getReportTypeIcon(article.sentiment === 'positive' ? 'earnings' : 'news')}
                         <div className="flex-1">
                           <h4 className="text-white font-medium mb-1">{article.title}</h4>
                           <div className="flex items-center space-x-4 text-sm text-slate-400">
