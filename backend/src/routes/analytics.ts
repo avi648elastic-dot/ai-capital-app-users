@@ -9,6 +9,7 @@ import { googleFinanceFormulasService } from '../services/googleFinanceFormulasS
 import { optimizedStockDataService } from '../services/optimizedStockDataService';
 import SectorPerformanceService from '../services/sectorPerformanceService';
 import YahooSectorService from '../services/yahooSectorService';
+import HistoricalPortfolioService from '../services/historicalPortfolioService';
 
 const router = express.Router();
 
@@ -323,8 +324,33 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         }
       });
 
-      // Generate portfolio performance data from the fetched stock data
-      portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 30);
+      // Get REAL historical data from database (NEW IMPLEMENTATION)
+      const historicalService = HistoricalPortfolioService.getInstance();
+      console.log('🔍 [ANALYTICS] Fetching real historical data from database...');
+      
+      // Try to get historical data first
+      portfolioPerformance = await historicalService.getHistoricalData(userId.toString(), 30);
+      
+      // If no historical data exists yet, save today's snapshot as first data point
+      if (portfolioPerformance.length === 0) {
+        console.log('📊 [ANALYTICS] No historical data found, saving initial snapshot...');
+        await historicalService.saveDailySnapshot(
+          userId.toString(),
+          portfolioData,
+          sectorAllocation
+        );
+        // Generate initial data from current portfolio
+        portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 7); // Start with 7 days
+      } else {
+        console.log(`✅ [ANALYTICS] Loaded ${portfolioPerformance.length} days of REAL historical data from database`);
+        
+        // Save today's snapshot (idempotent - won't create duplicates)
+        await historicalService.saveDailySnapshot(
+          userId.toString(),
+          portfolioData,
+          sectorAllocation
+        );
+      }
       
       console.log('✅ [ANALYTICS] Portfolio data processed successfully:', portfolioData.length, 'stocks');
       
