@@ -404,31 +404,53 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     });
 
     try {
-      console.log('🔍 [ANALYTICS] Using real sector performance data...');
-      // Use the real sector performance data we already fetched
-      sectorPerformance = realSectorPerformance.map(sector => ({
-        sector: sector.sector,
-        performance7D: sector.performance7D,
-        performance30D: sector.performance30D,
-        performance60D: sector.performance60D,
-        performance90D: sector.performance90D,
-        currentPrice: sector.currentPrice,
-        change: sector.change,
-        changePercent: sector.changePercent,
-        color: 'bg-blue-500' // Default color, will be set by frontend
-      }));
-      console.log('✅ [ANALYTICS] Real sector performance data loaded:', sectorPerformance.length, 'sectors');
+      console.log('🔍 [ANALYTICS] Using real sector performance data (filtered for portfolio sectors)...');
+      
+      // Extract sectors from sectorAllocation (only show sectors that are actually in the portfolio)
+      const portfolioSectorNames = sectorAllocation.map(s => s.sector);
+      console.log('🔍 [ANALYTICS] Portfolio sectors:', portfolioSectorNames);
+      
+      // Filter to only show sectors that are in the portfolio
+      sectorPerformance = realSectorPerformance
+        .filter(sector => portfolioSectorNames.includes(sector.sector))
+        .map(sector => {
+          // Find matching allocation data to use the same performance data
+          const allocation = sectorAllocation.find(a => a.sector === sector.sector);
+          return {
+            sector: sector.sector,
+            performance7D: (allocation?.performance7D || sector.performance7D || 0).toFixed(2),
+            performance30D: (allocation?.performance30D || sector.performance30D || 0).toFixed(2),
+            performance60D: (allocation?.performance60D || 0).toFixed(2),
+            performance90D: (allocation?.performance90D || sector.performance90D || 0).toFixed(2),
+            currentPrice: sector.currentPrice || 0,
+            change: sector.change || 0,
+            changePercent: sector.changePercent || 0,
+            percentage: allocation?.percentage || 0,
+            value: allocation?.value || 0,
+            stocks: allocation?.stocks || [],
+            color: allocation?.color || 'bg-blue-500'
+          };
+        });
+      console.log('✅ [ANALYTICS] Real sector performance data loaded (filtered):', sectorPerformance.length, 'sectors');
     } catch (error: any) {
       console.error('❌ [ANALYTICS] Real sector performance service failed:', error?.message || error);
       
-      // Generate immediate fallback sector data
-      console.log('🔄 [ANALYTICS] Generating fallback sector data...');
-      sectorPerformance = [
-        { sector: 'Technology', performance7D: 2.1, performance30D: 5.3, performance60D: 8.7, performance90D: 12.4, currentPrice: 150, change: 1.2, changePercent: 0.8, color: 'bg-blue-500' },
-        { sector: 'Healthcare', performance7D: -1.2, performance30D: 3.1, performance60D: 6.8, performance90D: 9.2, currentPrice: 120, change: -0.5, changePercent: -0.4, color: 'bg-green-500' },
-        { sector: 'Financials', performance7D: 0.8, performance30D: 2.4, performance60D: 4.1, performance90D: 7.3, currentPrice: 85, change: 0.3, changePercent: 0.4, color: 'bg-purple-500' },
-        { sector: 'Energy', performance7D: -2.1, performance30D: -0.8, performance60D: 1.2, performance90D: 3.7, currentPrice: 45, change: -0.9, changePercent: -2.0, color: 'bg-orange-500' }
-      ];
+      // Generate fallback sector data based on actual portfolio sectors
+      console.log('🔄 [ANALYTICS] Generating fallback sector data for portfolio sectors...');
+      sectorPerformance = sectorAllocation.map(allocation => ({
+        sector: allocation.sector,
+        performance7D: allocation.performance7D || 0,
+        performance30D: allocation.performance30D || 0,
+        performance60D: allocation.performance60D || 0,
+        performance90D: allocation.performance90D || 0,
+        currentPrice: 100,
+        change: 0,
+        changePercent: 0,
+        percentage: allocation.percentage,
+        value: allocation.value,
+        stocks: allocation.stocks,
+        color: allocation.color
+      }));
     }
 
     // Calculate risk assessment

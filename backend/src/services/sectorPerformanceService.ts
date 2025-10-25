@@ -306,7 +306,7 @@ export class SectorPerformanceService {
     // Comprehensive sector mapping to eliminate "Other" categories
     const sectorMapping: { [key: string]: string[] } = {
       'Technology': [
-        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'INTC', 'AMD', 'QCOM', 'AVGO', 'TXN', 'CSCO', 'NOW', 'SNOW', 'PLTR', 'HIMX', 'SHMD'
+        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'INTC', 'AMD', 'QCOM', 'AVGO', 'TXN', 'CSCO', 'NOW', 'SNOW', 'PLTR', 'HIMX', 'SHMD', 'MVST'
       ],
       'Healthcare': [
         'JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR', 'BMY', 'AMGN', 'LLY', 'CVS', 'CI', 'ANTM', 'GILD', 'BIIB', 'REGN', 'VRTX', 'ISRG', 'ZTS'
