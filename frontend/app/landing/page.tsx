@@ -18,7 +18,9 @@ import {
   Crown,
   Users,
   Star,
-  Play
+  Play,
+  PieChart,
+  FileText
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -287,11 +289,11 @@ export default function LandingPage() {
               How Our AI Works
             </h2>
             <p className="text-xl text-slate-300">
-              Two powerful engines working together to optimize your investments
+              Four powerful engines working together to optimize your investments
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
             {/* Portfolio Building Engine */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl border border-blue-500/20">
               <div className="flex items-center mb-6">
@@ -379,11 +381,100 @@ export default function LandingPage() {
             </div>
           </div>
 
+          {/* Additional Engines Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+            {/* Portfolio Analysis Engine */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl border border-green-500/20">
+              <div className="flex items-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mr-4">
+                  <PieChart className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Portfolio Analysis Engine</h3>
+                  <p className="text-slate-300">Deep dive into performance</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Sector Performance</h4>
+                    <p className="text-slate-300 text-sm">Track 30-day performance across all portfolio sectors</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Risk Assessment</h4>
+                    <p className="text-slate-300 text-sm">Measure volatility, drawdowns, and risk metrics</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Performance Trends</h4>
+                    <p className="text-slate-300 text-sm">Visualize portfolio growth over time with detailed charts</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Automatic Sector Mapping</h4>
+                    <p className="text-slate-300 text-sm">AI automatically classifies stocks into sectors (Technology, Healthcare, etc.)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Reports Analysis Engine */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl border border-orange-500/20">
+              <div className="flex items-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mr-4">
+                  <FileText className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Reports Engine</h3>
+                  <p className="text-slate-300">Stay informed with smart insights</p>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Live News Feed</h4>
+                    <p className="text-slate-300 text-sm">Real-time news from Finnhub and Alpha Vantage</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Earnings Calendar</h4>
+                    <p className="text-slate-300 text-sm">Track upcoming earnings for your portfolio stocks</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Sentiment Analysis</h4>
+                    <p className="text-slate-300 text-sm">Positive, neutral, and negative news filtering</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-orange-400 rounded-full mt-2 mr-3"></div>
+                  <div>
+                    <h4 className="text-white font-semibold mb-1">Portfolio Summary</h4>
+                    <p className="text-slate-300 text-sm">Quick overview of total value, P&L, and stock count</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="mt-12 text-center">
             <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-8">
               <h3 className="text-2xl font-bold text-white mb-4">How They Work Together</h3>
               <p className="text-lg text-slate-300 max-w-4xl mx-auto">
-                The Portfolio Building Engine creates your initial investment strategy, while the Decision Engine continuously monitors and adjusts your portfolio based on market conditions, ensuring you always have the optimal investment mix for maximum returns.
+                The Portfolio Building Engine creates your initial strategy. The Decision Engine monitors and adjusts in real-time. The Portfolio Analysis Engine provides deep insights into performance and sectors. The Reports Engine keeps you informed with news and earnings. Together, they create a complete AI-powered investment system.
               </p>
             </div>
           </div>
