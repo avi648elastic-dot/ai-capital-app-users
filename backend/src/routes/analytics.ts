@@ -727,12 +727,21 @@ router.get('/earnings-calendar', authenticateToken, async (req, res) => {
 
           if (response.data && Array.isArray(response.data) && response.data.length > 0) {
             success = true;
-            // Get the next upcoming earnings
-            const nextEarning = response.data
-              .filter((e: any) => e.date && new Date(e.date) > new Date())
-              .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+            console.log(`✅ [EARNINGS] Fetched ${response.data.length} earnings records for ${ticker}`);
+            
+            // Get the next upcoming earnings (or most recent if no future earnings)
+            const allEarnings = response.data
+              .filter((e: any) => e.date)
+              .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            
+            // Try to find future earnings first
+            const futureEarning = allEarnings.find((e: any) => new Date(e.date) > new Date());
+            
+            // If no future earnings, get the most recent one
+            const nextEarning = futureEarning || allEarnings[allEarnings.length - 1];
             
             if (nextEarning) {
+              console.log(`✅ [EARNINGS] Found earnings for ${ticker}: ${nextEarning.date}`);
               earnings.push({
                 ticker: ticker,
                 date: nextEarning.date ? nextEarning.date.split(' ')[0] : new Date().toISOString().split('T')[0],
@@ -740,6 +749,8 @@ router.get('/earnings-calendar', authenticateToken, async (req, res) => {
                 epsEstimate: nextEarning.epsEstimated || null,
                 revenueEstimate: nextEarning.revenueEstimated || null
               });
+            } else {
+              console.warn(`⚠️ [EARNINGS] No valid earnings data for ${ticker}`);
             }
           }
         } catch (error: any) {

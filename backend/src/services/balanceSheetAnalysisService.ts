@@ -70,10 +70,22 @@ class BalanceSheetAnalysisService {
         ).catch(() => null)
       ]);
 
+      if (!incomeStmt?.data?.[0]) {
+        console.warn(`⚠️ [BALANCE SHEET] No income statement data for ${ticker}`);
+      }
+      if (!balanceSheet?.data?.[0]) {
+        console.warn(`⚠️ [BALANCE SHEET] No balance sheet data for ${ticker}`);
+      }
+      if (!cashFlow?.data?.[0]) {
+        console.warn(`⚠️ [BALANCE SHEET] No cash flow data for ${ticker}`);
+      }
+      
       if (!incomeStmt?.data?.[0] || !balanceSheet?.data?.[0] || !cashFlow?.data?.[0]) {
         console.warn(`⚠️ [BALANCE SHEET] Incomplete data for ${ticker}`);
         return null;
       }
+      
+      console.log(`✅ [BALANCE SHEET] Fetched complete financial data for ${ticker}`);
 
       const inc: any = incomeStmt.data[0];
       const bs: any = balanceSheet.data[0];
