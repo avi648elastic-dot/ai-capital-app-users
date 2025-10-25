@@ -1,4 +1,5 @@
 import axios from 'axios';
+import SectorLookupService from './sectorLookupService';
 
 interface SectorPerformance {
   sector: string;
@@ -303,8 +304,44 @@ export class SectorPerformanceService {
       return [];
     }
 
-    // Comprehensive sector mapping to eliminate "Other" categories
-    const sectorMapping: { [key: string]: string[] } = {
+    const sectorLookupService = SectorLookupService.getInstance();
+    const sectorTotals: { [key: string]: { value: number, stocks: string[] } } = {};
+    let totalPortfolioValue = 0;
+
+    // First, try to get sectors from professional APIs (automatic lookup)
+    console.log('🔍 [SECTOR ALLOCATION] Attempting automatic sector lookup for portfolio stocks...');
+    const tickers = portfolio.map(stock => stock.ticker);
+    const sectorInfoMap = await sectorLookupService.getSectorsForStocks(tickers);
+
+    console.log(`✅ [SECTOR ALLOCATION] Got sector info for ${sectorInfoMap.size}/${tickers.length} stocks`);
+
+    // If we got sector info, use it (automatic/professional)
+    if (sectorInfoMap.size > 0) {
+      portfolio.forEach(stock => {
+        const value = stock.currentPrice * stock.shares;
+        totalPortfolioValue += value;
+
+        const sectorInfo = sectorInfoMap.get(stock.ticker);
+        if (sectorInfo) {
+          const sector = sectorInfo.sector;
+          if (!sectorTotals[sector]) {
+            sectorTotals[sector] = { value: 0, stocks: [] };
+          }
+          sectorTotals[sector].value += value;
+          if (!sectorTotals[sector].stocks.includes(stock.ticker)) {
+            sectorTotals[sector].stocks.push(stock.ticker);
+          }
+          console.log(`📊 [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from ${sectorInfo.source})`);
+        }
+      });
+    }
+
+    // Fallback to hardcoded mapping for stocks not found
+    if (sectorTotals['Other'] || sectorInfoMap.size < tickers.length) {
+      console.log('🔄 [SECTOR ALLOCATION] Using fallback mapping for unmapped stocks...');
+      
+      // Comprehensive sector mapping to eliminate "Other" categories (fallback)
+      const sectorMapping: { [key: string]: string[] } = {
       'Technology': [
         'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'INTC', 'AMD', 'QCOM', 'AVGO', 'TXN', 'CSCO', 'NOW', 'SNOW', 'PLTR', 'HIMX', 'SHMD', 'MVST'
       ],
@@ -338,30 +375,39 @@ export class SectorPerformanceService {
       'Communication Services': [
         'GOOGL', 'META', 'NFLX', 'CMCSA', 'VZ', 'T', 'DIS', 'CHTR', 'TMUS', 'NFLX', 'TWTR', 'SNAP', 'PINS', 'ROKU', 'SPOT', 'MTCH', 'ZM', 'TEAM', 'OKTA', 'CRWD'
       ]
-    };
+      };
 
-    const sectorTotals: { [key: string]: { value: number, stocks: string[] } } = {};
-    let totalPortfolioValue = 0;
+      // Calculate sector values for unmapped stocks using fallback
+      portfolio.forEach(stock => {
+        const value = stock.currentPrice * stock.shares;
+        totalPortfolioValue += value;
 
-    // Calculate sector values
-    portfolio.forEach(stock => {
-      const value = stock.currentPrice * stock.shares;
-      totalPortfolioValue += value;
-
-      // Find which sector this stock belongs to
-      for (const [sector, tickers] of Object.entries(sectorMapping)) {
-        if (tickers.includes(stock.ticker)) {
-          if (!sectorTotals[sector]) {
-            sectorTotals[sector] = { value: 0, stocks: [] };
-          }
-          sectorTotals[sector].value += value;
-          if (!sectorTotals[sector].stocks.includes(stock.ticker)) {
-            sectorTotals[sector].stocks.push(stock.ticker);
-          }
-          break;
+        // Skip if already mapped from API
+        if (sectorInfoMap.has(stock.ticker)) {
+          return;
         }
-      }
-    });
+
+        // Find which sector this stock belongs to using fallback mapping
+        for (const [sector, tickers] of Object.entries(sectorMapping)) {
+          if (tickers.includes(stock.ticker)) {
+            if (!sectorTotals[sector]) {
+              sectorTotals[sector] = { value: 0, stocks: [] };
+            }
+            sectorTotals[sector].value += value;
+            if (!sectorTotals[sector].stocks.includes(stock.ticker)) {
+              sectorTotals[sector].stocks.push(stock.ticker);
+            }
+            console.log(`📊 [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from fallback mapping)`);
+            break;
+          }
+        }
+      });
+    } else {
+      // No API mapping, calculate total value first
+      portfolio.forEach(stock => {
+        totalPortfolioValue += stock.currentPrice * stock.shares;
+      });
+    }
 
     // Get sector performance data
     const sectorPerformance = await this.getSectorPerformance();
