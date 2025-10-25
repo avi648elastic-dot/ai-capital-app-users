@@ -249,7 +249,7 @@ export default function Reports() {
         </div>
 
         {/* Balance Sheet Health Section */}
-        {balanceSheetAnalyses.length > 0 && (
+        {portfolio.length > 0 && (
           <div className="mt-8">
             <div className="card p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
@@ -260,8 +260,16 @@ export default function Reports() {
                 Fundamental analysis based on 13 financial criteria (must pass 8/13 to be considered healthy)
               </p>
               
-              <div className="space-y-3">
-                {balanceSheetAnalyses.map((analysis, index) => (
+              {balanceSheetAnalyses.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-slate-400 mb-2">No financial data available</p>
+                  <p className="text-xs text-slate-500">
+                    Financial data is fetched from external APIs (FMP, Alpha Vantage, Finnhub)
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {balanceSheetAnalyses.map((analysis, index) => (
                   <div key={index} className="border border-slate-800 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2">
@@ -320,8 +328,9 @@ export default function Reports() {
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
