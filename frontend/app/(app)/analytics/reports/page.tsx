@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { FileText, Calendar, TrendingUp, AlertCircle, Building2 } from 'lucide-react';
+import { FileText, Calendar, TrendingUp, AlertCircle } from 'lucide-react';
 
 export default function Reports() {
   const [portfolio, setPortfolio] = useState<any[]>([]);
@@ -13,7 +13,6 @@ export default function Reports() {
   const [user, setUser] = useState<any>(null);
   const [portfolioMetrics, setPortfolioMetrics] = useState<any>(null);
   const [earnings, setEarnings] = useState<any[]>([]);
-  const [balanceSheetAnalyses, setBalanceSheetAnalyses] = useState<any[]>([]);
 
   const handleLogout = () => {
     Cookies.remove('token');
@@ -88,21 +87,7 @@ export default function Reports() {
         setEarnings([]);
       }
 
-      // Fetch balance sheet analyses for portfolio stocks
-      if (portfolio.length > 0) {
-        try {
-          const balanceSheetRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/balance-sheet`, {
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 20000
-          });
-          const analysesData = balanceSheetRes.data.analyses || [];
-          setBalanceSheetAnalyses(analysesData);
-          console.log(`✅ [REPORTS] Loaded ${analysesData.length} balance sheet analyses`);
-        } catch (balanceSheetError) {
-          console.error('❌ [REPORTS] Error fetching balance sheet analyses:', balanceSheetError);
-          setBalanceSheetAnalyses([]);
-        }
-      }
+
     } catch (error) {
       console.error('Error fetching data:', error);
       setNews([]);
@@ -246,84 +231,6 @@ export default function Reports() {
             </div>
           </div>
         </div>
-
-        {/* Balance Sheet Health Section */}
-        {balanceSheetAnalyses.length > 0 && (
-          <div className="mt-8">
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                <Building2 className="w-5 h-5 mr-2" />
-                Balance Sheet Health Analysis
-              </h3>
-              <p className="text-sm text-slate-400 mb-4">
-                Fundamental analysis based on 13 financial criteria (must pass 8/13 to be considered healthy)
-              </p>
-              
-              <div className="space-y-3">
-                {balanceSheetAnalyses.map((analysis, index) => (
-                  <div key={index} className="border border-slate-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-white font-semibold text-lg">{analysis.ticker}</span>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          analysis.eligible 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-red-500/20 text-red-400'
-                        }`}>
-                          {analysis.eligible ? 'HEALTHY' : 'WEAK'}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <div className={`text-2xl font-bold ${
-                          analysis.eligible ? 'text-green-400' : 'text-red-400'
-                        }`}>
-                          {analysis.score}/{analysis.maxScore}
-                        </div>
-                        <div className="text-xs text-slate-400">Score</div>
-                      </div>
-                    </div>
-
-                    {analysis.recommendation && (
-                      <div className="mb-3">
-                        <span className="text-sm font-medium text-blue-400">
-                          {analysis.recommendation}
-                        </span>
-                      </div>
-                    )}
-
-                    {analysis.reasons && analysis.reasons.length > 0 && (
-                      <div className="mb-3">
-                        <h5 className="text-xs font-semibold text-slate-400 mb-2">STRENGTHS:</h5>
-                        <div className="space-y-1">
-                          {analysis.reasons.slice(0, 3).map((reason: string, idx: number) => (
-                            <div key={idx} className="text-xs text-green-300 flex items-start">
-                              <span className="mr-1">•</span>
-                              <span>{reason}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {analysis.redFlags && analysis.redFlags.length > 0 && (
-                      <div>
-                        <h5 className="text-xs font-semibold text-slate-400 mb-2">RED FLAGS:</h5>
-                        <div className="space-y-1">
-                          {analysis.redFlags.slice(0, 3).map((flag: string, idx: number) => (
-                            <div key={idx} className="text-xs text-red-300 flex items-start">
-                              <span className="mr-1">•</span>
-                              <span>{flag}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
     </div>
   );
 }
