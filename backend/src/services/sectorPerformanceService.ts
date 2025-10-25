@@ -343,7 +343,7 @@ export class SectorPerformanceService {
       // Comprehensive sector mapping to eliminate "Other" categories (fallback)
       const sectorMapping: { [key: string]: string[] } = {
       'Technology': [
-        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'INTC', 'AMD', 'QCOM', 'AVGO', 'TXN', 'CSCO', 'NOW', 'SNOW', 'PLTR', 'HIMX', 'SHMD', 'MVST'
+        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'INTC', 'AMD', 'QCOM', 'AVGO', 'TXN', 'CSCO', 'NOW', 'SNOW', 'PLTR', 'HIMX'
       ],
       'Healthcare': [
         'JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR', 'BMY', 'AMGN', 'LLY', 'CVS', 'CI', 'ANTM', 'GILD', 'BIIB', 'REGN', 'VRTX', 'ISRG', 'ZTS'
@@ -355,13 +355,13 @@ export class SectorPerformanceService {
         'XOM', 'CVX', 'COP', 'EOG', 'SLB', 'KMI', 'PSX', 'VLO', 'MPC', 'OXY', 'PXD', 'EOG', 'KOS', 'MRO', 'DVN', 'HES', 'FANG', 'PBF', 'VLO', 'MPC'
       ],
       'Consumer Discretionary': [
-        'AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'SBUX', 'LOW', 'TJX', 'BKNG', 'CMG', 'LMT', 'TGT', 'COST', 'WMT', 'DIS', 'NFLX', 'UBER', 'LYFT', 'ABNB', 'ETSY'
+        'AMZN', 'TSLA', 'HD', 'MCD', 'NKE', 'SBUX', 'LOW', 'TJX', 'BKNG', 'CMG', 'LMT', 'TGT', 'COST', 'WMT', 'DIS', 'NFLX', 'UBER', 'LYFT', 'ABNB', 'ETSY', 'MVST'
       ],
       'Consumer Staples': [
         'PG', 'KO', 'PEP', 'WMT', 'COST', 'CL', 'KMB', 'GIS', 'K', 'HSY', 'WBA', 'CVS', 'KR', 'TGT', 'WMT', 'COST', 'CLX', 'CHD', 'K', 'CAG'
       ],
       'Industrials': [
-        'BA', 'CAT', 'HON', 'UPS', 'GE', 'MMM', 'LMT', 'RTX', 'DE', 'EMR', 'FDX', 'UPS', 'LMT', 'RTX', 'NOC', 'GD', 'TDG', 'ITW', 'ETN', 'PH'
+        'BA', 'CAT', 'HON', 'UPS', 'GE', 'MMM', 'LMT', 'RTX', 'DE', 'EMR', 'FDX', 'UPS', 'LMT', 'RTX', 'NOC', 'GD', 'TDG', 'ITW', 'ETN', 'PH', 'SHMD'
       ],
       'Materials': [
         'LIN', 'APD', 'SHW', 'FCX', 'NEM', 'DOW', 'PPG', 'ECL', 'DD', 'IFF', 'NUE', 'X', 'CLF', 'AA', 'FCX', 'NEM', 'GOLD', 'ABX', 'AEM', 'KGC'

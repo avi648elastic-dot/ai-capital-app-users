@@ -58,6 +58,51 @@ function generatePortfolioPerformanceFromStockData(stockData: any[], days: numbe
   return performance;
 }
 
+// Helper function to generate MONTHLY performance data (4 data points for 4 weeks)
+function generateMonthlyPortfolioPerformance(stockData: any[], weeks: number): any[] {
+  const performance: any[] = [];
+  const today = new Date();
+  
+  // Calculate baseline values
+  const totalCost = stockData.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
+  const currentTotalValue = stockData.reduce((sum, stock) => {
+    const currentPrice = stock.currentPrice || stock.entryPrice;
+    return sum + (currentPrice * stock.shares);
+  }, 0);
+  
+  // Calculate current P&L percentage
+  const currentPnLPercent = totalCost > 0 ? ((currentTotalValue - totalCost) / totalCost) * 100 : 0;
+  
+  // Generate weekly performance with gradual trend toward current value
+  let runningPnLPercent = currentPnLPercent * 0.5; // Start at 50% of current performance
+  
+  for (let week = weeks - 1; week >= 0; week--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - (week * 7)); // Each point is 1 week apart
+    
+    // Gradually approach current performance
+    const progress = (weeks - week - 1) / (weeks - 1);
+    runningPnLPercent = currentPnLPercent * (0.3 + 0.7 * progress);
+    
+    // Calculate values based on running P&L
+    const totalValue = totalCost * (1 + runningPnLPercent / 100);
+    const totalPnL = totalValue - totalCost;
+    const dailyChange = totalPnL * 0.02; // Small weekly change
+    const dailyChangePercent = runningPnLPercent * 0.02;
+    
+    performance.push({
+      date: date.toISOString().split('T')[0],
+      totalValue: totalValue,
+      totalPnL: totalPnL,
+      totalPnLPercent: runningPnLPercent,
+      dailyChange: dailyChange,
+      dailyChangePercent: dailyChangePercent
+    });
+  }
+  
+  return performance;
+}
+
 // Basic analytics endpoint for dashboard charts (no premium required)
 router.get('/', authenticateToken, async (req, res) => {
   try {
@@ -324,33 +369,33 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         }
       });
 
-      // Get REAL historical data from database (NEW IMPLEMENTATION)
-      const historicalService = HistoricalPortfolioService.getInstance();
-      console.log('🔍 [ANALYTICS] Fetching real historical data from database...');
-      
-      // Try to get historical data first
-      portfolioPerformance = await historicalService.getHistoricalData(userId.toString(), 30);
-      
-      // If no historical data exists yet, save today's snapshot as first data point
-      if (portfolioPerformance.length === 0) {
-        console.log('📊 [ANALYTICS] No historical data found, saving initial snapshot...');
-        await historicalService.saveDailySnapshot(
-          userId.toString(),
-          portfolioData,
-          sectorAllocation
-        );
-        // Generate initial data from current portfolio
-        portfolioPerformance = generatePortfolioPerformanceFromStockData(portfolioData, 7); // Start with 7 days
-      } else {
-        console.log(`✅ [ANALYTICS] Loaded ${portfolioPerformance.length} days of REAL historical data from database`);
-        
-        // Save today's snapshot (idempotent - won't create duplicates)
-        await historicalService.saveDailySnapshot(
-          userId.toString(),
-          portfolioData,
-          sectorAllocation
-        );
-      }
+             // Get REAL historical data from database (NEW IMPLEMENTATION)
+       const historicalService = HistoricalPortfolioService.getInstance();
+       console.log('🔍 [ANALYTICS] Fetching real historical data from database (30-day monthly data)...');
+       
+       // Try to get historical data first - use 30 days for monthly data points
+       portfolioPerformance = await historicalService.getHistoricalData(userId.toString(), 30);
+       
+       // If no historical data exists yet, save today's snapshot as first data point
+       if (portfolioPerformance.length === 0) {
+         console.log('📊 [ANALYTICS] No historical data found, saving initial snapshot...');
+         await historicalService.saveDailySnapshot(
+           userId.toString(),
+           portfolioData,
+           sectorAllocation
+         );
+         // Generate initial data from current portfolio - use 4 data points for 4 weeks
+         portfolioPerformance = generateMonthlyPortfolioPerformance(portfolioData, 4); // 4 weeks of data
+       } else {
+         console.log(`✅ [ANALYTICS] Loaded ${portfolioPerformance.length} data points of REAL historical data from database`);
+         
+         // Save today's snapshot (idempotent - won't create duplicates)
+         await historicalService.saveDailySnapshot(
+           userId.toString(),
+           portfolioData,
+           sectorAllocation
+         );
+       }
       
       console.log('✅ [ANALYTICS] Portfolio data processed successfully:', portfolioData.length, 'stocks');
       
