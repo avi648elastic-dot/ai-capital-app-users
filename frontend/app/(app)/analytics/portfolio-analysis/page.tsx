@@ -417,14 +417,14 @@ export default function PortfolioAnalysis() {
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-400">Stocks: {(sector.stocks || []).join(', ')}</span>
                     <div className={`flex items-center space-x-1 ${
-                      (sector.performance90D || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                      (parseFloat(sector.performance90D) || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
-                      {(sector.performance90D || 0) >= 0 ? (
+                      {(parseFloat(sector.performance90D) || 0) >= 0 ? (
                         <TrendingUp className="w-3 h-3" />
                       ) : (
                         <TrendingDown className="w-3 h-3" />
                       )}
-                      <span>{(sector.performance90D || 0) >= 0 ? '+' : ''}{(sector.performance90D || 0).toFixed(2)}%</span>
+                      <span>{(parseFloat(sector.performance90D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance90D) || 0).toFixed(2)}%</span>
                       <span className="text-slate-500">90D</span>
                     </div>
                   </div>
@@ -640,9 +640,9 @@ export default function PortfolioAnalysis() {
                         <span className="text-white font-medium text-sm">{sector.sector}</span>
                       </div>
                       <div className={`text-sm font-semibold ${
-                        (sector.performance90D || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                        (parseFloat(sector.performance90D) || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
-                        {(sector.performance90D || 0) >= 0 ? '+' : ''}{(sector.performance90D || 0).toFixed(2)}%
+                        {(parseFloat(sector.performance90D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance90D) || 0).toFixed(2)}%
                       </div>
                     </div>
                     <div className="text-xs text-slate-400 mb-2">
