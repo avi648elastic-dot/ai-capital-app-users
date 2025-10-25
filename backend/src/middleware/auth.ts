@@ -23,56 +23,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   console.log('🔍 [AUTH] Auth header present:', !!authHeader);
   console.log('🔍 [AUTH] Token present:', !!token);
 
-  // TEMPORARY FIX: Bypass auth for ALL delete and post operations to test
-  if (req.method === 'DELETE' || req.method === 'POST') {
-    console.log('🔧 [AUTH] TEMPORARY BYPASS for operation');
-    console.log('🔧 [AUTH] Request URL:', req.url);
-    console.log('🔧 [AUTH] Request method:', req.method);
-    // Find user by email from a known user (temporary fix)
-    try {
-      const user = await User.findOne({ email: 'avi648elastic@gmail.com' }).select('-password');
-      if (user) {
-        console.log('🔧 [AUTH] Using temporary user:', user.email);
-        console.log('🔧 [AUTH] User ID:', user._id);
-        req.user = user;
-        return next();
-      } else {
-        console.log('❌ [AUTH] Temporary user not found! Creating one...');
-        // Create a temporary user if not found
-        const tempUser = new User({
-          name: 'Temporary User',
-          email: 'avi648elastic@gmail.com',
-          subscriptionActive: true,
-          subscriptionTier: 'premium',
-          onboardingCompleted: true,
-          reputation: 0,
-          totalRealizedPnL: 0,
-          totalPositionsClosed: 0
-        });
-        await tempUser.save();
-        console.log('🔧 [AUTH] Created temporary user:', tempUser.email);
-        req.user = tempUser;
-        return next();
-      }
-    } catch (userError) {
-      console.error('❌ [AUTH] Error with user lookup/creation:', userError);
-      // Fallback: try to find any existing user in the database
-      try {
-        const fallbackUser = await User.findOne().select('-password');
-        if (fallbackUser) {
-          console.log('🔧 [AUTH] Using fallback user from database:', fallbackUser.email);
-          req.user = fallbackUser;
-          return next();
-        }
-      } catch (fallbackError) {
-        console.error('❌ [AUTH] Fallback user lookup failed:', fallbackError);
-      }
-      
-      // Last resort: return 500 error instead of creating invalid user
-      console.error('❌ [AUTH] No valid user found, cannot proceed');
-      return res.status(500).json({ message: 'Authentication system error' });
-    }
-  }
+  // Handle authentication normally - no bypasses
 
   if (!token) {
     console.log('❌ [AUTH] No token provided');
