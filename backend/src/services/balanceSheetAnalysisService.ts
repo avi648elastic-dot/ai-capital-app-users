@@ -92,7 +92,7 @@ class BalanceSheetAnalysisService {
       }
       
           if (!incomeStmt?.data?.[0] || !balanceSheet?.data?.[0] || !cashFlow?.data?.[0]) {
-            console.warn(`⚠️ [BALANCE SHEET] Incomplete data for ${ticker} with key ${apiKey.substring(0, 5)}...`);
+            console.warn(`⚠️ [BALANCE SHEET] Incomplete data for ${ticker} with key ${apiKey?.substring(0, 5) || 'unknown'}...`);
             continue; // Try next API key
           }
           
