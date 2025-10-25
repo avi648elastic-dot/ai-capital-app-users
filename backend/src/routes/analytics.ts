@@ -285,7 +285,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       }
       
       // Process portfolio data using the same architecture as dashboard
-      const portfolioData = portfolio.map((stock) => {
+      portfolioData = portfolio.map((stock) => {
         const data = realTimeData.get(stock.ticker);
         if (data) {
           return {
