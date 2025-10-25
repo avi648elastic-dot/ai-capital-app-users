@@ -288,8 +288,14 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
     try {
       console.log(`🔍 [PORTFOLIO ADD] Looking up sector for ${ticker.toUpperCase().trim()}...`);
       const sectorLookupService = SectorLookupService.getInstance();
-      stockSector = await sectorLookupService.getSectorForStock(ticker.toUpperCase().trim());
-      console.log(`✅ [PORTFOLIO ADD] Sector found for ${ticker}: ${stockSector}`);
+      const sectorInfo = await sectorLookupService.getSectorForStock(ticker.toUpperCase().trim());
+      if (sectorInfo) {
+        stockSector = sectorInfo.sector;
+        console.log(`✅ [PORTFOLIO ADD] Sector found for ${ticker}: ${stockSector}`);
+      } else {
+        console.log(`⚠️ [PORTFOLIO ADD] No sector found for ${ticker}`);
+        stockSector = undefined;
+      }
     } catch (sectorError: any) {
       console.warn(`⚠️ [PORTFOLIO ADD] Sector lookup failed for ${ticker}:`, sectorError?.message || sectorError);
       // Continue without sector - stock can still be added
