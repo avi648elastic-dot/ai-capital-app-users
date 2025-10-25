@@ -37,6 +37,9 @@ export default function RiskManagement() {
 
       const riskAnalytics = riskResponse.data;
       
+      console.log('📊 [RISK] Risk analytics response:', riskAnalytics);
+      console.log('📊 [RISK] StockRisks sample:', riskAnalytics.stockRisks?.slice(0, 2));
+      
       // Set portfolio from stock risks
       if (riskAnalytics.stockRisks && riskAnalytics.stockRisks.length > 0) {
         setPortfolio(riskAnalytics.stockRisks);
@@ -67,6 +70,7 @@ export default function RiskManagement() {
 
   const getRiskColor = (level: string) => {
     switch (level) {
+      case 'Extreme': return 'text-red-500 bg-red-900/30';
       case 'High': return 'text-red-400 bg-red-900/20';
       case 'Medium': return 'text-yellow-400 bg-yellow-900/20';
       case 'Low': return 'text-emerald-400 bg-emerald-900/20';
@@ -76,6 +80,7 @@ export default function RiskManagement() {
 
   const getRiskIcon = (level: string) => {
     switch (level) {
+      case 'Extreme': return <AlertTriangle className="w-4 h-4" />;
       case 'High': return <TrendingDown className="w-4 h-4" />;
       case 'Medium': return <Activity className="w-4 h-4" />;
       case 'Low': return <TrendingUp className="w-4 h-4" />;

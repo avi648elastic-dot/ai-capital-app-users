@@ -1013,8 +1013,16 @@ router.get('/risk-analytics', authenticateToken, requireSubscription, async (req
     console.log('✅ [RISK] Risk analytics calculated:', {
       avgRiskScore: avgRiskScore.toFixed(1),
       highRiskStocks,
-      diversificationScore: diversificationScore.toFixed(0) + '%'
+      diversificationScore: diversificationScore.toFixed(0) + '%',
+      stockCount: stockRisks.length
     });
+    console.log('📊 [RISK] Sample stockRisks data:', stockRisks.slice(0, 2).map(s => ({
+      ticker: s.ticker,
+      weight: s.weight,
+      pnlPercent: s.pnlPercent,
+      riskLevel: s.riskLevel,
+      riskScore: s.riskScore
+    })));
     
     res.json({ 
       averageRiskScore: parseFloat(avgRiskScore.toFixed(1)),
