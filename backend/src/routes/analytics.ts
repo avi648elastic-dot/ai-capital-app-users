@@ -827,69 +827,100 @@ router.get('/news', authenticateToken, async (req, res) => {
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     const today = new Date();
     
-    // Try multiple API keys for robustness
-    const apiKeys = [
+    // Try FINNHUB first (better for news, then Alpha Vantage as fallback)
+    const finnhubKeys = [
+      process.env.FINNHUB_API_KEY_1,
+      process.env.FINNHUB_API_KEY_2,
+      process.env.FINNHUB_API_KEY_3,
+      process.env.FINNHUB_API_KEY_4,
+      process.env.FINNHUB_API_KEY,
+    ].filter(key => key);
+
+    const alphavantageKeys = [
       process.env.ALPHA_VANTAGE_API_KEY_1,
       process.env.ALPHA_VANTAGE_API_KEY_2,
       process.env.ALPHA_VANTAGE_API_KEY_3,
       process.env.ALPHA_VANTAGE_API_KEY,
     ].filter(key => key);
 
-    if (apiKeys.length === 0) {
-      console.warn('⚠️ No Alpha Vantage API keys found');
+    if (finnhubKeys.length === 0 && alphavantageKeys.length === 0) {
+      console.warn('⚠️ No API keys found for news');
       return res.json({ news: [] });
     }
 
-    // Fetch news from Alpha Vantage with retry logic
-    let keyIndex = 0;
+    // Fetch news from FINNHUB first (better news API)
+    let finnhubKeyIndex = 0;
     for (const ticker of tickers) {
-      let success = false;
-      for (let attempt = 0; attempt < Math.min(apiKeys.length, 3) && !success; attempt++) {
-        try {
-          const apiKey = apiKeys[keyIndex % apiKeys.length];
-          keyIndex++;
-          
-          const response = await axios.get(
-            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=5`,
-            { timeout: 8000 }
-          );
+      try {
+        const finnhubKey = finnhubKeys[finnhubKeyIndex % finnhubKeys.length];
+        finnhubKeyIndex++;
+        
+        const response = await axios.get(
+          `https://finnhub.io/api/v1/company-news?symbol=${ticker}&from=${oneYearAgo.toISOString().split('T')[0]}&to=${today.toISOString().split('T')[0]}&token=${finnhubKey}`,
+          { timeout: 8000 }
+        );
 
-          if (response.data && response.data.feed && response.data.feed.length > 0) {
-            success = true;
-            response.data.feed.forEach((article: any) => {
-              try {
-                // Parse article date (format: YYYYMMDDHHMMSS)
-                const articleDate = new Date(
-                  article.time_published.slice(0, 4) + '-' +
-                  article.time_published.slice(4, 6) + '-' +
-                  article.time_published.slice(6, 8)
-                );
-                
-                // Only include articles from the last year
-                if (articleDate >= oneYearAgo && articleDate <= today) {
-                  allNews.push({
-                    title: article.title || 'No title',
-                    source: article.source || 'Unknown',
-                    date: article.time_published ? article.time_published.slice(0, 10) : new Date().toISOString().split('T')[0],
-                    ticker: ticker,
-                    url: article.url || '#',
-                    sentiment: article.overall_sentiment_score >= 0.35 ? 'positive' : 
-                               article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral'
-                  });
-                }
-              } catch (parseError: any) {
-                console.warn(`Error parsing article for ${ticker}:`, parseError?.message);
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          response.data.slice(0, 5).forEach((article: any) => {
+            try {
+              allNews.push({
+                title: article.headline || article.summary || 'No title',
+                source: article.source || 'Finnhub',
+                date: article.datetime ? new Date(article.datetime * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                ticker: ticker,
+                url: article.url || '#',
+                sentiment: 'neutral'
+              });
+            } catch (parseError: any) {
+              console.warn(`Error parsing FINNHUB article for ${ticker}:`, parseError?.message);
+            }
+          });
+        }
+      } catch (finnhubError: any) {
+        // Fallback to Alpha Vantage
+        if (alphavantageKeys.length > 0) {
+          let success = false;
+          let alphaKeyIndex = 0;
+          for (let attempt = 0; attempt < Math.min(alphavantageKeys.length, 3) && !success; attempt++) {
+            try {
+              const alphaKey = alphavantageKeys[alphaKeyIndex % alphavantageKeys.length];
+              alphaKeyIndex++;
+              
+              const response = await axios.get(
+                `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${alphaKey}&limit=5`,
+                { timeout: 8000 }
+              );
+
+              if (response.data && response.data.feed && response.data.feed.length > 0) {
+                success = true;
+                response.data.feed.forEach((article: any) => {
+                  try {
+                    const articleDate = new Date(
+                      article.time_published.slice(0, 4) + '-' +
+                      article.time_published.slice(4, 6) + '-' +
+                      article.time_published.slice(6, 8)
+                    );
+                    
+                    if (articleDate >= oneYearAgo && articleDate <= today) {
+                      allNews.push({
+                        title: article.title || 'No title',
+                        source: article.source || 'Unknown',
+                        date: article.time_published ? article.time_published.slice(0, 10) : new Date().toISOString().split('T')[0],
+                        ticker: ticker,
+                        url: article.url || '#',
+                        sentiment: article.overall_sentiment_score >= 0.35 ? 'positive' : 
+                                   article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral'
+                      });
+                    }
+                  } catch (parseError: any) {
+                    console.warn(`Error parsing Alpha Vantage article for ${ticker}:`, parseError?.message);
+                  }
+                });
               }
-            });
+            } catch (error: any) {
+              console.error(`Error fetching Alpha Vantage news for ${ticker}:`, error?.message);
+            }
           }
-        } catch (error: any) {
-          if (error?.response?.status === 429) {
-            // Rate limited - switch to next key
-            console.warn(`⏳ Rate limited for ${ticker}, trying next API key...`);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
-            continue;
-          }
-          console.error(`Error fetching news for ${ticker}:`, error?.message);
         }
       }
     }
