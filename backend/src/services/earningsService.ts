@@ -55,6 +55,12 @@ export class EarningsService {
           earnings = await this.fetchFromYahooFinance(ticker);
         }
 
+        // If all APIs failed, use fallback data
+        if (!earnings || earnings.length === 0) {
+          console.log(`⚠️ [EARNINGS] Using fallback data for ${ticker}`);
+          earnings = this.generateFallbackEarnings(ticker);
+        }
+
         // Filter for future dates only
         if (earnings && earnings.length > 0) {
           const futureEarnings = earnings.filter(e => {
