@@ -689,23 +689,24 @@ export default function PortfolioAnalysis() {
           </div>
 
           {/* Portfolio Performance Chart */}
-          <div className="lg:col-span-2 card p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-              <BarChart3 className="w-5 h-5 mr-2" />
+          <div className="lg:col-span-2 card p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
+              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Portfolio Performance Chart
             </h3>
-            <div className="h-80 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-slate-700 p-6">
-              <div className="flex h-full">
-                {/* Chart Area */}
-                <div className="flex-1 flex flex-col justify-center">
-                  <div className="bg-slate-700/30 rounded-lg p-6 h-full">
-                    <div className="text-center mb-4">
-                      <h4 className="text-lg font-semibold text-white mb-1">Portfolio Value Over Time</h4>
-                      <p className="text-sm text-slate-400">Last 30 Days Performance</p>
+            {/* Mobile: Stack vertically, Desktop: Side by side */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-slate-700 p-3 sm:p-6">
+              <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+                {/* Chart Area - Full width on mobile */}
+                <div className="flex-1">
+                  <div className="bg-slate-700/30 rounded-lg p-3 sm:p-4 lg:p-6">
+                    <div className="text-center mb-3 sm:mb-4">
+                      <h4 className="text-base sm:text-lg font-semibold text-white mb-1">Portfolio Value Over Time</h4>
+                      <p className="text-xs sm:text-sm text-slate-400">Last 30 Days Performance</p>
                     </div>
                     
-                    {/* Real Data Chart */}
-                    <div className="relative h-40 mb-4">
+                    {/* Real Data Chart - Larger on mobile */}
+                    <div className="relative h-48 sm:h-52 lg:h-40 mb-3 sm:mb-4">
                       {portfolioPerformance.length > 0 ? (
                         <RealPortfolioChart data={portfolioPerformance} />
                       ) : (
@@ -719,23 +720,23 @@ export default function PortfolioAnalysis() {
                     </div>
                     
                     {/* Real performance indicators */}
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm gap-1 sm:gap-2">
                       {portfolioPerformance && portfolioPerformance.length > 0 ? (
                         portfolioPerformance.slice(-4).map((week, index) => (
-                          <div key={index} className="text-center">
+                          <div key={index} className="text-center flex-1">
                             <div className="text-slate-300 font-medium">Week {index + 1}</div>
                             <div className="text-xs text-slate-500">${((week.totalValue || 0) / 1000).toFixed(1)}k</div>
                           </div>
                         ))
                       ) : (
-                        <div className="text-center text-slate-400 text-sm">Loading performance data...</div>
+                        <div className="text-center text-slate-400 text-xs sm:text-sm">Loading...</div>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Compact Chart Legend & Stats */}
-                <div className="w-48 ml-6 flex flex-col justify-center space-y-3">
+                {/* Compact Chart Legend & Stats - Full width on mobile */}
+                <div className="w-full lg:w-48 flex flex-row lg:flex-col gap-3 lg:space-y-3">
                   <div className="bg-slate-700/50 rounded-lg p-3">
                     <h5 className="text-xs font-semibold text-white mb-2 flex items-center">
                       <TrendingUp className="w-3 h-3 mr-1 text-green-400" />
