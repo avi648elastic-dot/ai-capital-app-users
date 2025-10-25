@@ -223,9 +223,39 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
     <div className="space-y-6 sm:space-y-8">
       {/* Enhanced Portfolio Value Over Time - Mobile Optimized */}
       <div className="card p-3 sm:p-4 lg:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-2 sm:space-y-0">
+        <div className="flex flex-col items-start justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
           <h3 className="text-lg sm:text-xl font-bold text-white">Portfolio Performance Over Time</h3>
-          <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
+          {/* Moved legend to bottom on mobile */}
+          <div className="w-full sm:hidden order-3 pt-2 border-t border-slate-700">
+            <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-xs">
+              <div className="flex items-center space-x-2">
+                {analyticsLoading && (
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                )}
+                <span className="text-slate-400">
+                  {portfolioPerformance && portfolioPerformance.length > 0 
+                    ? '📊 Real-time data' 
+                    : '⚠️ Entry data'
+                  }
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                <span className="text-slate-300">Portfolio Value</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span className="text-slate-300">Total Cost</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span className="text-slate-300">P&L</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Desktop legend */}
+          <div className="hidden sm:flex items-center space-x-4 text-xs sm:text-sm">
             <div className="flex items-center space-x-2">
               {analyticsLoading && (
                 <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-blue-500"></div>
@@ -236,14 +266,6 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
                   : '⚠️ Using portfolio entry data'
                 }
               </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-emerald-400 rounded-full"></div>
-              <span className="text-slate-300 text-xs sm:text-sm">Portfolio Value</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-400 rounded-full"></div>
-              <span className="text-slate-300 text-xs sm:text-sm">Total Cost</span>
             </div>
           </div>
         </div>
@@ -278,6 +300,12 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
                 tick={{ fill: '#6b7280' }}
                 axisLine={{ stroke: '#4b5563' }}
                 tickLine={{ stroke: '#4b5563' }}
+                label={{ 
+                  value: 'Date', 
+                  position: 'insideBottom', 
+                  offset: -10,
+                  style: { textAnchor: 'middle', fill: '#9ca3af', fontSize: '12px', fontWeight: 'bold' }
+                }}
               />
               <YAxis 
                 stroke="#6b7280"
@@ -287,88 +315,102 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
                 axisLine={{ stroke: '#4b5563' }}
                 tickLine={{ stroke: '#4b5563' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                label={{ 
+                  value: 'Value ($)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle', fill: '#9ca3af', fontSize: '12px', fontWeight: 'bold' }
+                }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
                 cursor={{ stroke: '#6b7280', strokeWidth: 1, strokeDasharray: '5 5' }}
               />
-              {/* Portfolio Value Area */}
+              {/* Portfolio Value Area - Make more prominent */}
               <Area
                 type="monotone"
                 dataKey="value"
                 stroke="#10b981"
                 fill="url(#portfolioGradient)"
-                strokeWidth={3}
-                dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                strokeWidth={4}
+                dot={{ fill: '#10b981', strokeWidth: 3, r: 5 }}
                 activeDot={{ 
-                  r: 8, 
+                  r: 10, 
                   stroke: '#10b981', 
-                  strokeWidth: 3,
+                  strokeWidth: 4,
                   fill: '#ffffff',
-                  filter: 'drop-shadow(0 0 6px #10b981)'
+                  filter: 'drop-shadow(0 0 8px #10b981)'
                 }}
               />
-              {/* Total Cost Area */}
+              {/* Total Cost Area - More prominent dashed line */}
               <Area
                 type="monotone"
                 dataKey="cost"
                 stroke="#3b82f6"
                 fill="url(#costGradient)"
-                strokeWidth={2}
-                strokeDasharray="8 4"
-                dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
+                strokeWidth={3}
+                strokeDasharray="10 5"
+                dot={{ fill: '#3b82f6', strokeWidth: 3, r: 4 }}
                 activeDot={{ 
-                  r: 6, 
+                  r: 8, 
                   stroke: '#3b82f6', 
-                  strokeWidth: 2,
+                  strokeWidth: 3,
                   fill: '#ffffff',
-                  filter: 'drop-shadow(0 0 4px #3b82f6)'
+                  filter: 'drop-shadow(0 0 6px #3b82f6)'
                 }}
               />
-              {/* P&L Area */}
+              {/* P&L Area - Purple line for clear distinction */}
               <Area
                 type="monotone"
                 dataKey="pnl"
                 stroke="#8b5cf6"
                 fill="url(#pnlGradient)"
-                strokeWidth={2}
-                dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 3 }}
+                strokeWidth={3}
+                strokeDasharray="5 5"
+                dot={{ fill: '#8b5cf6', strokeWidth: 3, r: 4 }}
                 activeDot={{ 
-                  r: 6, 
+                  r: 8, 
                   stroke: '#8b5cf6', 
-                  strokeWidth: 2,
+                  strokeWidth: 3,
                   fill: '#ffffff',
-                  filter: 'drop-shadow(0 0 4px #8b5cf6)'
+                  filter: 'drop-shadow(0 0 6px #8b5cf6)'
                 }}
               />
             </AreaChart>
           </ResponsiveContainer>
           
-          {/* Chart overlay with performance indicators */}
-          <div className="absolute top-4 right-4 bg-black/20 backdrop-blur-sm rounded-lg p-2">
-            <div className="text-xs text-slate-300 space-y-1">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                <span>Portfolio Value</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span>Total Cost</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                <span>P&L</span>
-              </div>
-            </div>
-          </div>
+          {/* Remove overlay - moved to bottom on mobile */}
         </div>
       </div>
 
       {/* Individual Stock Performance (Candlestick-style) - Mobile Optimized */}
       <div className="card p-3 sm:p-4 lg:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-2 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
           <h3 className="text-lg sm:text-xl font-bold text-white">Individual Stock Performance</h3>
-          <span className="text-xs text-slate-400">
+          {/* Legend moved to bottom on mobile */}
+          <div className="w-full sm:hidden order-3 pt-2 border-t border-slate-700">
+            <div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-2 text-xs">
+              <span className="text-slate-400">
+                {portfolioPerformance && portfolioPerformance.length > 0 
+                  ? '📊 Real-time data' 
+                  : '📈 Entry vs Current prices'
+                }
+              </span>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-400 rounded"></div>
+                <span className="text-slate-300">Entry Price</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded"></div>
+                <span className="text-slate-300">Current Price</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
+                <span className="text-slate-300">P&L</span>
+              </div>
+            </div>
+          </div>
+          <span className="hidden sm:inline text-xs text-slate-400">
             {portfolioPerformance && portfolioPerformance.length > 0 
               ? '📊 Real-time data' 
               : '📈 Entry vs Current prices'
@@ -378,42 +420,75 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
         <div className="h-48 sm:h-64 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={candlestickData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+              <defs>
+                <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                  <feOffset dx="2" dy="2" result="offsetblur"/>
+                  <feComponentTransfer>
+                    <feFuncA type="linear" slope="0.5"/>
+                  </feComponentTransfer>
+                  <feMerge> 
+                    <feMergeNode/>
+                    <feMergeNode in="SourceGraphic"/> 
+                  </feMerge>
+                </filter>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
               <XAxis 
                 dataKey="ticker" 
                 stroke="#9ca3af"
-                fontSize={10}
+                fontSize={11}
+                fontWeight={600}
                 tick={{ fill: '#9ca3af' }}
+                axisLine={{ stroke: '#4b5563', strokeWidth: 2 }}
+                tickLine={{ stroke: '#4b5563' }}
+                label={{ 
+                  value: 'Stock Ticker', 
+                  position: 'insideBottom', 
+                  offset: -10,
+                  style: { textAnchor: 'middle', fill: '#9ca3af', fontSize: '12px', fontWeight: 'bold' }
+                }}
               />
               <YAxis 
                 stroke="#9ca3af"
-                fontSize={10}
+                fontSize={11}
+                fontWeight={600}
                 tick={{ fill: '#9ca3af' }}
+                axisLine={{ stroke: '#4b5563', strokeWidth: 2 }}
+                tickLine={{ stroke: '#4b5563' }}
                 tickFormatter={(value) => `$${value.toLocaleString()}`}
+                label={{ 
+                  value: 'Value ($)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle', fill: '#9ca3af', fontSize: '12px', fontWeight: 'bold' }
+                }}
               />
               <Tooltip content={<CandlestickTooltip />} />
-              {/* Entry price bars */}
+              {/* Entry price bars - More prominent */}
               <Bar 
                 dataKey="open" 
                 fill="#3b82f6" 
-                opacity={0.7}
+                opacity={0.85}
                 name="Entry Price"
+                radius={[4, 4, 0, 0]}
               />
-              {/* Current price bars */}
+              {/* Current price bars - More prominent */}
               <Bar 
                 dataKey="close" 
                 fill="#10b981" 
-                opacity={0.8}
+                opacity={0.9}
                 name="Current Price"
+                radius={[4, 4, 0, 0]}
               />
-              {/* P&L line */}
+              {/* P&L line - Thicker and more prominent */}
               <Line 
                 type="monotone" 
                 dataKey="pnl" 
                 stroke="#8b5cf6" 
-                strokeWidth={2}
-                dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2 }}
+                strokeWidth={3}
+                dot={{ fill: '#8b5cf6', strokeWidth: 3, r: 5 }}
+                activeDot={{ r: 8, stroke: '#8b5cf6', strokeWidth: 3 }}
                 name="P&L"
               />
             </ComposedChart>

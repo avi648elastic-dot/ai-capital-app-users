@@ -118,8 +118,8 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
 
   return (
     <>
-      {/* Enhanced Mobile Menu Button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      {/* Enhanced Mobile Menu Button - REMOVED BY USER REQUEST */}
+      {/* <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="p-4 bg-gradient-to-r from-blue-600 to-emerald-600 shadow-lg border border-blue-500/50 rounded-xl text-white hover:from-blue-500 hover:to-emerald-500 transition-all duration-300 min-h-[52px] min-w-[52px] flex items-center justify-center transform hover:scale-105"
@@ -127,7 +127,7 @@ export default function MobileNavigation({ userName, subscriptionTier, onLogout 
         >
           {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
         </button>
-      </div>
+      </div> */}
 
       {/* Mobile Menu Overlay */}
       {isOpen && (

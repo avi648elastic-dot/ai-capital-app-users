@@ -218,8 +218,8 @@ export default function MobileNavigationEnhanced({
 
   return (
     <>
-      {/* Enhanced Mobile Menu Button with Haptic Feedback */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      {/* Enhanced Mobile Menu Button with Haptic Feedback - REMOVED BY USER REQUEST */}
+      {/* <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
           onTouchStart={() => {
@@ -233,7 +233,7 @@ export default function MobileNavigationEnhanced({
         >
           {isOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
         </button>
-      </div>
+      </div> */}
 
       {/* Pull to Refresh Indicator */}
       {pullDistance > 0 && (
