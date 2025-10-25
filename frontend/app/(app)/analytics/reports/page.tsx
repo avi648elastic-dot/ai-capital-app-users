@@ -88,16 +88,12 @@ export default function Reports() {
             }
           });
           
-          // If API fails, use mock data with portfolio tickers
-          if (allNews.length === 0) {
-            allNews.push(...generateMockNewsForPortfolio(portfolio));
-          }
-          
+          // Only set real news from API - no fallback to mock data
           setNews(allNews);
         } catch (newsError) {
           console.error('Error fetching news:', newsError);
-          // Use mock news based on actual portfolio
-          setNews(generateMockNewsForPortfolio(portfolio));
+          // Return empty array if API fails - no mock data
+          setNews([]);
         }
       } else {
         setNews([]);
@@ -108,20 +104,6 @@ export default function Reports() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateMockNewsForPortfolio = (portfolio: any[]) => {
-    const sources = ["Financial Times", "Reuters", "MarketWatch", "Bloomberg", "Yahoo Finance"];
-    const types = ['earnings', 'news', 'analysis'];
-    
-    return portfolio.slice(0, 5).map((stock, index) => ({
-      id: index + 1,
-      title: `${stock.ticker}: Latest Market Updates and Analysis`,
-      source: sources[index % sources.length],
-      date: new Date(Date.now() - index * 86400000).toISOString().split('T')[0],
-      ticker: stock.ticker,
-      type: types[index % types.length]
-    }));
   };
 
   const getUpcomingEarnings = () => {
