@@ -734,20 +734,17 @@ router.get('/earnings-calendar', authenticateToken, async (req, res) => {
               .filter((e: any) => e.date)
               .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
             
-            // Try to find future earnings first
-            const futureEarning = allEarnings.find((e: any) => new Date(e.date) > new Date());
+            // Show the most recent earnings regardless of date
+            const mostRecentEarning = allEarnings[allEarnings.length - 1];
             
-            // If no future earnings, get the most recent one
-            const nextEarning = futureEarning || allEarnings[allEarnings.length - 1];
-            
-            if (nextEarning) {
-              console.log(`✅ [EARNINGS] Found earnings for ${ticker}: ${nextEarning.date}`);
+            if (mostRecentEarning) {
+              console.log(`✅ [EARNINGS] Found earnings for ${ticker}: ${mostRecentEarning.date}`);
               earnings.push({
                 ticker: ticker,
-                date: nextEarning.date ? nextEarning.date.split(' ')[0] : new Date().toISOString().split('T')[0],
-                time: nextEarning.time || 'After Market Close',
-                epsEstimate: nextEarning.epsEstimated || null,
-                revenueEstimate: nextEarning.revenueEstimated || null
+                date: mostRecentEarning.date ? mostRecentEarning.date.split(' ')[0] : new Date().toISOString().split('T')[0],
+                time: mostRecentEarning.time || 'After Market Close',
+                epsEstimate: mostRecentEarning.epsEstimated || null,
+                revenueEstimate: mostRecentEarning.revenueEstimated || null
               });
             } else {
               console.warn(`⚠️ [EARNINGS] No valid earnings data for ${ticker}`);
