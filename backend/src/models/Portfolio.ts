@@ -18,6 +18,7 @@ export interface IPortfolio extends Document {
   portfolioName?: string; // Optional custom name for the portfolio
   volatility?: number; // Portfolio volatility (calculated daily)
   lastVolatilityUpdate?: Date; // When volatility was last calculated
+  sector?: string; // Stock sector (automatically assigned when stock is added)
 }
 
 const PortfolioSchema = new Schema<IPortfolio>(
@@ -39,6 +40,7 @@ const PortfolioSchema = new Schema<IPortfolio>(
     portfolioName: String, // Optional custom name
     volatility: { type: Number, default: 0 }, // Portfolio volatility
     lastVolatilityUpdate: { type: Date, default: null }, // Last volatility calculation
+    sector: String, // Stock sector (auto-assigned)
   },
   { timestamps: true }
 );

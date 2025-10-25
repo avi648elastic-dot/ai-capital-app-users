@@ -13,6 +13,7 @@ import { checkPortfolioLimits, checkStockLimits } from '../middleware/portfolioL
 import { z } from 'zod';
 import DeletedTransactionAudit from '../models/DeletedTransactionAudit';
 import { portfolioCache } from '../middleware/cache';
+import SectorLookupService from '../services/sectorLookupService';
 
 const router = express.Router();
 
@@ -282,6 +283,19 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
 
     console.log('🔍 [PORTFOLIO ADD] Creating portfolio item...');
 
+    // 🎯 NEW FEATURE: Automatically lookup and assign sector when stock is added
+    let stockSector: string | undefined;
+    try {
+      console.log(`🔍 [PORTFOLIO ADD] Looking up sector for ${ticker.toUpperCase().trim()}...`);
+      const sectorLookupService = SectorLookupService.getInstance();
+      stockSector = await sectorLookupService.getSectorForStock(ticker.toUpperCase().trim());
+      console.log(`✅ [PORTFOLIO ADD] Sector found for ${ticker}: ${stockSector}`);
+    } catch (sectorError: any) {
+      console.warn(`⚠️ [PORTFOLIO ADD] Sector lookup failed for ${ticker}:`, sectorError?.message || sectorError);
+      // Continue without sector - stock can still be added
+      stockSector = undefined;
+    }
+
     const portfolioItem = new Portfolio({
       userId: req.user!._id,
       ticker: ticker.toUpperCase().trim(),
@@ -293,9 +307,13 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       notes: notes || '',
       portfolioType: finalPortfolioType,
       portfolioId: finalPortfolioId,
+      sector: stockSector, // 🎯 Automatically assigned sector
     });
 
-    console.log('🔍 [PORTFOLIO ADD] Portfolio item created:', portfolioItem);
+    console.log('🔍 [PORTFOLIO ADD] Portfolio item created:', {
+      ...portfolioItem.toObject(),
+      sector: stockSector || 'not assigned'
+    });
 
     // SIMPLIFIED: Skip decision engine for now to isolate the issue
     console.log('🔍 [PORTFOLIO ADD] Skipping decision engine for debugging');
