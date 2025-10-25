@@ -444,9 +444,9 @@ export default function PortfolioAnalysis() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-slate-800 rounded-lg">
                   <div className={`text-2xl font-bold ${
-                    portfolioAnalysis?.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
+                    (portfolioAnalysis?.performance90D || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                   }`}>
-                    {portfolioAnalysis?.performance90D >= 0 ? '+' : ''}{portfolioAnalysis?.performance90D?.toFixed(1) || '0.0'}%
+                    {(portfolioAnalysis?.performance90D || 0) >= 0 ? '+' : ''}{(portfolioAnalysis?.performance90D || 0).toFixed(1)}%
                   </div>
                   <div className="text-sm text-slate-400">90 Day Return</div>
                 </div>
