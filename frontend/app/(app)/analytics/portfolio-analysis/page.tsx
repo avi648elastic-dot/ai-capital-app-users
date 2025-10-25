@@ -330,6 +330,16 @@ export default function PortfolioAnalysis() {
         performance: response.data.portfolioPerformance?.length || 0,
         risk: response.data.riskAssessment?.overallRisk || 'Unknown'
       });
+      
+      // 🔍 DEBUG: Log portfolioPerformance data to verify variation
+      if (response.data.portfolioPerformance && response.data.portfolioPerformance.length > 0) {
+        console.log('📊 [DEBUG] Portfolio Performance Data:', response.data.portfolioPerformance);
+        const totalValues = response.data.portfolioPerformance.map((p: any) => p.totalValue);
+        const changePercents = response.data.portfolioPerformance.map((p: any) => p.dailyChangePercent);
+        console.log('📊 [DEBUG] Total Values:', totalValues);
+        console.log('📊 [DEBUG] Change Percents:', changePercents);
+        console.log('📊 [DEBUG] Min Change:', Math.min(...changePercents), 'Max Change:', Math.max(...changePercents));
+      }
     } catch (error: any) {
       console.error('❌ [ANALYTICS] Error fetching analytics data:', error);
       console.error('❌ [ANALYTICS] Error details:', {
@@ -796,17 +806,17 @@ export default function PortfolioAnalysis() {
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-slate-400">Volatility</span>
                             <span className={`text-xs font-semibold ${
-                              riskAssessment?.avgVolatility > 20 
-                                ? 'text-red-400' 
-                                : riskAssessment?.avgVolatility > 10 
-                                  ? 'text-yellow-400' 
-                                  : 'text-green-400'
+                              (() => {
+                                const changePercents = portfolioPerformance.map((p: any) => Math.abs(p.dailyChangePercent || 0));
+                                const avgVolatility = changePercents.reduce((sum: number, val: number) => sum + val, 0) / changePercents.length;
+                                return avgVolatility > 20 ? 'text-red-400' : avgVolatility > 10 ? 'text-yellow-400' : 'text-green-400';
+                              })()
                             }`}>
-                              {riskAssessment?.avgVolatility > 20 
-                                ? 'High' 
-                                : riskAssessment?.avgVolatility > 10 
-                                  ? 'Moderate' 
-                                  : 'Low'}
+                              {(() => {
+                                const changePercents = portfolioPerformance.map((p: any) => Math.abs(p.dailyChangePercent || 0));
+                                const avgVolatility = changePercents.reduce((sum: number, val: number) => sum + val, 0) / changePercents.length;
+                                return avgVolatility > 20 ? 'High' : avgVolatility > 10 ? 'Moderate' : 'Low';
+                              })()}
                             </span>
                           </div>
                           <div className="flex items-center justify-between">

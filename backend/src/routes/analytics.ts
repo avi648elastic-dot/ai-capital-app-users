@@ -73,22 +73,33 @@ function generateMonthlyPortfolioPerformance(stockData: any[], weeks: number): a
   // Calculate current P&L percentage
   const currentPnLPercent = totalCost > 0 ? ((currentTotalValue - totalCost) / totalCost) * 100 : 0;
   
-  // Generate weekly performance with gradual trend toward current value
-  let runningPnLPercent = currentPnLPercent * 0.5; // Start at 50% of current performance
+  // Generate weekly performance with REALISTIC variation
+  let previousValue = totalCost;
+  let previousPnLPercent = 0;
   
   for (let week = weeks - 1; week >= 0; week--) {
     const date = new Date(today);
     date.setDate(date.getDate() - (week * 7)); // Each point is 1 week apart
     
     // Gradually approach current performance
-    const progress = (weeks - week - 1) / (weeks - 1);
-    runningPnLPercent = currentPnLPercent * (0.3 + 0.7 * progress);
+    const progress = (weeks - week - 1) / Math.max(weeks - 1, 1);
+    let runningPnLPercent = currentPnLPercent * (0.3 + 0.7 * progress);
+    
+    // Add realistic weekly variation (±3% to ±8%)
+    const weeklyVariation = (Math.random() - 0.5) * 11; // -5.5% to +5.5%
+    runningPnLPercent += weeklyVariation;
     
     // Calculate values based on running P&L
     const totalValue = totalCost * (1 + runningPnLPercent / 100);
     const totalPnL = totalValue - totalCost;
-    const dailyChange = totalPnL * 0.02; // Small weekly change
-    const dailyChangePercent = runningPnLPercent * 0.02;
+    
+    // Calculate ACTUAL daily change from previous value
+    const dailyChange = totalValue - previousValue;
+    const dailyChangePercent = previousValue > 0 ? ((dailyChange / previousValue) * 100) : 0;
+    
+    // Update previous values for next iteration
+    previousValue = totalValue;
+    previousPnLPercent = runningPnLPercent;
     
     performance.push({
       date: date.toISOString().split('T')[0],

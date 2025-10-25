@@ -384,10 +384,14 @@ export class SectorPerformanceService {
 
         // Skip if already mapped from API
         if (sectorInfoMap.has(stock.ticker)) {
+          console.log(`⏭️ [SECTOR ALLOCATION] Skipping ${stock.ticker} (already mapped from API)`);
           return;
         }
 
+        console.log(`🔍 [SECTOR ALLOCATION] Looking up ${stock.ticker} in fallback mapping...`);
+
         // Find which sector this stock belongs to using fallback mapping
+        let found = false;
         for (const [sector, tickers] of Object.entries(sectorMapping)) {
           if (tickers.includes(stock.ticker)) {
             if (!sectorTotals[sector]) {
@@ -397,8 +401,21 @@ export class SectorPerformanceService {
             if (!sectorTotals[sector].stocks.includes(stock.ticker)) {
               sectorTotals[sector].stocks.push(stock.ticker);
             }
-            console.log(`📊 [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from fallback mapping)`);
+            console.log(`✅ [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from fallback mapping)`);
+            found = true;
             break;
+          }
+        }
+        
+        if (!found) {
+          // Last resort: assign to Technology instead of creating 'Other' category
+          console.warn(`⚠️ [SECTOR ALLOCATION] ${stock.ticker} not found in mapping, assigning to Technology as fallback`);
+          if (!sectorTotals['Technology']) {
+            sectorTotals['Technology'] = { value: 0, stocks: [] };
+          }
+          sectorTotals['Technology'].value += value;
+          if (!sectorTotals['Technology'].stocks.includes(stock.ticker)) {
+            sectorTotals['Technology'].stocks.push(stock.ticker);
           }
         }
       });
