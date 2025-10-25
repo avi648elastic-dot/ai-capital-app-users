@@ -187,11 +187,28 @@ export default function ExpertPortfolioPage() {
             </div>
 
             <div className="card bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-              <div className="flex items-center mb-2">
-                <BarChart3 className="w-5 h-5 text-blue-400 mr-2" />
-                <h3 className="text-sm font-medium text-slate-400">Closed Positions</h3>
+              <div className="space-y-4">
+                <div className="flex items-center mb-2">
+                  <BarChart3 className="w-5 h-5 text-blue-400 mr-2" />
+                  <h3 className="text-sm font-medium text-slate-400">Closed Positions</h3>
+                </div>
+                <p className="text-2xl font-bold text-white">{expert.totalPositionsClosed}</p>
+                {portfolio.length > 0 && (() => {
+                  const earliestDate = portfolio.reduce((earliest: Date | null, item: ExpertPortfolioItem) => {
+                    const itemDate = new Date(item.createdAt);
+                    return !earliest || itemDate < earliest ? itemDate : earliest;
+                  }, null);
+                  
+                  return earliestDate ? (
+                    <div className="pt-4 border-t border-slate-700">
+                      <div className="text-slate-400 text-xs mb-1">Portfolio Start Date</div>
+                      <div className="text-sm font-medium text-white">
+                        {earliestDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
               </div>
-              <p className="text-2xl font-bold text-white">{expert.totalPositionsClosed}</p>
             </div>
 
             <div className="card bg-slate-800/50 border border-slate-700 rounded-xl p-6">

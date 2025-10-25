@@ -1,0 +1,18 @@
+[33maf34742[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Make IC tree much larger and more visible - remove blue circles from mobile thinking animation
+[33m4fdb8e8[m Remove all animated background elements - keep only IC tree with subtle pulsing
+[33m73bf5a6[m Replace thinking animation with subtle IC tree logo pulsing effect on mobile
+[33m0a585a2[m Fix all TypeScript compilation errors - comprehensive fix
+[33mbcce4b5[m Fix critical issues: login page speed (remove extra API call), watchlist modal error (missing Info icon), user-friendly buttons with labels
+[33mfbf650f[m Fix portfolio action colors and enhance financial animations: realistic candlestick chart patterns, enhanced trend lines, and improved lightning indicators
+[33m932ecf8[m Add amazing financial trend animations: diagonal trend lines, candlestick charts, and lightning indicators with pulsing effects
+[33m31a7ec3[m CRITICAL: Fix truly bright light theme, make background visible on all pages, fix settings API
+[33mddce06d[m 🎯 PROFESSIONAL STOCK MARKET ANIMATIONS: Subtle bubbles, currency symbols, green/red trend indicators, professional data flow lines - looks like real financial platform, not party
+[33m220dc66[m 💰 STOCK MARKET FOCUSED ANIMATIONS: Full intensity on login, medium on dashboard, subtle on other pages. Money-making symbols, market indices, conservative but alive everywhere
+[33m31e58b5[m 🎮 GAME-LIKE BUBBLES: Remove ticker line, remove text from bubbles, add crystal clear shadows, stock up/down animations with colors
+[33m6e482e7[m 🌟 RESTORE BEAUTIFUL BUBBLES & MARKERS - Full animated background with stock symbols, exchange symbols, financial icons, and glowing effects
+[33mbde6f0c[m Fix Vercel deployment: use inline style for z-index
+[33m7b0654a[m Fix bubbles z-index to show behind content
+[33m3d9fd7b[m Add new API keys and fix bubble animations visibility
+[33m8c3d9e2[m Fix bubbles visibility and bright theme issues
+[33madbe979[m Restore sharp, clear animated bubbles with markers everywhere
+[33mb6416c2[m Add global animated background to all pages

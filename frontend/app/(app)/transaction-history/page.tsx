@@ -27,6 +27,7 @@ export default function TransactionHistoryPage() {
   const [totalPnL, setTotalPnL] = useState(0);
   const [totalTrades, setTotalTrades] = useState(0);
   const [winRate, setWinRate] = useState(0);
+  const [startDate, setStartDate] = useState<Date | null>(null);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
 
@@ -50,9 +51,16 @@ export default function TransactionHistoryPage() {
         const winningTrades = history.filter((tx: TransactionHistoryItem) => (tx.realizedPnL || 0) > 0).length;
         const winRateValue = totalTradesCount > 0 ? (winningTrades / totalTradesCount) * 100 : 0;
         
+        // Find the earliest entry date
+        const sortedHistory = [...history].sort((a, b) => 
+          new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()
+        );
+        const earliestDate = sortedHistory.length > 0 ? new Date(sortedHistory[0].entryDate) : null;
+        
         setTotalPnL(totalPnLValue);
         setTotalTrades(totalTradesCount);
         setWinRate(winRateValue);
+        setStartDate(earliestDate);
         
         setError(null);
       } catch (e: any) {
@@ -103,14 +111,24 @@ export default function TransactionHistoryPage() {
             </div>
             
             <div className="p-6 rounded-lg border border-slate-700 bg-slate-900/60">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-purple-500/20 rounded-lg">
-                  <TrendingDown className="w-5 h-5 text-purple-400" />
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-purple-500/20 rounded-lg">
+                    <TrendingDown className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <div className="text-slate-400 text-sm">Total Trades</div>
+                    <div className="text-2xl font-semibold text-white">{totalTrades}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-slate-400 text-sm">Total Trades</div>
-                  <div className="text-2xl font-semibold text-white">{totalTrades}</div>
-                </div>
+                {startDate && (
+                  <div className="pt-4 border-t border-slate-700">
+                    <div className="text-slate-400 text-xs mb-1">Portfolio Start Date</div>
+                    <div className="text-sm font-medium text-white">
+                      {startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             
