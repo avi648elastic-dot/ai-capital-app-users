@@ -30,15 +30,32 @@ export default function RiskManagement() {
       });
       setUser(userResponse.data.user);
 
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/portfolio`, {
+      // Fetch risk analytics from backend (with real volatility and drawdown data)
+      const riskResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/risk-analytics`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setPortfolio(response.data.portfolio || []);
+      const riskAnalytics = riskResponse.data;
       
-      if (response.data.portfolio && response.data.portfolio.length > 0) {
-        generateRiskAnalysis(response.data.portfolio);
+      // Set portfolio from stock risks
+      if (riskAnalytics.stockRisks && riskAnalytics.stockRisks.length > 0) {
+        setPortfolio(riskAnalytics.stockRisks);
       }
+
+      // Set risk data from backend
+      setRiskData({
+        totalValue: riskAnalytics.stockRisks?.reduce((sum: number, stock: any) => {
+          return sum + (stock.currentPrice * stock.shares);
+        }, 0) || 0,
+        avgRiskScore: riskAnalytics.averageRiskScore || 0,
+        highRiskStocks: riskAnalytics.highRiskStocks || 0,
+        mediumRiskStocks: riskAnalytics.stockRisks?.filter((stock: any) => stock.riskLevel === 'Medium').length || 0,
+        lowRiskStocks: riskAnalytics.stockRisks?.filter((stock: any) => stock.riskLevel === 'Low').length || 0,
+        concentrationRisk: riskAnalytics.concentrationRisk || 'Low',
+        diversificationScore: riskAnalytics.diversificationScore || 0,
+        stockRisks: riskAnalytics.stockRisks || [],
+        recommendations: riskAnalytics.recommendations || []
+      });
     } catch (error) {
       console.error('Error fetching risk data:', error);
     } finally {
@@ -46,104 +63,7 @@ export default function RiskManagement() {
     }
   };
 
-  const generateRiskAnalysis = (portfolioData: any[]) => {
-    const totalValue = portfolioData.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
-    
-    // Calculate individual stock risks
-    const stockRisks = portfolioData.map(stock => {
-      const value = stock.currentPrice * stock.shares;
-      const weight = totalValue > 0 ? (value / totalValue) * 100 : 0;
-      const pnlPercent = ((stock.currentPrice - stock.entryPrice) / stock.entryPrice) * 100;
-      
-      // Risk assessment based on various factors
-      let riskLevel = 'Low';
-      let riskScore = 0;
-      
-      // High P&L volatility indicator
-      if (Math.abs(pnlPercent) > 100) riskScore += 3;
-      else if (Math.abs(pnlPercent) > 50) riskScore += 2;
-      else if (Math.abs(pnlPercent) > 20) riskScore += 1;
-      
-      // Portfolio weight factor
-      if (weight > 30) riskScore += 2;
-      else if (weight > 20) riskScore += 1;
-      
-      // Determine risk level
-      if (riskScore >= 4) riskLevel = 'High';
-      else if (riskScore >= 2) riskLevel = 'Medium';
-      
-      return {
-        ...stock,
-        weight,
-        pnlPercent,
-        riskScore,
-        riskLevel
-      };
-    });
 
-    // Portfolio-level risk metrics
-    const avgRiskScore = stockRisks.reduce((sum, stock) => sum + stock.riskScore, 0) / stockRisks.length;
-    const highRiskStocks = stockRisks.filter(stock => stock.riskLevel === 'High').length;
-    const mediumRiskStocks = stockRisks.filter(stock => stock.riskLevel === 'Medium').length;
-    const lowRiskStocks = stockRisks.filter(stock => stock.riskLevel === 'Low').length;
-
-    // Concentration risk
-    const maxWeight = Math.max(...stockRisks.map(stock => stock.weight));
-    const concentrationRisk = maxWeight > 30 ? 'High' : maxWeight > 20 ? 'Medium' : 'Low';
-
-    // Diversification score
-    const uniqueSectors = new Set(portfolioData.map(stock => stock.sector || 'Unknown')).size;
-    const diversificationScore = Math.min((uniqueSectors / portfolioData.length) * 100, 100);
-
-    setRiskData({
-      totalValue,
-      avgRiskScore,
-      highRiskStocks,
-      mediumRiskStocks,
-      lowRiskStocks,
-      concentrationRisk,
-      diversificationScore,
-      stockRisks,
-      recommendations: generateRecommendations(stockRisks, concentrationRisk, diversificationScore)
-    });
-  };
-
-  const generateRecommendations = (stockRisks: any[], concentrationRisk: string, diversificationScore: number) => {
-    const recommendations = [];
-
-    // High concentration risk
-    if (concentrationRisk === 'High') {
-      recommendations.push({
-        type: 'warning',
-        title: 'High Portfolio Concentration',
-        message: 'Consider diversifying your portfolio to reduce concentration risk.',
-        icon: AlertTriangle
-      });
-    }
-
-    // Low diversification
-    if (diversificationScore < 50) {
-      recommendations.push({
-        type: 'info',
-        title: 'Improve Diversification',
-        message: 'Add stocks from different sectors to improve portfolio diversification.',
-        icon: Target
-      });
-    }
-
-    // High risk stocks
-    const highRiskCount = stockRisks.filter(stock => stock.riskLevel === 'High').length;
-    if (highRiskCount > 0) {
-      recommendations.push({
-        type: 'warning',
-        title: `${highRiskCount} High-Risk Stock${highRiskCount > 1 ? 's' : ''}`,
-        message: 'Review high-risk positions and consider reducing exposure.',
-        icon: TrendingDown
-      });
-    }
-
-    return recommendations;
-  };
 
   const getRiskColor = (level: string) => {
     switch (level) {

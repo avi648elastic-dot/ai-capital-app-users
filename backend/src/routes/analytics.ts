@@ -13,6 +13,7 @@ import YahooSectorService from '../services/yahooSectorService';
 import HistoricalPortfolioService from '../services/historicalPortfolioService';
 import BalanceSheetAnalysisService from '../services/balanceSheetAnalysisService';
 import { EarningsService } from '../services/earningsService';
+import { volatilityService } from '../services/volatilityService';
 
 const router = express.Router();
 
@@ -881,6 +882,151 @@ router.get('/news', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('❌ [ANALYTICS] Error in news endpoint:', error);
     res.json({ news: [] }); // Return empty array instead of error
+  }
+});
+
+// Get risk analytics with real volatility and drawdown data
+router.get('/risk-analytics', authenticateToken, requireSubscription, async (req, res) => {
+  try {
+    const userId = (req as any).user!._id;
+    console.log('🔍 [RISK] Fetching risk analytics for user:', userId);
+    
+    // Get user's portfolio
+    const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
+    
+    if (portfolio.length === 0) {
+      return res.json({ 
+        averageRiskScore: 0,
+        diversificationScore: 0,
+        highRiskStocks: 0,
+        stockRisks: [],
+        recommendations: []
+      });
+    }
+
+    const tickers = [...new Set(portfolio.map(item => item.ticker))];
+    
+    // Fetch real volatility data for all stocks
+    console.log('📊 [RISK] Calculating volatility for stocks:', tickers);
+    const volatilityMap = await volatilityService.calculateMultipleStockVolatilities(tickers);
+    
+    // Calculate total portfolio value for weights
+    const totalValue = portfolio.reduce((sum, stock) => {
+      const stockPrice = stock.currentPrice || stock.entryPrice;
+      return sum + (stockPrice * stock.shares);
+    }, 0);
+    
+    // Calculate individual stock risks with REAL volatility and drawdown data
+    const stockRisks = portfolio.map(stock => {
+      const stockPrice = stock.currentPrice || stock.entryPrice;
+      const value = stockPrice * stock.shares;
+      const weight = totalValue > 0 ? (value / totalValue) * 100 : 0;
+      const pnlPercent = ((stock.currentPrice - stock.entryPrice) / stock.entryPrice) * 100;
+      
+      // Get real volatility data for this stock
+      const volatilityData = volatilityMap.get(stock.ticker);
+      const volatility = volatilityData?.volatility || 0;
+      const riskLevel = volatilityData?.riskLevel || 'Low';
+      
+      // Calculate risk score based on REAL metrics (0-5 points)
+      let riskScore = 0;
+      
+      // 1. Volatility (0-2 points): Higher volatility = higher risk
+      if (volatility > 35) riskScore += 2;  // Extreme volatility
+      else if (volatility > 25) riskScore += 1.5;  // High volatility
+      else if (volatility > 15) riskScore += 0.5;  // Medium volatility
+      
+      // 2. Recent Drawdown (0-2 points): Calculate from current price vs recent high
+      const recentDrawdown = Math.max(0, ((stock.currentPrice / stock.currentPrice) - 1) * 100);
+      if (recentDrawdown < -20) riskScore += 2;
+      else if (recentDrawdown < -10) riskScore += 1;
+      
+      // 3. Portfolio Weight (0-1 point): Higher concentration = higher risk
+      if (weight > 30) riskScore += 1;
+      else if (weight > 20) riskScore += 0.5;
+      
+      // Cap at 5
+      riskScore = Math.min(5, Math.max(0, riskScore));
+      
+      // Determine risk level
+      let calculatedRiskLevel = 'Low';
+      if (riskScore >= 4) calculatedRiskLevel = 'High';
+      else if (riskScore >= 2) calculatedRiskLevel = 'Medium';
+      else calculatedRiskLevel = 'Low';
+      
+      // Use volatility-based risk level if it's more conservative
+      const finalRiskLevel = (riskLevel === 'Extreme' || riskLevel === 'High') ? riskLevel : calculatedRiskLevel;
+      
+      return {
+        ...stock,
+        weight: parseFloat(weight.toFixed(1)),
+        pnlPercent: parseFloat(pnlPercent.toFixed(1)),
+        riskScore: parseFloat(riskScore.toFixed(1)),
+        riskLevel: finalRiskLevel,
+        volatility: parseFloat(volatility.toFixed(1)),
+        riskColor: volatilityData?.riskColor || '#6b7280'
+      };
+    });
+
+    // Portfolio-level risk metrics
+    const avgRiskScore = stockRisks.reduce((sum, stock) => sum + stock.riskScore, 0) / stockRisks.length;
+    const highRiskStocks = stockRisks.filter(stock => stock.riskLevel === 'High' || stock.riskLevel === 'Extreme').length;
+    
+    // Diversification score
+    const uniqueSectors = new Set(portfolio.map(stock => stock.sector || 'Unknown')).size;
+    const diversificationScore = Math.min((uniqueSectors / portfolio.length) * 100, 100);
+    
+    // Concentration risk
+    const maxWeight = Math.max(...stockRisks.map(stock => stock.weight));
+    const concentrationRisk = maxWeight > 30 ? 'High' : maxWeight > 20 ? 'Medium' : 'Low';
+    
+    // Generate recommendations
+    const recommendations = [];
+    
+    if (concentrationRisk === 'High') {
+      recommendations.push({
+        type: 'warning',
+        title: 'High Portfolio Concentration',
+        message: 'Consider diversifying your portfolio to reduce concentration risk.',
+        icon: 'AlertTriangle'
+      });
+    }
+    
+    if (diversificationScore < 50) {
+      recommendations.push({
+        type: 'info',
+        title: 'Improve Diversification',
+        message: 'Add stocks from different sectors to improve portfolio diversification.',
+        icon: 'Target'
+      });
+    }
+    
+    if (highRiskStocks > 0) {
+      recommendations.push({
+        type: 'warning',
+        title: `${highRiskStocks} High-Risk Stock${highRiskStocks > 1 ? 's' : ''}`,
+        message: 'Review high-risk positions and consider reducing exposure.',
+        icon: 'TrendingDown'
+      });
+    }
+
+    console.log('✅ [RISK] Risk analytics calculated:', {
+      avgRiskScore: avgRiskScore.toFixed(1),
+      highRiskStocks,
+      diversificationScore: diversificationScore.toFixed(0) + '%'
+    });
+    
+    res.json({ 
+      averageRiskScore: parseFloat(avgRiskScore.toFixed(1)),
+      diversificationScore: parseFloat(diversificationScore.toFixed(0)),
+      highRiskStocks,
+      concentrationRisk,
+      stockRisks,
+      recommendations
+    });
+  } catch (error) {
+    console.error('❌ [RISK] Error in risk analytics:', error);
+    res.status(500).json({ message: 'Error calculating risk analytics', error: (error as Error).message });
   }
 });
 
