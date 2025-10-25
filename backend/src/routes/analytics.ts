@@ -12,6 +12,7 @@ import SectorPerformanceService from '../services/sectorPerformanceService';
 import YahooSectorService from '../services/yahooSectorService';
 import HistoricalPortfolioService from '../services/historicalPortfolioService';
 import BalanceSheetAnalysisService from '../services/balanceSheetAnalysisService';
+import { EarningsService } from '../services/earningsService';
 
 const router = express.Router();
 
@@ -695,74 +696,12 @@ router.get('/earnings-calendar', authenticateToken, async (req, res) => {
     }
 
     const tickers = portfolio.map(item => item.ticker);
-    const earnings: any[] = [];
-
-    // Try multiple FMP API keys for robustness
-    const apiKeys = [
-      process.env.FMP_API_KEY_1,
-      process.env.FMP_API_KEY_2,
-      process.env.FMP_API_KEY_3,
-      process.env.FMP_API_KEY_4,
-      process.env.FMP_API_KEY,
-    ].filter(key => key);
-
-    if (apiKeys.length === 0) {
-      console.warn('⚠️ No FMP API keys found, skipping earnings fetch');
-      return res.json({ earnings: [] });
-    }
-
-    // Fetch real earnings calendar from FMP (Financial Modeling Prep) with retry logic
-    let keyIndex = 0;
-    for (const ticker of tickers) {
-      let success = false;
-      for (let attempt = 0; attempt < Math.min(apiKeys.length, 3) && !success; attempt++) {
-        try {
-          const apiKey = apiKeys[keyIndex % apiKeys.length];
-          keyIndex++;
-
-          const response = await axios.get(
-            `https://financialmodelingprep.com/api/v3/earning_calendar?symbol=${ticker}&apikey=${apiKey}`,
-            { timeout: 8000 }
-          );
-
-          if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-            success = true;
-            console.log(`✅ [EARNINGS] Fetched ${response.data.length} earnings records for ${ticker}`);
-            
-            // Get the next upcoming earnings (or most recent if no future earnings)
-            const allEarnings = response.data
-              .filter((e: any) => e.date)
-              .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            
-            // Show the most recent earnings regardless of date
-            const mostRecentEarning = allEarnings[allEarnings.length - 1];
-            
-            if (mostRecentEarning) {
-              console.log(`✅ [EARNINGS] Found earnings for ${ticker}: ${mostRecentEarning.date}`);
-              earnings.push({
-                ticker: ticker,
-                date: mostRecentEarning.date ? mostRecentEarning.date.split(' ')[0] : new Date().toISOString().split('T')[0],
-                time: mostRecentEarning.time || 'After Market Close',
-                epsEstimate: mostRecentEarning.epsEstimated || null,
-                revenueEstimate: mostRecentEarning.revenueEstimated || null
-              });
-            } else {
-              console.warn(`⚠️ [EARNINGS] No valid earnings data for ${ticker}`);
-            }
-          }
-        } catch (error: any) {
-          if (error?.response?.status === 429 || error?.response?.status === 403) {
-            // Rate limited or forbidden - switch to next key
-            console.warn(`⏳ Rate limited for ${ticker}, trying next API key...`);
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
-            continue;
-          }
-          console.error(`Error fetching earnings for ${ticker}:`, error?.message);
-        }
-      }
-    }
-
-    console.log(`✅ [EARNINGS] Fetched ${earnings.length} upcoming earnings for ${tickers.length} portfolio stocks`);
+    
+    // Use the new EarningsService
+    const earningsService = EarningsService.getInstance();
+    const earnings = await earningsService.getEarningsCalendar(tickers);
+    
+    console.log(`✅ [ANALYTICS] Fetched ${earnings.length} upcoming earnings for ${tickers.length} tickers`);
     res.json({ earnings });
   } catch (error) {
     console.error('❌ [ANALYTICS] Error fetching earnings calendar:', error);

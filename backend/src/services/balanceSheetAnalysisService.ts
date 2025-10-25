@@ -48,27 +48,38 @@ class BalanceSheetAnalysisService {
    */
   private async fetchFinancialStatements(ticker: string): Promise<FinancialData | null> {
     try {
-      const apiKey = process.env.FMP_API_KEY_1 || process.env.FMP_API_KEY;
-      if (!apiKey) {
-        console.warn('⚠️ No FMP API key found for balance sheet analysis');
+      // Try multiple API keys for robustness
+      const apiKeys = [
+        process.env.FMP_API_KEY_1,
+        process.env.FMP_API_KEY_2,
+        process.env.FMP_API_KEY_3,
+        process.env.FMP_API_KEY_4,
+        process.env.FMP_API_KEY,
+      ].filter(key => key);
+
+      if (apiKeys.length === 0) {
+        console.warn('⚠️ No FMP API keys found for balance sheet analysis');
         return null;
       }
 
-      // Fetch latest income statement, balance sheet, and cash flow
-      const [incomeStmt, balanceSheet, cashFlow] = await Promise.all([
-        axios.get(
-          `https://financialmodelingprep.com/api/v3/income-statement/${ticker}?apikey=${apiKey}&limit=1`,
-          { timeout: 5000 }
-        ).catch(() => null),
-        axios.get(
-          `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${apiKey}&limit=1`,
-          { timeout: 5000 }
-        ).catch(() => null),
-        axios.get(
-          `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?apikey=${apiKey}&limit=1`,
-          { timeout: 5000 }
-        ).catch(() => null)
-      ]);
+      // Try each API key until one works
+      for (const apiKey of apiKeys) {
+        try {
+          // Fetch latest income statement, balance sheet, and cash flow
+          const [incomeStmt, balanceSheet, cashFlow] = await Promise.all([
+            axios.get(
+              `https://financialmodelingprep.com/api/v3/income-statement/${ticker}?apikey=${apiKey}&limit=1`,
+              { timeout: 8000 }
+            ).catch(() => null),
+            axios.get(
+              `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${apiKey}&limit=1`,
+              { timeout: 8000 }
+            ).catch(() => null),
+            axios.get(
+              `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?apikey=${apiKey}&limit=1`,
+              { timeout: 8000 }
+            ).catch(() => null)
+          ]);
 
       if (!incomeStmt?.data?.[0]) {
         console.warn(`⚠️ [BALANCE SHEET] No income statement data for ${ticker}`);
@@ -80,28 +91,40 @@ class BalanceSheetAnalysisService {
         console.warn(`⚠️ [BALANCE SHEET] No cash flow data for ${ticker}`);
       }
       
-      if (!incomeStmt?.data?.[0] || !balanceSheet?.data?.[0] || !cashFlow?.data?.[0]) {
-        console.warn(`⚠️ [BALANCE SHEET] Incomplete data for ${ticker}`);
-        return null;
+          if (!incomeStmt?.data?.[0] || !balanceSheet?.data?.[0] || !cashFlow?.data?.[0]) {
+            console.warn(`⚠️ [BALANCE SHEET] Incomplete data for ${ticker} with key ${apiKey.substring(0, 5)}...`);
+            continue; // Try next API key
+          }
+          
+          console.log(`✅ [BALANCE SHEET] Fetched complete financial data for ${ticker}`);
+
+          const inc: any = incomeStmt.data[0];
+          const bs: any = balanceSheet.data[0];
+          const cf: any = cashFlow.data[0];
+
+          return {
+            cash: bs.cashAndCashEquivalents || bs.cashAndShortTermInvestments || 0,
+            longTermDebt: bs.longTermDebt || 0,
+            totalLiabilities: bs.totalLiabilities || 0,
+            shareholdersEquity: bs.totalStockholdersEquity || bs.totalEquity || 0,
+            opCashFlow: cf.operatingCashFlow || 0,
+            capex: Math.abs(cf.capitalExpenditure || cf.netCashUsedForInvestingActivities || 0),
+            netIncome: inc.netIncome || 0,
+            intangibleAssets: bs.intangibleAssets || 0,
+            totalAssets: bs.totalAssets || 0
+          };
+        } catch (keyError: any) {
+          // This API key failed, try next one
+          if (keyError?.response?.status === 403 || keyError?.response?.status === 429) {
+            console.warn(`⚠️ [BALANCE SHEET] API key rate limited or forbidden, trying next...`);
+            continue;
+          }
+        }
       }
       
-      console.log(`✅ [BALANCE SHEET] Fetched complete financial data for ${ticker}`);
-
-      const inc: any = incomeStmt.data[0];
-      const bs: any = balanceSheet.data[0];
-      const cf: any = cashFlow.data[0];
-
-      return {
-        cash: bs.cashAndCashEquivalents || bs.cashAndShortTermInvestments || 0,
-        longTermDebt: bs.longTermDebt || 0,
-        totalLiabilities: bs.totalLiabilities || 0,
-        shareholdersEquity: bs.totalStockholdersEquity || bs.totalEquity || 0,
-        opCashFlow: cf.operatingCashFlow || 0,
-        capex: Math.abs(cf.capitalExpenditure || cf.netCashUsedForInvestingActivities || 0),
-        netIncome: inc.netIncome || 0,
-        intangibleAssets: bs.intangibleAssets || 0,
-        totalAssets: bs.totalAssets || 0
-      };
+      // If we get here, all API keys failed
+      console.error(`❌ [BALANCE SHEET] All API keys failed for ${ticker}`);
+      return null;
     } catch (error) {
       console.error(`❌ [BALANCE SHEET] Error fetching financials for ${ticker}:`, error);
       return null;
@@ -113,48 +136,71 @@ class BalanceSheetAnalysisService {
    */
   private async fetchTrendData(ticker: string): Promise<TrendData | null> {
     try {
-      const apiKey = process.env.FMP_API_KEY_1 || process.env.FMP_API_KEY;
-      if (!apiKey) {
+      // Try multiple API keys
+      const apiKeys = [
+        process.env.FMP_API_KEY_1,
+        process.env.FMP_API_KEY_2,
+        process.env.FMP_API_KEY_3,
+        process.env.FMP_API_KEY_4,
+        process.env.FMP_API_KEY,
+      ].filter(key => key);
+
+      if (apiKeys.length === 0) {
         return null;
       }
 
-      // Fetch last 2 quarters for comparison
-      const [balanceSheets, cashFlows] = await Promise.all([
-        axios.get(
-          `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${apiKey}&limit=2`,
-          { timeout: 5000 }
-        ).catch(() => null),
-        axios.get(
-          `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?apikey=${apiKey}&limit=2`,
-          { timeout: 5000 }
-        ).catch(() => null)
-      ]);
+      // Try each API key until one works
+      for (const apiKey of apiKeys) {
+        try {
+          // Fetch last 2 quarters for comparison
+          const [balanceSheets, cashFlows] = await Promise.all([
+            axios.get(
+              `https://financialmodelingprep.com/api/v3/balance-sheet-statement/${ticker}?apikey=${apiKey}&limit=2`,
+              { timeout: 8000 }
+            ).catch(() => null),
+            axios.get(
+              `https://financialmodelingprep.com/api/v3/cash-flow-statement/${ticker}?apikey=${apiKey}&limit=2`,
+              { timeout: 8000 }
+            ).catch(() => null)
+          ]);
 
-      if (!balanceSheets?.data || balanceSheets.data.length < 2 ||
-          !cashFlows?.data || cashFlows.data.length < 2) {
-        return { cash_q_q: 0, debt_q_q: 0, equity_q_q: 0, fcf_q_q: 0 };
+          if (!balanceSheets?.data || balanceSheets.data.length < 2 ||
+              !cashFlows?.data || cashFlows.data.length < 2) {
+            console.warn(`⚠️ [BALANCE SHEET] Incomplete trend data for ${ticker}`);
+            continue; // Try next API key
+          }
+
+          const current: any = balanceSheets.data[0];
+          const previous: any = balanceSheets.data[1];
+          const cfCurrent: any = cashFlows.data[0];
+          const cfPrevious: any = cashFlows.data[1];
+
+          const calcPercentChange = (current: number, previous: number): number => {
+            return previous !== 0 ? ((current - previous) / previous) * 100 : 0;
+          };
+
+          const fcfCurrent = (cfCurrent.operatingCashFlow || 0) - Math.abs(cfCurrent.capitalExpenditure || 0);
+          const fcfPrevious = (cfPrevious.operatingCashFlow || 0) - Math.abs(cfPrevious.capitalExpenditure || 0);
+
+          return {
+            cash_q_q: calcPercentChange(current.cashAndCashEquivalents || current.cashAndShortTermInvestments || 0,
+                                         previous.cashAndCashEquivalents || previous.cashAndShortTermInvestments || 0),
+            debt_q_q: calcPercentChange(current.longTermDebt || 0, previous.longTermDebt || 0),
+            equity_q_q: calcPercentChange(current.totalStockholdersEquity || current.totalEquity || 0,
+                                           previous.totalStockholdersEquity || previous.totalEquity || 0),
+            fcf_q_q: calcPercentChange(fcfCurrent, fcfPrevious)
+          };
+        } catch (keyError: any) {
+          // This API key failed, try next one
+          if (keyError?.response?.status === 403 || keyError?.response?.status === 429) {
+            console.warn(`⚠️ [BALANCE SHEET] Trend API key rate limited, trying next...`);
+            continue;
+          }
+        }
       }
-
-      const current: any = balanceSheets.data[0];
-      const previous: any = balanceSheets.data[1];
-      const cfCurrent: any = cashFlows.data[0];
-      const cfPrevious: any = cashFlows.data[1];
-
-      const calcPercentChange = (current: number, previous: number): number => {
-        return previous !== 0 ? ((current - previous) / previous) * 100 : 0;
-      };
-
-      const fcfCurrent = (cfCurrent.operatingCashFlow || 0) - Math.abs(cfCurrent.capitalExpenditure || 0);
-      const fcfPrevious = (cfPrevious.operatingCashFlow || 0) - Math.abs(cfPrevious.capitalExpenditure || 0);
-
-      return {
-        cash_q_q: calcPercentChange(current.cashAndCashEquivalents || current.cashAndShortTermInvestments || 0,
-                                     previous.cashAndCashEquivalents || previous.cashAndShortTermInvestments || 0),
-        debt_q_q: calcPercentChange(current.longTermDebt || 0, previous.longTermDebt || 0),
-        equity_q_q: calcPercentChange(current.totalStockholdersEquity || current.totalEquity || 0,
-                                       previous.totalStockholdersEquity || previous.totalEquity || 0),
-        fcf_q_q: calcPercentChange(fcfCurrent, fcfPrevious)
-      };
+      
+      // Return default if all keys failed
+      return { cash_q_q: 0, debt_q_q: 0, equity_q_q: 0, fcf_q_q: 0 };
     } catch (error) {
       console.error(`❌ [BALANCE SHEET] Error fetching trends for ${ticker}:`, error);
       return { cash_q_q: 0, debt_q_q: 0, equity_q_q: 0, fcf_q_q: 0 };
