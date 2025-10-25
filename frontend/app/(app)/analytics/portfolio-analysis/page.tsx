@@ -19,30 +19,46 @@ const RealPortfolioChart = ({ data }: { data: any[] }) => {
     );
   }
 
-  const maxValue = Math.max(...data.map(d => d.totalValue));
-  const minValue = Math.min(...data.map(d => d.totalValue));
+  // CRITICAL FIX: Ensure all totalValue are numbers, not NaN
+  const validData = data.filter(d => d && typeof d.totalValue === 'number' && !isNaN(d.totalValue));
+  
+  if (validData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-slate-400">
+        <div className="text-center">
+          <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No valid performance data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  const maxValue = Math.max(...validData.map(d => d.totalValue));
+  const minValue = Math.min(...validData.map(d => d.totalValue));
   const range = maxValue - minValue;
-  const padding = range * 0.1; // 10% padding
+  const padding = range > 0 ? range * 0.1 : 100; // 10% padding or default
   const chartMin = minValue - padding;
   const chartMax = maxValue + padding;
 
   const getY = (value: number) => {
+    if (chartMax === chartMin) return 70; // Center if no range
     return 140 - ((value - chartMin) / (chartMax - chartMin)) * 120;
   };
 
   const getX = (index: number) => {
-    return 20 + (index / (data.length - 1)) * 320;
+    if (validData.length === 1) return 200; // Center if only one point
+    return 20 + (index / (validData.length - 1)) * 320;
   };
 
-  // Create path for the line
-  const pathData = data.map((point, index) => {
+  // Create path for the line using validData
+  const pathData = validData.map((point, index) => {
     const x = getX(index);
     const y = getY(point.totalValue);
     return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
   }).join(' ');
 
   // Create area path
-  const areaData = `${pathData} L ${getX(data.length - 1)} 140 L 20 140 Z`;
+  const areaData = `${pathData} L ${getX(validData.length - 1)} 140 L 20 140 Z`;
 
   return (
     <svg className="w-full h-full" viewBox="0 0 400 160">
@@ -73,11 +89,11 @@ const RealPortfolioChart = ({ data }: { data: any[] }) => {
       />
       
       {/* Data points */}
-      {data.map((point, index) => {
+      {validData.map((point, index) => {
         const x = getX(index);
         const y = getY(point.totalValue);
-        const isLast = index === data.length - 1;
-        const isPositive = point.dailyChangePercent > 0;
+        const isLast = index === validData.length - 1;
+        const isPositive = (point.dailyChangePercent || 0) > 0;
         
         return (
           <circle
@@ -108,16 +124,16 @@ const RealPortfolioChart = ({ data }: { data: any[] }) => {
       </text>
       
       {/* Current value indicator */}
-      {data.length > 0 && (
+      {validData.length > 0 && (
         <>
           <text x="345" y="15" fill="#10b981" fontSize="11" fontWeight="bold">
-            ${((data[data.length - 1].totalValue || 0) / 1000).toFixed(1)}k
+            ${((validData[validData.length - 1].totalValue || 0) / 1000).toFixed(1)}k
           </text>
           <line 
-            x1={getX(data.length - 1)} 
-            y1={getY(data[data.length - 1].totalValue)} 
+            x1={getX(validData.length - 1)} 
+            y1={getY(validData[validData.length - 1].totalValue)} 
             x2="380" 
-            y2={getY(data[data.length - 1].totalValue)} 
+            y2={getY(validData[validData.length - 1].totalValue)} 
             stroke="#10b981" 
             strokeWidth="2" 
             strokeDasharray="3,3"
@@ -424,8 +440,8 @@ export default function PortfolioAnalysis() {
                       ) : (
                         <TrendingDown className="w-3 h-3" />
                       )}
-                      <span>{(parseFloat(sector.performance90D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance90D) || 0).toFixed(2)}%</span>
-                      <span className="text-slate-500">90D</span>
+                      <span>{(parseFloat(sector.performance30D || sector.performance90D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance30D || sector.performance90D) || 0).toFixed(2)}%</span>
+                      <span className="text-slate-500">30D</span>
                     </div>
                   </div>
                 </div>
@@ -446,9 +462,9 @@ export default function PortfolioAnalysis() {
                   <div className={`text-2xl font-bold ${
                     (portfolioAnalysis?.performance90D || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                   }`}>
-                    {(portfolioAnalysis?.performance90D || 0) >= 0 ? '+' : ''}{(portfolioAnalysis?.performance90D || 0).toFixed(1)}%
+                    {(portfolioAnalysis?.performance30D || portfolioAnalysis?.performance90D || 0) >= 0 ? '+' : ''}{(portfolioAnalysis?.performance30D || portfolioAnalysis?.performance90D || 0).toFixed(1)}%
                   </div>
-                  <div className="text-sm text-slate-400">90 Day Return</div>
+                                      <div className="text-sm text-slate-400">30 Day Return</div>
                 </div>
                 <div className="text-center p-4 bg-slate-800 rounded-lg">
                   <div className={`text-2xl font-bold ${
@@ -628,7 +644,7 @@ export default function PortfolioAnalysis() {
           <div className="lg:col-span-2 card p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <BarChart3 className="w-5 h-5 mr-2" />
-              Sector Performance Summary (90 Days)
+              Sector Performance Summary (30 Days)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sectorPerformance && sectorPerformance.length > 0 ? (
@@ -640,9 +656,9 @@ export default function PortfolioAnalysis() {
                         <span className="text-white font-medium text-sm">{sector.sector}</span>
                       </div>
                       <div className={`text-sm font-semibold ${
-                        (parseFloat(sector.performance90D) || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                        (parseFloat(sector.performance30D || sector.performance90D) || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                       }`}>
-                        {(parseFloat(sector.performance90D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance90D) || 0).toFixed(2)}%
+                        {(parseFloat(sector.performance30D || sector.performance90D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance30D || sector.performance90D) || 0).toFixed(2)}%
                       </div>
                     </div>
                     <div className="text-xs text-slate-400 mb-2">

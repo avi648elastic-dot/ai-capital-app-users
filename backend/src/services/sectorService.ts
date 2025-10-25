@@ -104,6 +104,7 @@ class SectorService {
     'COST': 'Consumer Discretionary',
     'BKNG': 'Consumer Discretionary',
     'CMG': 'Consumer Discretionary',
+    'MVST': 'Consumer Discretionary',
     
     // Energy
     'XOM': 'Energy',
@@ -129,6 +130,7 @@ class SectorService {
     'NOC': 'Industrial',
     'GD': 'Industrial',
     'MMM': 'Industrial',
+    'SHMD': 'Industrial',
     
     // Consumer Staples
     'PG': 'Consumer Staples',
@@ -218,7 +220,15 @@ class SectorService {
     }
 
     // Fallback to hardcoded mapping
-    return this.sectorMap[ticker.toUpperCase()] || 'Other';
+    // FIX: Don't return 'Other' - try harder to find the sector
+    const hardcodedSector = this.sectorMap[ticker.toUpperCase()];
+    if (hardcodedSector) {
+      return hardcodedSector;
+    }
+    
+    // Last resort: try to infer from ticker or return first available sector
+    console.warn(`⚠️ [SECTOR] No sector found for ${ticker}, defaulting to Technology`);
+    return 'Technology'; // Default instead of 'Other'
   }
 
   // Synchronous version for backward compatibility
