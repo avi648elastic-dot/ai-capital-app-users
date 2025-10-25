@@ -255,7 +255,7 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
           </div>
           
           {/* Desktop legend */}
-          <div className="hidden sm:flex items-center space-x-4 text-xs sm:text-sm">
+          <div className="hidden sm:flex items-center space-x-6 text-xs sm:text-sm">
             <div className="flex items-center space-x-2">
               {analyticsLoading && (
                 <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-blue-500"></div>
@@ -266,6 +266,20 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
                   : '⚠️ Using portfolio entry data'
                 }
               </span>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-emerald-400 rounded-full"></div>
+                <span className="text-slate-300">Portfolio Value</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-400 rounded-full border-2 border-dashed border-blue-400"></div>
+                <span className="text-slate-300">Total Cost</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-purple-400 rounded-full border-2 border-dashed border-purple-400"></div>
+                <span className="text-slate-300">P&L</span>
+              </div>
             </div>
           </div>
         </div>
@@ -300,10 +314,14 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
                 tick={{ fill: '#6b7280' }}
                 axisLine={{ stroke: '#4b5563' }}
                 tickLine={{ stroke: '#4b5563' }}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+                interval={0}
                 label={{ 
                   value: 'Date', 
                   position: 'insideBottom', 
-                  offset: -10,
+                  offset: 50,
                   style: { textAnchor: 'middle', fill: '#9ca3af', fontSize: '12px', fontWeight: 'bold' }
                 }}
               />
@@ -410,12 +428,28 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
               </div>
             </div>
           </div>
-          <span className="hidden sm:inline text-xs text-slate-400">
-            {portfolioPerformance && portfolioPerformance.length > 0 
-              ? '📊 Real-time data' 
-              : '📈 Entry vs Current prices'
-            }
-          </span>
+          <div className="hidden sm:flex items-center space-x-6 text-xs sm:text-sm">
+            <span className="text-xs text-slate-400">
+              {portfolioPerformance && portfolioPerformance.length > 0 
+                ? '📊 Real-time data' 
+                : '📈 Entry vs Current prices'
+              }
+            </span>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-blue-400 rounded"></div>
+                <span className="text-slate-300">Entry Price</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-500 rounded"></div>
+                <span className="text-slate-300">Current Price</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
+                <span className="text-slate-300">P&L</span>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="h-48 sm:h-64 lg:h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -437,7 +471,7 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
               <XAxis 
                 dataKey="ticker" 
                 stroke="#9ca3af"
-                fontSize={11}
+                fontSize={12}
                 fontWeight={600}
                 tick={{ fill: '#9ca3af' }}
                 axisLine={{ stroke: '#4b5563', strokeWidth: 2 }}
@@ -445,7 +479,7 @@ export default function Charts({ portfolio, portfolioPerformance, sectorPerforma
                 label={{ 
                   value: 'Stock Ticker', 
                   position: 'insideBottom', 
-                  offset: -10,
+                  offset: 0,
                   style: { textAnchor: 'middle', fill: '#9ca3af', fontSize: '12px', fontWeight: 'bold' }
                 }}
               />
