@@ -62,22 +62,28 @@ export default function Reports() {
       // Fetch news from backend API
       try {
         const newsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/news`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 15000
         });
-        setNews(newsRes.data.news || []);
+        const newsData = newsRes.data.news || [];
+        setNews(newsData);
+        console.log(`✅ [REPORTS] Loaded ${newsData.length} news articles`);
       } catch (newsError) {
-        console.error('Error fetching news:', newsError);
+        console.error('❌ [REPORTS] Error fetching news:', newsError);
         setNews([]);
       }
 
       // Fetch earnings calendar from backend API
       try {
         const earningsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/earnings-calendar`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 15000
         });
-        setEarnings(earningsRes.data.earnings || []);
+        const earningsData = earningsRes.data.earnings || [];
+        setEarnings(earningsData);
+        console.log(`✅ [REPORTS] Loaded ${earningsData.length} upcoming earnings`);
       } catch (earningsError) {
-        console.error('Error fetching earnings:', earningsError);
+        console.error('❌ [REPORTS] Error fetching earnings:', earningsError);
         setEarnings([]);
       }
     } catch (error) {
@@ -127,7 +133,12 @@ export default function Reports() {
               </h3>
               <div className="space-y-4">
                 {news.length === 0 ? (
-                  <p className="text-slate-400 text-center py-8">No recent news available</p>
+                  <div className="text-center py-8">
+                    <p className="text-slate-400 mb-2">No recent news available</p>
+                    <p className="text-xs text-slate-500">
+                      News is fetched from external APIs for your portfolio stocks
+                    </p>
+                  </div>
                 ) : (
                   news.map((article, index) => (
                     <div key={index} className="border-b border-slate-800 pb-4 last:border-b-0">
@@ -159,17 +170,26 @@ export default function Reports() {
                 Upcoming Earnings
               </h3>
               <div className="space-y-3">
-                {getUpcomingEarnings().map((earning, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
-                    <div>
-                      <div className="text-white font-medium">{earning.ticker}</div>
-                      <div className="text-sm text-slate-400">{earning.time}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-slate-300">{earning.date}</div>
-                    </div>
+                {getUpcomingEarnings().length === 0 ? (
+                  <div className="text-center py-4">
+                    <p className="text-slate-400 text-sm mb-1">No upcoming earnings</p>
+                    <p className="text-xs text-slate-500">
+                      Earnings data is fetched from external APIs
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  getUpcomingEarnings().map((earning, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
+                      <div>
+                        <div className="text-white font-medium">{earning.ticker}</div>
+                        <div className="text-sm text-slate-400">{earning.time}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-slate-300">{earning.date}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 

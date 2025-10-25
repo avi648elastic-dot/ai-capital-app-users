@@ -697,45 +697,68 @@ router.get('/earnings-calendar', authenticateToken, async (req, res) => {
     const tickers = portfolio.map(item => item.ticker);
     const earnings: any[] = [];
 
-    // Fetch real earnings calendar from FMP (Financial Modeling Prep)
+    // Try multiple FMP API keys for robustness
+    const apiKeys = [
+      process.env.FMP_API_KEY_1,
+      process.env.FMP_API_KEY_2,
+      process.env.FMP_API_KEY_3,
+      process.env.FMP_API_KEY_4,
+      process.env.FMP_API_KEY,
+    ].filter(key => key);
+
+    if (apiKeys.length === 0) {
+      console.warn('⚠️ No FMP API keys found, skipping earnings fetch');
+      return res.json({ earnings: [] });
+    }
+
+    // Fetch real earnings calendar from FMP (Financial Modeling Prep) with retry logic
+    let keyIndex = 0;
     for (const ticker of tickers) {
-      try {
-        const apiKey = process.env.FMP_API_KEY_1 || process.env.FMP_API_KEY;
-        if (!apiKey) {
-          console.warn('⚠️ No FMP API key found, skipping earnings fetch');
-          break;
-        }
+      let success = false;
+      for (let attempt = 0; attempt < Math.min(apiKeys.length, 3) && !success; attempt++) {
+        try {
+          const apiKey = apiKeys[keyIndex % apiKeys.length];
+          keyIndex++;
 
-        const response = await axios.get(
-          `https://financialmodelingprep.com/api/v3/earning_calendar?symbol=${ticker}&apikey=${apiKey}`,
-          { timeout: 5000 }
-        );
+          const response = await axios.get(
+            `https://financialmodelingprep.com/api/v3/earning_calendar?symbol=${ticker}&apikey=${apiKey}`,
+            { timeout: 8000 }
+          );
 
-        if (response.data && response.data.length > 0) {
-          // Get the next upcoming earnings
-          const nextEarning = response.data
-            .filter((e: any) => new Date(e.date) > new Date())
-            .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-          
-          if (nextEarning) {
-            earnings.push({
-              ticker: ticker,
-              date: nextEarning.date.split(' ')[0], // Just the date part
-              time: nextEarning.time || 'After Market Close',
-              epsEstimate: nextEarning.epsEstimated || null,
-              revenueEstimate: nextEarning.revenueEstimated || null
-            });
+          if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+            success = true;
+            // Get the next upcoming earnings
+            const nextEarning = response.data
+              .filter((e: any) => e.date && new Date(e.date) > new Date())
+              .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+            
+            if (nextEarning) {
+              earnings.push({
+                ticker: ticker,
+                date: nextEarning.date ? nextEarning.date.split(' ')[0] : new Date().toISOString().split('T')[0],
+                time: nextEarning.time || 'After Market Close',
+                epsEstimate: nextEarning.epsEstimated || null,
+                revenueEstimate: nextEarning.revenueEstimated || null
+              });
+            }
           }
+        } catch (error: any) {
+          if (error?.response?.status === 429 || error?.response?.status === 403) {
+            // Rate limited or forbidden - switch to next key
+            console.warn(`⏳ Rate limited for ${ticker}, trying next API key...`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
+            continue;
+          }
+          console.error(`Error fetching earnings for ${ticker}:`, error?.message);
         }
-      } catch (error: any) {
-        console.error(`Error fetching earnings for ${ticker}:`, error?.message);
       }
     }
 
+    console.log(`✅ [EARNINGS] Fetched ${earnings.length} upcoming earnings for ${tickers.length} portfolio stocks`);
     res.json({ earnings });
   } catch (error) {
     console.error('❌ [ANALYTICS] Error fetching earnings calendar:', error);
-    res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
+    res.json({ earnings: [] }); // Return empty array instead of error
   }
 });
 
@@ -804,63 +827,82 @@ router.get('/news', authenticateToken, async (req, res) => {
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
     const today = new Date();
     
-    // Fetch news from Alpha Vantage
-    try {
-      const apiKey = process.env.ALPHA_VANTAGE_API_KEY_1 || process.env.ALPHA_VANTAGE_API_KEY;
-      
-      if (!apiKey) {
-        console.warn('⚠️ No Alpha Vantage API key found');
-        return res.json({ news: [] });
-      }
+    // Try multiple API keys for robustness
+    const apiKeys = [
+      process.env.ALPHA_VANTAGE_API_KEY_1,
+      process.env.ALPHA_VANTAGE_API_KEY_2,
+      process.env.ALPHA_VANTAGE_API_KEY_3,
+      process.env.ALPHA_VANTAGE_API_KEY,
+    ].filter(key => key);
 
-      // Fetch news for each ticker - filter to portfolio holdings only
-      for (const ticker of tickers) { // No limit - fetch for all portfolio stocks
+    if (apiKeys.length === 0) {
+      console.warn('⚠️ No Alpha Vantage API keys found');
+      return res.json({ news: [] });
+    }
+
+    // Fetch news from Alpha Vantage with retry logic
+    let keyIndex = 0;
+    for (const ticker of tickers) {
+      let success = false;
+      for (let attempt = 0; attempt < Math.min(apiKeys.length, 3) && !success; attempt++) {
         try {
+          const apiKey = apiKeys[keyIndex % apiKeys.length];
+          keyIndex++;
+          
           const response = await axios.get(
-            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=100`,
-            { timeout: 5000 }
+            `https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=${ticker}&apikey=${apiKey}&limit=5`,
+            { timeout: 8000 }
           );
 
           if (response.data && response.data.feed && response.data.feed.length > 0) {
+            success = true;
             response.data.feed.forEach((article: any) => {
-              // Parse article date (format: YYYYMMDDHHMMSS)
-              const articleDate = new Date(
-                article.time_published.slice(0, 4) + '-' +
-                article.time_published.slice(4, 6) + '-' +
-                article.time_published.slice(6, 8)
-              );
-              
-              // Only include articles from the last year
-              if (articleDate >= oneYearAgo && articleDate <= today) {
-                allNews.push({
-                  title: article.title,
-                  source: article.source,
-                  date: article.time_published.slice(0, 10), // Format: YYYYMMDD -> YYYY-MM-DD
-                  ticker: ticker, // Portfolio stock ticker
-                  url: article.url,
-                  sentiment: article.overall_sentiment_score >= 0.35 ? 'positive' : 
-                             article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral'
-                });
+              try {
+                // Parse article date (format: YYYYMMDDHHMMSS)
+                const articleDate = new Date(
+                  article.time_published.slice(0, 4) + '-' +
+                  article.time_published.slice(4, 6) + '-' +
+                  article.time_published.slice(6, 8)
+                );
+                
+                // Only include articles from the last year
+                if (articleDate >= oneYearAgo && articleDate <= today) {
+                  allNews.push({
+                    title: article.title || 'No title',
+                    source: article.source || 'Unknown',
+                    date: article.time_published ? article.time_published.slice(0, 10) : new Date().toISOString().split('T')[0],
+                    ticker: ticker,
+                    url: article.url || '#',
+                    sentiment: article.overall_sentiment_score >= 0.35 ? 'positive' : 
+                               article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral'
+                  });
+                }
+              } catch (parseError: any) {
+                console.warn(`Error parsing article for ${ticker}:`, parseError?.message);
               }
             });
           }
         } catch (error: any) {
+          if (error?.response?.status === 429) {
+            // Rate limited - switch to next key
+            console.warn(`⏳ Rate limited for ${ticker}, trying next API key...`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Small delay
+            continue;
+          }
           console.error(`Error fetching news for ${ticker}:`, error?.message);
         }
       }
-      
-      // Sort by date (most recent first) and limit to latest 20 articles
-      allNews.sort((a, b) => b.date.localeCompare(a.date));
-      const recentNews = allNews.slice(0, 20);
-      
-      res.json({ news: recentNews });
-    } catch (error) {
-      console.error('❌ [ANALYTICS] Error fetching news:', error);
-      res.json({ news: [] });
     }
+    
+    // Sort by date (most recent first) and limit to latest 20 articles
+    allNews.sort((a, b) => b.date.localeCompare(a.date));
+    const recentNews = allNews.slice(0, 20);
+    
+    console.log(`✅ [NEWS] Fetched ${recentNews.length} news articles for ${tickers.length} portfolio stocks`);
+    res.json({ news: recentNews });
   } catch (error) {
     console.error('❌ [ANALYTICS] Error in news endpoint:', error);
-    res.status(500).json({ message: 'Internal server error', error: (error as Error).message });
+    res.json({ news: [] }); // Return empty array instead of error
   }
 });
 
