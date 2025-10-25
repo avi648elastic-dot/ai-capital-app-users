@@ -263,8 +263,14 @@ export default function PortfolioAnalysis() {
   };
 
   useEffect(() => {
-    fetchPortfolio();
-    fetchAnalyticsData();
+    // Fetch both in parallel - page should show data immediately from MongoDB
+    const loadData = async () => {
+      await Promise.all([
+        fetchPortfolio(),
+        fetchAnalyticsData()
+      ]);
+    };
+    loadData();
     
     // Auto-refresh every 30 seconds like other pages
     const interval = setInterval(() => {
@@ -297,7 +303,7 @@ export default function PortfolioAnalysis() {
     } catch (error: any) {
       console.error('Error fetching portfolio:', error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Set loading to false immediately after portfolio loads
     }
   };
 
@@ -354,15 +360,8 @@ export default function PortfolioAnalysis() {
     }
   };
 
-  // Auto-refresh when page loads - no manual refresh button needed
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
+  // Show page immediately - data will populate as it loads (no blocking spinner)
+  // Page should show MongoDB data instantly without 5 second wait
 
   return (
     <div className="w-full">

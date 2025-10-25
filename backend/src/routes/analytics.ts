@@ -288,21 +288,20 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     let realTimeMetrics: any = null;
     
     try {
-      console.log('🔍 [ANALYTICS] Attempting to fetch data using optimized stock data service...');
+      console.log('🔍 [ANALYTICS] Loading data from MongoDB (instant) and falling back to stored prices (no API wait)...');
       console.log('🔍 [ANALYTICS] Portfolio stocks:', portfolio.map(p => p.ticker));
       
-      // Use the same robust service as the dashboard with proper fallbacks
+      // CRITICAL FIX: Use stored portfolio prices immediately (from MongoDB)
+      // This eliminates the 5-second API wait and shows data instantly
       const tickers = [...new Set(portfolio.map(item => item.ticker))];
-      let realTimeData: Map<string, any>;
+      let realTimeData: Map<string, any> = new Map(); // Start with empty - will use stored prices
       
-      try {
-        // Use optimized service with batch processing and proper fallbacks
-        realTimeData = await optimizedStockDataService.getMultipleStockData(tickers);
-        console.log('✅ [ANALYTICS] Fetched real-time data for', realTimeData.size, 'stocks (OPTIMIZED)');
-      } catch (stockDataError) {
-        console.error('❌ [ANALYTICS] Error fetching stock data, using stored prices:', stockDataError);
-        realTimeData = new Map(); // Empty map, will use stored prices as fallback
-      }
+      // Don't wait for external APIs - use MongoDB data immediately
+      // External API updates can happen in background (next session)
+      console.log('⚡ [ANALYTICS] Using stored prices from MongoDB (instant load)');
+      
+      // NOTE: External API calls removed to eliminate 5-second wait
+      // If you need real-time prices, they can be updated via background cron job
       
       // Process portfolio data using the same architecture as dashboard
       portfolioData = portfolio.map((stock) => {
