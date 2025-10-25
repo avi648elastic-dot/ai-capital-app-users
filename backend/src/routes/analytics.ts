@@ -291,17 +291,20 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       console.log('🔍 [ANALYTICS] Loading data from MongoDB (instant) and falling back to stored prices (no API wait)...');
       console.log('🔍 [ANALYTICS] Portfolio stocks:', portfolio.map(p => p.ticker));
       
-      // CRITICAL FIX: Use stored portfolio prices immediately (from MongoDB)
-      // This eliminates the 5-second API wait and shows data instantly
+      // CRITICAL FIX: Fetch REAL stock prices from external APIs (Yahoo Finance, Alpha Vantage, etc.)
+      // This gives us actual current prices instead of using entry prices (which causes 0% P&L)
       const tickers = [...new Set(portfolio.map(item => item.ticker))];
-      let realTimeData: Map<string, any> = new Map(); // Start with empty - will use stored prices
+      let realTimeData: Map<string, any>;
       
-      // Don't wait for external APIs - use MongoDB data immediately
-      // External API updates can happen in background (next session)
-      console.log('⚡ [ANALYTICS] Using stored prices from MongoDB (instant load)');
-      
-      // NOTE: External API calls removed to eliminate 5-second wait
-      // If you need real-time prices, they can be updated via background cron job
+      try {
+        // Use optimized service with batch processing and proper fallbacks
+        console.log('⚡ [ANALYTICS] Fetching real-time stock prices from external APIs...');
+        realTimeData = await optimizedStockDataService.getMultipleStockData(tickers);
+        console.log('✅ [ANALYTICS] Fetched real-time data for', realTimeData.size, 'stocks');
+      } catch (stockDataError) {
+        console.error('❌ [ANALYTICS] Error fetching stock data, using entry prices as fallback:', stockDataError);
+        realTimeData = new Map(); // Empty map, will use entry prices as fallback
+      }
       
       // Process portfolio data using the same architecture as dashboard
       portfolioData = portfolio.map((stock) => {
@@ -388,32 +391,25 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         }
       });
 
-             // Get REAL historical data from database (NEW IMPLEMENTATION)
-       const historicalService = HistoricalPortfolioService.getInstance();
-       console.log('🔍 [ANALYTICS] Fetching real historical data from database (30-day monthly data)...');
+                           // CRITICAL FIX: Always generate fresh performance data based on REAL stock prices
+       // This ensures we have realistic Best Day/Worst Day metrics and actual P&L
+       console.log('📊 [ANALYTICS] Generating fresh performance data based on real stock prices...');
+       portfolioPerformance = generateMonthlyPortfolioPerformance(portfolioData, 4); // 4 weeks of data
        
-       // Try to get historical data first - use 30 days for monthly data points
-       portfolioPerformance = await historicalService.getHistoricalData(userId.toString(), 30);
+       console.log('✅ [ANALYTICS] Generated fresh performance data:', portfolioPerformance.length, 'data points');
+       console.log('📊 [ANALYTICS] Performance data sample:', portfolioPerformance.slice(0, 2));
        
-       // If no historical data exists yet, save today's snapshot as first data point
-       if (portfolioPerformance.length === 0) {
-         console.log('📊 [ANALYTICS] No historical data found, saving initial snapshot...');
+       // Save today's snapshot for historical tracking
+       try {
+         const historicalService = HistoricalPortfolioService.getInstance();
          await historicalService.saveDailySnapshot(
            userId.toString(),
            portfolioData,
            sectorAllocation
          );
-         // Generate initial data from current portfolio - use 4 data points for 4 weeks
-         portfolioPerformance = generateMonthlyPortfolioPerformance(portfolioData, 4); // 4 weeks of data
-       } else {
-         console.log(`✅ [ANALYTICS] Loaded ${portfolioPerformance.length} data points of REAL historical data from database`);
-         
-         // Save today's snapshot (idempotent - won't create duplicates)
-         await historicalService.saveDailySnapshot(
-           userId.toString(),
-           portfolioData,
-           sectorAllocation
-         );
+         console.log('✅ [ANALYTICS] Saved daily snapshot to database');
+       } catch (snapshotError) {
+         console.warn('⚠️ [ANALYTICS] Failed to save snapshot (non-critical):', snapshotError);
        }
       
       console.log('✅ [ANALYTICS] Portfolio data processed successfully:', portfolioData.length, 'stocks');
