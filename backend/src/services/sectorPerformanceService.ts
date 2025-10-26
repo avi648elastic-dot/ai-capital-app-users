@@ -438,6 +438,7 @@ export class SectorPerformanceService {
 
       return {
         sector,
+        etfSymbol: etfInfo?.symbol || '',
         percentage: Math.round(percentage * 10) / 10,
         value: Math.round(data.value),
         stocks: data.stocks,

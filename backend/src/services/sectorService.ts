@@ -3,6 +3,7 @@ import { dynamicSectorService } from './dynamicSectorService';
 // Sector classification service for portfolio analytics
 export interface SectorData {
   sector: string;
+  etfSymbol?: string;
   percentage: number;
   value: number;
   performance90D: number;
@@ -207,6 +208,20 @@ class SectorService {
     'Communication Services': 'bg-teal-500'
   };
 
+  private sectorETFs: Record<string, string> = {
+    'Technology': 'XLK',
+    'Healthcare': 'XLV',
+    'Financial Services': 'XLF',
+    'Consumer Discretionary': 'XLY',
+    'Energy': 'XLE',
+    'Industrial': 'XLI',
+    'Consumer Staples': 'XLP',
+    'Utilities': 'XLU',
+    'Real Estate': 'XLRE',
+    'Materials': 'XLB',
+    'Communication Services': 'XLC'
+  };
+
   // Get sector for a stock ticker (now uses dynamic service)
   async getSector(ticker: string): Promise<string> {
     try {
@@ -273,6 +288,7 @@ class SectorService {
       
       return {
         sector,
+        etfSymbol: this.sectorETFs[sector] || '',
         percentage: Math.round(percentage * 10) / 10,
         value: Math.round(data.value * 100) / 100,
         performance90D: Math.round(performance90D * 10) / 10,

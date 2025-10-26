@@ -392,7 +392,10 @@ export default function Analytics() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
-                      <span className="text-white font-medium">{sector.sector}</span>
+                      <span className="text-white font-medium">
+                        {sector.sector}
+                        {sector.etfSymbol && <span className="text-xs text-slate-400 ml-2">{sector.etfSymbol}</span>}
+                      </span>
                     </div>
                     <div className="text-right">
                       <div className="text-white font-semibold">{sector.percentage}%</div>
@@ -608,7 +611,10 @@ export default function Analytics() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
-                        <span className="text-white font-medium text-sm">{sector.sector}</span>
+                        <span className="text-white font-medium text-sm">
+                          {sector.sector}
+                          {sector.etfSymbol && <span className="text-xs text-slate-400 ml-1">({sector.etfSymbol})</span>}
+                        </span>
                       </div>
                       <div className={`text-sm font-semibold ${
                         sector.performance90D >= 0 ? 'text-green-400' : 'text-red-400'
