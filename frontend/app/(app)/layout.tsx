@@ -73,23 +73,9 @@ export default function AppLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative z-10">
-        {/* IC Tree thinking animation - subtle pulsing */}
-        <div 
-          className="pointer-events-none"
-          style={{ 
-            opacity: 0.15,
-            animation: 'pulse 2s ease-in-out infinite'
-          }}
-        >
-          <svg width="80" height="80" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g fill="#D4AF37">
-              <text x="52" y="62" fontFamily="serif" fontSize="18" fontWeight="bold" textAnchor="middle" fill="#D4AF37">IC</text>
-              <path d="M35 55 Q40 35 45 55 Q50 30 55 55 Q60 25 65 55 Q70 30 75 55 Q80 35 85 55" stroke="#D4AF37" strokeWidth="2" fill="none" opacity="0.6"/>
-              <path d="M35 65 Q40 85 45 65 Q50 90 55 65 Q60 95 65 65 Q70 90 75 65 Q80 85 85 65" stroke="#D4AF37" strokeWidth="2" fill="none" opacity="0.6"/>
-            </g>
-          </svg>
-        </div>
+      <div className="min-h-screen flex items-center justify-center relative z-10 bg-slate-900">
+        {/* Simple loading indicator - no animations */}
+        <div className="text-slate-400">Loading...</div>
       </div>
     );
   }
