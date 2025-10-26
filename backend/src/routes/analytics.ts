@@ -508,6 +508,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
           const allocation = sectorAllocation.find(a => a.sector === sector.sector);
           return {
             sector: sector.sector,
+            etfSymbol: allocation?.etfSymbol || '',
             performance7D: (allocation?.performance7D || sector.performance7D || 0).toFixed(2),
             performance30D: (allocation?.performance30D || sector.performance30D || 0).toFixed(2),
             performance60D: (allocation?.performance60D || 0).toFixed(2),
@@ -529,6 +530,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       console.log('🔄 [ANALYTICS] Generating fallback sector data for portfolio sectors...');
       sectorPerformance = sectorAllocation.map(allocation => ({
         sector: allocation.sector,
+        etfSymbol: allocation.etfSymbol || '',
         performance7D: allocation.performance7D || 0,
         performance30D: allocation.performance30D || 0,
         performance60D: allocation.performance60D || 0,
