@@ -242,7 +242,9 @@ export default function Analytics() {
   };
 
   useEffect(() => {
+    // Load portfolio first to get instant data
     fetchPortfolio();
+    // Then fetch analytics data in background
     fetchAnalyticsData();
   }, []);
 
@@ -284,14 +286,19 @@ export default function Analytics() {
       console.log('🔍 [ANALYTICS] Token exists:', !!token);
       console.log('🔍 [ANALYTICS] API URL:', process.env.NEXT_PUBLIC_API_URL);
       
+      // Fetch from analytics API
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/analytics/portfolio-analysis`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       console.log('✅ [ANALYTICS] API Response:', response.data);
       
+      // Set sector data first for instant display
+      if (response.data.sectorAllocation && response.data.sectorAllocation.length > 0) {
+        setSectorData(response.data.sectorAllocation);
+      }
+      
       // Set all the real data from the comprehensive API
-      setSectorData(response.data.sectorAllocation || []);
       setPortfolioAnalysis(response.data);
       setPortfolioPerformance(response.data.portfolioPerformance || []);
       setSectorPerformance(response.data.sectorPerformance || []);
@@ -309,6 +316,10 @@ export default function Analytics() {
         status: error?.response?.status,
         data: error?.response?.data
       });
+      // Set empty arrays to prevent loading indicators
+      setSectorData([]);
+      setSectorPerformance([]);
+      setPortfolioPerformance([]);
     } finally {
       if (isRefresh) {
         setRefreshing(false);

@@ -255,25 +255,33 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       });
     }
 
-    // Get sector performance data using Yahoo Finance (consistent with your Python script)
-    const yahooSectorService = YahooSectorService.getInstance();
-    let realSectorPerformance: any[] = [];
+    // OPTIMIZED: Load sector allocation from DB first (instant), then update with real performance data
+    const sectorPerformanceService = SectorPerformanceService.getInstance();
     let sectorAllocation: any[] = [];
     
     try {
-      console.log('🔍 [ANALYTICS] Fetching real sector performance data from Yahoo Finance...');
+      // CRITICAL FIX: Load sector allocation immediately from DB (fast)
+      // This avoids delay - sector segmentation will show instantly
+      console.log('⚡ [ANALYTICS] Loading sector allocation immediately from DB...');
+      sectorAllocation = await sectorPerformanceService.getSectorAllocation(portfolio);
+      console.log('✅ [ANALYTICS] Sector allocation loaded instantly:', sectorAllocation.length, 'sectors');
+    } catch (error) {
+      console.error('❌ [ANALYTICS] Sector allocation error:', error);
+      sectorAllocation = [];
+    }
+    
+    // Then fetch real sector performance data in background (slower, but not blocking)
+    const yahooSectorService = YahooSectorService.getInstance();
+    let realSectorPerformance: any[] = [];
+    
+    try {
+      console.log('🔍 [ANALYTICS] Fetching real sector performance data from Yahoo Finance (background)...');
       realSectorPerformance = await yahooSectorService.getSectorPerformance();
       console.log('✅ [ANALYTICS] Yahoo sector performance data fetched:', realSectorPerformance.length, 'sectors');
-      
-      // Use the old service for sector allocation (portfolio-based)
-      const sectorPerformanceService = SectorPerformanceService.getInstance();
-      sectorAllocation = await sectorPerformanceService.getSectorAllocation(portfolio);
-      console.log('✅ [ANALYTICS] Sector allocation data fetched:', sectorAllocation.length, 'sectors');
     } catch (error) {
       console.error('❌ [ANALYTICS] Sector performance error:', error);
-      // Use basic sector analysis as fallback
+      // Use sector allocation as fallback
       realSectorPerformance = [];
-      sectorAllocation = [];
     }
     
     // Get basic sector analysis for fallback
