@@ -149,8 +149,8 @@ export default function TransactionHistoryPage() {
         {/* Transaction History Table */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-slate-400">Loading transaction history...</p>
+            <div className="animate-spin rounded-full w-8 h-8 border-2 border-blue-500 border-t-transparent mx-auto"></div>
+            <p className="mt-4 text-slate-400">Loading...</p>
           </div>
         ) : error ? (
           <div className="text-center py-12">

@@ -129,7 +129,10 @@ export default function Reports() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-400">Loading reports...</div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full w-8 h-8 border-2 border-blue-500 border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-slate-400">Loading...</p>
+        </div>
       </div>
     );
   }

@@ -74,8 +74,7 @@ export default function AppLayout({
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center relative z-10 bg-slate-900">
-        {/* Simple loading indicator - no animations */}
-        <div className="text-slate-400">Loading...</div>
+        <div className="animate-spin rounded-full w-8 h-8 border-2 border-blue-500 border-t-transparent"></div>
       </div>
     );
   }
