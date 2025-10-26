@@ -927,14 +927,14 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Stock Form Modal */}
+      {/* Stock Form Modal - Mobile Responsive Fix */}
       {showStockForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
           {/* Dimmed backdrop */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowStockForm(false)} />
-          {/* Modal container */}
-          <div className="relative w-full max-w-lg mx-4 overflow-hidden rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-850 to-slate-900 shadow-2xl">
-            <div className="p-5 sm:p-6">
+          {/* Modal container - Fixed for mobile */}
+          <div className="relative w-full h-full sm:h-auto sm:max-w-lg sm:mx-4 sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-850 to-slate-900 shadow-2xl">
+            <div className="p-4 sm:p-6 min-h-full sm:min-h-0">
               <StockForm
                 onSubmit={handleAddStock}
                 onCancel={() => setShowStockForm(false)}
@@ -948,28 +948,40 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Create Portfolio Modal */}
+      {/* Create Portfolio Modal - Mobile Responsive Fix */}
       {showCreatePortfolio && (
-        <CreatePortfolioModal 
-          onClose={() => setShowCreatePortfolio(false)}
-              onSuccess={() => {
-                setShowCreatePortfolio(false);
-                // Refresh portfolios without full page reload
-                fetchPortfolio(false);
-              }}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreatePortfolio(false)} />
+          <div className="relative w-full h-full sm:h-auto sm:max-w-lg sm:mx-4 sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-slate-900 shadow-2xl">
+            <div className="p-4 sm:p-6 min-h-full sm:min-h-0">
+              <CreatePortfolioModal 
+                onClose={() => setShowCreatePortfolio(false)}
+                onSuccess={() => {
+                  setShowCreatePortfolio(false);
+                  fetchPortfolio(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* Delete Portfolio Modal */}
+      {/* Delete Portfolio Modal - Mobile Responsive Fix */}
       {showDeletePortfolio && (
-        <DeletePortfolioModal 
-          onClose={() => setShowDeletePortfolio(false)}
-               onSuccess={() => {
-                 setShowDeletePortfolio(false);
-                 // Refresh portfolios without full page reload
-                 fetchPortfolio(false);
-               }}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDeletePortfolio(false)} />
+          <div className="relative w-full h-full sm:h-auto sm:max-w-lg sm:mx-4 sm:max-h-[90vh] overflow-y-auto rounded-none sm:rounded-2xl bg-slate-900 shadow-2xl">
+            <div className="p-4 sm:p-6 min-h-full sm:min-h-0">
+              <DeletePortfolioModal 
+                onClose={() => setShowDeletePortfolio(false)}
+                onSuccess={() => {
+                  setShowDeletePortfolio(false);
+                  fetchPortfolio(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Mobile Floating Action Button - Only shows on mobile */}
