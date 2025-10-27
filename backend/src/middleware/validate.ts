@@ -30,21 +30,22 @@ export const validate = (schema: {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const zodError = error as any;
+        const zodError = error as ZodError;
+        const errors = zodError.errors || zodError.issues || [];
         console.warn('🔍 [VALIDATION] Request validation failed:', {
           url: req.url,
           method: req.method,
-          errors: zodError.errors,
+          errors: errors,
           timestamp: new Date().toISOString(),
         });
 
         return res.status(400).json({
           success: false,
           message: 'Request validation failed',
-          errors: zodError.errors.map((err: any) => ({
-            field: err.path.join('.'),
-            message: err.message,
-            code: err.code,
+          errors: errors.map((err: any) => ({
+            field: err.path ? err.path.join('.') : 'unknown',
+            message: err.message || 'Validation error',
+            code: err.code || 'validation_error',
           })),
         });
       }
@@ -83,21 +84,22 @@ export const validatePartial = (schema: {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const zodError = error as any;
+        const zodError = error as ZodError;
+        const errors = zodError.errors || zodError.issues || [];
         console.warn('🔍 [VALIDATION] Partial validation failed:', {
           url: req.url,
           method: req.method,
-          errors: zodError.errors,
+          errors: errors,
           timestamp: new Date().toISOString(),
         });
 
         return res.status(400).json({
           success: false,
           message: 'Request validation failed',
-          errors: zodError.errors.map((err: any) => ({
-            field: err.path.join('.'),
-            message: err.message,
-            code: err.code,
+          errors: errors.map((err: any) => ({
+            field: err.path ? err.path.join('.') : 'unknown',
+            message: err.message || 'Validation error',
+            code: err.code || 'validation_error',
           })),
         });
       }

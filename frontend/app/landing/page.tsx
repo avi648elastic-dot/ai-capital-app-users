@@ -91,26 +91,26 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
-      {/* Navigation */}
+      {/* Navigation - Mobile Responsive */}
       <nav className="fixed top-0 w-full bg-slate-900/90 backdrop-blur-md border-b border-blue-500/20 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-2 sm:py-4">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-white">AiCapital</span>
+              <span className="text-lg sm:text-2xl font-bold text-white">AiCapital</span>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button
                 onClick={() => router.push('/')}
-                className="px-4 py-2 text-blue-400 hover:text-blue-300 transition-colors"
+                className="px-2 sm:px-4 py-1.5 sm:py-2 text-blue-400 hover:text-blue-300 transition-colors text-sm sm:text-base"
               >
                 Login
               </button>
               <button
                 onClick={() => router.push('/')}
-                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+                className="px-3 sm:px-6 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all text-sm sm:text-base"
               >
                 Get Started
               </button>
@@ -123,30 +123,31 @@ export default function LandingPage() {
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto text-center">
           <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-bold text-white mb-8">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 sm:mb-8 px-4">
               AI-Powered
               <br />
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 Investing
               </span>
             </h1>
-            <p className="text-2xl text-slate-300 mb-12 max-w-4xl mx-auto">
+            <p className="text-base sm:text-xl lg:text-2xl text-slate-300 mb-8 sm:mb-12 max-w-4xl mx-auto px-4">
               Smart portfolio management with AI that actually works
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-4">
               <button
                 onClick={() => router.push('/')}
-                className="px-12 py-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xl font-bold rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-2xl"
+                className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg sm:text-xl font-bold rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-2xl flex items-center justify-center"
               >
-                Start Free Trial
-                <ArrowRight className="w-6 h-6 ml-3 inline" />
+                <span>Start Free Trial</span>
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-3" />
               </button>
               <button
-                onClick={() => router.push('/demo')}
-                className="px-12 py-6 border-2 border-blue-400 text-blue-400 text-xl font-bold rounded-2xl hover:bg-blue-400 hover:text-white transition-all flex items-center"
+                onClick={() => router.push('/expert-portfolio')}
+                className="px-8 sm:px-12 py-4 sm:py-6 border-2 border-blue-400 text-blue-400 text-lg sm:text-xl font-bold rounded-2xl hover:bg-blue-400 hover:text-white transition-all flex items-center mx-auto sm:mx-0"
               >
-                <Play className="w-6 h-6 mr-3" />
-                Watch Demo
+                <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                <span className="hidden sm:inline">Watch Demo</span>
+                <span className="sm:hidden">Demo</span>
               </button>
             </div>
           </div>
@@ -156,15 +157,15 @@ export default function LandingPage() {
       {/* Expert Portfolio Performance - Most Important Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-green-600/20 to-emerald-600/20 border-y border-green-500/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center bg-green-500/20 text-green-300 px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-green-500/30">
-              <Star className="w-4 h-4 mr-2" />
+            <div className="text-center mb-8 sm:mb-16 px-4">
+            <div className="inline-flex items-center bg-green-500/20 text-green-300 px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm font-semibold mb-4 sm:mb-6 border border-green-500/30">
+              <Star className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Expert Portfolio Results
             </div>
-            <h2 className="text-5xl font-bold text-white mb-6">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
               Real Profits, Real Results
             </h2>
-            <p className="text-xl text-slate-300 max-w-4xl mx-auto">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-300 max-w-4xl mx-auto">
               Our expert AI portfolios have generated consistent profits for thousands of investors
             </p>
           </div>
@@ -242,24 +243,24 @@ export default function LandingPage() {
 
           <div className="text-center mt-12">
             <button
-              onClick={() => router.push('/demo')}
-              className="px-12 py-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xl font-bold rounded-2xl hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-2xl"
+              onClick={() => router.push('/expert-portfolio')}
+              className="px-8 sm:px-12 py-4 sm:py-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-lg sm:text-xl font-bold rounded-2xl hover:from-green-700 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-2xl flex items-center justify-center mx-auto"
             >
-              See Live Performance
-              <ArrowRight className="w-6 h-6 ml-3 inline" />
+              <span>See Live Performance</span>
+              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 ml-2 sm:ml-3" />
             </button>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">
+          <div className="text-center mb-8 sm:mb-16 px-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
               Everything You Need
             </h2>
-            <p className="text-xl text-slate-300">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-300">
               AI that makes investing simple and profitable
             </p>
           </div>
@@ -282,13 +283,13 @@ export default function LandingPage() {
       </section>
 
       {/* AI Engines Explanation */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">
+          <div className="text-center mb-8 sm:mb-16 px-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
               How Our AI Works
             </h2>
-            <p className="text-xl text-slate-300">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-300">
               Four powerful engines working together to optimize your investments
             </p>
           </div>
@@ -482,13 +483,13 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-slate-800/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-6">
+          <div className="text-center mb-8 sm:mb-16 px-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
               Simple Pricing
             </h2>
-            <p className="text-xl text-slate-300">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-300">
               Start free, upgrade when you're ready
             </p>
           </div>
@@ -541,24 +542,24 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
             Ready to Start?
           </h2>
-          <p className="text-2xl text-blue-100 mb-12">
+          <p className="text-base sm:text-lg lg:text-2xl text-blue-100 mb-8 sm:mb-12">
             Join thousands of investors using AI to grow their wealth
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
             <button
               onClick={() => router.push('/')}
-              className="px-12 py-6 bg-white text-blue-600 text-xl font-bold rounded-2xl hover:bg-blue-50 transition-all transform hover:scale-105"
+              className="px-8 sm:px-12 py-4 sm:py-6 bg-white text-blue-600 text-lg sm:text-xl font-bold rounded-2xl hover:bg-blue-50 transition-all transform hover:scale-105"
             >
               Start Free Trial
             </button>
             <button
-              onClick={() => router.push('/demo')}
-              className="px-12 py-6 border-2 border-white text-white text-xl font-bold rounded-2xl hover:bg-white hover:text-blue-600 transition-all"
+              onClick={() => router.push('/expert-portfolio')}
+              className="px-8 sm:px-12 py-4 sm:py-6 border-2 border-white text-white text-lg sm:text-xl font-bold rounded-2xl hover:bg-white hover:text-blue-600 transition-all"
             >
               Watch Demo
             </button>

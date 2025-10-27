@@ -30,14 +30,10 @@ export default function Page() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  // Redirect to landing page for new visitors
+  // Mark as visited (don't redirect to landing page)
   useEffect(() => {
-    const hasVisitedBefore = localStorage.getItem('has-visited-before');
-    if (!hasVisitedBefore) {
-      router.replace('/landing');
-      return;
-    }
-  }, [router]);
+    localStorage.setItem('has-visited-before', 'true');
+  }, []);
 
   useEffect(() => {
     // Check if this is a logout redirect (don't check token immediately)
