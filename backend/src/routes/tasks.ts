@@ -13,6 +13,11 @@ interface Task {
   description: string;
   files?: string[];
   notes?: string;
+  startDate?: string;
+  endDate?: string;
+  estimatedDays?: number;
+  assignedTo?: string;
+  dependencies?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -171,6 +176,80 @@ router.get('/stats', (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error loading stats:', error);
     res.status(500).json({ message: 'Error loading stats' });
+  }
+});
+
+// POST update task timeline
+router.post('/:id/timeline', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { startDate, endDate, estimatedDays } = req.body;
+    
+    // Update the markdown file (in production, use a proper database)
+    const filePath = path.join(__dirname, '../../docs/TASK_TRACKING.md');
+    let content = fs.readFileSync(filePath, 'utf-8');
+    
+    // Find and update the task
+    // For now, we'll just return success and store in memory
+    // In production, implement proper persistence
+    
+    const tasks = loadTasks();
+    const task = tasks.find(t => t.id === id);
+    
+    if (task) {
+      task.startDate = startDate;
+      task.endDate = endDate;
+      task.estimatedDays = estimatedDays;
+      task.updatedAt = new Date().toISOString();
+    }
+    
+    res.json({ success: true, task });
+  } catch (error) {
+    console.error('Error updating task timeline:', error);
+    res.status(500).json({ message: 'Error updating task timeline' });
+  }
+});
+
+// POST update task status
+router.post('/:id/status', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    const tasks = loadTasks();
+    const task = tasks.find(t => t.id === id);
+    
+    if (task) {
+      task.status = status;
+      task.updatedAt = new Date().toISOString();
+    }
+    
+    res.json({ success: true, task });
+  } catch (error) {
+    console.error('Error updating task status:', error);
+    res.status(500).json({ message: 'Error updating task status' });
+  }
+});
+
+// GET Gantt chart data
+router.get('/gantt', (req: Request, res: Response) => {
+  try {
+    const tasks = loadTasks();
+    const ganttData = tasks.map(task => ({
+      id: task.id,
+      task: task.title,
+      start: task.startDate || task.createdAt,
+      end: task.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      progress: task.status === 'done' ? 100 : task.status === 'in-progress' ? 50 : 0,
+      dependencies: task.dependencies || [],
+      type: task.priority,
+      status: task.status
+    }));
+    
+    res.json({ data: ganttData });
+  } catch (error) {
+    console.error('Error loading Gantt data:', error);
+    res.status(500).json({ message: 'Error loading Gantt data' });
   }
 });
 
