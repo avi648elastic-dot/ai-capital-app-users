@@ -1,0 +1,39 @@
+How UptimeRobot Keeps Your Render Service Awake
+
+==========================================
+
+STEP 1: Your Backend Has a Special URL
+---------------------------------------
+URL: https://ai-capital-app7.onrender.com/healthz
+
+This is a simple endpoint that says "I'm alive!"
+
+
+STEP 2: What Happens When UptimeRobot Pings It
+-----------------------------------------------
+Every 5 minutes, UptimeRobot does this:
+
+1. Sends HTTP request: GET /healthz
+2. Your backend receives the request
+3. Backend wakes up (starts running if it was sleeping)
+4. Backend responds: {"status": "OK"}
+5. Render thinks: "Someone is using this service"
+6. Render keeps the service running (doesn't let it sleep)
+
+Think of it like this:
+- 😴 Your backend falls asleep after 15 mins of inactivity
+- 🔔 UptimeRobot pings it every 5 mins
+- ✅ Backend never sleeps because it keeps getting "woken up"
+
+
+STEP 3: Why This Fixes Your 502 Errors
+---------------------------------------
+Before UptimeRobot:
+- User visits your app
+- Backend is sleeping 😴
+- Request fails with 502 error ❌
+
+After UptimeRobot:
+- UptimeRobot wakes backend every 5 mins
+- Backend is always ready ✅
+- User's request works immediately ✅
