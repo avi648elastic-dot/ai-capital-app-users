@@ -178,6 +178,15 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
       portfolioCount: updatedPortfolio.length
     });
 
+    // Round all numeric values to 2 decimal places for clean display
+    const roundToTwoDecimals = (num: number) => Math.round(num * 100) / 100;
+    const totalsRounded = {
+      initial: roundToTwoDecimals(totals.initial),
+      current: roundToTwoDecimals(totals.current),
+      totalPnL: roundToTwoDecimals(totals.totalPnL),
+      totalPnLPercent: roundToTwoDecimals(totals.totalPnLPercent)
+    };
+
     // Calculate and add volatility data to each portfolio item
     try {
       const portfolioWithVolatility = await Promise.all(
@@ -205,7 +214,7 @@ router.get('/', authenticateToken, validate({ query: portfolioQuerySchema }), po
       console.log('✅ [PORTFOLIO] Portfolio updated with real-time prices and volatility');
       res.json({ 
         portfolio: portfolioWithVolatility, 
-        totals,
+        totals: totalsRounded,
         portfolioVolatility: portfolioVolatility // 🚨 CRITICAL FIX: Include overall portfolio volatility
       });
     } catch (volatilityError) {

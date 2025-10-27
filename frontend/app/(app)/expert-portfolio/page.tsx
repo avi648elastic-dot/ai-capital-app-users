@@ -263,15 +263,27 @@ export default function ExpertPortfolioPage() {
           </div>
         </div>
 
-        {/* Portfolio Grid */}
-        {portfolio.length === 0 ? (
-          <div className="card bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
-            <Award className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-400 mb-2">No Positions Yet</h3>
-            <p className="text-slate-500">The expert portfolio is currently empty</p>
+        {/* Current Holdings Section */}
+        <div id="current-holdings-section">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white flex items-center">
+              <Award className="w-6 h-6 mr-3 text-emerald-400" />
+              Current Expert Holdings
+            </h2>
+            <span className="text-sm text-slate-400 bg-slate-800 px-3 py-1 rounded-full">
+              {portfolio.length} active positions
+            </span>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Portfolio Grid */}
+          {portfolio.length === 0 ? (
+            <div className="card bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
+              <Award className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-slate-400 mb-2">No Positions Yet</h3>
+              <p className="text-slate-500">The expert portfolio is currently empty</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {portfolio.map((item: any) => {
               const { pnl, pnlPercent } = calculatePnL(item);
               const stopLossDistance = getStopLossDistance(item);
@@ -433,8 +445,9 @@ export default function ExpertPortfolioPage() {
                 </div>
               );
             })}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         {/* Educational Tips Section */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -474,7 +487,7 @@ export default function ExpertPortfolioPage() {
 
         {/* Deleted Transactions Section */}
         {deletedTransactions.length > 0 && (
-          <div className="mt-12">
+          <div id="closed-positions-section" className="mt-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-white flex items-center">
                 <AlertCircle className="w-6 h-6 mr-3 text-red-400" />
