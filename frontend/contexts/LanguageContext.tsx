@@ -954,27 +954,47 @@ interface LanguageProviderProps {
 }
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
-  const [locale, setLocaleState] = useState<Locale>('en');
-
-  // Load locale from localStorage on mount
-  useEffect(() => {
+  // Initialize state from localStorage immediately to prevent flash of wrong language
+  const [locale, setLocaleState] = useState<Locale>(() => {
+    if (typeof window === 'undefined') return 'en';
     try {
       const savedLocale = localStorage.getItem('locale') as Locale;
       if (savedLocale && ['en', 'ar', 'he'].includes(savedLocale)) {
-        setLocaleState(savedLocale);
+        return savedLocale;
       }
     } catch (error) {
       console.warn('Failed to load locale from localStorage:', error);
     }
-  }, []);
+    return 'en';
+  });
+
+  const isRTL = ['ar', 'he'].includes(locale);
+  const fontClass = locale === 'ar' ? 'lang-ar' : locale === 'he' ? 'lang-he' : 'lang-en';
+
+  // Sync locale to localStorage and apply to document whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('locale', locale);
+      
+      // Apply language to HTML element
+      document.documentElement.setAttribute('lang', locale);
+      // Keep LTR direction for all languages to maintain English texture
+      document.documentElement.setAttribute('dir', 'ltr');
+      
+      // Apply font class but preserve existing body classes (like theme classes)
+      const existingClasses = document.body.className.split(' ').filter(cls => 
+        !cls.startsWith('lang-') && cls !== 'rtl'
+      );
+      const classes = [...existingClasses, fontClass];
+      document.body.className = classes.join(' ');
+    } catch (error) {
+      console.warn('Failed to save locale:', error);
+    }
+  }, [locale, fontClass, isRTL]);
 
   const setLocale = (newLocale: Locale) => {
-    try {
-      setLocaleState(newLocale);
-      localStorage.setItem('locale', newLocale);
-    } catch (error) {
-      console.error('Failed to save locale:', error);
-    }
+    setLocaleState(newLocale);
+    // Language is automatically saved by the useEffect above
   };
 
   const t = (key: string, params?: Record<string, string>): string => {
@@ -1018,24 +1038,6 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
       return key; // Return the key as fallback
     }
   };
-
-  const isRTL = ['ar', 'he'].includes(locale);
-  const fontClass = locale === 'ar' ? 'lang-ar' : locale === 'he' ? 'lang-he' : 'lang-en';
-
-  // Apply language changes to document
-  useEffect(() => {
-    document.documentElement.setAttribute('lang', locale);
-    // Keep LTR direction for all languages to maintain English texture
-    document.documentElement.setAttribute('dir', 'ltr');
-    
-    // Apply font class but preserve existing body classes (like theme classes)
-    // Don't add RTL class to keep English layout
-    const existingClasses = document.body.className.split(' ').filter(cls => 
-      !cls.startsWith('lang-') && cls !== 'rtl'
-    );
-    const classes = [...existingClasses, fontClass];
-    document.body.className = classes.join(' ');
-  }, [locale, fontClass]);
 
   return (
     <LanguageContext.Provider value={{ locale, setLocale, t, isRTL, fontClass }}>
