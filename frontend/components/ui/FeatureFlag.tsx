@@ -30,7 +30,9 @@ export default function FeatureFlag({
 }: FeatureFlagProps) {
   // 🆓 FREE APP MODE: Always allow access - no restrictions
   // This allows the app to be approved as free on Google Play Store
+  // TO RE-ENABLE RESTRICTIONS: Comment out the line below and uncomment the line after it
   const hasAccess = true;
+  // const hasAccess = planHierarchy[currentPlan] >= planHierarchy[plan];
 
   if (hasAccess) {
     return <>{children}</>;
