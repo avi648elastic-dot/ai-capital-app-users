@@ -130,7 +130,15 @@ export default function Page() {
         router.replace('/onboarding');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'An error occurred');
+      console.error('❌ Signup error:', err);
+      if (err.response?.data?.errors) {
+        // Show validation errors
+        const errors = err.response.data.errors;
+        const errorMessages = errors.map((e: any) => e.message).join(', ');
+        setError(`Validation failed: ${errorMessages}`);
+      } else {
+        setError(err.response?.data?.message || 'An error occurred');
+      }
     } finally {
       setLoading(false);
     }
@@ -272,6 +280,11 @@ export default function Page() {
                     className="input-field"
                     placeholder={t('auth.password')}
                   />
+                  {!isLogin && (
+                    <p className="text-xs text-slate-400 mt-1">
+                      Must be at least 8 characters with uppercase, lowercase, and number
+                    </p>
+                  )}
                 </div>
 
                 <button
