@@ -28,7 +28,25 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
   const [error, setError] = useState('');
+  const [passwordValidations, setPasswordValidations] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false
+  });
   const router = useRouter();
+
+  // Validate password in real-time
+  const validatePassword = (password: string) => {
+    setPasswordValidations({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password)
+    });
+  };
+
+  const isPasswordValid = Object.values(passwordValidations).every(v => v);
 
   // Mark as visited (don't redirect to landing page)
   useEffect(() => {
@@ -276,14 +294,32 @@ export default function Page() {
                     type="password"
                     required
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, password: e.target.value });
+                      if (!isLogin) validatePassword(e.target.value);
+                    }}
                     className="input-field"
                     placeholder={t('auth.password')}
                   />
-                  {!isLogin && (
-                    <p className="text-xs text-slate-400 mt-1">
-                      Must be at least 8 characters with uppercase, lowercase, and number
-                    </p>
+                  {!isLogin && formData.password.length > 0 && (
+                    <div className="mt-2 space-y-1 text-xs">
+                      <div className={`flex items-center gap-2 ${passwordValidations.length ? 'text-green-400' : 'text-red-400'}`}>
+                        <span>{passwordValidations.length ? '✓' : '✗'}</span>
+                        <span>At least 8 characters</span>
+                      </div>
+                      <div className={`flex items-center gap-2 ${passwordValidations.uppercase ? 'text-green-400' : 'text-red-400'}`}>
+                        <span>{passwordValidations.uppercase ? '✓' : '✗'}</span>
+                        <span>One uppercase letter (A-Z)</span>
+                      </div>
+                      <div className={`flex items-center gap-2 ${passwordValidations.lowercase ? 'text-green-400' : 'text-red-400'}`}>
+                        <span>{passwordValidations.lowercase ? '✓' : '✗'}</span>
+                        <span>One lowercase letter (a-z)</span>
+                      </div>
+                      <div className={`flex items-center gap-2 ${passwordValidations.number ? 'text-green-400' : 'text-red-400'}`}>
+                        <span>{passwordValidations.number ? '✓' : '✗'}</span>
+                        <span>One number (0-9)</span>
+                      </div>
+                    </div>
                   )}
                 </div>
 
