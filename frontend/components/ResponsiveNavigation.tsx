@@ -31,7 +31,7 @@ export default function ResponsiveNavigation({
   isAdmin = false,
   onLogout 
 }: ResponsiveNavigationProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(true); // Default to open on mobile
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Default to closed, opens when button clicked
   const router = useRouter();
   const { isMobile, isTablet } = useDevice();
   const { t } = useLanguage();
@@ -285,14 +285,14 @@ export default function ResponsiveNavigation({
         </div>
       </div>
 
-      {/* Mobile Menu Button - Positioned below header */}
+      {/* Mobile Menu Button - Positioned below header - SMALLER SIZE */}
       <div className="lg:hidden fixed top-20 left-4 z-50">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-6 bg-red-600 shadow-2xl border-4 border-red-400 rounded-2xl text-white text-xl font-bold hover:bg-red-500 transition-all duration-300 transform hover:scale-110 active:scale-95"
+          className="p-4 bg-red-600 shadow-2xl border-4 border-red-400 rounded-2xl text-white font-bold hover:bg-red-500 transition-all duration-300 transform hover:scale-110 active:scale-95"
           aria-label="Toggle navigation menu"
         >
-          {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
