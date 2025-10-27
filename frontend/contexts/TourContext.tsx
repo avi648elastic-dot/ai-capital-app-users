@@ -188,6 +188,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'body',
         title: '📊 Performance Analytics',
         content: 'Welcome to the Performance Analytics page! Here you can analyze your portfolio\'s historical performance with detailed charts and metrics.',
+        sectionDescription: 'Historical performance analysis dashboard',
         position: 'center',
         highlight: true,
         skipable: false
@@ -197,6 +198,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.chart',
         title: '📈 Performance Chart',
         content: 'This interactive chart shows your portfolio value over time. You can hover over data points to see exact values and dates.',
+        sectionDescription: 'Interactive portfolio value chart over time',
         position: 'bottom',
         highlight: true
       },
@@ -205,6 +207,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.metric-card',
         title: '📊 Key Metrics',
         content: 'These cards display important performance metrics like total return, volatility, and risk-adjusted returns.',
+        sectionDescription: 'Key performance indicator cards',
         position: 'top',
         highlight: true
       }
@@ -219,6 +222,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'body',
         title: '👁️ Watchlist Manager',
         content: 'Your watchlist lets you track stocks you\'re interested in before adding them to your portfolio. Get real-time price alerts and AI recommendations.',
+        sectionDescription: 'Stock watchlist and price alert system',
         position: 'center',
         highlight: true,
         skipable: false
@@ -228,6 +232,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.add-watchlist-btn',
         title: '➕ Add to Watchlist',
         content: 'Click here to add new stocks to your watchlist. You\'ll get notifications when they reach your target prices.',
+        sectionDescription: 'Add button to monitor new stocks',
         position: 'top',
         highlight: true
       },
@@ -236,6 +241,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'table',
         title: '📋 Your Watchlist',
         content: 'This table shows all stocks you\'re watching, their current prices, target prices, and AI recommendations.',
+        sectionDescription: 'Complete watchlist with prices and alerts',
         position: 'top',
         highlight: true
       }
@@ -250,6 +256,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'body',
         title: '🛡️ Risk Management Center',
         content: 'This is your risk management dashboard where you can monitor portfolio risk, set stop-losses, and get risk alerts.',
+        sectionDescription: 'AI-powered risk assessment and portfolio protection',
         position: 'center',
         highlight: true,
         skipable: false
@@ -259,6 +266,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.risk-card',
         title: '⚠️ Risk Metrics',
         content: 'These cards show your portfolio\'s risk metrics: Value at Risk (VaR), Maximum Drawdown, and Risk Score.',
+        sectionDescription: 'Overall portfolio risk rating and metrics',
         position: 'bottom',
         highlight: true
       },
@@ -267,6 +275,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.alert-panel',
         title: '🚨 Risk Alerts',
         content: 'This panel shows any active risk alerts for your portfolio. You\'ll be notified when stocks approach your risk thresholds.',
+        sectionDescription: 'Active risk warnings and alerts panel',
         position: 'top',
         highlight: true
       }
@@ -281,6 +290,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'body',
         title: '💎 Subscription Plans',
         content: 'Here you can view and upgrade your subscription plan to unlock premium features like advanced analytics and AI recommendations.',
+        sectionDescription: 'Subscription management and plan selection',
         position: 'center',
         highlight: true,
         skipable: false
@@ -290,6 +300,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.current-plan',
         title: '📋 Your Current Plan',
         content: 'This shows your current subscription plan and its features. Premium plans include advanced AI analysis and priority support.',
+        sectionDescription: 'Display of current subscription tier and features',
         position: 'bottom',
         highlight: true
       },
@@ -298,6 +309,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.upgrade-card',
         title: '🚀 Upgrade Options',
         content: 'Click on any plan card to upgrade and unlock more features. Premium+ includes unlimited stocks and advanced risk management.',
+        sectionDescription: 'Available subscription tiers and upgrade options',
         position: 'top',
         highlight: true
       }
@@ -313,6 +325,7 @@ export function TourProvider({ children }: TourProviderProps) {
           target: 'body',
           title: '🚀 Welcome to AI-Capital - Your Personal Investment Assistant!',
           content: 'I\'m going to show you how to use our AI-powered platform to make smarter investment decisions. We\'ll explore real features, navigate between pages, and I\'ll teach you exactly how everything works!',
+          sectionDescription: 'Interactive tour guide introduction',
           position: 'center',
           highlight: true,
           skipable: false
@@ -322,6 +335,7 @@ export function TourProvider({ children }: TourProviderProps) {
           target: '.bg-slate-900',
           title: '📊 Live Market Intelligence',
           content: 'See this? This is your real-time market status bar! It shows if markets are open/closed, countdown timers, and your local time. The animated businessman shows market activity - walking when markets are active, sitting when closed. This updates every second!',
+          sectionDescription: 'Real-time market status and countdown timer',
           position: 'bottom',
           highlight: true,
           action: 'click'
@@ -331,6 +345,7 @@ export function TourProvider({ children }: TourProviderProps) {
           target: '.financial-metric',
           title: '💰 Your Investment Dashboard',
           content: 'These cards show your REAL portfolio performance! Initial Investment (what you put in), Current Value (what it\'s worth now), and P&L (profit/loss). These numbers update in real-time as stock prices change throughout the day!',
+          sectionDescription: 'Portfolio value, P&L, and performance metrics',
           position: 'bottom',
           highlight: true,
           action: 'hover'
@@ -340,6 +355,7 @@ export function TourProvider({ children }: TourProviderProps) {
           target: '.btn-primary',
           title: '➕ Add New Investments',
           content: 'This "Add Stock" button lets you add new investments to your portfolio. Click it to see our intelligent stock form that helps you set stop-losses, take-profit levels, and get AI recommendations!',
+          sectionDescription: 'Add new stocks to your portfolio',
           position: 'top',
           highlight: true,
           action: 'click'
@@ -349,6 +365,7 @@ export function TourProvider({ children }: TourProviderProps) {
           target: '.card table',
           title: '📈 Your Stock Holdings & AI Recommendations',
           content: 'This table shows ALL your stocks with AI-generated BUY/SELL/HOLD recommendations! Each row shows: Ticker, Shares, Entry Price, Current Price, P&L, and our AI\'s recommendation. The algorithm analyzes 90 days of data to give you the best advice!',
+          sectionDescription: 'Complete stock holdings with AI recommendations',
           position: 'top',
           highlight: true,
           action: 'scroll'
@@ -358,6 +375,7 @@ export function TourProvider({ children }: TourProviderProps) {
           target: 'nav',
           title: '🧭 Navigate to Advanced Features',
           content: 'This sidebar is your control center! Let\'s explore what each section does: Dashboard (where we are), Analytics (detailed performance charts), Risk Management (for Premium+ users), and more. Click any item to navigate there!',
+          sectionDescription: 'Main navigation menu and control center',
           position: 'right',
           highlight: true,
           action: 'click'
