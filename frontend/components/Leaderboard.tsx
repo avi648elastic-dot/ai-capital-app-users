@@ -56,35 +56,47 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className={`bg-slate-900 rounded-xl border border-slate-700 shadow-2xl ${isMobile ? 'w-full max-w-sm' : 'w-full max-w-4xl'} max-h-[80vh] overflow-hidden`}>
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-700">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={(e) => {
+        // Close on backdrop click
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className={`bg-slate-900 rounded-xl border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full' : 'w-full max-w-4xl max-h-[80vh]'} overflow-hidden relative`}>
+        {/* Header with bigger close button */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-700">
           <div className="flex items-center space-x-3">
             <span className="text-2xl">🏆</span>
             <div>
-              <h2 className="text-xl font-bold text-white">Trading Leaderboard</h2>
-              <p className="text-sm text-slate-400">Top traders by realized P&L</p>
+              <h2 className="text-lg sm:text-xl font-bold text-white">Trading Leaderboard</h2>
+              <p className="text-xs sm:text-sm text-slate-400">Top traders by realized P&L</p>
             </div>
           </div>
-          {/* Link to Transaction History */}
-          <a
-            href="/transaction-history"
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-slate-600 text-slate-200 hover:bg-slate-800 transition-colors"
-            title="View your complete trading history"
-          >
-            📊 Trading History
-          </a>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors text-2xl"
-          >
-            ×
-          </button>
+          <div className="flex items-center space-x-2">
+            {/* Link to Transaction History */}
+            <a
+              href="/transaction-history"
+              className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border border-slate-600 text-slate-200 hover:bg-slate-800 transition-colors"
+              title="View your complete trading history"
+            >
+              📊 Trading History
+            </a>
+            {/* Bigger close button for mobile */}
+            <button
+              onClick={onClose}
+              className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-all"
+              aria-label="Close"
+            >
+              <span className="text-3xl leading-none">×</span>
+            </button>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[60vh]">
+        <div className={`p-4 sm:p-6 overflow-y-auto ${isMobile ? 'h-[calc(100vh-200px)]' : 'max-h-[60vh]'}`}>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
