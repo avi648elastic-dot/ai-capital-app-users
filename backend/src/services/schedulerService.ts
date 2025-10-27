@@ -171,6 +171,15 @@ export class SchedulerService {
       // Update each user's portfolio
       for (const [userId, userPortfolio] of userPortfolios) {
         try {
+          // 🔍 Check if user exists before processing their portfolio
+          const User = (await import('../models/User')).default;
+          const user = await User.findById(userId);
+          
+          if (!user) {
+            console.warn(`⚠️ [SCHEDULER] User ${userId} no longer exists - skipping orphaned portfolios`);
+            continue; // Skip this user's portfolios
+          }
+
           // Get unique tickers for this user
           const tickers = [...new Set(userPortfolio.map((item: any) => item.ticker))];
           
@@ -333,6 +342,15 @@ export class SchedulerService {
       
       for (const userId of userIds) {
         try {
+          // 🔍 Check if user exists before processing their risk management
+          const User = (await import('../models/User')).default;
+          const user = await User.findById(userId);
+          
+          if (!user) {
+            console.warn(`⚠️ [SCHEDULER] User ${userId} no longer exists - skipping risk management update`);
+            continue; // Skip this user
+          }
+
           await riskManagementService.updatePortfolioDecisions(userId);
         } catch (error) {
           console.error(`❌ [SCHEDULER] Error updating risk management for user ${userId}:`, error);
