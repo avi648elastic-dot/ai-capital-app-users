@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import Layout from '@/components/layout/Layout';
 import Header from '@/components/Header';
 
 interface Task {
@@ -105,17 +104,17 @@ export default function TasksPage() {
 
   if (loading) {
     return (
-      <Layout>
+      <div>
         <Header title="📋 Task Dashboard" />
         <div className="flex items-center justify-center h-64">
           <div className="text-xl text-slate-400">Loading tasks...</div>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout>
+    <div>
       <Header title="📋 Project Task Dashboard" />
       
       <div className="p-4 sm:p-6 space-y-6">
@@ -354,6 +353,6 @@ export default function TasksPage() {
           </div>
         </div>
       )}
-    </Layout>
+    </div>
   );
 }
