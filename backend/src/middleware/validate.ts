@@ -31,7 +31,7 @@ export const validate = (schema: {
     } catch (error) {
       if (error instanceof ZodError) {
         const zodError = error as ZodError;
-        const errors = zodError.errors || zodError.issues || [];
+        const errors = zodError.issues || [];
         console.warn('🔍 [VALIDATION] Request validation failed:', {
           url: req.url,
           method: req.method,
@@ -85,7 +85,7 @@ export const validatePartial = (schema: {
     } catch (error) {
       if (error instanceof ZodError) {
         const zodError = error as ZodError;
-        const errors = zodError.errors || zodError.issues || [];
+        const errors = zodError.issues || [];
         console.warn('🔍 [VALIDATION] Partial validation failed:', {
           url: req.url,
           method: req.method,
