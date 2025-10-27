@@ -57,6 +57,9 @@ PortfolioSchema.index({ userId: 1, ticker: 1 }, { unique: true }); // Prevent du
 // 🔒 Pre-save hook for stock limits validation
 PortfolioSchema.pre('save', async function(next) {
   try {
+    // 🆓 FREE APP MODE: Bypass all subscription limit checks
+    // TO RE-ENABLE AFTER GOOGLE APPROVAL: Uncomment the code below and remove the bypass
+    
     // Get user to check subscription tier
     const User = mongoose.model('User');
     const user = await User.findById(this.userId);
@@ -66,6 +69,19 @@ PortfolioSchema.pre('save', async function(next) {
       return next(error);
     }
 
+    // Validate ticker format
+    if (!/^[A-Z0-9\.\-:]+$/.test(this.ticker)) {
+      const error = new Error('Invalid ticker format');
+      return next(error);
+    }
+
+    // Ensure ticker is uppercase
+    this.ticker = this.ticker.toUpperCase();
+
+    next();
+    
+    // UNCOMMENT TO RE-ENABLE SUBSCRIPTION LIMITS:
+    /*
     // Check stock limits based on subscription tier
     if (user.subscriptionTier === 'free') {
       // Free users: max 10 stocks total
@@ -95,17 +111,7 @@ PortfolioSchema.pre('save', async function(next) {
         return next(error);
       }
     }
-
-    // Validate ticker format
-    if (!/^[A-Z0-9\.\-:]+$/.test(this.ticker)) {
-      const error = new Error('Invalid ticker format');
-      return next(error);
-    }
-
-    // Ensure ticker is uppercase
-    this.ticker = this.ticker.toUpperCase();
-
-    next();
+    */
   } catch (error) {
     next(error as Error);
   }

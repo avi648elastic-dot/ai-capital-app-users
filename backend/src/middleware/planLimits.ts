@@ -96,6 +96,11 @@ export const checkPlanLimit = (resource: 'stocks' | 'portfolios' | 'watchlist' |
         });
       }
 
+      // 🆓 FREE APP MODE: Bypass subscription checks
+      // TO RE-ENABLE AFTER GOOGLE APPROVAL: Uncomment the code below
+      
+      // Skip subscription checks for now
+      /*
       // Check if subscription is active (premium users only)
       if (userTier !== 'free' && !isActive) {
         loggerService.warn('Inactive subscription attempting to use premium features', {
@@ -112,6 +117,7 @@ export const checkPlanLimit = (resource: 'stocks' | 'portfolios' | 'watchlist' |
           requestId: loggerService.getRequestId(),
         });
       }
+      */
 
       // Get current usage count
       let currentUsage = 0;
@@ -139,6 +145,9 @@ export const checkPlanLimit = (resource: 'stocks' | 'portfolios' | 'watchlist' |
       const limits = PLAN_LIMITS[userTier as keyof typeof PLAN_LIMITS];
       const maxAllowed = limits[`max${resource.charAt(0).toUpperCase() + resource.slice(1)}s` as keyof typeof limits] as number;
 
+      // 🆓 FREE APP MODE: Skip limit checks
+      // TO RE-ENABLE: Uncomment the code below
+      /*
       // Check if user would exceed limits
       if (currentUsage >= maxAllowed) {
         loggerService.warn('Plan limit exceeded', {
@@ -161,6 +170,7 @@ export const checkPlanLimit = (resource: 'stocks' | 'portfolios' | 'watchlist' |
           requestId: loggerService.getRequestId(),
         });
       }
+      */
 
       // Add plan info to request for use in route handlers
       req.planInfo = {
