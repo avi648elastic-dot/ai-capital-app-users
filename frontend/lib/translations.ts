@@ -277,6 +277,9 @@ export const translations = {
         click: 'Click this element to continue',
         hover: 'Hover over this element',
         scroll: 'This area will be highlighted'
+      },
+      sectionDescription: {
+        label: 'Section Overview'
       }
     }
   },
@@ -553,6 +556,9 @@ export const translations = {
         click: 'انقر على هذا العنصر للمتابعة',
         hover: 'مرر الماوس فوق هذا العنصر',
         scroll: 'سيتم تمييز هذه المنطقة'
+      },
+      sectionDescription: {
+        label: 'نظرة عامة على القسم'
       }
     }
   },
@@ -829,6 +835,9 @@ export const translations = {
         click: 'לחצו על האלמנט הזה כדי להמשיך',
         hover: 'רחפו מעל האלמנט הזה',
         scroll: 'האזור הזה יודגש'
+      },
+      sectionDescription: {
+        label: 'סקירת האזור'
       }
     }
   }

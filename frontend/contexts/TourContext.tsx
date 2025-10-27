@@ -8,6 +8,7 @@ export interface TourStep {
   target: string;
   title: string;
   content: string;
+  sectionDescription?: string; // NEW: Short description of which section this is
   position: 'top' | 'bottom' | 'left' | 'right' | 'center';
   action?: 'click' | 'hover' | 'scroll';
   nextAction?: 'navigate' | 'wait' | 'continue';
@@ -82,6 +83,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'body',
         title: '🏠 Dashboard Overview',
         content: 'Welcome to your AI-Capital Dashboard! This is your command center where you can see your portfolio performance, add new investments, and get AI-powered recommendations.',
+        sectionDescription: 'Main control panel for your entire investment portfolio',
         position: 'center',
         highlight: true,
         skipable: false
@@ -91,6 +93,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.financial-metric',
         title: '💰 Portfolio Performance',
         content: 'These cards show your real-time portfolio metrics: Total Value, P&L, and Performance. These numbers update automatically as stock prices change throughout the day.',
+        sectionDescription: 'Top-level financial metrics showing total value and returns',
         position: 'bottom',
         highlight: true
       },
@@ -99,6 +102,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.btn-primary',
         title: '➕ Add New Stock',
         content: 'Click here to add new stocks to your portfolio. Our intelligent form will help you set entry prices, stop-losses, and take-profit levels with AI recommendations.',
+        sectionDescription: 'Action button to add new positions to your portfolio',
         position: 'top',
         highlight: true,
         action: 'click'
@@ -108,6 +112,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'table',
         title: '📊 Your Holdings & AI Recommendations',
         content: 'This table shows all your stock holdings with AI-generated BUY/SELL/HOLD recommendations. Each recommendation is based on 90 days of market data analysis.',
+        sectionDescription: 'Complete list of all your stock positions and AI signals',
         position: 'top',
         highlight: true
       },
@@ -116,6 +121,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'nav',
         title: '🧭 Navigation Menu',
         content: 'Use this sidebar to navigate between different features: Analytics, Performance Analysis, Watchlist, Risk Management, and more.',
+        sectionDescription: 'Sidebar navigation to access all features',
         position: 'right',
         highlight: true
       }
@@ -130,6 +136,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'body',
         title: '📈 Portfolio Analysis Dashboard',
         content: 'This is your comprehensive portfolio analysis page! Here you can see detailed performance metrics, sector allocation, risk assessment, and AI-powered insights.',
+        sectionDescription: 'Advanced portfolio analysis and performance tracking',
         position: 'center',
         highlight: true,
         skipable: false
@@ -139,6 +146,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: '.card',
         title: '📊 Performance Metrics',
         content: 'These cards show key performance indicators: Total Return, Volatility, Sharpe Ratio, and Max Drawdown. All calculated using 90-day Google Finance data.',
+        sectionDescription: 'Key performance indicators dashboard cards',
         position: 'bottom',
         highlight: true
       },
@@ -147,6 +155,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'select',
         title: '⏰ Time Period Analysis',
         content: 'Use this dropdown to analyze your portfolio performance over different time periods: 7 days, 30 days, 60 days, or 90 days.',
+        sectionDescription: 'Time range selector for performance analysis',
         position: 'top',
         highlight: true
       },
@@ -155,6 +164,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'table',
         title: '📋 Individual Stock Performance',
         content: 'This table shows detailed performance for each stock in your portfolio, including returns, volatility, and AI recommendations based on recent market data.',
+        sectionDescription: 'Detailed stock-by-stock performance breakdown',
         position: 'top',
         highlight: true
       },
@@ -163,6 +173,7 @@ export function TourProvider({ children }: TourProviderProps) {
         target: 'button',
         title: '🔄 Refresh Data',
         content: 'Click this button to refresh all data and get the latest stock prices and AI recommendations.',
+        sectionDescription: 'Data refresh and update button',
         position: 'top',
         highlight: true
       }

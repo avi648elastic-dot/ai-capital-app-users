@@ -249,6 +249,21 @@ export default function TourOverlay() {
           </div>
         )}
 
+        {/* Section Description - NEW FEATURE */}
+        {(step as any).sectionDescription && (
+          <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-600/50">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles size={16} className="text-blue-400" />
+              <span className="text-xs font-semibold text-blue-300 uppercase tracking-wide">
+                {t('tour.sectionDescription.label')}
+              </span>
+            </div>
+            <p className="text-sm text-slate-300 mt-1">
+              {(step as any).sectionDescription}
+            </p>
+          </div>
+        )}
+
         {/* Progress and Navigation */}
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
