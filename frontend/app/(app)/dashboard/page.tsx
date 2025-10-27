@@ -587,60 +587,23 @@ export default function Dashboard() {
       <NotificationBanner isMobile={false} />
       
       <div className="px-4 sm:px-6 lg:px-8">
-        {/* Compact Account Type Badge - Optimized */}
-        <div className={`mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg border ${
-          user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+'
-            ? user?.subscriptionTier === 'premium+' 
-              ? 'bg-gradient-to-r from-purple-900/20 to-indigo-900/20 border-purple-500/30'
-              : 'bg-gradient-to-r from-emerald-900/20 to-blue-900/20 border-emerald-500/30'
-            : 'bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-500/30'
-        }`}>
+        {/* Free App Mode - All Features Unlocked */}
+        <div className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg border bg-gradient-to-r from-green-900/20 to-emerald-900/20 border-green-500/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${
-                user?.subscriptionTier === 'premium' ? 'bg-emerald-400' : 
-                user?.subscriptionTier === 'premium+' ? 'bg-purple-400' : 'bg-amber-400'
-              } animate-pulse`}></div>
-              <h3 className={`text-xs sm:text-sm font-bold ${
-                user?.subscriptionTier === 'premium' ? 'text-emerald-300' : 
-                user?.subscriptionTier === 'premium+' ? 'text-purple-300' : 'text-amber-300'
-              }`}>
-                {user?.subscriptionTier === 'premium' ? '✨ Premium' : 
-                 user?.subscriptionTier === 'premium+' ? '👑 Premium+' : '🔒 Free'}
+              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-400 animate-pulse"></div>
+              <h3 className="text-xs sm:text-sm font-bold text-green-300">
+                🆓 Free - Full Access
               </h3>
               <div className="flex items-center space-x-1 sm:space-x-2">
-                <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${
-                  user?.subscriptionTier === 'premium' 
-                    ? 'bg-emerald-600/20 text-emerald-300' 
-                    : user?.subscriptionTier === 'premium+'
-                    ? 'bg-purple-600/20 text-purple-300'
-                    : 'bg-amber-600/20 text-amber-300'
-                }`}>
-                  {user?.subscriptionTier === 'premium' ? '6 Portfolios' : 
-                   user?.subscriptionTier === 'premium+' ? '∞ Portfolios' : '1 Portfolio'}
+                <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium bg-green-600/20 text-green-300">
+                  ∞ Portfolios
                 </span>
-                <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${
-                  user?.subscriptionTier === 'premium' 
-                    ? 'bg-blue-600/20 text-blue-300' 
-                    : user?.subscriptionTier === 'premium+'
-                    ? 'bg-purple-600/20 text-purple-300'
-                    : 'bg-amber-600/20 text-amber-300'
-                }`}>
-                  {user?.subscriptionTier === 'premium' ? '15 Stocks' : 
-                   user?.subscriptionTier === 'premium+' ? '20 Stocks' : '10 Stocks'}
+                <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium bg-green-600/20 text-green-300">
+                  ∞ Stocks
                 </span>
               </div>
             </div>
-            {user?.subscriptionTier === 'free' && (
-              <button 
-                className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white text-[10px] sm:text-xs font-bold rounded transition-all opacity-60 cursor-not-allowed flex items-center space-x-1"
-                title="Upgrade requires payment checkout (disabled here)"
-                disabled
-              >
-                <span>🚀</span>
-                <span className="hidden sm:inline">Upgrade</span>
-              </button>
-            )}
           </div>
         </div>
 
@@ -677,7 +640,8 @@ export default function Dashboard() {
                      return;
                    }
                    
-                   if ((user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio) {
+                   // Free App Mode - Add to portfolio logic
+                   if (showMultiPortfolio) {
                      // In multi-view, add to selected portfolio
                      if (selectedMultiPortfolio) {
                        setSelectedPortfolioId(selectedMultiPortfolio.portfolioId);
@@ -694,8 +658,8 @@ export default function Dashboard() {
                >
                  {t('common.addStock')}
                </button>
-            {/* Premium Multi-Portfolio Toggle */}
-            {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && (
+            {/* Free App Mode - Multi-Portfolio Toggle (Available to All) */}
+            {(
                 <button
                   onClick={() => {
                     try {
@@ -711,8 +675,8 @@ export default function Dashboard() {
                   <span>{showMultiPortfolio ? t('dashboard.singleView') : t('dashboard.multiPortfolio')}</span>
                 </button>
             )}
-            {/* Portfolio Management Buttons for Premium Users (visible only in multi view) */}
-            {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio && (
+            {/* Portfolio Management Buttons (Free App Mode - Available to All) */}
+            {showMultiPortfolio && (
               <div className="flex space-x-2">
                 <button
                   onClick={() => {
@@ -738,19 +702,15 @@ export default function Dashboard() {
                 </button>
               </div>
             )}
-        {/* Stock/Portfolio Counters - AGGRESSIVE Mobile Optimization */}
+        {/* Stock/Portfolio Counters - Free App Mode */}
             {user && (
-          <div className={`px-4 py-4 rounded-lg text-base font-semibold flex flex-col space-y-3 ${
-                user.subscriptionTier === 'free' 
-              ? 'bg-amber-900/30 text-amber-300 border border-amber-500/30'
-              : 'bg-emerald-900/30 text-emerald-300 border border-emerald-500/30'
-              }`}>
+          <div className="px-4 py-4 rounded-lg text-base font-semibold flex flex-col space-y-3 bg-green-900/30 text-green-300 border border-green-500/30">
             <div className="flex items-center space-x-3">
               <span className="opacity-70 text-lg">Stocks:</span>
               <span className="font-bold text-xl">
-                    {showMultiPortfolio && selectedMultiPortfolio 
-                      ? `${selectedMultiPortfolio.stocks.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
-                      : `${filteredPortfolio.length}/${user.subscriptionTier === 'free' ? '10' : '15'}`
+                      {showMultiPortfolio && selectedMultiPortfolio 
+                      ? `${selectedMultiPortfolio.stocks.length}/∞`
+                      : `${filteredPortfolio.length}/∞`
                     }
                   </span>
                   {showMultiPortfolio && selectedMultiPortfolio && (
@@ -759,18 +719,17 @@ export default function Dashboard() {
                     </span>
                   )}
             </div>
-            {user.subscriptionTier === 'premium' && (
-              <div className="text-base opacity-80">
-                {t('common.portfolios')}: {portfolioMeta.total}/6 ({portfolioMeta.solid} {t('common.solid')} · {portfolioMeta.risky} {t('common.risky')})
-              </div>
-            )}
+            {/* Free App Mode - Show all portfolio info */}
+            <div className="text-base opacity-80">
+              {t('common.portfolios')}: {portfolioMeta.total}/∞ ({portfolioMeta.solid} {t('common.solid')} · {portfolioMeta.risky} {t('common.risky')})
+            </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Portfolio Display - Multi-Portfolio for Premium, Single for Free */}
-        {(user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio ? (
+        {/* Portfolio Display - Free App Mode - All users have access */}
+        {showMultiPortfolio ? (
           <>
             <LazyMultiPortfolioDashboard
               user={user}
@@ -834,74 +793,39 @@ export default function Dashboard() {
             {/* Enhanced Portfolio Tabs */}
             <div className="flex mb-6 bg-slate-800/50 rounded-xl p-1 border border-slate-700/50">
               <button
-                onClick={() => {
-                  // Prevent switching tabs for free users (allow imported portfolios to access solid)
-                  if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported') {
-                    alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Risky portfolios!');
-                    return;
-                  }
-                  setActiveTab('solid');
-                }}
+                onClick={() => setActiveTab('solid')}
                 className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
                   activeTab === 'solid'
                     ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                    : user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported'
-                      ? 'text-slate-500 cursor-not-allowed opacity-50'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 }`}
-                disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported'}
-                title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported' ? 'This portfolio type is locked for free users' : ''}
               >
-                <div className={`w-2 h-2 rounded-full ${
-                  user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported' ? 'bg-slate-500' : 'bg-green-400'
-                }`}></div>
+                <div className="w-2 h-2 rounded-full bg-green-400"></div>
                 <span>Solid Portfolio</span>
                 <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
                   {portfolio.filter((p: any) => p.portfolioType === 'solid').length}
                 </span>
-                {user?.subscriptionTier === 'free' && user?.portfolioType !== 'solid' && user?.portfolioType !== 'imported' && (
-                  <span className="text-yellow-400">🔒</span>
-                )}
               </button>
               <button
-                onClick={() => {
-                  // Prevent switching tabs for free users
-                  if (user?.subscriptionTier === 'free' && user?.portfolioType !== 'risky') {
-                    alert('🔒 This portfolio type is locked for free users. Upgrade to Premium to unlock both Solid and Risky portfolios!');
-                    return;
-                  }
-                  setActiveTab('risky');
-                }}
+                onClick={() => setActiveTab('risky')}
                 className={`flex-1 py-3 px-6 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${
                   activeTab === 'risky'
                     ? 'bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg'
-                    : user?.subscriptionTier === 'free' && user?.portfolioType !== 'risky'
-                      ? 'text-slate-500 cursor-not-allowed opacity-50'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 }`}
-                disabled={user?.subscriptionTier === 'free' && user?.portfolioType !== 'risky'}
-                title={user?.subscriptionTier === 'free' && user?.portfolioType !== 'risky' ? 'This portfolio type is locked for free users' : ''}
               >
-                <div className={`w-2 h-2 rounded-full ${
-                  user?.subscriptionTier === 'free' && user?.portfolioType !== 'risky' ? 'bg-slate-500' : 'bg-orange-400'
-                }`}></div>
+                <div className="w-2 h-2 rounded-full bg-orange-400"></div>
                 <span>Risky Portfolio</span>
                 <span className="px-2 py-1 bg-slate-700 text-xs rounded-full">
                   {portfolio.filter((p: any) => p.portfolioType === 'risky').length}
                 </span>
-                {user?.subscriptionTier === 'free' && user?.portfolioType !== 'risky' && (
-                  <span className="text-yellow-400">🔒</span>
-                )}
-                {user?.subscriptionTier === 'premium' && (
-                  <span className="text-yellow-400">✨</span>
-                )}
               </button>
             </div>
           </>
         )}
 
-        {/* Portfolio Table and Charts - Only show in single view */}
-        {!((user?.subscriptionTier === 'premium' || user?.subscriptionTier === 'premium+') && showMultiPortfolio) && (
+        {/* Portfolio Table and Charts - Free App Mode - Show in single view */}
+        {!showMultiPortfolio && (
           <>
             {/* Portfolio Table */}
             <ErrorBoundary label="table">

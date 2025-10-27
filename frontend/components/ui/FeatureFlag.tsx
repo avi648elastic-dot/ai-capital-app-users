@@ -28,7 +28,9 @@ export default function FeatureFlag({
   upgradeMessage,
   className = ''
 }: FeatureFlagProps) {
-  const hasAccess = planHierarchy[currentPlan] >= planHierarchy[plan];
+  // 🆓 FREE APP MODE: Always allow access - no restrictions
+  // This allows the app to be approved as free on Google Play Store
+  const hasAccess = true;
 
   if (hasAccess) {
     return <>{children}</>;

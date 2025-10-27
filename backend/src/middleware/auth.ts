@@ -51,18 +51,16 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 };
 
 export const requireSubscription = (req: AuthRequest, res: Response, next: NextFunction) => {
-  // TEMPORARY FIX: Bypass subscription check for ALL delete and post operations
-  if (req.method === 'DELETE' || req.method === 'POST') {
-    console.log('🔧 [SUBSCRIPTION] TEMPORARY BYPASS for operation');
-    console.log('🔧 [SUBSCRIPTION] Request URL:', req.url);
-    return next();
-  }
+  // 🆓 FREE APP MODE: Bypass all subscription checks - app is free for Google Play approval
+  console.log('✅ [SUBSCRIPTION] FREE MODE - All features unlocked');
+  console.log('✅ [SUBSCRIPTION] Request method:', req.method);
+  console.log('✅ [SUBSCRIPTION] Request URL:', req.url);
   
-  // Allow access for all authenticated users (both free and premium)
-  // Premium features will be checked at the individual route level
+  // Only check authentication, not subscription tier
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
+  
   next();
 };
 
