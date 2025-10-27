@@ -37,7 +37,7 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
         riskTolerance: Number(riskTolerance),
       }, {
         headers: { Authorization: `Bearer ${Cookies.get('token')}` },
-        timeout: 90000 // extend to 90s for cold starts
+        timeout: 180000 // extend to 180s (3 minutes) for API fetching
       });
 
       console.log('✅ [STEP2B] Portfolio generated successfully:', response.data);
@@ -77,7 +77,7 @@ export default function Step2b({ onComplete, onBack }: Step2bProps) {
               <div className="h-12 w-12 rounded-full border-2 border-emerald-500 border-t-transparent animate-spin"></div>
             </div>
             <h3 className="text-white font-semibold mb-1">Generating your portfolio…</h3>
-            <p className="text-slate-400 text-sm">This can take up to a minute while we fetch real-time data.</p>
+            <p className="text-slate-400 text-sm">This can take up to 3 minutes while we fetch real-time data from multiple sources.</p>
           </div>
         </div>
       )}

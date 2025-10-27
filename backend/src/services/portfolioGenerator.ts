@@ -77,41 +77,17 @@ export class PortfolioGenerator {
         'TME', 'BIDU', 'NTES', 'WB', 'YMM', 'VIPS', 'TAL', 'EDU', 'GOTU', 'COE'
       ];
       
+      // Optimized: Reduced risky stocks list to only fetch essential data
       const riskyStocks = [
-        // High Growth Tech
+        // High Growth Tech - Top picks only
         'TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE',
         'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM',
-        'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD',
-        // Crypto & Blockchain
-        'COIN', 'MSTR', 'RIOT', 'MARA', 'HUT', 'BITF', 'CAN', 'EBON', 'SOS', 'BTBT',
-        'MOGO', 'EBANG', 'CAN', 'SOS', 'BTBT', 'MOGO', 'EBANG', 'CAN', 'SOS', 'BTBT',
-        // Biotech & Pharma
-        'BNTX', 'MRNA', 'NVAX', 'INO', 'OCGN', 'VXRT', 'ADMA', 'ARCT', 'CODX', 'IBIO',
-        'OCGN', 'VXRT', 'ADMA', 'ARCT', 'CODX', 'IBIO', 'OCGN', 'VXRT', 'ADMA', 'ARCT',
-        // EV & Clean Energy
-        'TSLA', 'NIO', 'XPEV', 'LI', 'LCID', 'RIVN', 'F', 'GM', 'FORD', 'RIDE',
-        'WKHS', 'GOEV', 'HYLN', 'NKLA', 'RIDE', 'WKHS', 'GOEV', 'HYLN', 'NKLA', 'RIDE',
-        // Space & Aerospace
-        'SPCE', 'RKLB', 'ASTS', 'VORB', 'SPIR', 'MAXR', 'IRDM', 'VSAT', 'GILT', 'SATS',
-        'RKLB', 'ASTS', 'VORB', 'SPIR', 'MAXR', 'IRDM', 'VSAT', 'GILT', 'SATS', 'RKLB',
-        // Gaming & Entertainment
-        'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD',
-        'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD', 'PDD', 'TME',
-        // Meme Stocks & Speculative
-        'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD',
-        'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'PELOTON', 'ROKU', 'SQ', 'PYPL',
-        // Small Cap Growth
-        'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH',
-        'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'PELOTON', 'ROKU',
-        // International High Risk
-        'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB', 'YMM', 'VIPS', 'TAL',
-        'EDU', 'GOTU', 'COE', 'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB',
-        // Emerging Markets
-        'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB', 'YMM', 'VIPS', 'TAL',
-        'EDU', 'GOTU', 'COE', 'BABA', 'JD', 'PDD', 'TME', 'BIDU', 'NTES', 'WB'
+        'PTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD', 'PDD'
       ];
       
-      const allStocks = [...solidStocks, ...riskyStocks];
+      const allStocks = [...new Set([...solidStocks, ...riskyStocks])]; // Remove duplicates
+
+      console.log(`🔍 [PORTFOLIO GENERATOR] Fetching data for ${allStocks.length} unique stocks (solid: ${solidStocks.length}, risky: ${riskyStocks.length})`);
 
       // Get real data from APIs
       const realData = await stockDataService.getMultipleStockData(allStocks);
