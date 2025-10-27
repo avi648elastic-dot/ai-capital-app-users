@@ -19,7 +19,8 @@ export default function PublicTasksPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState<'list' | 'gantt'>('list');
+  const [editingTask, setEditingTask] = useState<string | null>(null);
+  const [editDates, setEditDates] = useState({ startDate: '', endDate: '' });
 
   useEffect(() => {
     fetchTasks();
@@ -32,7 +33,6 @@ export default function PublicTasksPage() {
         const data = await response.json();
         setTasks(data.tasks || []);
       } else {
-        console.log('Using mock data');
         setTasks(getMockTasks());
       }
     } catch (error) {
@@ -52,13 +52,13 @@ export default function PublicTasksPage() {
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
-      // Use mock stats
-      setStats({
+      const localStats = {
         total: tasks.length,
         done: tasks.filter(t => t.status === 'done').length,
         inProgress: tasks.filter(t => t.status === 'in-progress').length,
         notStarted: tasks.filter(t => t.status === 'not-started').length
-      });
+      };
+      setStats(localStats);
     }
   };
 
@@ -78,8 +78,6 @@ export default function PublicTasksPage() {
         priority: 'high',
         category: 'Bug Fixes',
         description: 'Replace all dummy data with real API data',
-        startDate: now.toISOString(),
-        endDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         estimatedDays: 7
       },
       {
@@ -89,8 +87,6 @@ export default function PublicTasksPage() {
         priority: 'high',
         category: 'Bug Fixes',
         description: 'Fix delay on sector segmentation loading',
-        startDate: now.toISOString(),
-        endDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
         estimatedDays: 3
       },
       {
@@ -100,8 +96,6 @@ export default function PublicTasksPage() {
         priority: 'medium',
         category: 'Bug Fixes',
         description: 'Implement real risk management data',
-        startDate: now.toISOString(),
-        endDate: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString(),
         estimatedDays: 10
       },
       {
@@ -111,8 +105,6 @@ export default function PublicTasksPage() {
         priority: 'medium',
         category: 'Bug Fixes',
         description: 'Show real earning dates and balance sheet analysis',
-        startDate: now.toISOString(),
-        endDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
         estimatedDays: 5
       },
       {
@@ -122,8 +114,6 @@ export default function PublicTasksPage() {
         priority: 'high',
         category: 'UI/UX',
         description: 'Fix mobile notification, leaderboard, and expert button displays',
-        startDate: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
         estimatedDays: 4
       },
       {
@@ -133,11 +123,30 @@ export default function PublicTasksPage() {
         priority: 'high',
         category: 'Critical Issues',
         description: 'AI enhancement for bank stock recommendations not working properly',
-        startDate: now.toISOString(),
-        endDate: new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000).toISOString(),
         estimatedDays: 8
       }
     ];
+  };
+
+  const handleSetDates = (task: Task) => {
+    setEditDates({
+      startDate: task.startDate || '',
+      endDate: task.endDate || ''
+    });
+    setEditingTask(task.id);
+  };
+
+  const saveDates = () => {
+    if (!editingTask) return;
+    
+    setTasks(tasks.map(task => 
+      task.id === editingTask 
+        ? { ...task, startDate: editDates.startDate, endDate: editDates.endDate }
+        : task
+    ));
+    
+    setEditingTask(null);
+    setEditDates({ startDate: '', endDate: '' });
   };
 
   const filteredTasks = selectedStatus === 'all' 
@@ -165,30 +174,16 @@ export default function PublicTasksPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-900 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold mb-4 text-center">📋 AI Capital Task Tracker</h1>
-        
-        {/* View Toggle */}
-        <div className="flex gap-2 mb-6 justify-center">
-          <button
-            onClick={() => setView('list')}
-            className={`px-4 py-2 rounded-lg ${view === 'list' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'}`}
-          >
-            📝 List View
-          </button>
-          <button
-            onClick={() => setView('gantt')}
-            className={`px-4 py-2 rounded-lg ${view === 'gantt' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'}`}
-          >
-            📅 Gantt Chart
-          </button>
-        </div>
+  const tasksWithTimelines = tasks.filter(t => t.startDate && t.endDate);
 
+  return (
+    <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-center">📋 AI Capital Task Dashboard</h1>
+        
         {/* Statistics */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
               <div className="text-sm text-slate-400">Total Tasks</div>
               <div className="text-2xl font-bold text-white">{stats.total}</div>
@@ -208,81 +203,123 @@ export default function PublicTasksPage() {
           </div>
         )}
 
-        {/* Filters - Only show in list view */}
-        {view === 'list' && (
-          <div className="flex gap-4 mb-6">
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
-            >
-              <option value="all">All Status</option>
-              <option value="not-started">⬜ Not Started</option>
-              <option value="in-progress">🔄 In Progress</option>
-              <option value="done">✅ Done</option>
-            </select>
-          </div>
-        )}
+        {/* Filters */}
+        <div className="flex gap-4 mb-6">
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
+          >
+            <option value="all">All Status</option>
+            <option value="not-started">⬜ Not Started</option>
+            <option value="in-progress">🔄 In Progress</option>
+            <option value="done">✅ Done</option>
+          </select>
+        </div>
 
-        {/* List View */}
-        {view === 'list' && (
-          <div className="space-y-4">
-            {filteredTasks.length === 0 ? (
-              <div className="text-center py-12 text-slate-400">
-                No tasks found
-              </div>
-            ) : (
-              filteredTasks.map((task) => {
-                const statusIcon = task.status === 'done' ? '✅' : task.status === 'in-progress' ? '🔄' : '⬜';
-                const priorityColor = task.priority === 'high' ? 'bg-red-500' : task.priority === 'medium' ? 'bg-yellow-500' : 'bg-gray-500';
-                
-                return (
-                  <div key={task.id} className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-2xl">{statusIcon}</span>
-                          <h3 className="text-lg font-semibold text-white">{task.title}</h3>
-                          <span className={`px-2 py-1 rounded text-xs font-bold text-white ${priorityColor}`}>
-                            {task.priority.toUpperCase()}
-                          </span>
-                        </div>
-                        <p className="text-slate-400 text-sm mb-3">{task.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
-                          <span>📁 {task.category}</span>
-                          {task.startDate && <span>📅 Start: {formatDate(task.startDate)}</span>}
-                          {task.endDate && <span>🏁 End: {formatDate(task.endDate)}</span>}
-                          {task.startDate && task.endDate && (
-                            <span>⏱️ {getDaysBetween(task.startDate, task.endDate)} days</span>
-                          )}
-                        </div>
+        {/* Tasks List */}
+        <div className="space-y-4 mb-8">
+          {filteredTasks.length === 0 ? (
+            <div className="text-center py-12 text-slate-400">
+              No tasks found
+            </div>
+          ) : (
+            filteredTasks.map((task) => {
+              const statusIcon = task.status === 'done' ? '✅' : task.status === 'in-progress' ? '🔄' : '⬜';
+              const priorityColor = task.priority === 'high' ? 'bg-red-500' : task.priority === 'medium' ? 'bg-yellow-500' : 'bg-gray-500';
+              
+              return (
+                <div key={task.id} className="bg-slate-800 rounded-lg p-4 sm:p-6 border border-slate-700">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <span className="text-2xl">{statusIcon}</span>
+                        <h3 className="text-lg font-semibold text-white">{task.title}</h3>
+                        <span className={`px-2 py-1 rounded text-xs font-bold text-white ${priorityColor}`}>
+                          {task.priority.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-slate-400 text-sm mb-3">{task.description}</p>
+                      <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+                        <span>📁 {task.category}</span>
+                        {task.startDate && <span>📅 Start: {formatDate(task.startDate)}</span>}
+                        {task.endDate && <span>🏁 End: {formatDate(task.endDate)}</span>}
+                        {task.startDate && task.endDate && (
+                          <span>⏱️ {getDaysBetween(task.startDate, task.endDate)} days</span>
+                        )}
                       </div>
                     </div>
+                    <button
+                      onClick={() => handleSetDates(task)}
+                      className="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700 text-sm whitespace-nowrap"
+                    >
+                      {task.startDate && task.endDate ? '✏️ Edit Dates' : '📅 Set Timeline'}
+                    </button>
                   </div>
-                );
-              })
-            )}
-          </div>
-        )}
+                  
+                  {/* Inline Date Editor */}
+                  {editingTask === task.id && (
+                    <div className="mt-4 p-4 bg-slate-700 rounded border border-slate-600">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-sm text-slate-300 mb-2">Start Date</label>
+                          <input
+                            type="date"
+                            value={editDates.startDate}
+                            onChange={(e) => setEditDates({ ...editDates, startDate: e.target.value })}
+                            className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-slate-300 mb-2">End Date</label>
+                          <input
+                            type="date"
+                            value={editDates.endDate}
+                            onChange={(e) => setEditDates({ ...editDates, endDate: e.target.value })}
+                            className="w-full px-4 py-2 bg-slate-800 border border-slate-600 rounded text-white"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={saveDates}
+                          className="flex-1 px-4 py-2 bg-green-600 rounded text-white hover:bg-green-700"
+                        >
+                          ✅ Save Timeline
+                        </button>
+                        <button
+                          onClick={() => setEditingTask(null)}
+                          className="flex-1 px-4 py-2 bg-slate-600 rounded text-white hover:bg-slate-500"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
 
-        {/* Gantt Chart View */}
-        {view === 'gantt' && (
-          <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-            <div className="text-white text-xl font-bold mb-6">📅 Project Gantt Chart</div>
-            <div className="space-y-4">
-              {tasks
-                .filter(t => t.endDate)
+        {/* Gantt Chart - Shows automatically when tasks have dates */}
+        {tasksWithTimelines.length > 0 && (
+          <div className="bg-slate-800 rounded-lg p-4 sm:p-6 border border-slate-700 mt-8">
+            <div className="text-white text-xl font-bold mb-6">📅 Gantt Chart View</div>
+            <div className="space-y-4 overflow-x-auto">
+              {tasksWithTimelines
                 .sort((a, b) => {
-                  const dateA = new Date(a.startDate || '').getTime();
-                  const dateB = new Date(b.startDate || '').getTime();
+                  const dateA = new Date(a.startDate!).getTime();
+                  const dateB = new Date(b.startDate!).getTime();
                   return dateA - dateB;
                 })
                 .map((task) => {
-                  const startDate = task.startDate ? new Date(task.startDate) : new Date();
-                  const endDate = task.endDate ? new Date(task.endDate) : new Date();
+                  const startDate = new Date(task.startDate!);
+                  const endDate = new Date(task.endDate!);
                   const now = new Date();
-                  const totalDays = getDaysBetween(task.startDate || '', task.endDate || '');
-                  const daysElapsed = Math.max(0, getDaysBetween(task.startDate || '', now.toISOString()));
+                  const totalDays = getDaysBetween(task.startDate!, task.endDate!);
+                  const daysElapsed = Math.max(0, getDaysBetween(task.startDate!, now.toISOString()));
+                  const daysRemaining = Math.max(0, getDaysBetween(now.toISOString(), task.endDate!));
                   const progress = totalDays > 0 ? Math.min(100, (daysElapsed / totalDays) * 100) : 0;
                   
                   const statusColor = 
@@ -291,11 +328,11 @@ export default function PublicTasksPage() {
                     'bg-yellow-500';
                   
                   return (
-                    <div key={task.id} className="relative mb-8">
-                      <div className="flex items-center gap-4 mb-2">
-                        <span className="text-sm text-white font-semibold min-w-[300px]">{task.title}</span>
+                    <div key={task.id} className="mb-6">
+                      <div className="flex items-center gap-4 mb-2 flex-wrap">
+                        <span className="text-sm text-white font-semibold min-w-[200px] sm:min-w-[300px]">{task.title}</span>
                         <span className="text-xs text-slate-400">
-                          {formatDate(task.startDate || '')} → {formatDate(task.endDate || '')}
+                          {formatDate(task.startDate!)} → {formatDate(task.endDate!)}
                         </span>
                         <span className={`px-2 py-1 rounded text-xs text-white ${
                           task.priority === 'high' ? 'bg-red-500' : task.priority === 'medium' ? 'bg-yellow-500' : 'bg-gray-500'
@@ -303,34 +340,30 @@ export default function PublicTasksPage() {
                           {task.priority.toUpperCase()}
                         </span>
                       </div>
-                      <div className="relative h-10 bg-slate-700 rounded overflow-hidden border border-slate-600">
+                      <div className="relative h-8 bg-slate-700 rounded overflow-hidden border border-slate-600">
                         <div 
-                          className={`h-full ${statusColor} transition-all duration-500`}
+                          className={`h-full ${statusColor} transition-all duration-500 flex items-center justify-center`}
                           style={{ width: `${task.status === 'done' ? 100 : progress}%` }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-bold">
-                          {task.status === 'done' ? '✅ DONE' : `${task.status === 'in-progress' ? '🔄 ' : ''}${Math.round(progress)}%`}
+                        >
+                          <span className="text-xs text-white font-bold">
+                            {task.status === 'done' ? '✅ DONE' : task.status === 'in-progress' ? '🔄 IN PROGRESS' : `${Math.round(progress)}%`}
+                          </span>
                         </div>
                       </div>
                       <div className="text-xs text-slate-500 mt-1 ml-2">
-                        {totalDays} days total • {getDaysBetween(task.endDate || '', now.toISOString())} days remaining
+                        {totalDays} days total • {daysRemaining > 0 ? `${daysRemaining} days remaining` : 'Overdue'}
                       </div>
                     </div>
                   );
                 })}
-              {tasks.filter(t => t.endDate).length === 0 && (
-                <div className="text-center py-8 text-slate-400">
-                  No tasks with timelines set
-                </div>
-              )}
             </div>
           </div>
         )}
 
         {/* Info Footer */}
         <div className="mt-12 p-6 bg-slate-800 rounded-lg border border-slate-700 text-center text-slate-400 text-sm">
-          <p>📊 Public task tracker for AI Capital project development</p>
-          <p className="mt-2">💡 Tasks update automatically from backend</p>
+          <p>📊 Click "Set Timeline" on any task to add dates and see it appear in the Gantt chart</p>
+          <p className="mt-2">💡 Gantt chart updates automatically when you add dates</p>
         </div>
       </div>
     </div>
