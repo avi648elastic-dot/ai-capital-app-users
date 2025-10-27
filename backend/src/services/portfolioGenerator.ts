@@ -41,70 +41,11 @@ export class PortfolioGenerator {
 
   private async initializeStockDatabase() {
     try {
-      console.log('🔍 [PORTFOLIO GENERATOR] Loading real stock data...');
-
-      // Define a massive, diverse stock universe (500+ stocks)
-      const solidStocks = [
-        // Tech Giants
-        'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'IBM',
-        'CSCO', 'INTC', 'ACN', 'NOW', 'WDAY', 'SNOW', 'DDOG', 'CRWD', 'ZS', 'OKTA',
-        // Financial
-        'JPM', 'BAC', 'WFC', 'GS', 'MS', 'AXP', 'V', 'MA', 'PYPL', 'SQ', 'COF', 'USB',
-        'PNC', 'TFC', 'BK', 'STT', 'BLK', 'SCHW', 'CME', 'ICE', 'SPGI', 'MCO', 'NDAQ',
-        // Healthcare
-        'JNJ', 'PFE', 'UNH', 'ABBV', 'MRK', 'TMO', 'ABT', 'DHR', 'BMY', 'LLY', 'AMGN',
-        'GILD', 'BIIB', 'REGN', 'VRTX', 'MRNA', 'BNTX', 'ILMN', 'ISRG', 'DXCM', 'ZTS',
-        // Consumer
-        'PG', 'KO', 'PEP', 'WMT', 'HD', 'LOW', 'TGT', 'COST', 'NKE', 'SBUX', 'MCD',
-        'YUM', 'CMG', 'CHWY', 'ETSY', 'ROKU', 'DIS', 'NFLX', 'CMCSA', 'VZ', 'T',
-        // Industrial
-        'BA', 'CAT', 'GE', 'HON', 'MMM', 'UPS', 'FDX', 'LMT', 'RTX', 'NOC', 'GD',
-        'EMR', 'ETN', 'ITW', 'PH', 'ROK', 'DE', 'CNH', 'AGCO', 'TEX', 'OSK',
-        // Energy
-        'XOM', 'CVX', 'COP', 'EOG', 'PXD', 'MPC', 'VLO', 'PSX', 'KMI', 'WMB',
-        'EPD', 'ET', 'ENB', 'TRP', 'OKE', 'SLB', 'HAL', 'BKR', 'NOV', 'FTI',
-        // Materials
-        'LIN', 'APD', 'SHW', 'ECL', 'DD', 'DOW', 'PPG', 'NEM', 'FCX', 'SCCO',
-        'AA', 'X', 'CLF', 'NUE', 'STLD', 'CMC', 'RS', 'CMC', 'CMC', 'CMC',
-        // Utilities
-        'NEE', 'SO', 'DUK', 'D', 'AEP', 'EXC', 'XEL', 'SRE', 'PEG', 'WEC',
-        'ES', 'ETR', 'FE', 'PPL', 'AEE', 'EIX', 'PCG', 'ED', 'CNP', 'LNT',
-        // REITs
-        'AMT', 'PLD', 'CCI', 'EQIX', 'PSA', 'EXR', 'AVB', 'EQR', 'MAA', 'UDR',
-        'WELL', 'PEAK', 'O', 'STOR', 'STAG', 'CUBE', 'LAMR', 'SBAC', 'IRM', 'WPC',
-        // International
-        'ASML', 'TSM', 'SAP', 'UL', 'NVO', 'TM', 'HDB', 'BABA', 'JD', 'PDD',
-        'TME', 'BIDU', 'NTES', 'WB', 'YMM', 'VIPS', 'TAL', 'EDU', 'GOTU', 'COE'
-      ];
-      
-      // Optimized: Reduced risky stocks list to only fetch essential data
-      const riskyStocks = [
-        // High Growth Tech - Top picks only
-        'TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE',
-        'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM',
-        'PTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD', 'PDD'
-      ];
-      
-      const allStocks = [...new Set([...solidStocks, ...riskyStocks])]; // Remove duplicates
-
-      console.log(`🔍 [PORTFOLIO GENERATOR] Fetching data for ${allStocks.length} unique stocks (solid: ${solidStocks.length}, risky: ${riskyStocks.length})`);
-
-      // Get real data from APIs
-      const realData = await stockDataService.getMultipleStockData(allStocks);
-
-      this.stockDatabase = Array.from(realData.values());
-
-      console.log(`✅ [PORTFOLIO GENERATOR] Loaded real data for ${this.stockDatabase.length} stocks`);
-
-      // If no real data, fall back to mock data
-      if (this.stockDatabase.length === 0) {
-        console.warn('⚠️ [PORTFOLIO GENERATOR] No real data available, using mock data');
-        this.loadMockData();
-      }
-
+      console.log('⚡ [PORTFOLIO GENERATOR] SKIPPING massive database fetch - will fetch data only for selected stocks');
+      // Load mock data as backup only
+      this.loadMockData();
     } catch (error) {
-      console.error('❌ [PORTFOLIO GENERATOR] Error loading real data:', error);
-      console.log('🔄 [PORTFOLIO GENERATOR] Falling back to mock data...');
+      console.error('❌ [PORTFOLIO GENERATOR] Error:', error);
       this.loadMockData();
     }
   }
@@ -184,15 +125,20 @@ export class PortfolioGenerator {
       candidateStocks = ['TSLA', 'NVDA', 'AMD', 'PLTR', 'ARKK', 'GME', 'AMC', 'BB', 'NOK', 'SPCE', 'RKT', 'CLOV', 'WISH', 'SOFI', 'HOOD', 'COIN', 'RBLX', 'SNOW', 'DDOG', 'ZM', 'PTON', 'ROKU', 'SQ', 'PYPL', 'SHOP', 'MELI', 'SE', 'BABA', 'JD'];
     }
     
-    // Fetch real-time volatility data for all candidate stocks
-    loggerService.info(`🔍 [PORTFOLIO GENERATOR] Fetching volatility data for ${candidateStocks.length} candidates`);
-    const volatilityMap = await volatilityService.calculateMultipleStockVolatilities(candidateStocks);
-    const stockMetricsMap = await googleFinanceFormulasService.getMultipleStockMetrics(candidateStocks);
+    // SMART PRE-SELECTION: Only fetch data for 12 stocks (we'll pick 6 from them)
+    // Shuffle candidates and pick 12 randomly to reduce API calls
+    const shuffledCandidates = candidateStocks.sort(() => Math.random() - 0.5);
+    const stocksToFetch = shuffledCandidates.slice(0, 12);
+    
+    loggerService.info(`⚡ [PORTFOLIO GENERATOR] Fetching real data for ${stocksToFetch.length} pre-selected stocks (out of ${candidateStocks.length} candidates)`);
+    
+    const volatilityMap = await volatilityService.calculateMultipleStockVolatilities(stocksToFetch);
+    const stockMetricsMap = await googleFinanceFormulasService.getMultipleStockMetrics(stocksToFetch);
     
     // Filter stocks based on volatility and risk level
     const filteredStocks: Array<{symbol: string, volatility: number, riskLevel: string, metrics: any}> = [];
     
-    for (const symbol of candidateStocks) {
+    for (const symbol of stocksToFetch) {
       const volatilityMetrics = volatilityMap.get(symbol);
       const stockMetrics = stockMetricsMap.get(symbol);
       
@@ -213,14 +159,14 @@ export class PortfolioGenerator {
       }
     }
     
-    loggerService.info(`📊 [PORTFOLIO GENERATOR] Filtered to ${filteredStocks.length} ${portfolioType} candidates based on volatility`);
+    loggerService.info(`📊 [PORTFOLIO GENERATOR] Got ${filteredStocks.length} valid ${portfolioType} stocks with real data`);
     
     // Sort by performance (thisMonthPercent) and select top performers
     const sortedStocks = filteredStocks
       .sort((a, b) => b.metrics.thisMonthPercent - a.metrics.thisMonthPercent);
     
-    // Add some randomness: take top 10-15 and randomly select 6
-    const topStocks = sortedStocks.slice(0, Math.min(15, sortedStocks.length));
+    // Take top 8 to ensure we have enough, then randomly select 6
+    const topStocks = sortedStocks.slice(0, Math.min(8, sortedStocks.length));
     const shuffled = topStocks.sort(() => Math.random() - 0.5);
     
     // Convert to StockData format
