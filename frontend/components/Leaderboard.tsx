@@ -33,6 +33,22 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
     }
   }, [isVisible]);
 
+  // Add Escape key handler to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isVisible) {
+      document.addEventListener('keydown', handleEscape);
+      return () => {
+        document.removeEventListener('keydown', handleEscape);
+      };
+    }
+  }, [isVisible, onClose]);
+
   const fetchLeaderboard = async () => {
     try {
       setLoading(true);
