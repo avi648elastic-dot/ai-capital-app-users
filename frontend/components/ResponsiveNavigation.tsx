@@ -50,11 +50,11 @@ export default function ResponsiveNavigation({
       label: t('navigation.analytics'), 
       icon: BarChart3,
       children: [
-        { id: 'performance', label: t('navigation.performance'), icon: TrendingUp, href: '/analytics/performance' },
-        { id: 'portfolio-analysis', label: t('navigation.portfolioAnalysis'), icon: PieChart, href: '/analytics/portfolio-analysis', premium: true },
+        { id: 'performance', label: t('navigation.performance'), icon: TrendingUp, href: '/analytics/performance', beta: true },
+        { id: 'portfolio-analysis', label: t('navigation.portfolioAnalysis'), icon: PieChart, href: '/analytics/portfolio-analysis', premium: true, beta: true },
         { id: 'watchlist', label: t('navigation.watchlist'), icon: Eye, href: '/watchlist', premiumPlus: true },
-        { id: 'risk-management', label: t('navigation.riskManagement'), icon: Shield, href: '/risk-management', premiumPlus: true },
-        { id: 'reports', label: t('navigation.reports'), icon: Activity, href: '/analytics/reports', premiumPlus: true }
+        { id: 'risk-management', label: t('navigation.riskManagement'), icon: Shield, href: '/risk-management', premiumPlus: true, beta: true },
+        { id: 'reports', label: t('navigation.reports'), icon: Activity, href: '/analytics/reports', premiumPlus: true, beta: true }
       ]
     },
     { id: 'subscription', label: t('navigation.subscription'), icon: Crown, href: '/subscription' }
@@ -229,13 +229,17 @@ export default function ResponsiveNavigation({
                                 (child as any).admin ? 'text-red-400' : ''
                               }`} />
                               <span className="text-sm flex-1 ml-3">{child.label}</span>
-                              {child.premium && (
+                              {/* Beta Badge */}
+                              {(child as any).beta && (
+                                <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">BETA</span>
+                              )}
+                              {child.premium && !(child as any).beta && (
                                 <Crown className="w-3 h-3 text-yellow-400 flex-shrink-0" />
                               )}
-                              {child.premiumPlus && (
+                              {child.premiumPlus && !(child as any).beta && (
                                 <Crown className="w-3 h-3 text-purple-400 flex-shrink-0" />
                               )}
-                              {(child as any).admin && (
+                              {(child as any).admin && !(child as any).beta && (
                                 <Shield className="w-3 h-3 text-red-400 flex-shrink-0" />
                               )}
                             </button>
@@ -434,13 +438,17 @@ export default function ResponsiveNavigation({
                                 (child as any).admin ? 'text-red-400' : ''
                               }`} />
                               <span className="text-sm flex-1 ml-4">{child.label}</span>
-                              {child.premium && (
+                              {/* Beta Badge for Mobile */}
+                              {(child as any).beta && (
+                                <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">BETA</span>
+                              )}
+                              {child.premium && !(child as any).beta && (
                                 <Crown className="w-4 h-4 text-yellow-400 flex-shrink-0" />
                               )}
-                              {child.premiumPlus && (
+                              {child.premiumPlus && !(child as any).beta && (
                                 <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
                               )}
-                              {(child as any).admin && (
+                              {(child as any).admin && !(child as any).beta && (
                                 <Shield className="w-4 h-4 text-red-400 flex-shrink-0" />
                               )}
                             </button>
