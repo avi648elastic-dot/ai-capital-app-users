@@ -23,6 +23,12 @@ export default function PublicTasksPage() {
   const [editDates, setEditDates] = useState({ startDate: '', endDate: '' });
 
   useEffect(() => {
+    // Load mock data immediately, then try to fetch from API
+    const mockData = getMockTasks();
+    setTasks(mockData);
+    setLoading(false);
+    
+    // Try to fetch real data in background
     fetchTasks();
   }, []);
 
@@ -31,15 +37,13 @@ export default function PublicTasksPage() {
       const response = await fetch('https://ai-capital-app7.onrender.com/api/tasks');
       if (response.ok) {
         const data = await response.json();
-        setTasks(data.tasks || []);
-      } else {
-        setTasks(getMockTasks());
+        if (data.tasks && data.tasks.length > 0) {
+          setTasks(data.tasks);
+        }
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      setTasks(getMockTasks());
-    } finally {
-      setLoading(false);
+      // Keep mock data
     }
   };
 
