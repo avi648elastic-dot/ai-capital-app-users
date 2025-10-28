@@ -19,15 +19,17 @@ interface PortfolioItem {
   reason?: string;
   color?: string;
   exchange?: string;
+  isTraining?: boolean; // Training flag
 }
 
 interface PortfolioTableProps {
   portfolio: PortfolioItem[];
   onUpdate: (id: string, data: any) => void;
   onDelete: (id: string) => void;
+  onToggleTraining?: (id: string, isTraining: boolean) => void; // Training toggle handler
 }
 
-export default function PortfolioTable({ portfolio, onUpdate, onDelete }: PortfolioTableProps) {
+export default function PortfolioTable({ portfolio, onUpdate, onDelete, onToggleTraining }: PortfolioTableProps) {
   const { t } = useLanguage();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<PortfolioItem>>({});
@@ -74,6 +76,12 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
     setEditData({});
   };
 
+  const handleToggleTraining = (id: string, currentTraining: boolean) => {
+    if (onToggleTraining) {
+      onToggleTraining(id, !currentTraining);
+    }
+  };
+
   const getActionColor = (action: string) => {
     switch (action) {
       case 'BUY':
@@ -112,18 +120,41 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h3 className="text-lg font-bold text-white [data-theme='light']:text-gray-900">{item.ticker}</h3>
-                  <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold mt-1 ${getActionColor(item.action)}`}>
-                    {item.action}
-                  </span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${getActionColor(item.action)}`}>
+                      {item.action}
+                    </span>
+                    {item.isTraining && (
+                      <span className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                        🎯 Training
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={() => onDelete(item._id)}
-                  className="text-red-400 hover:text-red-300 p-1"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-2">
+                  {onToggleTraining && (
+                    <Tooltip content={item.isTraining ? "Remove from training" : "Mark as training"} position="top">
+                      <button
+                        onClick={() => handleToggleTraining(item._id, item.isTraining || false)}
+                        className={`p-1 rounded transition-colors ${
+                          item.isTraining 
+                            ? 'text-orange-400 hover:text-orange-300 bg-orange-500/10' 
+                            : 'text-gray-400 hover:text-orange-400'
+                        }`}
+                      >
+                        🎯
+                      </button>
+                    </Tooltip>
+                  )}
+                  <button
+                    onClick={() => onDelete(item._id)}
+                    className="text-red-400 hover:text-red-300 p-1"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               
               <div className="grid grid-cols-2 gap-2 text-sm">
@@ -175,6 +206,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.stopLoss')}</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.takeProfit')}</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.action')}</th>
+              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">Training</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.date')}</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.actions')}</th>
             </tr>
@@ -264,6 +296,28 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete }: Portfo
                           {item.action}
                         </span>
                       </Tooltip>
+                    </div>
+                  </td>
+                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                    <div className="flex justify-center">
+                      {onToggleTraining ? (
+                        <Tooltip content={item.isTraining ? "Remove from training" : "Mark as training"} position="top">
+                          <button
+                            onClick={() => handleToggleTraining(item._id, item.isTraining || false)}
+                            className={`p-1 rounded transition-colors ${
+                              item.isTraining 
+                                ? 'text-orange-400 hover:text-orange-300 bg-orange-500/10' 
+                                : 'text-gray-400 hover:text-orange-400'
+                            }`}
+                          >
+                            🎯
+                          </button>
+                        </Tooltip>
+                      ) : (
+                        <span className={`text-xs ${item.isTraining ? 'text-orange-400' : 'text-gray-500'}`}>
+                          {item.isTraining ? '🎯' : '—'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">

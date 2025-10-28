@@ -323,6 +323,7 @@ router.post('/add', authenticateToken, requireSubscription, async (req, res) => 
       portfolioType: finalPortfolioType,
       portfolioId: finalPortfolioId,
       sector: stockSector, // 🎯 Automatically assigned sector
+      isTraining: req.body.isTraining || false, // 🎯 Training flag support
     });
 
     console.log('🔍 [PORTFOLIO ADD] Portfolio item created:', {
@@ -543,6 +544,54 @@ router.get('/decisions', authenticateToken, requireSubscription, async (req, res
   } catch (error) {
     console.error('❌ [DECISIONS] Update decisions error:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Toggle training flag for a stock
+router.patch('/toggle-training/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isTraining } = req.body;
+
+    console.log('🔍 [PORTFOLIO TOGGLE TRAINING] Toggling training flag for stock:', id, 'to:', isTraining);
+
+    const portfolioItem = await Portfolio.findOne({ 
+      _id: id, 
+      userId: req.user!._id 
+    });
+
+    if (!portfolioItem) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Portfolio item not found' 
+      });
+    }
+
+    portfolioItem.isTraining = Boolean(isTraining);
+    await portfolioItem.save();
+
+    console.log('✅ [PORTFOLIO TOGGLE TRAINING] Training flag updated:', {
+      ticker: portfolioItem.ticker,
+      isTraining: portfolioItem.isTraining
+    });
+
+    res.json({
+      success: true,
+      message: `Stock ${portfolioItem.ticker} ${isTraining ? 'marked as training' : 'removed from training'}`,
+      portfolioItem: {
+        id: portfolioItem._id,
+        ticker: portfolioItem.ticker,
+        isTraining: portfolioItem.isTraining
+      }
+    });
+
+  } catch (error: any) {
+    console.error('❌ [PORTFOLIO TOGGLE TRAINING] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to toggle training flag',
+      error: error.message
+    });
   }
 });
 

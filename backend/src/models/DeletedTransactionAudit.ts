@@ -11,6 +11,7 @@ export interface IDeletedTransactionAudit extends Document {
   deletedBy: Types.ObjectId | string;
   deletedAt: Date;
   reason?: string;
+  isTraining?: boolean; // Mark as training/test transaction (excluded from expert portfolio)
 }
 
 const DeletedTransactionAuditSchema = new Schema<IDeletedTransactionAudit>(
@@ -24,7 +25,8 @@ const DeletedTransactionAuditSchema = new Schema<IDeletedTransactionAudit>(
     portfolioId: { type: String, index: true },
     deletedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     deletedAt: { type: Date, default: Date.now, index: true },
-    reason: { type: String }
+    reason: { type: String },
+    isTraining: { type: Boolean, default: false }, // Training/test transaction flag
   },
   { timestamps: true }
 );

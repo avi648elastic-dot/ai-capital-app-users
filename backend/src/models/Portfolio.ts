@@ -19,6 +19,7 @@ export interface IPortfolio extends Document {
   volatility?: number; // Portfolio volatility (calculated daily)
   lastVolatilityUpdate?: Date; // When volatility was last calculated
   sector?: string; // Stock sector (automatically assigned when stock is added)
+  isTraining?: boolean; // Mark as training/test stock (excluded from expert portfolio)
 }
 
 const PortfolioSchema = new Schema<IPortfolio>(
@@ -41,6 +42,7 @@ const PortfolioSchema = new Schema<IPortfolio>(
     volatility: { type: Number, default: 0 }, // Portfolio volatility
     lastVolatilityUpdate: { type: Date, default: null }, // Last volatility calculation
     sector: String, // Stock sector (auto-assigned)
+    isTraining: { type: Boolean, default: false }, // Training/test stock flag
   },
   { timestamps: true }
 );

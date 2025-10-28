@@ -28,9 +28,10 @@ router.get('/', authenticateToken, expertPortfolioCache, async (req, res) => {
       });
     }
 
-    // Get expert's portfolio
+    // Get expert's portfolio (exclude training stocks)
     const expertPortfolio = await Portfolio.find({ 
-      userId: expertUser._id 
+      userId: expertUser._id,
+      isTraining: { $ne: true } // 🎯 Exclude training stocks from expert portfolio
     }).sort({ createdAt: -1 });
 
     if (expertPortfolio.length === 0) {
@@ -193,9 +194,15 @@ router.get('/stats', authenticateToken, async (req, res) => {
       });
     }
 
-    // Get portfolio count and stats
-    const portfolioCount = await Portfolio.countDocuments({ userId: expertUser._id });
-    const portfolioItems = await Portfolio.find({ userId: expertUser._id });
+    // Get portfolio count and stats (exclude training stocks)
+    const portfolioCount = await Portfolio.countDocuments({ 
+      userId: expertUser._id,
+      isTraining: { $ne: true } // 🎯 Exclude training stocks from stats
+    });
+    const portfolioItems = await Portfolio.find({ 
+      userId: expertUser._id,
+      isTraining: { $ne: true } // 🎯 Exclude training stocks from stats
+    });
 
     // Calculate portfolio composition
     const byAction = portfolioItems.reduce((acc, item) => {
@@ -259,10 +266,11 @@ router.get('/deleted-transactions', authenticateToken, deletedTransactionsCache,
       });
     }
 
-    // Get expert's deleted transactions
+    // Get expert's deleted transactions (exclude training transactions)
     const deletedTransactions = await DeletedTransactionAudit.find({ 
       userId: expertUser._id,
-      type: 'delete'
+      type: 'delete',
+      isTraining: { $ne: true } // 🎯 Exclude training transactions from expert portfolio
     })
     .sort({ deletedAt: -1 })
     .limit(50); // Limit to last 50 closed positions

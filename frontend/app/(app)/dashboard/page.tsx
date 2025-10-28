@@ -52,6 +52,7 @@ interface PortfolioItem {
   reason?: string;
   color?: string;
   portfolioType: 'solid' | 'risky' | 'imported';
+  isTraining?: boolean; // Training flag
 }
 
 interface PortfolioTotals {
@@ -465,6 +466,29 @@ export default function Dashboard() {
     }
   };
 
+  const handleToggleTraining = async (id: string, isTraining: boolean) => {
+    try {
+      console.log('🎯 [DASHBOARD] Toggling training flag:', id, 'to:', isTraining);
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      const response = await axios.patch(`${apiUrl}/api/portfolio/toggle-training/${id}`, {
+        isTraining
+      }, {
+        headers: { Authorization: `Bearer ${Cookies.get('token')}` },
+        timeout: 10000
+      });
+      
+      console.log('🎯 [DASHBOARD] Training flag updated:', response.data);
+      
+      // Refresh portfolio to show updated training status
+      refreshPortfolio();
+      
+    } catch (error: any) {
+      console.error('❌ [DASHBOARD] Error toggling training flag:', error);
+      alert('Failed to update training status. Please try again.');
+    }
+  };
+
   const handleUpgrade = async () => {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/subscription/upgrade`, {}, {
@@ -766,6 +790,7 @@ export default function Dashboard() {
                         portfolio={selectedMultiPortfolio.stocks || []}
                         onUpdate={handleUpdateStock}
                         onDelete={handleDeleteStock}
+                        onToggleTraining={handleToggleTraining}
                       />
                     </ErrorBoundary>
                   </div>
@@ -833,6 +858,7 @@ export default function Dashboard() {
                 portfolio={filteredPortfolio}
                 onUpdate={handleUpdateStock}
                 onDelete={handleDeleteStock}
+                onToggleTraining={handleToggleTraining}
               />
             </ErrorBoundary>
 
