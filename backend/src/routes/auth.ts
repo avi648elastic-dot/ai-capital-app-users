@@ -75,6 +75,14 @@ router.post('/signup', validate({ body: registerSchema }), async (req: Request, 
       // Don't fail registration if email fails
     }
 
+    // Update last login timestamp
+    try {
+      user.lastLogin = new Date();
+      await user.save();
+    } catch (e) {
+      console.warn('⚠️ [LOGIN] Failed to update lastLogin for', user.email, e);
+    }
+
     const token = issueToken(String(user._id), user.email, res);
 
     return res.status(201).json({
@@ -341,6 +349,14 @@ router.post('/google', async (req: Request, res: Response) => {
         user.avatar = userData.picture;
         await user.save();
       }
+    }
+
+    // Update last login for Google users
+    try {
+      user.lastLogin = new Date();
+      await user.save();
+    } catch (e) {
+      console.warn('⚠️ [GOOGLE OAUTH] Failed to update lastLogin for', user.email, e);
     }
 
     // Issue token

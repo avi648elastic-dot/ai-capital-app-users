@@ -19,6 +19,7 @@ interface User {
   totalCapital?: number;
   riskTolerance?: number;
   createdAt: string;
+  lastLogin?: string;
   portfolioStats: {
     totalCost: number;
     totalValue: number;
@@ -592,6 +593,11 @@ export default function AdminDashboard() {
                       <div>
                         <div className="text-sm font-medium text-white">{user.name}</div>
                         <div className="text-sm text-gray-400">{user.email}</div>
+                        {user.lastLogin && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Last login: {new Date(user.lastLogin).toLocaleString()}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

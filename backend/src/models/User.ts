@@ -35,6 +35,7 @@ export interface IUser extends Document {
   worstTrade: number; // Worst single trade loss
   
   createdAt: Date;
+  lastLogin?: Date;
 
   apiKey?: string;
   apiSecret?: string;
@@ -80,6 +81,9 @@ const UserSchema: Schema<IUser> = new Schema(
     averageLoss: { type: Number, default: 0 },
     bestTrade: { type: Number, default: 0 },
     worstTrade: { type: Number, default: 0 },
+
+    // 🔐 User activity
+    lastLogin: { type: Date },
 
     apiKey: { type: String },
     apiSecret: { type: String },
