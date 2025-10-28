@@ -149,8 +149,10 @@ export class SchedulerService {
     try {
       console.log('🔄 [SCHEDULER] Updating portfolio decisions and prices...');
       
-      // Get all portfolios that need updating
-      const portfolios = await Portfolio.find({});
+      // Get all portfolios that need updating (exclude training stocks)
+      const portfolios = await Portfolio.find({
+        isTraining: { $ne: true } // Exclude training stocks from decision updates
+      });
       
       if (portfolios.length === 0) {
         console.log('ℹ️ [SCHEDULER] No portfolios to update');
