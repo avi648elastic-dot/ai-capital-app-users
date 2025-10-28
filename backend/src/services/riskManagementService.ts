@@ -59,12 +59,12 @@ export class RiskManagementService {
 
     // Take profit awareness
     if (target) {
-      const tp1 = parseFloat(String(target).split(/[' ,/]+/)[0]);
+      const tp1 = Math.round(parseFloat(String(target).split(/[' ,/]+/)[0]) * 100) / 100; // Round to 2 decimal places
       if (tp1 && current >= tp1 * 0.95) {
-        return { action: "SELL", color: "#ff6b6b", reason: `Take profit zone reached (${tp1})`, riskLevel: 'HIGH' };
+        return { action: "SELL", color: "#ff6b6b", reason: `Take profit zone reached (${tp1.toFixed(2)})`, riskLevel: 'HIGH' };
       }
       if (tp1 && current >= tp1 * 0.90) {
-        return { action: "MONITOR", color: "#58d68d", reason: `Approaching take profit (${tp1})`, riskLevel: 'MEDIUM' };
+        return { action: "MONITOR", color: "#58d68d", reason: `Approaching take profit (${tp1.toFixed(2)})`, riskLevel: 'MEDIUM' };
       }
     }
 

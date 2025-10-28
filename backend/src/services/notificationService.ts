@@ -175,7 +175,8 @@ class NotificationService {
         const { default: Portfolio } = await import('../models/Portfolio');
         const portfolioItems = await Portfolio.find({ 
           userId: filters.userId,
-          action: 'BUY' // Only BUY actions (actual holdings)
+          action: 'BUY', // Only BUY actions (actual holdings)
+          isTraining: { $ne: true } // Exclude training stocks
         }).select('ticker');
         userPortfolioTickers = portfolioItems.map(item => item.ticker);
       } catch (error) {

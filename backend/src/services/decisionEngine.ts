@@ -74,18 +74,18 @@ export class DecisionEngine {
 
       // Take profit awareness (EXACT LEGACY LOGIC)
       if (takeProfit) {
-        const tp1 = takeProfit;
+        const tp1 = Math.round(takeProfit * 100) / 100; // Round to 2 decimal places
         if (currentPrice >= tp1 * 0.95) {
           return {
             action: 'SELL',
-            reason: `Reached TP zone (${tp1})`,
+            reason: `Reached TP zone (${tp1.toFixed(2)})`,
             color: 'red',
           };
         }
         if (currentPrice >= tp1 * 0.90) {
           return {
             action: 'BUY',
-            reason: `Approaching TP (${tp1})`,
+            reason: `Approaching TP (${tp1.toFixed(2)})`,
             color: 'green',
           };
         }
