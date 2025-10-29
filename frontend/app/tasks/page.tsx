@@ -34,15 +34,34 @@ export default function PublicTasksPage() {
 
   const fetchTasks = async () => {
     try {
-      const response = await fetch('https://ai-capital-app7.onrender.com/api/tasks');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      console.log('🔍 [TASKS] Fetching from:', `${apiUrl}/api/tasks`);
+      const response = await fetch(`${apiUrl}/api/tasks`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      });
+      console.log('📡 [TASKS] Response status:', response.status, response.ok);
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ [TASKS] Received', data.tasks?.length || 0, 'tasks');
         if (data.tasks && data.tasks.length > 0) {
           setTasks(data.tasks);
+          const volatilityTask = data.tasks.find((t: Task) => t.title.toLowerCase().includes('volatility'));
+          if (volatilityTask) {
+            console.log('✅ [TASKS] Volatility task found in response:', volatilityTask.title);
+          } else {
+            console.log('⚠️ [TASKS] Volatility task NOT in API response');
+          }
         }
+      } else {
+        const errorText = await response.text();
+        console.error('❌ [TASKS] API error:', response.status, errorText);
       }
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.error('❌ [TASKS] Fetch error:', error);
       // Keep mock data
     }
   };
