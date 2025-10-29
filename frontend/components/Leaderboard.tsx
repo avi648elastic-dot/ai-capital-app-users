@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { X } from 'lucide-react';
@@ -27,6 +28,8 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (isVisible) {
@@ -70,9 +73,9 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
     }
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || !mounted) return null;
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[20000] flex items-center justify-center p-2 sm:p-4"
       onClick={(e) => {
@@ -228,6 +231,7 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

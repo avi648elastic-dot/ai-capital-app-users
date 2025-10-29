@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import axios from 'axios';
 
@@ -34,6 +35,9 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (isVisible) {
@@ -432,9 +436,9 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
     }
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || !mounted) return null;
 
-  return (
+  return createPortal(
     <div 
       className={`fixed inset-0 z-[20000] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-center justify-center ${isMobile ? 'p-0' : 'p-2 sm:p-4'}`}
       onClick={(e) => {
@@ -601,6 +605,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
