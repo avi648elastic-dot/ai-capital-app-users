@@ -436,15 +436,15 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   return (
     <div 
-      className={`fixed inset-0 z-[9999] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-center justify-center ${isMobile ? 'p-0' : 'p-4'}`}
+      className={`fixed inset-0 z-[9999] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-center justify-center ${isMobile ? 'p-0' : 'p-2 sm:p-4'}`}
       onClick={(e) => {
         if (isMobile && e.target === e.currentTarget) {
           onClose();
         }
       }}
-      style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch' }}
+      style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
     >
-      <div className={`${isMobile ? 'w-full h-full rounded-none' : 'max-w-sm w-[90vw] rounded-lg'} bg-white dark:bg-slate-800 shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-700 ${isMobile ? 'max-h-full' : 'max-h-[75vh]'} flex flex-col`}>
+      <div className={`${isMobile ? 'w-full h-full rounded-none m-0' : 'max-w-sm w-[90vw] max-w-[400px] rounded-lg'} bg-white dark:bg-slate-800 shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-700 ${isMobile ? 'max-h-full' : 'max-h-[85vh]'} flex flex-col overflow-hidden`}>
         {/* Header - Compact */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div className="flex items-center space-x-2">
@@ -501,11 +501,11 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
                 e.stopPropagation();
                 onClose();
               }}
-              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-full transition-all active:scale-95 touch-manipulation shadow-lg border-2 border-red-500 flex-shrink-0"
+              className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 dark:hover:bg-slate-600 rounded-full transition-colors active:scale-95 touch-manipulation flex-shrink-0"
               aria-label="Close Notifications"
               title="Close"
             >
-              <span className="text-4xl sm:text-5xl leading-none font-bold">×</span>
+              <span className="text-2xl leading-none">×</span>
             </button>
           </div>
         </div>

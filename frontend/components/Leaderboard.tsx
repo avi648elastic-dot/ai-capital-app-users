@@ -74,16 +74,16 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-2 sm:p-4"
       onClick={(e) => {
         // Close on backdrop click
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
-      style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch' }}
+      style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
     >
-      <div className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full' : 'w-full max-w-2xl max-h-[85vh]'} overflow-hidden relative`}>
+      <div className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full m-0' : 'w-full max-w-2xl max-w-[90vw] max-h-[85vh]'} overflow-hidden relative`}>
         {/* Header - Compact with always visible close */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-700 flex-shrink-0">
           <div className="flex items-center space-x-3">
@@ -102,17 +102,17 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
             >
               📊 Trading History
             </a>
-            {/* Close button - BIG AND ALWAYS VISIBLE */}
+            {/* Close button - Normal size, always in view */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onClose();
               }}
-              className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-full transition-all active:scale-95 touch-manipulation shadow-xl border-4 border-red-400 flex-shrink-0 z-10"
+              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-full transition-colors active:scale-95 touch-manipulation flex-shrink-0"
               aria-label="Close Leaderboard"
-              title="Close Leaderboard"
+              title="Close"
             >
-              <span className="text-5xl sm:text-6xl leading-none font-bold">×</span>
+              <X className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
             </button>
           </div>
         </div>
