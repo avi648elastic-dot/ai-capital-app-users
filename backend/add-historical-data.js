@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
 
-// Connect to MongoDB
-mongoose.connect('mongodb+srv://avi648elastic:ai-capital-app7@cluster0.8qjqj.mongodb.net/aicapital?retryWrites=true&w=majority');
+// Connect to MongoDB - USE ENVIRONMENT VARIABLE
+const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URI_TEST || 'mongodb://localhost:27017/aicapital';
+mongoose.connect(mongoUri);
 
 // Define schemas
 const userSchema = new mongoose.Schema({
