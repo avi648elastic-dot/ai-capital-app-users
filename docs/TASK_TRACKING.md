@@ -83,8 +83,7 @@ Track all features, bug fixes, and improvements for the AI Capital app.
 
 ### 8. Volatility Calculations
 **Status:** ⬜ Not Started  
-**Issue:** Volatility calculations not working correctly for portfolio analysis.  
-**Details:** Ensure volatility service works correctly for portfolio risk assessment and analysis.  
+**Issue:** Volatility calculations not working correctly for portfolio analysis. Ensure volatility service works correctly for portfolio risk assessment and analysis.
 **Files:** `backend/src/services/volatilityService.ts`
 
 ---
