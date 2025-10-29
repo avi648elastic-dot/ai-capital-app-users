@@ -254,9 +254,12 @@ router.get('/', (req: Request, res: Response) => {
     const tasks = loadTasks();
     console.log(`📊 [TASKS API] Returning ${tasks.length} tasks`);
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json({ tasks, total: tasks.length });
   } catch (error) {
     console.error('❌ [TASKS API] Error loading tasks:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error loading tasks' });
   }
 });
@@ -267,9 +270,13 @@ router.get('/status/:status', (req: Request, res: Response) => {
     const tasks = loadTasks();
     const status = req.params.status;
     const filtered = tasks.filter(t => t.status === status);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json({ tasks: filtered, total: filtered.length });
   } catch (error) {
     console.error('Error loading tasks:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error loading tasks' });
   }
 });
@@ -282,9 +289,13 @@ router.get('/category/:category', (req: Request, res: Response) => {
     const filtered = tasks.filter(t => 
       t.category.toLowerCase().includes(category.toLowerCase())
     );
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json({ tasks: filtered, total: filtered.length });
   } catch (error) {
     console.error('Error loading tasks:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error loading tasks' });
   }
 });
@@ -310,9 +321,13 @@ router.get('/stats', (req: Request, res: Response) => {
       stats.byCategory[task.category] = (stats.byCategory[task.category] || 0) + 1;
     });
     
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json(stats);
   } catch (error) {
     console.error('Error loading stats:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error loading stats' });
   }
 });
@@ -336,9 +351,13 @@ router.post('/:id/timeline', (req: Request, res: Response) => {
     task.estimatedDays = estimatedDays;
     task.updatedAt = new Date().toISOString();
 
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json({ success: true, task });
   } catch (error) {
     console.error('Error updating task timeline:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error updating task timeline' });
   }
 });
@@ -357,9 +376,13 @@ router.post('/:id/status', (req: Request, res: Response) => {
       task.updatedAt = new Date().toISOString();
     }
     
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json({ success: true, task });
   } catch (error) {
     console.error('Error updating task status:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error updating task status' });
   }
 });
@@ -393,15 +416,21 @@ router.post('/', (req: Request, res: Response) => {
   try {
     const { title, description = '', section = '🐛 Bug Fixes Needed', status = 'not-started', files = [] } = req.body || {};
     if (!title || typeof title !== 'string') {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(400).json({ message: 'Title is required' });
     }
 
     // Save override runtime task (does not modify repo file on Render)
     saveOverride({ title, description, section, status, files });
     const tasks = loadTasks();
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json({ success: true, tasks });
   } catch (error) {
     console.error('❌ [TASKS API] Error creating task:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error creating task' });
   }
 });
