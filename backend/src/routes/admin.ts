@@ -675,8 +675,8 @@ router.post('/cron-locks/force-release', requireAdmin, async (req, res) => {
  */
 router.post('/cleanup', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { dryRun } = req.query;
-    const isDryRun = dryRun === 'true' || dryRun === true;
+    const dryRun = req.query.dryRun;
+    const isDryRun = String(dryRun) === 'true';
     
     console.log(`🧹 [ADMIN] Manual cleanup triggered (dryRun: ${isDryRun})`);
     
