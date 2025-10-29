@@ -24,13 +24,24 @@ interface Task {
 
 // Paths
 const TRACK_FILE = path.join(__dirname, '../../docs/TASK_TRACKING.md');
-const TIMELINE_FILE = path.join(__dirname, '../../docs/TASK_TIMELINES.json');
+// Use writable temp directory in production for runtime changes
+const TMP_DIR = '/tmp';
+const TIMELINE_FILE = path.join(TMP_DIR, 'TASK_TIMELINES.json');
+const OVERRIDES_FILE = path.join(TMP_DIR, 'TASK_OVERRIDES.json');
 
 // Ensure timeline store exists
 function ensureTimelineStore() {
   try {
     if (!fs.existsSync(TIMELINE_FILE)) {
       fs.writeFileSync(TIMELINE_FILE, JSON.stringify({}), 'utf-8');
+    }
+  } catch {}
+}
+
+function ensureOverridesStore() {
+  try {
+    if (!fs.existsSync(OVERRIDES_FILE)) {
+      fs.writeFileSync(OVERRIDES_FILE, JSON.stringify([]), 'utf-8');
     }
   } catch {}
 }
@@ -51,6 +62,21 @@ function saveTimeline(title: string, data: { startDate?: string; endDate?: strin
   const map = loadTimelineMap();
   map[title] = { ...map[title], ...data };
   fs.writeFileSync(TIMELINE_FILE, JSON.stringify(map, null, 2), 'utf-8');
+}
+
+type OverrideTask = { title: string; description?: string; section?: string; status?: 'not-started'|'in-progress'|'done'; files?: string[] };
+function loadOverrides(): OverrideTask[] {
+  ensureOverridesStore();
+  try {
+    return JSON.parse(fs.readFileSync(OVERRIDES_FILE, 'utf-8') || '[]');
+  } catch {
+    return [];
+  }
+}
+function saveOverride(task: OverrideTask) {
+  const list = loadOverrides();
+  list.push(task);
+  fs.writeFileSync(OVERRIDES_FILE, JSON.stringify(list, null, 2), 'utf-8');
 }
 
 // Load tasks from markdown file
@@ -159,6 +185,24 @@ function loadTasks(): Task[] {
       console.log(`⚠️ [TASKS] Volatility task NOT found in parsed tasks`);
     }
     
+    // Merge override tasks (runtime-added) from /tmp
+    const overrides = loadOverrides();
+    overrides.forEach((ov, idx) => {
+      const section = ov.section || '🐛 Bug Fixes Needed';
+      const priority = section.toLowerCase().includes('bug') || section.toLowerCase().includes('critical') ? 'high' : 'medium';
+      tasks.push({
+        id: `task-ov-${idx+1}`,
+        title: ov.title,
+        status: ov.status || 'not-started',
+        priority: priority as any,
+        category: section,
+        description: ov.description || '',
+        files: ov.files || [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+    });
+
     // Merge timeline overrides
     const timelineMap = loadTimelineMap();
     tasks.forEach(t => {
@@ -317,7 +361,7 @@ router.get('/gantt', (req: Request, res: Response) => {
 
 export default router;
 
-// Create new task and append to a section (default: Bug Fixes)
+// Create new task (runtime) and persist in /tmp store
 router.post('/', (req: Request, res: Response) => {
   try {
     const { title, description = '', section = '🐛 Bug Fixes Needed', status = 'not-started', files = [] } = req.body || {};
@@ -325,47 +369,8 @@ router.post('/', (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Title is required' });
     }
 
-    const md = fs.readFileSync(TRACK_FILE, 'utf-8');
-    const lines = md.split('\n');
-
-    // Find section start and end
-    let start = -1; let end = lines.length;
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].startsWith('## ') && lines[i].includes(section)) {
-        start = i;
-        for (let j = i + 1; j < lines.length; j++) {
-          if (j > i && lines[j].startsWith('## ')) { end = j; break; }
-        }
-        break;
-      }
-    }
-    if (start === -1) return res.status(400).json({ message: 'Section not found in TASK_TRACKING.md' });
-
-    // Determine next task number within section
-    let maxNum = 0;
-    for (let i = start; i < end; i++) {
-      const m = lines[i].match(/^###\s+(\d+)\./);
-      if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
-    }
-    const nextNum = maxNum + 1;
-
-    // Build task block
-    const statusEmoji = status === 'done' ? '✅' : status === 'in-progress' ? '🔄' : '⬜';
-    const filesLine = files.length ? `**Files:** ${files.map((f: string) => '`' + f + '`').join(', ')}` : '';
-    const block = [
-      `### ${nextNum}. ${title}`,
-      `**Status:** ${statusEmoji} ${status === 'not-started' ? 'Not Started' : status === 'in-progress' ? 'In Progress' : 'Done'}  `,
-      `**Issue:** ${description}`,
-      filesLine,
-      ''
-    ].filter(Boolean).join('\n');
-
-    // Insert before end of section
-    const before = lines.slice(0, end).join('\n');
-    const after = lines.slice(end).join('\n');
-    const updated = `${before}\n${block}\n${after}`;
-    fs.writeFileSync(TRACK_FILE, updated, 'utf-8');
-
+    // Save override runtime task (does not modify repo file on Render)
+    saveOverride({ title, description, section, status, files });
     const tasks = loadTasks();
     res.json({ success: true, tasks });
   } catch (error) {
