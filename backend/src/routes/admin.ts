@@ -10,11 +10,12 @@ import { loggerService } from '../services/loggerService';
 
 const router = express.Router();
 
-// Admin middleware - role based
+// Admin middleware - allow either isAdmin=true or role==='admin'
 const requireAdmin = async (req: any, res: any, next: any) => {
   try {
     const user = await User.findById(req.user!._id);
-    if (!user || user.isAdmin !== true) {
+    const isAdmin = !!user && (user.isAdmin === true || user.role === 'admin');
+    if (!isAdmin) {
       return res.status(403).json({ message: 'Admin access required' });
     }
     next();
