@@ -83,9 +83,9 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
       }}
       style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch' }}
     >
-      <div className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full' : 'w-full max-w-4xl max-h-[80vh]'} overflow-hidden relative`}>
-        {/* Header with bigger close button */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-700">
+      <div className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full' : 'w-full max-w-2xl max-h-[85vh]'} overflow-hidden relative`}>
+        {/* Header - Compact with always visible close */}
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-700 flex-shrink-0">
           <div className="flex items-center space-x-3">
             <span className="text-2xl">🏆</span>
             <div>
@@ -117,8 +117,8 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
           </div>
         </div>
 
-        {/* Content */}
-        <div className={`p-4 sm:p-6 overflow-y-auto ${isMobile ? 'h-[calc(100vh-200px)]' : 'max-h-[60vh]'}`}>
+        {/* Content - Compact */}
+        <div className={`p-3 sm:p-4 overflow-y-auto ${isMobile ? 'h-[calc(100vh-150px)]' : 'max-h-[calc(85vh-120px)]'} min-h-0`}>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
@@ -141,21 +141,21 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
               <p className="text-slate-400">No trading data available yet</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {leaderboard.map((entry, index) => (
                 <div
                   key={entry.rank}
-                  className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg border transition-colors ${
                     entry.isProfitable 
                       ? 'bg-green-900/20 border-green-700/30 hover:bg-green-900/30' 
                       : 'bg-red-900/20 border-red-700/30 hover:bg-red-900/30'
                   }`}
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                     {/* Rank */}
                     <div className="flex-shrink-0">
                       {entry.rank <= 3 ? (
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+                        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs sm:text-sm ${
                           entry.rank === 1 ? 'bg-yellow-500' :
                           entry.rank === 2 ? 'bg-gray-400' :
                           'bg-orange-500'
@@ -163,40 +163,40 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
                           {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : '🥉'}
                         </div>
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold text-sm">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs">
                           {entry.rank}
                         </div>
                       )}
                     </div>
 
                     {/* Avatar & Name */}
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2 min-w-0 flex-1">
                       {entry.avatar ? (
                         <img
                           src={entry.avatar}
                           alt={entry.name}
-                          className="w-10 h-10 rounded-full border-2 border-slate-600 object-cover"
+                          className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-slate-600 object-cover flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs flex-shrink-0">
                           {entry.name.charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <div>
-                        <div className="font-semibold text-white">{entry.name}</div>
-                        <div className="text-xs text-slate-400">
-                          {entry.totalPositionsClosed} trades • {entry.winRate.toFixed(1)}% win rate
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-white text-sm truncate">{entry.name}</div>
+                        <div className="text-[10px] sm:text-xs text-slate-400">
+                          {entry.totalPositionsClosed} trades • {entry.winRate.toFixed(1)}% win
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Stats */}
-                  <div className="text-right">
-                    <div className={`text-lg font-bold ${entry.isProfitable ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <div className={`text-sm sm:text-base font-bold ${entry.isProfitable ? 'text-green-400' : 'text-red-400'}`}>
                       ${entry.reputation.toFixed(2)}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-[10px] sm:text-xs text-slate-400">
                       Best: ${entry.bestTrade.toFixed(2)}
                     </div>
                   </div>
@@ -206,15 +206,15 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-slate-700 bg-slate-800/50">
-          <p className="text-xs text-slate-400 text-center">
+        {/* Footer - Compact */}
+        <div className="p-3 sm:p-4 border-t border-slate-700 bg-slate-800/50 flex-shrink-0">
+          <p className="text-[10px] sm:text-xs text-slate-400 text-center">
             Rankings based on total realized P&L from closed positions. Close positions to build your reputation!
           </p>
-          <div className="mt-3 text-center">
+          <div className="mt-2 text-center">
             <a
               href="/transaction-history"
-              className="text-blue-400 hover:text-blue-300 text-xs underline"
+              className="text-blue-400 hover:text-blue-300 text-[10px] sm:text-xs underline"
             >
               View Trading History →
             </a>
