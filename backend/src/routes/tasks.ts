@@ -82,11 +82,16 @@ function saveOverride(task: OverrideTask) {
 // Load tasks from markdown file
 function loadTasks(): Task[] {
   try {
-    const content = fs.readFileSync(TRACK_FILE, 'utf-8');
-    
-    // Parse markdown to extract tasks
     const tasks: Task[] = [];
-    const lines = content.split('\n');
+    let lines: string[] = [];
+
+    // Read markdown tracker only if it exists in the container
+    if (fs.existsSync(TRACK_FILE)) {
+      const content = fs.readFileSync(TRACK_FILE, 'utf-8');
+      lines = content.split('\n');
+    } else {
+      console.warn(`⚠️ [TASKS] Tracker file not found at ${TRACK_FILE}. Using runtime overrides only.`);
+    }
     
     let currentSection = '';
     let taskId = 1;
@@ -177,7 +182,7 @@ function loadTasks(): Task[] {
       }
     }
     
-    console.log(`✅ [TASKS] Loaded ${tasks.length} tasks from TASK_TRACKING.md`);
+    console.log(`✅ [TASKS] Loaded ${tasks.length} tasks from tracker file`);
     const volatilityTask = tasks.find(t => t.title.toLowerCase().includes('volatility'));
     if (volatilityTask) {
       console.log(`✅ [TASKS] Found Volatility task:`, volatilityTask.title, 'Status:', volatilityTask.status, 'Priority:', volatilityTask.priority);
@@ -217,7 +222,19 @@ function loadTasks(): Task[] {
     return tasks;
   } catch (error) {
     console.error('❌ [TASKS] Error loading tasks:', error);
-    return [];
+    // As a safety net, still return overrides if tracker failed to parse
+    const overrides = loadOverrides();
+    return overrides.map((ov, idx) => ({
+      id: `task-ov-${idx+1}`,
+      title: ov.title,
+      status: ov.status || 'not-started',
+      priority: (ov.section || '').toLowerCase().includes('bug') || (ov.section || '').toLowerCase().includes('critical') ? 'high' : 'medium',
+      category: ov.section || '🐛 Bug Fixes Needed',
+      description: ov.description || '',
+      files: ov.files || [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }));
   }
 }
 
