@@ -41,13 +41,17 @@ function ensureOverridesStore() {
 async function loadTimelineMap(): Promise<Record<string, { startDate?: string; endDate?: string; estimatedDays?: number }>> {
   try {
     const timelines = await TaskTimeline.find({}).lean();
+    console.log(`📊 [TASKS] Loaded ${timelines.length} timelines from MongoDB`);
     const map: Record<string, { startDate?: string; endDate?: string; estimatedDays?: number }> = {};
     timelines.forEach(tl => {
-      map[tl.taskTitle] = {
-        startDate: tl.startDate || undefined,
-        endDate: tl.endDate || undefined,
-        estimatedDays: tl.estimatedDays || undefined
-      };
+      if (tl.taskTitle && (tl.startDate || tl.endDate)) {
+        map[tl.taskTitle] = {
+          startDate: tl.startDate || undefined,
+          endDate: tl.endDate || undefined,
+          estimatedDays: tl.estimatedDays || undefined
+        };
+        console.log(`✅ [TASKS] Loaded timeline for "${tl.taskTitle}": ${tl.startDate} to ${tl.endDate}`);
+      }
     });
     return map;
   } catch (error) {
@@ -232,12 +236,17 @@ async function loadTasks(): Promise<Task[]> {
 
     // Merge timeline overrides from MongoDB
     const timelineMap = await loadTimelineMap();
+    console.log(`🔗 [TASKS] Merging ${Object.keys(timelineMap).length} timelines into ${tasks.length} tasks`);
     tasks.forEach(t => {
       const tl = timelineMap[t.title];
       if (tl) {
+        const hadDates = !!(t.startDate || t.endDate);
         t.startDate = tl.startDate || t.startDate;
         t.endDate = tl.endDate || t.endDate;
         t.estimatedDays = tl.estimatedDays ?? t.estimatedDays;
+        if (tl.startDate || tl.endDate) {
+          console.log(`✅ [TASKS] Applied timeline to "${t.title}": ${t.startDate} to ${t.endDate}${hadDates ? ' (had existing dates)' : ''}`);
+        }
       }
     });
 
@@ -350,16 +359,25 @@ router.post('/:id/timeline', async (req: Request, res: Response) => {
     const { id } = req.params;
     const { startDate, endDate, estimatedDays } = req.body;
 
+    console.log(`💾 [TASKS API] Saving timeline for task ID ${id}:`, { startDate, endDate, estimatedDays });
+
     const tasks = await loadTasks();
     const task = tasks.find(t => t.id === id);
     if (!task) {
+      console.error(`❌ [TASKS API] Task ${id} not found`);
       res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
       res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
 
+    console.log(`✅ [TASKS API] Found task: "${task.title}" (ID: ${id})`);
+
     // Persist timeline by title to MongoDB
     await saveTimeline(task.title, { startDate, endDate, estimatedDays });
+    
+    // Verify it was saved by loading it back
+    const saved = await TaskTimeline.findOne({ taskTitle: task.title }).lean();
+    console.log(`✅ [TASKS API] Timeline saved and verified:`, saved);
     
     // Update task object for response
     task.startDate = startDate;
