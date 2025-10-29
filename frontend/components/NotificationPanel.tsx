@@ -436,7 +436,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   return (
     <div 
-      className={`fixed inset-0 z-[9999] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-center justify-center ${isMobile ? 'p-0' : 'p-2 sm:p-4'}`}
+      className={`fixed inset-0 z-[20000] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-center justify-center ${isMobile ? 'p-0' : 'p-2 sm:p-4'}`}
       onClick={(e) => {
         if (isMobile && e.target === e.currentTarget) {
           onClose();
@@ -445,7 +445,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
     >
       <div 
-        className={`${isMobile ? 'w-full h-full rounded-none m-0' : 'max-w-sm rounded-lg mx-auto'} bg-white dark:bg-slate-800 shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-700 ${isMobile ? 'max-h-full' : 'max-h-[85vh]'} flex flex-col overflow-hidden`}
+        className={`${isMobile ? 'w-full h-full rounded-none m-0' : 'max-w-sm rounded-lg mx-auto'} bg-white dark:bg-slate-800 shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-700 ${isMobile ? 'max-h-full' : 'max-h-[85vh]'} flex flex-col overflow-hidden relative z-[20001]`}
         style={{ 
           width: isMobile ? '100%' : 'calc(100% - 2rem)',
           maxWidth: isMobile ? '100%' : '400px',

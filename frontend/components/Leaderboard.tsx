@@ -74,7 +74,7 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
 
   return (
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-2 sm:p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[20000] flex items-center justify-center p-2 sm:p-4"
       onClick={(e) => {
         // Close on backdrop click
         if (e.target === e.currentTarget) {
@@ -84,7 +84,7 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
       style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
     >
       <div 
-        className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full m-0' : 'max-w-2xl'} overflow-hidden relative mx-auto`}
+        className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full m-0' : 'max-w-2xl'} overflow-hidden relative mx-auto z-[20001]`}
         style={{ 
           width: isMobile ? '100%' : 'calc(100% - 2rem)',
           maxWidth: isMobile ? '100%' : '700px',
