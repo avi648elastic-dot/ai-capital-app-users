@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { X } from 'lucide-react';
 
 interface LeaderboardEntry {
   rank: number;
@@ -101,16 +102,17 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
             >
               📊 Trading History
             </a>
-            {/* Bigger close button for mobile */}
+            {/* Close button - ALWAYS VISIBLE */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onClose();
               }}
-              className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-slate-400 hover:text-white active:text-white hover:bg-slate-700 active:bg-slate-600 rounded-full transition-all active:scale-95 touch-manipulation"
+              className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-white bg-red-600/80 hover:bg-red-600 active:bg-red-700 rounded-full transition-all active:scale-95 touch-manipulation shadow-lg border-2 border-red-500/50"
               aria-label="Close Leaderboard"
+              title="Close"
             >
-              <span className="text-3xl sm:text-4xl leading-none">×</span>
+              <X className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={3} />
             </button>
           </div>
         </div>
