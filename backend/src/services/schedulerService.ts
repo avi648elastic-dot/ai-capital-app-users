@@ -306,15 +306,25 @@ export class SchedulerService {
       console.log(`📊 [SCHEDULER] Updating historical data for ${uniqueTickers.length} tickers`);
       
       // Update historical data for each ticker (store last 120 days)
-      for (const ticker of uniqueTickers) {
+      for (let i = 0; i < uniqueTickers.length; i++) {
+        const ticker = uniqueTickers[i];
         try {
           // Get 120 days of historical data
           const historicalData = await historicalDataService.getHistoricalData(ticker, 120);
           if (historicalData.length > 0) {
             console.log(`✅ [SCHEDULER] Updated ${historicalData.length} days of data for ${ticker}`);
           }
+          
+          // Small delay to avoid rate limiting (except for last ticker)
+          if (i < uniqueTickers.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+          }
         } catch (error) {
           console.error(`❌ [SCHEDULER] Error updating historical data for ${ticker}:`, error);
+          // Still add delay even on error to avoid rate limiting
+          if (i < uniqueTickers.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
         }
       }
       

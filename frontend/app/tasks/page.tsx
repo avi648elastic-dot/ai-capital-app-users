@@ -190,17 +190,29 @@ export default function PublicTasksPage() {
     setEditingTask(task.id);
   };
 
-  const saveDates = () => {
+  const saveDates = async () => {
     if (!editingTask) return;
-    
-    setTasks(tasks.map(task => 
-      task.id === editingTask 
-        ? { ...task, startDate: editDates.startDate, endDate: editDates.endDate }
-        : task
-    ));
-    
-    setEditingTask(null);
-    setEditDates({ startDate: '', endDate: '' });
+    try {
+      // Persist to backend so it survives refresh
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      const res = await fetch(`${apiUrl}/api/tasks/${editingTask}/timeline`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ startDate: editDates.startDate, endDate: editDates.endDate })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const updated = data.task as any;
+        setTasks(tasks.map(task => task.id === editingTask ? { ...task, startDate: updated.startDate, endDate: updated.endDate, estimatedDays: updated.estimatedDays } : task));
+      } else {
+        console.error('❌ [TASKS] Timeline save failed:', res.status);
+      }
+    } catch (e) {
+      console.error('❌ [TASKS] Timeline save error:', e);
+    } finally {
+      setEditingTask(null);
+      setEditDates({ startDate: '', endDate: '' });
+    }
   };
 
   const filteredTasks = selectedStatus === 'all' 

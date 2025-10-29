@@ -27,43 +27,90 @@ class HistoricalDataService {
       const to = Math.floor(Date.now() / 1000);
       const from = to - (days * 24 * 60 * 60);
       
-      const response = await axios.get(`https://finnhub.io/api/v1/stock/candle`, {
-        params: {
-          symbol: ticker,
-          resolution: 'D',
-          from: from,
-          to: to,
-          token: process.env.FINNHUB_API_KEY_1 || process.env.FINNHUB_API_KEY
-        }
-      });
+      // Try multiple API keys if available
+      const apiKeys = [
+        process.env.FINNHUB_API_KEY_1,
+        process.env.FINNHUB_API_KEY_2,
+        process.env.FINNHUB_API_KEY,
+      ].filter(Boolean) as string[];
 
-      if (response.data.s === 'ok' && response.data.c) {
-        const prices: HistoricalPrice[] = [];
-        const timestamps = response.data.t;
-        const opens = response.data.o;
-        const highs = response.data.h;
-        const lows = response.data.l;
-        const closes = response.data.c;
-        const volumes = response.data.v;
+      if (apiKeys.length === 0) {
+        console.warn(`⚠️ [HISTORICAL] No Finnhub API keys configured, skipping for ${ticker}`);
+        return [];
+      }
 
-        for (let i = 0; i < timestamps.length; i++) {
-          prices.push({
-            date: new Date(timestamps[i] * 1000).toISOString().split('T')[0],
-            open: opens[i],
-            high: highs[i],
-            low: lows[i],
-            close: closes[i],
-            volume: volumes[i] || 0,
-            adjustedClose: closes[i] // Finnhub doesn't provide adjusted close
+      // Try each API key until one works
+      for (const apiKey of apiKeys) {
+        try {
+          const response = await axios.get(`https://finnhub.io/api/v1/stock/candle`, {
+            params: {
+              symbol: ticker,
+              resolution: 'D',
+              from: from,
+              to: to,
+              token: apiKey
+            },
+            timeout: 10000 // 10 second timeout
           });
-        }
 
-        return prices.reverse(); // Most recent first
+          // Check for API error in response
+          if (response.data?.error) {
+            const errorMsg = response.data.error;
+            // If 403/401 access denied, skip to next key or return empty (fallback will be used)
+            if (errorMsg.toLowerCase().includes("access") || errorMsg.toLowerCase().includes("403") || errorMsg.toLowerCase().includes("401")) {
+              console.warn(`⚠️ [HISTORICAL] Finnhub access denied for ${ticker} with key ${apiKey.substring(0, 8)}...: ${errorMsg}`);
+              continue; // Try next key
+            }
+            throw new Error(`Finnhub API error: ${errorMsg}`);
+          }
+
+          if (response.data?.s === 'ok' && response.data?.c) {
+            const prices: HistoricalPrice[] = [];
+            const timestamps = response.data.t;
+            const opens = response.data.o;
+            const highs = response.data.h;
+            const lows = response.data.l;
+            const closes = response.data.c;
+            const volumes = response.data.v;
+
+            for (let i = 0; i < timestamps.length; i++) {
+              prices.push({
+                date: new Date(timestamps[i] * 1000).toISOString().split('T')[0],
+                open: opens[i],
+                high: highs[i],
+                low: lows[i],
+                close: closes[i],
+                volume: volumes[i] || 0,
+                adjustedClose: closes[i] // Finnhub doesn't provide adjusted close
+              });
+            }
+
+            console.log(`✅ [HISTORICAL] Finnhub success for ${ticker} (${prices.length} records)`);
+            return prices.reverse(); // Most recent first
+          }
+          
+          // If response was ok but no data, try next key
+          console.warn(`⚠️ [HISTORICAL] Finnhub returned empty data for ${ticker}, trying next key...`);
+        } catch (keyError: any) {
+          // If 403/401 HTTP error, skip to next key
+          if (keyError.response?.status === 403 || keyError.response?.status === 401) {
+            console.warn(`⚠️ [HISTORICAL] Finnhub 403/401 for ${ticker} with key ${apiKey.substring(0, 8)}..., trying next key...`);
+            continue;
+          }
+          // If it's the last key, re-throw to be caught by outer catch
+          if (apiKeys.indexOf(apiKey) === apiKeys.length - 1) {
+            throw keyError;
+          }
+        }
       }
       
+      // All keys failed or returned no data
       return [];
-    } catch (error) {
-      console.error(`❌ [HISTORICAL] Finnhub error for ${ticker}:`, error);
+    } catch (error: any) {
+      // Only log if it's not a handled 403/401
+      if (error.response?.status !== 403 && error.response?.status !== 401) {
+        console.error(`❌ [HISTORICAL] Finnhub error for ${ticker}:`, error.message || error);
+      }
       return [];
     }
   }
@@ -79,35 +126,54 @@ class HistoricalDataService {
           period1: startDate,
           period2: endDate,
           interval: '1d'
+        },
+        timeout: 15000, // 15 second timeout
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
       });
 
-      if (response.data.chart?.result?.[0]?.indicators?.quote?.[0]) {
+      if (response.data?.chart?.result?.[0]?.indicators?.quote?.[0]) {
         const result = response.data.chart.result[0];
         const timestamps = result.timestamp;
         const quote = result.indicators.quote[0];
         
+        if (!timestamps || !quote || timestamps.length === 0) {
+          console.warn(`⚠️ [HISTORICAL] Yahoo returned empty data for ${ticker}`);
+          return [];
+        }
+        
         const prices: HistoricalPrice[] = [];
         for (let i = 0; i < timestamps.length; i++) {
-          if (quote.close[i] && quote.open[i] && quote.high[i] && quote.low[i]) {
+          if (quote.close?.[i] && quote.open?.[i] && quote.high?.[i] && quote.low?.[i]) {
             prices.push({
               date: new Date(timestamps[i] * 1000).toISOString().split('T')[0],
               open: quote.open[i],
               high: quote.high[i],
               low: quote.low[i],
               close: quote.close[i],
-              volume: quote.volume[i] || 0,
+              volume: quote.volume?.[i] || 0,
               adjustedClose: quote.close[i]
             });
           }
         }
         
+        if (prices.length > 0) {
+          console.log(`✅ [HISTORICAL] Yahoo success for ${ticker} (${prices.length} records)`);
+        }
+        
         return prices.reverse();
       }
       
+      console.warn(`⚠️ [HISTORICAL] Yahoo returned invalid response structure for ${ticker}`);
       return [];
-    } catch (error) {
-      console.error(`❌ [HISTORICAL] Yahoo error for ${ticker}:`, error);
+    } catch (error: any) {
+      // Don't spam errors for Yahoo failures since it's a fallback
+      if (error.response?.status === 403 || error.response?.status === 429) {
+        console.warn(`⚠️ [HISTORICAL] Yahoo rate limited/blocked for ${ticker}, skipping`);
+      } else {
+        console.error(`❌ [HISTORICAL] Yahoo error for ${ticker}:`, error.message || error);
+      }
       return [];
     }
   }
@@ -170,7 +236,9 @@ class HistoricalDataService {
       console.log(`🔍 [HISTORICAL] Fetching fresh data for ${ticker}`);
       let prices = await this.getHistoricalDataFromFinnhub(ticker, days);
       
+      // Immediately fallback to Yahoo if Finnhub fails (403, empty, etc.)
       if (prices.length === 0) {
+        console.log(`🔄 [HISTORICAL] Finnhub returned no data for ${ticker}, falling back to Yahoo Finance...`);
         prices = await this.getHistoricalDataFromYahoo(ticker, days);
       }
 
