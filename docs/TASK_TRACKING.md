@@ -81,26 +81,26 @@ Track all features, bug fixes, and improvements for the AI Capital app.
 **Details:** Monthly ETF percentage calculations not working correctly  
 **Files:** `backend/src/services/sectorPerformanceService.ts`
 
+### 8. Volatility Calculations
+**Status:** ⬜ Not Started  
+**Issue:** Volatility calculations not working correctly for portfolio analysis.  
+**Details:** Ensure volatility service works correctly for portfolio risk assessment and analysis.  
+**Files:** `backend/src/services/volatilityService.ts`
+
 ---
 
 ## 🔧 Technical Debt
 
-### 8. API Rate Limiting
+### 9. API Rate Limiting
 **Status:** ⬜ Not Started  
 **Issue:** Finnhub API hitting rate limits (429 errors) causing circuit breakers to open.  
 **Details:** Needs better API key rotation and fallback strategies.  
 **Files:** `backend/src/services/stockDataService.ts`
 
-### 9. Circuit Breaker Recovery
+### 10. Circuit Breaker Recovery
 **Status:** ⬜ Not Started  
 **Issue:** Once circuit breaker opens, takes too long to recover.  
 **Files:** `backend/src/services/stockDataService.ts`
-
-### 10. Volatility Calculations
-**Status:** ⬜ Not Started  
-**Issue:** Volatility calculations not working correctly for portfolio analysis.  
-**Details:** Ensure volatility service works correctly for portfolio risk assessment and analysis.  
-**Files:** `backend/src/services/volatilityService.ts`
 
 ### 11. Orphaned Portfolio Cleanup
 **Status:** ✅ Done  
