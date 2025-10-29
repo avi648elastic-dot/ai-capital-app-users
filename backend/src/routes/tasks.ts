@@ -22,11 +22,41 @@ interface Task {
   updatedAt: string;
 }
 
+// Paths
+const TRACK_FILE = path.join(__dirname, '../../docs/TASK_TRACKING.md');
+const TIMELINE_FILE = path.join(__dirname, '../../docs/TASK_TIMELINES.json');
+
+// Ensure timeline store exists
+function ensureTimelineStore() {
+  try {
+    if (!fs.existsSync(TIMELINE_FILE)) {
+      fs.writeFileSync(TIMELINE_FILE, JSON.stringify({}), 'utf-8');
+    }
+  } catch {}
+}
+
+// Load timeline store
+function loadTimelineMap(): Record<string, { startDate?: string; endDate?: string; estimatedDays?: number }> {
+  ensureTimelineStore();
+  try {
+    const raw = fs.readFileSync(TIMELINE_FILE, 'utf-8');
+    return JSON.parse(raw || '{}');
+  } catch {
+    return {};
+  }
+}
+
+// Save timeline store
+function saveTimeline(title: string, data: { startDate?: string; endDate?: string; estimatedDays?: number }) {
+  const map = loadTimelineMap();
+  map[title] = { ...map[title], ...data };
+  fs.writeFileSync(TIMELINE_FILE, JSON.stringify(map, null, 2), 'utf-8');
+}
+
 // Load tasks from markdown file
 function loadTasks(): Task[] {
   try {
-    const filePath = path.join(__dirname, '../../docs/TASK_TRACKING.md');
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = fs.readFileSync(TRACK_FILE, 'utf-8');
     
     // Parse markdown to extract tasks
     const tasks: Task[] = [];
@@ -129,6 +159,17 @@ function loadTasks(): Task[] {
       console.log(`⚠️ [TASKS] Volatility task NOT found in parsed tasks`);
     }
     
+    // Merge timeline overrides
+    const timelineMap = loadTimelineMap();
+    tasks.forEach(t => {
+      const tl = timelineMap[t.title];
+      if (tl) {
+        t.startDate = tl.startDate || t.startDate;
+        t.endDate = tl.endDate || t.endDate;
+        t.estimatedDays = tl.estimatedDays ?? t.estimatedDays;
+      }
+    });
+
     return tasks;
   } catch (error) {
     console.error('❌ [TASKS] Error loading tasks:', error);
@@ -210,25 +251,20 @@ router.post('/:id/timeline', (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { startDate, endDate, estimatedDays } = req.body;
-    
-    // Update the markdown file (in production, use a proper database)
-    const filePath = path.join(__dirname, '../../docs/TASK_TRACKING.md');
-    let content = fs.readFileSync(filePath, 'utf-8');
-    
-    // Find and update the task
-    // For now, we'll just return success and store in memory
-    // In production, implement proper persistence
-    
+
     const tasks = loadTasks();
     const task = tasks.find(t => t.id === id);
-    
-    if (task) {
-      task.startDate = startDate;
-      task.endDate = endDate;
-      task.estimatedDays = estimatedDays;
-      task.updatedAt = new Date().toISOString();
+    if (!task) {
+      return res.status(404).json({ success: false, message: 'Task not found' });
     }
-    
+
+    // Persist timeline by title
+    saveTimeline(task.title, { startDate, endDate, estimatedDays });
+    task.startDate = startDate;
+    task.endDate = endDate;
+    task.estimatedDays = estimatedDays;
+    task.updatedAt = new Date().toISOString();
+
     res.json({ success: true, task });
   } catch (error) {
     console.error('Error updating task timeline:', error);
@@ -280,4 +316,61 @@ router.get('/gantt', (req: Request, res: Response) => {
 });
 
 export default router;
+
+// Create new task and append to a section (default: Bug Fixes)
+router.post('/', (req: Request, res: Response) => {
+  try {
+    const { title, description = '', section = '🐛 Bug Fixes Needed', status = 'not-started', files = [] } = req.body || {};
+    if (!title || typeof title !== 'string') {
+      return res.status(400).json({ message: 'Title is required' });
+    }
+
+    const md = fs.readFileSync(TRACK_FILE, 'utf-8');
+    const lines = md.split('\n');
+
+    // Find section start and end
+    let start = -1; let end = lines.length;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].startsWith('## ') && lines[i].includes(section)) {
+        start = i;
+        for (let j = i + 1; j < lines.length; j++) {
+          if (j > i && lines[j].startsWith('## ')) { end = j; break; }
+        }
+        break;
+      }
+    }
+    if (start === -1) return res.status(400).json({ message: 'Section not found in TASK_TRACKING.md' });
+
+    // Determine next task number within section
+    let maxNum = 0;
+    for (let i = start; i < end; i++) {
+      const m = lines[i].match(/^###\s+(\d+)\./);
+      if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+    }
+    const nextNum = maxNum + 1;
+
+    // Build task block
+    const statusEmoji = status === 'done' ? '✅' : status === 'in-progress' ? '🔄' : '⬜';
+    const filesLine = files.length ? `**Files:** ${files.map((f: string) => '`' + f + '`').join(', ')}` : '';
+    const block = [
+      `### ${nextNum}. ${title}`,
+      `**Status:** ${statusEmoji} ${status === 'not-started' ? 'Not Started' : status === 'in-progress' ? 'In Progress' : 'Done'}  `,
+      `**Issue:** ${description}`,
+      filesLine,
+      ''
+    ].filter(Boolean).join('\n');
+
+    // Insert before end of section
+    const before = lines.slice(0, end).join('\n');
+    const after = lines.slice(end).join('\n');
+    const updated = `${before}\n${block}\n${after}`;
+    fs.writeFileSync(TRACK_FILE, updated, 'utf-8');
+
+    const tasks = loadTasks();
+    res.json({ success: true, tasks });
+  } catch (error) {
+    console.error('❌ [TASKS API] Error creating task:', error);
+    res.status(500).json({ message: 'Error creating task' });
+  }
+});
 

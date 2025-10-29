@@ -21,6 +21,12 @@ export default function PublicTasksPage() {
   const [loading, setLoading] = useState(true);
   const [editingTask, setEditingTask] = useState<string | null>(null);
   const [editDates, setEditDates] = useState({ startDate: '', endDate: '' });
+  const [showAdd, setShowAdd] = useState(false);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    section: '🐛 Bug Fixes Needed'
+  });
 
   useEffect(() => {
     // Load mock data immediately, then try to fetch from API
@@ -63,6 +69,31 @@ export default function PublicTasksPage() {
     } catch (error) {
       console.error('❌ [TASKS] Fetch error:', error);
       // Keep mock data
+    }
+  };
+
+  const addTask = async () => {
+    if (!newTask.title.trim()) return;
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      const res = await fetch(`${apiUrl}/api/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTask.title,
+          description: newTask.description,
+          section: newTask.section,
+          status: 'not-started'
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.tasks) setTasks(data.tasks);
+        setShowAdd(false);
+        setNewTask({ title: '', description: '', section: '🐛 Bug Fixes Needed' });
+      }
+    } catch (e) {
+      console.error('❌ [TASKS] Add failed', e);
     }
   };
 
@@ -202,6 +233,30 @@ export default function PublicTasksPage() {
   return (
     <div className="min-h-screen bg-slate-900 text-white p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Add Task */}
+        <div className="mb-4">
+          {!showAdd ? (
+            <button onClick={() => setShowAdd(true)} className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-sm">+ Add Task</button>
+          ) : (
+            <div className="p-3 bg-slate-800 rounded border border-slate-700 space-y-2">
+              <div className="flex gap-2 flex-wrap">
+                <input value={newTask.title} onChange={e => setNewTask({ ...newTask, title: e.target.value })} placeholder="Task title" className="px-2 py-1 rounded bg-slate-900 border border-slate-700 text-sm flex-1" />
+                <select value={newTask.section} onChange={e => setNewTask({ ...newTask, section: e.target.value })} className="px-2 py-1 rounded bg-slate-900 border border-slate-700 text-sm">
+                  <option>🐛 Bug Fixes Needed</option>
+                  <option>🚨 Critical Issues (High Priority)</option>
+                  <option>🔧 Technical Debt</option>
+                  <option>🎨 UI/UX Improvements</option>
+                  <option>✨ New Features to Implement</option>
+                </select>
+              </div>
+              <textarea value={newTask.description} onChange={e => setNewTask({ ...newTask, description: e.target.value })} placeholder="Short description" className="w-full px-2 py-1 rounded bg-slate-900 border border-slate-700 text-sm" rows={2} />
+              <div className="flex gap-2">
+                <button onClick={addTask} className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 rounded text-sm">Save</button>
+                <button onClick={() => setShowAdd(false)} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded text-sm">Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
         <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-center">📋 AI Capital Task Dashboard</h1>
         
         {/* Statistics */}
