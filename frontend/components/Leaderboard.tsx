@@ -73,15 +73,16 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
 
   return (
     <div 
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-0 sm:p-4"
       onClick={(e) => {
         // Close on backdrop click
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
+      style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch' }}
     >
-      <div className={`bg-slate-900 rounded-xl border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full' : 'w-full max-w-4xl max-h-[80vh]'} overflow-hidden relative`}>
+      <div className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full' : 'w-full max-w-4xl max-h-[80vh]'} overflow-hidden relative`}>
         {/* Header with bigger close button */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-700">
           <div className="flex items-center space-x-3">
@@ -102,11 +103,14 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
             </a>
             {/* Bigger close button for mobile */}
             <button
-              onClick={onClose}
-              className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-all"
-              aria-label="Close"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-slate-400 hover:text-white active:text-white hover:bg-slate-700 active:bg-slate-600 rounded-full transition-all active:scale-95 touch-manipulation"
+              aria-label="Close Leaderboard"
             >
-              <span className="text-3xl leading-none">×</span>
+              <span className="text-3xl sm:text-4xl leading-none">×</span>
             </button>
           </div>
         </div>

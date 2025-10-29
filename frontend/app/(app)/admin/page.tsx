@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Users, TrendingUp, DollarSign, Activity, Eye, Power, RotateCcw, Trash2, Shield, Crown } from 'lucide-react';
+import { Users, TrendingUp, DollarSign, Activity, Eye, Power, RotateCcw, Trash2, Shield, Crown, Sparkles } from 'lucide-react';
 
 interface User {
   id: string;
@@ -434,27 +434,59 @@ export default function AdminDashboard() {
         {/* Users Table Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-base sm:text-lg font-semibold text-white">All Users</h2>
-          <button
-            onClick={async () => {
-              try {
-                const response = await axios.post(
-                  `${process.env.NEXT_PUBLIC_API_URL}/api/admin/update-all-prices`,
-                  {},
-                  { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
-                );
-                alert(`✅ ${response.data.message}`);
-                fetchData();
-              } catch (error) {
-                console.error('Error updating all prices:', error);
-                alert('❌ Error updating all prices. Please try again.');
-              }
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
-          >
-            <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline">Update All Prices</span>
-            <span className="sm:hidden">Update</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={async () => {
+                try {
+                  const confirmed = confirm('🧹 This will remove orphaned portfolios and flag inactive users. Continue?');
+                  if (!confirmed) return;
+                  
+                  const response = await axios.post(
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/cleanup`,
+                    {},
+                    { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
+                  );
+                  
+                  if (response.data.success) {
+                    alert(`✅ Cleanup completed!\n\nPortfolios: ${response.data.portfolios.message}\nUsers: ${response.data.users.message}`);
+                    fetchData();
+                  } else {
+                    alert('❌ Cleanup failed: ' + (response.data.error || 'Unknown error'));
+                  }
+                } catch (error: any) {
+                  console.error('Error running cleanup:', error);
+                  alert('❌ Error running cleanup: ' + (error.response?.data?.message || error.message));
+                }
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
+              title="Remove orphaned portfolios and flag inactive users"
+            >
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Cleanup DB</span>
+              <span className="sm:hidden">🧹</span>
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  const response = await axios.post(
+                    `${process.env.NEXT_PUBLIC_API_URL}/api/admin/update-all-prices`,
+                    {},
+                    { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
+                  );
+                  alert(`✅ ${response.data.message}`);
+                  fetchData();
+                } catch (error) {
+                  console.error('Error updating all prices:', error);
+                  alert('❌ Error updating all prices. Please try again.');
+                }
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm"
+            >
+              <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Update All Prices</span>
+              <span className="sm:hidden">Update</span>
+            </button>
+          </div>
         </div>
 
         {/* Mobile Card View */}

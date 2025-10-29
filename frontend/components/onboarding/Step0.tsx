@@ -147,16 +147,22 @@ export default function Step0({ onComplete }: Step0Props) {
               I have read and accept the{' '}
               <button 
                 type="button"
-                onClick={() => setShowTermsModal(true)}
-                className="text-red-300 underline hover:text-red-200 font-medium"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTermsModal(true);
+                }}
+                className="text-red-300 underline hover:text-red-200 active:text-red-100 font-medium touch-manipulation"
               >
                 Terms of Service
               </button>
               {' '}and{' '}
               <button 
                 type="button"
-                onClick={() => setShowPrivacyModal(true)}
-                className="text-red-300 underline hover:text-red-200 font-medium"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPrivacyModal(true);
+                }}
+                className="text-red-300 underline hover:text-red-200 active:text-red-100 font-medium touch-manipulation"
               >
                 Privacy Policy
               </button>. 
@@ -197,20 +203,32 @@ export default function Step0({ onComplete }: Step0Props) {
         </div>
       )}
 
-      {/* Terms of Service Modal */}
+      {/* Terms of Service Modal - Mobile Fix */}
       {showTermsModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 rounded-lg max-w-4xl w-full h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-slate-700 flex-shrink-0">
-              <h1 className="text-2xl font-bold text-white">Terms of Service</h1>
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-2 sm:p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowTermsModal(false);
+            }
+          }}
+          style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="bg-slate-900 rounded-lg max-w-4xl w-full h-[95vh] sm:h-[90vh] flex flex-col shadow-2xl border border-slate-700">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-700 flex-shrink-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Terms of Service</h1>
               <button
-                onClick={() => setShowTermsModal(false)}
-                className="text-slate-400 hover:text-white transition-colors p-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTermsModal(false);
+                }}
+                className="text-slate-400 hover:text-white transition-colors p-2 active:scale-95"
+                aria-label="Close Terms"
               >
-                <X className="w-7 h-7" />
+                <X className="w-6 h-6 sm:w-7 sm:h-7" />
               </button>
             </div>
-            <div className="p-6 overflow-y-auto flex-1 text-base">
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 text-sm sm:text-base" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-6 mb-8">
                 <h2 className="text-red-300 text-xl font-semibold mb-3">⚠️ IMPORTANT LEGAL DISCLAIMER</h2>
                 <p className="text-red-100 text-base leading-relaxed">
@@ -250,8 +268,11 @@ export default function Step0({ onComplete }: Step0Props) {
             </div>
             <div className="p-4 border-t border-slate-700 flex-shrink-0">
               <button
-                onClick={() => setShowTermsModal(false)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTermsModal(false);
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-colors active:scale-95"
               >
                 I Understand and Accept
               </button>
@@ -260,20 +281,32 @@ export default function Step0({ onComplete }: Step0Props) {
         </div>
       )}
 
-      {/* Privacy Policy Modal */}
+      {/* Privacy Policy Modal - Mobile Fix */}
       {showPrivacyModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 rounded-lg max-w-4xl w-full h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-slate-700 flex-shrink-0">
-              <h1 className="text-xl font-bold text-white">Privacy Policy</h1>
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[9999] p-2 sm:p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowPrivacyModal(false);
+            }
+          }}
+          style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch' }}
+        >
+          <div className="bg-slate-900 rounded-lg max-w-4xl w-full h-[95vh] sm:h-[85vh] flex flex-col shadow-2xl border border-slate-700">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-700 flex-shrink-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-white">Privacy Policy</h1>
               <button
-                onClick={() => setShowPrivacyModal(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPrivacyModal(false);
+                }}
+                className="text-slate-400 hover:text-white transition-colors p-2 active:scale-95"
+                aria-label="Close Privacy"
               >
-                <X className="w-6 h-6" />
+                <X className="w-6 h-6 sm:w-7 sm:h-7" />
               </button>
             </div>
-            <div className="p-4 overflow-y-auto flex-1">
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 text-sm sm:text-base" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="bg-blue-900/20 border border-blue-500/50 rounded-lg p-4 mb-6">
                 <h2 className="text-blue-300 text-lg font-semibold mb-2">🔒 GDPR Compliant</h2>
                 <p className="text-blue-100">
@@ -324,8 +357,11 @@ export default function Step0({ onComplete }: Step0Props) {
             </div>
             <div className="p-4 border-t border-slate-700 flex-shrink-0">
               <button
-                onClick={() => setShowPrivacyModal(false)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPrivacyModal(false);
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-colors active:scale-95"
               >
                 I Understand and Accept
               </button>

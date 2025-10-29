@@ -435,8 +435,16 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
   if (!isVisible) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 ${isMobile ? 'bg-black bg-opacity-50' : 'bg-black bg-opacity-20'}`}>
-      <div className={`${isMobile ? 'fixed inset-0 m-4' : 'fixed top-16 right-4 max-w-md'} bg-white dark:bg-slate-800 shadow-2xl rounded-lg border border-slate-200 dark:border-slate-700 max-h-[80vh] flex flex-col`}>
+    <div 
+      className={`fixed inset-0 z-[9999] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-center justify-center ${isMobile ? 'p-0' : 'p-4'}`}
+      onClick={(e) => {
+        if (isMobile && e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch' }}
+    >
+      <div className={`${isMobile ? 'w-full h-full rounded-none' : 'max-w-md rounded-lg'} bg-white dark:bg-slate-800 shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-700 ${isMobile ? 'max-h-full' : 'max-h-[80vh]'} flex flex-col`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center space-x-2">
@@ -489,10 +497,14 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
               </button>
             )}
             <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+              className={`${isMobile ? 'w-10 h-10 flex items-center justify-center' : ''} text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 active:scale-95 touch-manipulation`}
+              aria-label="Close Notifications"
             >
-              ✕
+              {isMobile ? <span className="text-3xl leading-none">×</span> : '✕'}
             </button>
           </div>
         </div>

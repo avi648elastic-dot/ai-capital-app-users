@@ -668,4 +668,53 @@ router.post('/cron-locks/force-release', requireAdmin, async (req, res) => {
   }
 });
 
+/**
+ * 🧹 Manual cleanup of orphaned portfolios and inactive users
+ * POST /api/admin/cleanup
+ * Query params: dryRun=true (optional)
+ */
+router.post('/cleanup', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { dryRun } = req.query;
+    const isDryRun = dryRun === 'true' || dryRun === true;
+    
+    console.log(`🧹 [ADMIN] Manual cleanup triggered (dryRun: ${isDryRun})`);
+    
+    // Import cleanup service
+    const cleanupService = (await import('../services/cleanupService')).default;
+    
+    // Run cleanup operations
+    const portfolioCleanup = await cleanupService.removeOrphanedPortfolios(isDryRun);
+    const inactiveUsers = await cleanupService.flagInactiveUsers(60);
+    
+    const result = {
+      success: true,
+      dryRun: isDryRun,
+      portfolios: {
+        removed: portfolioCleanup.removed,
+        orphanCount: portfolioCleanup.orphanIds?.length || 0,
+        message: isDryRun 
+          ? `Found ${portfolioCleanup.orphanIds?.length || 0} orphaned portfolios (dry run)`
+          : `Removed ${portfolioCleanup.removed} orphaned portfolios`
+      },
+      users: {
+        flagged: inactiveUsers.flagged,
+        inactiveCount: inactiveUsers.userIds?.length || 0,
+        message: `Flagged ${inactiveUsers.flagged} users as inactive (60+ days)`
+      },
+      timestamp: new Date().toISOString()
+    };
+    
+    console.log('✅ [ADMIN] Cleanup completed:', result);
+    res.json(result);
+  } catch (error: any) {
+    loggerService.error('❌ [ADMIN] Error running cleanup:', { error });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to run cleanup',
+      message: error.message
+    });
+  }
+});
+
 export default router;
