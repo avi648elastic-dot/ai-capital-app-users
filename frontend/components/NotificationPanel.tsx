@@ -444,7 +444,14 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       }}
       style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
     >
-      <div className={`${isMobile ? 'w-full h-full rounded-none m-0' : 'max-w-sm w-[90vw] max-w-[400px] rounded-lg'} bg-white dark:bg-slate-800 shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-700 ${isMobile ? 'max-h-full' : 'max-h-[85vh]'} flex flex-col overflow-hidden`}>
+      <div 
+        className={`${isMobile ? 'w-full h-full rounded-none m-0' : 'max-w-sm rounded-lg mx-auto'} bg-white dark:bg-slate-800 shadow-2xl border-0 sm:border border-slate-200 dark:border-slate-700 ${isMobile ? 'max-h-full' : 'max-h-[85vh]'} flex flex-col overflow-hidden`}
+        style={{ 
+          width: isMobile ? '100%' : 'calc(100% - 2rem)',
+          maxWidth: isMobile ? '100%' : '400px',
+          maxHeight: isMobile ? '100vh' : '85vh'
+        }}
+      >
         {/* Header - Compact */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div className="flex items-center space-x-2">

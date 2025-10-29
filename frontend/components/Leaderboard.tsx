@@ -83,7 +83,14 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
       }}
       style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
     >
-      <div className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full m-0' : 'w-full max-w-2xl max-w-[90vw] max-h-[85vh]'} overflow-hidden relative`}>
+      <div 
+        className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full m-0' : 'max-w-2xl'} overflow-hidden relative mx-auto`}
+        style={{ 
+          width: isMobile ? '100%' : 'calc(100% - 2rem)',
+          maxWidth: isMobile ? '100%' : '700px',
+          maxHeight: isMobile ? '100vh' : '85vh'
+        }}
+      >
         {/* Header - Compact with always visible close */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-700 flex-shrink-0">
           <div className="flex items-center space-x-3">
@@ -102,17 +109,17 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
             >
               📊 Trading History
             </a>
-            {/* Close button - Normal size, always in view */}
+            {/* Close button - Normal size */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onClose();
               }}
-              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-full transition-colors active:scale-95 touch-manipulation flex-shrink-0"
+              className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors active:scale-95 touch-manipulation flex-shrink-0"
               aria-label="Close Leaderboard"
               title="Close"
             >
-              <X className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
+              <span className="text-xl leading-none">×</span>
             </button>
           </div>
         </div>
