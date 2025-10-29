@@ -501,10 +501,11 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
                 e.stopPropagation();
                 onClose();
               }}
-              className={`${isMobile ? 'w-10 h-10 flex items-center justify-center' : ''} text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 active:scale-95 touch-manipulation`}
+              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-full transition-all active:scale-95 touch-manipulation shadow-lg border-2 border-red-500 flex-shrink-0"
               aria-label="Close Notifications"
+              title="Close"
             >
-              {isMobile ? <span className="text-3xl leading-none">×</span> : '✕'}
+              <span className="text-4xl sm:text-5xl leading-none font-bold">×</span>
             </button>
           </div>
         </div>

@@ -74,17 +74,17 @@ Track all features, bug fixes, and improvements for the AI Capital app.
 **Files:** `frontend/app/(app)/reports/page.tsx`  
 **Beta Tag:** Yes
 
-### 7. Stock Data Accuracy Issues
+### 7. Volatility Calculations
+**Status:** ⬜ Not Started  
+**Issue:** Volatility calculations not working correctly for portfolio analysis. Ensure volatility service works correctly for portfolio risk assessment and analysis.
+**Files:** `backend/src/services/volatilityService.ts`
+
+### 8. Stock Data Accuracy Issues
 **Status:** 🔄 In Progress  
 **Issue:** Data accuracy problems - displayed percentages don't match Google Finance data.  
 **Specific:** 8.38% vs 5.60% discrepancy between app and Google Finance  
 **Details:** Monthly ETF percentage calculations not working correctly  
 **Files:** `backend/src/services/sectorPerformanceService.ts`
-
-### 8. Volatility Calculations
-**Status:** ⬜ Not Started  
-**Issue:** Volatility calculations not working correctly for portfolio analysis. Ensure volatility service works correctly for portfolio risk assessment and analysis.
-**Files:** `backend/src/services/volatilityService.ts`
 
 ---
 

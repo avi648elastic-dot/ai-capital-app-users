@@ -102,17 +102,17 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
             >
               📊 Trading History
             </a>
-            {/* Close button - ALWAYS VISIBLE */}
+            {/* Close button - BIG AND ALWAYS VISIBLE */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onClose();
               }}
-              className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-white bg-red-600/80 hover:bg-red-600 active:bg-red-700 rounded-full transition-all active:scale-95 touch-manipulation shadow-lg border-2 border-red-500/50"
+              className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-white bg-red-600 hover:bg-red-700 active:bg-red-800 rounded-full transition-all active:scale-95 touch-manipulation shadow-xl border-4 border-red-400 flex-shrink-0 z-10"
               aria-label="Close Leaderboard"
-              title="Close"
+              title="Close Leaderboard"
             >
-              <X className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={3} />
+              <span className="text-5xl sm:text-6xl leading-none font-bold">×</span>
             </button>
           </div>
         </div>
