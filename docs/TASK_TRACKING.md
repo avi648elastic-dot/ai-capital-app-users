@@ -96,7 +96,13 @@ Track all features, bug fixes, and improvements for the AI Capital app.
 **Issue:** Once circuit breaker opens, takes too long to recover.  
 **Files:** `backend/src/services/stockDataService.ts`
 
-### 10. Orphaned Portfolio Cleanup
+### 10. Volatility Calculations
+**Status:** ⬜ Not Started  
+**Issue:** Volatility calculations not working correctly for portfolio analysis.  
+**Details:** Ensure volatility service works correctly for portfolio risk assessment and analysis.  
+**Files:** `backend/src/services/volatilityService.ts`
+
+### 11. Orphaned Portfolio Cleanup
 **Status:** ✅ Done  
 **Issue:** Portfolios for deleted users causing scheduler errors.  
 **Solution:** Added user existence checks in scheduler.  

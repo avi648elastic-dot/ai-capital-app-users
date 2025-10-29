@@ -36,6 +36,7 @@ interface User {
   isAdmin?: boolean;
   portfolioType?: 'solid' | 'risky' | 'imported';
   avatar?: string;
+  canUseTrainingStocks?: boolean;
 }
 
 interface PortfolioItem {
@@ -467,6 +468,11 @@ export default function Dashboard() {
   };
 
   const handleToggleTraining = async (id: string, isTraining: boolean) => {
+    if (!user?.canUseTrainingStocks) {
+      alert('You do not have permission to use training stocks. Contact admin.');
+      return;
+    }
+    
     try {
       console.log('🎯 [DASHBOARD] Toggling training flag:', id, 'to:', isTraining);
       
@@ -790,6 +796,7 @@ export default function Dashboard() {
                         portfolio={selectedMultiPortfolio.stocks || []}
                         onUpdate={handleUpdateStock}
                         onDelete={handleDeleteStock}
+                        canUseTrainingStocks={user?.canUseTrainingStocks || false}
                         onToggleTraining={handleToggleTraining}
                       />
                     </ErrorBoundary>
@@ -858,6 +865,7 @@ export default function Dashboard() {
                 portfolio={filteredPortfolio}
                 onUpdate={handleUpdateStock}
                 onDelete={handleDeleteStock}
+                canUseTrainingStocks={user?.canUseTrainingStocks || false}
                 onToggleTraining={handleToggleTraining}
               />
             </ErrorBoundary>

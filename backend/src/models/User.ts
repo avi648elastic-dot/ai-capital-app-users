@@ -14,6 +14,7 @@ export interface IUser extends Document {
   isExpertTrader?: boolean; // Expert trader whose portfolio is featured
   isEmailVerified?: boolean; // Email verification status
   featuredTickers?: string[];
+  canUseTrainingStocks?: boolean; // Admin-granted permission to use training stocks feature
   portfolioType?: string;
   portfolioSource?: string;
   totalCapital?: number;
@@ -62,6 +63,7 @@ const UserSchema: Schema<IUser> = new Schema(
     isExpertTrader: { type: Boolean, default: false }, // Expert trader featured portfolio
     isEmailVerified: { type: Boolean, default: false }, // Email verification status
     featuredTickers: { type: [String], default: undefined },
+    canUseTrainingStocks: { type: Boolean, default: false }, // Admin-granted permission for training stocks
     portfolioType: { type: String },
     portfolioSource: { type: String },
     totalCapital: { type: Number, default: 0 },

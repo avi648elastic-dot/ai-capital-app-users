@@ -26,10 +26,11 @@ interface PortfolioTableProps {
   portfolio: PortfolioItem[];
   onUpdate: (id: string, data: any) => void;
   onDelete: (id: string) => void;
+  canUseTrainingStocks?: boolean; // Admin-granted permission
   onToggleTraining?: (id: string, isTraining: boolean) => void; // Training toggle handler
 }
 
-export default function PortfolioTable({ portfolio, onUpdate, onDelete, onToggleTraining }: PortfolioTableProps) {
+export default function PortfolioTable({ portfolio, onUpdate, onDelete, canUseTrainingStocks, onToggleTraining }: PortfolioTableProps) {
   const { t } = useLanguage();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<PortfolioItem>>({});
@@ -77,7 +78,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete, onToggle
   };
 
   const handleToggleTraining = (id: string, currentTraining: boolean) => {
-    if (onToggleTraining) {
+    if (onToggleTraining && canUseTrainingStocks) {
       onToggleTraining(id, !currentTraining);
     }
   };
@@ -132,7 +133,7 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete, onToggle
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {onToggleTraining && (
+                  {canUseTrainingStocks && onToggleTraining && (
                     <Tooltip content={item.isTraining ? "Remove from training" : "Mark as training"} position="top">
                       <button
                         onClick={() => handleToggleTraining(item._id, item.isTraining || false)}
@@ -206,7 +207,9 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete, onToggle
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.stopLoss')}</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.takeProfit')}</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.action')}</th>
-              <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">Training</th>
+              {canUseTrainingStocks && (
+                <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">Training</th>
+              )}
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-20 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.date')}</th>
               <th className="px-1 sm:px-2 py-2 text-left text-xs font-medium uppercase tracking-wider w-16 text-slate-200 [data-theme='light']:text-gray-900">{t('portfolio.actions')}</th>
             </tr>
@@ -298,28 +301,30 @@ export default function PortfolioTable({ portfolio, onUpdate, onDelete, onToggle
                       </Tooltip>
                     </div>
                   </td>
-                  <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
-                    <div className="flex justify-center">
-                      {onToggleTraining ? (
-                        <Tooltip content={item.isTraining ? "Remove from training" : "Mark as training"} position="top">
-                          <button
-                            onClick={() => handleToggleTraining(item._id, item.isTraining || false)}
-                            className={`p-1 rounded transition-colors ${
-                              item.isTraining 
-                                ? 'text-orange-400 hover:text-orange-300 bg-orange-500/10' 
-                                : 'text-gray-400 hover:text-orange-400'
-                            }`}
-                          >
-                            🎯
-                          </button>
-                        </Tooltip>
-                      ) : (
-                        <span className={`text-xs ${item.isTraining ? 'text-orange-400' : 'text-gray-500'}`}>
-                          {item.isTraining ? '🎯' : '—'}
-                        </span>
-                      )}
-                    </div>
-                  </td>
+                  {canUseTrainingStocks && (
+                    <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
+                      <div className="flex justify-center">
+                        {onToggleTraining ? (
+                          <Tooltip content={item.isTraining ? "Remove from training" : "Mark as training"} position="top">
+                            <button
+                              onClick={() => handleToggleTraining(item._id, item.isTraining || false)}
+                              className={`p-1 rounded transition-colors ${
+                                item.isTraining 
+                                  ? 'text-orange-400 hover:text-orange-300 bg-orange-500/10' 
+                                  : 'text-gray-400 hover:text-orange-400'
+                              }`}
+                            >
+                              🎯
+                            </button>
+                          </Tooltip>
+                        ) : (
+                          <span className={`text-xs ${item.isTraining ? 'text-orange-400' : 'text-gray-500'}`}>
+                            {item.isTraining ? '🎯' : '—'}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  )}
                   <td className="px-1 sm:px-2 py-2 whitespace-nowrap">
                     <div className="text-xs text-gray-300 [data-theme='light']:text-gray-800">
                       {new Date(item.date).toLocaleDateString()}

@@ -101,6 +101,7 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
           subscriptionTier: user.subscriptionTier || 'free',
           onboardingCompleted: user.onboardingCompleted,
           lastLogin: user.lastLogin || (user as any).updatedAt || user.createdAt,
+          canUseTrainingStocks: user.canUseTrainingStocks || false,
           portfolioType: user.portfolioType,
           portfolioSource: user.portfolioSource,
           totalCapital: user.totalCapital,
@@ -233,6 +234,32 @@ router.put('/users/:userId/make-free', authenticateToken, requireAdmin, async (r
     res.json({ message: 'User downgraded to free successfully', user });
   } catch (error) {
     console.error('Make free error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Toggle training stocks permission for user
+router.put('/users/:userId/toggle-training-permission', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const newPermission = !user.canUseTrainingStocks;
+    user.canUseTrainingStocks = newPermission;
+    await user.save();
+    
+    console.log(`✅ [ADMIN] Training stocks permission ${newPermission ? 'granted' : 'revoked'} for:`, user.email);
+    res.json({ 
+      message: `Training stocks permission ${newPermission ? 'granted' : 'revoked'} successfully`, 
+      user,
+      canUseTrainingStocks: newPermission
+    });
+  } catch (error) {
+    console.error('Toggle training permission error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });

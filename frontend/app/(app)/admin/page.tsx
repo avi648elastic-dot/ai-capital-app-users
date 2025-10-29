@@ -18,6 +18,7 @@ interface User {
   portfolioSource?: string;
   totalCapital?: number;
   riskTolerance?: number;
+  canUseTrainingStocks?: boolean;
   createdAt: string;
   lastLogin?: string;
   portfolioStats: {
@@ -114,7 +115,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'reset' | 'make-premium' | 'make-premium+' | 'make-free' | 'make-admin' | 'remove-admin' | 'refresh') => {
+  const handleUserAction = async (userId: string, action: 'activate' | 'deactivate' | 'reset' | 'make-premium' | 'make-premium+' | 'make-free' | 'make-admin' | 'remove-admin' | 'refresh' | 'toggle-training-permission') => {
     try {
       let endpoint = '';
       let method: 'put' | 'delete' | 'post' = 'put';
@@ -155,6 +156,9 @@ export default function AdminDashboard() {
           endpoint = `/api/admin/users/${userId}/refresh`;
           method = 'post';
           break;
+        case 'toggle-training-permission':
+          endpoint = `/api/admin/users/${userId}/toggle-training-permission`;
+          break;
       }
 
       const response = await axios[method](
@@ -163,12 +167,12 @@ export default function AdminDashboard() {
         { headers: { Authorization: `Bearer ${Cookies.get('token')}` } }
       );
 
-      if (action === 'refresh' || action.includes('promote')) {
+      if (action === 'refresh' || action.includes('promote') || action === 'toggle-training-permission') {
         // Update the specific user's data in the state
         setUsers(prevUsers => 
           prevUsers.map(user => 
             user.id === userId 
-              ? { ...user, ...response.data.user }
+              ? { ...user, ...response.data.user, canUseTrainingStocks: response.data.canUseTrainingStocks ?? user.canUseTrainingStocks }
               : user
           )
         );
@@ -710,6 +714,18 @@ export default function AdminDashboard() {
                             <Shield className="w-3 h-3" />
                             <span>{user.isAdmin ? 'Remove Admin' : 'Make Admin'}</span>
                           </button>
+                          <button
+                            onClick={() => handleUserAction(user.id, 'toggle-training-permission')}
+                            className={`px-2 py-1 text-xs font-semibold rounded flex items-center space-x-1 ${
+                              user.canUseTrainingStocks 
+                                ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                                : 'bg-gray-600 hover:bg-gray-700 text-white'
+                            }`}
+                            title={user.canUseTrainingStocks ? 'Revoke Training Stocks Permission' : 'Grant Training Stocks Permission'}
+                          >
+                            🎯
+                            <span>{user.canUseTrainingStocks ? 'Remove Training' : 'Allow Training'}</span>
+                          </button>
                         </div>
                         
                         {/* Other Actions */}
@@ -773,6 +789,7 @@ export default function AdminDashboard() {
                       <th className="px-4 py-2 text-left text-xs font-medium uppercase">Current</th>
                       <th className="px-4 py-2 text-left text-xs font-medium uppercase">P&L</th>
                       <th className="px-4 py-2 text-left text-xs font-medium uppercase">Action</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium uppercase">Training</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-700">
@@ -800,6 +817,36 @@ export default function AdminDashboard() {
                             }`}>
                               {item.action}
                             </span>
+                          </td>
+                          <td className="px-4 py-2">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+                                  await axios.patch(`${apiUrl}/api/portfolio/toggle-training/${item._id}`, {
+                                    isTraining: !item.isTraining
+                                  }, {
+                                    headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+                                  });
+                                  // Refresh user portfolio
+                                  const response = await axios.get(`${apiUrl}/api/admin/users/${selectedUser?.id}/portfolio`, {
+                                    headers: { Authorization: `Bearer ${Cookies.get('token')}` }
+                                  });
+                                  setUserPortfolio(response.data.portfolio || []);
+                                } catch (error) {
+                                  console.error('Error toggling training:', error);
+                                  alert('Failed to toggle training status');
+                                }
+                              }}
+                              className={`p-2 rounded transition-colors ${
+                                item.isTraining 
+                                  ? 'text-orange-400 bg-orange-500/20 border border-orange-500/30' 
+                                  : 'text-gray-400 hover:text-orange-400 border border-gray-600'
+                              }`}
+                              title={item.isTraining ? "Remove from training" : "Mark as training"}
+                            >
+                              🎯
+                            </button>
                           </td>
                         </tr>
                       );
