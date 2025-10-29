@@ -23,7 +23,7 @@ interface Task {
 }
 
 // Paths
-const TRACK_FILE = path.join(__dirname, '../../docs/TASK_TRACKING.md');
+const TRACK_FILE = process.env.TASK_TRACK_FILE || path.join(__dirname, '../../docs/TASK_TRACKING.md');
 // Use writable temp directory in production for runtime changes
 const TMP_DIR = '/tmp';
 const TIMELINE_FILE = path.join(TMP_DIR, 'TASK_TIMELINES.json');
@@ -90,7 +90,17 @@ function loadTasks(): Task[] {
       const content = fs.readFileSync(TRACK_FILE, 'utf-8');
       lines = content.split('\n');
     } else {
-      console.warn(`⚠️ [TASKS] Tracker file not found at ${TRACK_FILE}. Using runtime overrides only.`);
+      console.warn(`⚠️ [TASKS] Tracker file not found at ${TRACK_FILE}. Using built‑in defaults + runtime overrides.`);
+      // Built-in seed tasks so the dashboard is not empty in environments where docs aren't deployed
+      const seed: Task[] = [
+        { id: `seed-1`, title: 'Performance Page - Dummy Data', status: 'not-started', priority: 'high', category: '🐛 Bug Fixes Needed', description: 'Replace all dummy data with real API data on performance page', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: `seed-2`, title: 'Portfolio Analysis Page - Delays & Dummy Data', status: 'in-progress', priority: 'high', category: '🐛 Bug Fixes Needed', description: 'Fix delay on sector segmentation, replace dummy analytics with real data', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: `seed-3`, title: 'Risk Management - All Dummy Data', status: 'not-started', priority: 'high', category: '🐛 Bug Fixes Needed', description: 'Implement real risk management data', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: `seed-4`, title: 'Reports Page - Dummy Data', status: 'not-started', priority: 'high', category: '🐛 Bug Fixes Needed', description: 'Show real earning dates and balance sheet analysis', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: `seed-5`, title: 'Stock Data Accuracy Issues', status: 'in-progress', priority: 'high', category: '🐛 Bug Fixes Needed', description: 'Fix percentage discrepancies with Google Finance (monthly ETF calculations)', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { id: `seed-6`, title: 'Volatility Calculations – Algorithm & Inputs', status: 'not-started', priority: 'high', category: '🐛 Bug Fixes Needed', description: 'Fix log-returns, sampling window, annualization; ensure inputs are correct', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+      ];
+      tasks.push(...seed);
     }
     
     let currentSection = '';
@@ -182,7 +192,7 @@ function loadTasks(): Task[] {
       }
     }
     
-    console.log(`✅ [TASKS] Loaded ${tasks.length} tasks from tracker file`);
+    console.log(`✅ [TASKS] Loaded ${tasks.length} tasks from tracker/defaults`);
     const volatilityTask = tasks.find(t => t.title.toLowerCase().includes('volatility'));
     if (volatilityTask) {
       console.log(`✅ [TASKS] Found Volatility task:`, volatilityTask.title, 'Status:', volatilityTask.status, 'Priority:', volatilityTask.priority);
