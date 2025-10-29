@@ -66,15 +66,31 @@ function loadTasks(): Task[] {
             }
           }
           
-          // Extract description
+          // Extract description - include Issue line content
           let j = i + 1;
           let desc = '';
           while (j < lines.length && !lines[j].startsWith('###')) {
-            if (lines[j].trim() && !lines[j].startsWith('**Status:**') && !lines[j].startsWith('**Issue:**')) {
-              desc += lines[j].trim() + ' ';
+            const line = lines[j].trim();
+            if (!line) {
+              j++;
+              continue;
             }
-            if (lines[j].includes('**Files:**')) {
-              const fileMatch = lines[j].match(/`([^`]+)`/g);
+            
+            // Extract Issue text (the part after "**Issue:**")
+            if (line.startsWith('**Issue:**')) {
+              const issueText = line.replace(/^\*\*Issue:\*\*\s*/, '').trim();
+              if (issueText) {
+                desc += issueText + ' ';
+              }
+            }
+            // Extract other description lines (but not Status or Files)
+            else if (!line.startsWith('**Status:**') && !line.startsWith('**Files:**') && !line.startsWith('**Beta') && !line.startsWith('**Progress') && !line.startsWith('**Current') && !line.startsWith('**Specific') && !line.startsWith('**Details')) {
+              desc += line + ' ';
+            }
+            
+            // Extract files
+            if (line.includes('**Files:**')) {
+              const fileMatch = line.match(/`([^`]+)`/g);
               if (fileMatch) {
                 fileMatch.forEach(f => files.push(f.replace(/`/g, '')));
               }
@@ -105,9 +121,17 @@ function loadTasks(): Task[] {
       }
     }
     
+    console.log(`✅ [TASKS] Loaded ${tasks.length} tasks from TASK_TRACKING.md`);
+    const volatilityTask = tasks.find(t => t.title.toLowerCase().includes('volatility'));
+    if (volatilityTask) {
+      console.log(`✅ [TASKS] Found Volatility task:`, volatilityTask.title, 'Status:', volatilityTask.status, 'Priority:', volatilityTask.priority);
+    } else {
+      console.log(`⚠️ [TASKS] Volatility task NOT found in parsed tasks`);
+    }
+    
     return tasks;
   } catch (error) {
-    console.error('Error loading tasks:', error);
+    console.error('❌ [TASKS] Error loading tasks:', error);
     return [];
   }
 }
@@ -116,9 +140,11 @@ function loadTasks(): Task[] {
 router.get('/', (req: Request, res: Response) => {
   try {
     const tasks = loadTasks();
+    console.log(`📊 [TASKS API] Returning ${tasks.length} tasks`);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.json({ tasks, total: tasks.length });
   } catch (error) {
-    console.error('Error loading tasks:', error);
+    console.error('❌ [TASKS API] Error loading tasks:', error);
     res.status(500).json({ message: 'Error loading tasks' });
   }
 });
