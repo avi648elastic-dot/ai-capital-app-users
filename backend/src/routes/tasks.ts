@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import TaskTimeline from '../models/TaskTimeline';
 
 const router = Router();
 
@@ -26,17 +27,7 @@ interface Task {
 const TRACK_FILE = process.env.TASK_TRACK_FILE || path.join(__dirname, '../../docs/TASK_TRACKING.md');
 // Use writable temp directory in production for runtime changes
 const TMP_DIR = '/tmp';
-const TIMELINE_FILE = path.join(TMP_DIR, 'TASK_TIMELINES.json');
 const OVERRIDES_FILE = path.join(TMP_DIR, 'TASK_OVERRIDES.json');
-
-// Ensure timeline store exists
-function ensureTimelineStore() {
-  try {
-    if (!fs.existsSync(TIMELINE_FILE)) {
-      fs.writeFileSync(TIMELINE_FILE, JSON.stringify({}), 'utf-8');
-    }
-  } catch {}
-}
 
 function ensureOverridesStore() {
   try {
@@ -46,22 +37,43 @@ function ensureOverridesStore() {
   } catch {}
 }
 
-// Load timeline store
-function loadTimelineMap(): Record<string, { startDate?: string; endDate?: string; estimatedDays?: number }> {
-  ensureTimelineStore();
+// Load timeline store from MongoDB
+async function loadTimelineMap(): Promise<Record<string, { startDate?: string; endDate?: string; estimatedDays?: number }>> {
   try {
-    const raw = fs.readFileSync(TIMELINE_FILE, 'utf-8');
-    return JSON.parse(raw || '{}');
-  } catch {
+    const timelines = await TaskTimeline.find({}).lean();
+    const map: Record<string, { startDate?: string; endDate?: string; estimatedDays?: number }> = {};
+    timelines.forEach(tl => {
+      map[tl.taskTitle] = {
+        startDate: tl.startDate || undefined,
+        endDate: tl.endDate || undefined,
+        estimatedDays: tl.estimatedDays || undefined
+      };
+    });
+    return map;
+  } catch (error) {
+    console.error('❌ [TASKS] Error loading timelines from MongoDB:', error);
     return {};
   }
 }
 
-// Save timeline store
-function saveTimeline(title: string, data: { startDate?: string; endDate?: string; estimatedDays?: number }) {
-  const map = loadTimelineMap();
-  map[title] = { ...map[title], ...data };
-  fs.writeFileSync(TIMELINE_FILE, JSON.stringify(map, null, 2), 'utf-8');
+// Save timeline store to MongoDB
+async function saveTimeline(title: string, data: { startDate?: string; endDate?: string; estimatedDays?: number }) {
+  try {
+    await TaskTimeline.findOneAndUpdate(
+      { taskTitle: title },
+      {
+        taskTitle: title,
+        startDate: data.startDate || null,
+        endDate: data.endDate || null,
+        estimatedDays: data.estimatedDays || null
+      },
+      { upsert: true, new: true }
+    );
+    console.log(`✅ [TASKS] Saved timeline for "${title}" to MongoDB`);
+  } catch (error) {
+    console.error(`❌ [TASKS] Error saving timeline for "${title}":`, error);
+    throw error;
+  }
 }
 
 type OverrideTask = { title: string; description?: string; section?: string; status?: 'not-started'|'in-progress'|'done'; files?: string[] };
@@ -80,7 +92,7 @@ function saveOverride(task: OverrideTask) {
 }
 
 // Load tasks from markdown file
-function loadTasks(): Task[] {
+async function loadTasks(): Promise<Task[]> {
   try {
     const tasks: Task[] = [];
     let lines: string[] = [];
@@ -218,8 +230,8 @@ function loadTasks(): Task[] {
       });
     });
 
-    // Merge timeline overrides
-    const timelineMap = loadTimelineMap();
+    // Merge timeline overrides from MongoDB
+    const timelineMap = await loadTimelineMap();
     tasks.forEach(t => {
       const tl = timelineMap[t.title];
       if (tl) {
@@ -249,9 +261,9 @@ function loadTasks(): Task[] {
 }
 
 // GET all tasks
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const tasks = loadTasks();
+    const tasks = await loadTasks();
     console.log(`📊 [TASKS API] Returning ${tasks.length} tasks`);
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -265,9 +277,9 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // GET tasks by status
-router.get('/status/:status', (req: Request, res: Response) => {
+router.get('/status/:status', async (req: Request, res: Response) => {
   try {
-    const tasks = loadTasks();
+    const tasks = await loadTasks();
     const status = req.params.status;
     const filtered = tasks.filter(t => t.status === status);
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
@@ -282,9 +294,9 @@ router.get('/status/:status', (req: Request, res: Response) => {
 });
 
 // GET tasks by category
-router.get('/category/:category', (req: Request, res: Response) => {
+router.get('/category/:category', async (req: Request, res: Response) => {
   try {
-    const tasks = loadTasks();
+    const tasks = await loadTasks();
     const category = req.params.category;
     const filtered = tasks.filter(t => 
       t.category.toLowerCase().includes(category.toLowerCase())
@@ -301,9 +313,9 @@ router.get('/category/:category', (req: Request, res: Response) => {
 });
 
 // GET task statistics
-router.get('/stats', (req: Request, res: Response) => {
+router.get('/stats', async (req: Request, res: Response) => {
   try {
-    const tasks = loadTasks();
+    const tasks = await loadTasks();
     const stats = {
       total: tasks.length,
       done: tasks.filter(t => t.status === 'done').length,
@@ -333,19 +345,23 @@ router.get('/stats', (req: Request, res: Response) => {
 });
 
 // POST update task timeline
-router.post('/:id/timeline', (req: Request, res: Response) => {
+router.post('/:id/timeline', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { startDate, endDate, estimatedDays } = req.body;
 
-    const tasks = loadTasks();
+    const tasks = await loadTasks();
     const task = tasks.find(t => t.id === id);
     if (!task) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
 
-    // Persist timeline by title
-    saveTimeline(task.title, { startDate, endDate, estimatedDays });
+    // Persist timeline by title to MongoDB
+    await saveTimeline(task.title, { startDate, endDate, estimatedDays });
+    
+    // Update task object for response
     task.startDate = startDate;
     task.endDate = endDate;
     task.estimatedDays = estimatedDays;
@@ -355,20 +371,20 @@ router.post('/:id/timeline', (req: Request, res: Response) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json({ success: true, task });
   } catch (error) {
-    console.error('Error updating task timeline:', error);
+    console.error('❌ [TASKS API] Error updating task timeline:', error);
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.status(500).json({ message: 'Error updating task timeline' });
+    res.status(500).json({ message: 'Error updating task timeline', error: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 
 // POST update task status
-router.post('/:id/status', (req: Request, res: Response) => {
+router.post('/:id/status', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
     
-    const tasks = loadTasks();
+    const tasks = await loadTasks();
     const task = tasks.find(t => t.id === id);
     
     if (task) {
@@ -388,9 +404,9 @@ router.post('/:id/status', (req: Request, res: Response) => {
 });
 
 // GET Gantt chart data
-router.get('/gantt', (req: Request, res: Response) => {
+router.get('/gantt', async (req: Request, res: Response) => {
   try {
-    const tasks = loadTasks();
+    const tasks = await loadTasks();
     const ganttData = tasks.map(task => ({
       id: task.id,
       task: task.title,
@@ -402,9 +418,13 @@ router.get('/gantt', (req: Request, res: Response) => {
       status: task.status
     }));
     
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.json({ data: ganttData });
   } catch (error) {
     console.error('Error loading Gantt data:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error loading Gantt data' });
   }
 });
@@ -412,7 +432,7 @@ router.get('/gantt', (req: Request, res: Response) => {
 export default router;
 
 // Create new task (runtime) and persist in /tmp store
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
     const { title, description = '', section = '🐛 Bug Fixes Needed', status = 'not-started', files = [] } = req.body || {};
     if (!title || typeof title !== 'string') {
@@ -423,15 +443,16 @@ router.post('/', (req: Request, res: Response) => {
 
     // Save override runtime task (does not modify repo file on Render)
     saveOverride({ title, description, section, status, files });
-    const tasks = loadTasks();
+    const tasks = await loadTasks();
+    const newTask = tasks.find(t => t.title === title);
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.json({ success: true, tasks });
-  } catch (error) {
+    res.json({ success: true, task: newTask });
+  } catch (error: any) {
     console.error('❌ [TASKS API] Error creating task:', error);
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.status(500).json({ message: 'Error creating task' });
+    res.status(500).json({ message: 'Error creating task', error: error?.message || 'Unknown error' });
   }
 });
 
