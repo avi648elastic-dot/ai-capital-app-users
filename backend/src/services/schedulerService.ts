@@ -127,6 +127,18 @@ export class SchedulerService {
       timezone: 'UTC'
     });
 
+    // Pre-warm portfolio details data weekly (every Monday at 6 AM UTC)
+    cron.schedule('0 6 * * 1', async () => {
+      loggerService.info('📊 [SCHEDULER] Weekly portfolio details pre-warming triggered');
+      await cronLockService.withLock(
+        'portfolio-details-pre-warm',
+        () => this.preWarmPortfolioDetails(),
+        { ttl: 7200, maxRetries: 2 } // 2 hour lock, 2 retries
+      );
+    }, {
+      timezone: 'UTC'
+    });
+
     console.log('✅ [SCHEDULER] Scheduled updates configured');
     console.log('📅 [SCHEDULER] Stock data updates: Every 15 minutes (9:30 AM - 4:00 PM EST)');
     console.log('📅 [SCHEDULER] Portfolio decisions: Every 5 minutes (9:30 AM - 4:00 PM EST)');
@@ -584,6 +596,89 @@ export class SchedulerService {
       }
     } catch (error) {
       loggerService.error('❌ [TRIAL REMINDERS] Error sending trial expiration reminders:', error);
+    }
+  }
+
+  /**
+   * Pre-warm portfolio details data for all active users
+   * This ensures data is available even if users haven't visited analytics pages
+   */
+  private async preWarmPortfolioDetails(): Promise<void> {
+    try {
+      loggerService.info('📊 [PORTFOLIO DETAILS PRE-WARM] Starting weekly pre-warming...');
+      
+      // Get all active users (users who have logged in recently or have portfolios)
+      const activeUsers = await User.find({
+        $or: [
+          { lastLogin: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }, // Active in last 30 days
+          { subscriptionTier: { $in: ['premium', 'premium+'] } } // Premium users
+        ]
+      }).select('_id email');
+
+      loggerService.info(`📊 [PORTFOLIO DETAILS PRE-WARM] Found ${activeUsers.length} active users to pre-warm`);
+
+      let successCount = 0;
+      let failCount = 0;
+
+      // Import portfolio details route logic
+      const { getMetrics } = await import('../utils/metrics.engine');
+
+      for (const user of activeUsers) {
+        try {
+          // Check if user has portfolio
+          const portfolio = await Portfolio.find({ 
+            userId: user._id,
+            action: 'BUY',
+            isTraining: { $ne: true }
+          }).sort({ createdAt: 1 });
+
+          if (portfolio.length === 0) {
+            continue; // Skip users without portfolios
+          }
+
+          // Pre-warm metrics for user's stocks
+          const tickers = [...new Set(portfolio.map(item => item.ticker))];
+          
+          // Fetch metrics for all stocks (this will cache them)
+          await Promise.all(
+            tickers.map(async (ticker) => {
+              try {
+                await getMetrics(ticker);
+              } catch (error) {
+                // Silently fail for individual stocks
+              }
+            })
+          );
+
+          // Pre-warm decision engine
+          try {
+            const portfolioItems = portfolio.map(item => ({
+              ticker: item.ticker,
+              entryPrice: item.entryPrice,
+              currentPrice: item.currentPrice,
+              stopLoss: item.stopLoss,
+              takeProfit: item.takeProfit
+            }));
+            
+            await decisionEngine.updatePortfolioDecisions(portfolioItems);
+          } catch (error) {
+            // Silently fail decision engine pre-warming
+          }
+
+          successCount++;
+          
+          if (successCount % 10 === 0) {
+            loggerService.info(`📊 [PORTFOLIO DETAILS PRE-WARM] Processed ${successCount}/${activeUsers.length} users...`);
+          }
+        } catch (error) {
+          failCount++;
+          loggerService.warn(`⚠️ [PORTFOLIO DETAILS PRE-WARM] Failed for user ${user._id}:`, error);
+        }
+      }
+
+      loggerService.info(`✅ [PORTFOLIO DETAILS PRE-WARM] Completed: ${successCount} successful, ${failCount} failed`);
+    } catch (error) {
+      loggerService.error('❌ [PORTFOLIO DETAILS PRE-WARM] Error in pre-warming:', error);
     }
   }
 
