@@ -1300,11 +1300,9 @@ router.get('/risk-analytics', authenticateToken, requireSubscription, async (req
         if (recentDrawdown < -20) riskScore += 2;
         else if (recentDrawdown < -10) riskScore += 1;
       } else {
-        // Fallback: use top30D from stock data if available
-        const top30D = stock.top30D || stock.currentPrice;
-        recentDrawdown = ((stock.currentPrice - top30D) / top30D) * 100;
-        if (recentDrawdown < -20) riskScore += 2;
-        else if (recentDrawdown < -10) riskScore += 1;
+        // Fallback: if metrics not available, skip drawdown calculation
+        // Drawdown risk will be 0 (no additional risk points)
+        recentDrawdown = 0;
       }
       
       // 3. Portfolio Weight (0-1 point): Higher concentration = higher risk
