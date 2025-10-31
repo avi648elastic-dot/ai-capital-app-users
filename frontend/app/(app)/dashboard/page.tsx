@@ -664,19 +664,53 @@ export default function Dashboard() {
       <NotificationBanner isMobile={false} />
       
       <div className="px-4 sm:px-6 lg:px-8">
-        {/* Free App Mode - All Features Unlocked */}
-        <div className="mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg border bg-gradient-to-r from-green-900/20 to-emerald-900/20 border-green-500/30">
+        {/* Subscription Tier Banner - Dynamic Based on MongoDB Data */}
+        <div className={`mb-3 sm:mb-4 p-2 sm:p-3 rounded-lg border ${
+          effectiveTier === 'premium+' 
+            ? 'bg-gradient-to-r from-purple-900/20 to-violet-900/20 border-purple-500/30'
+            : effectiveTier === 'premium'
+            ? 'bg-gradient-to-r from-yellow-900/20 to-amber-900/20 border-yellow-500/30'
+            : 'bg-gradient-to-r from-green-900/20 to-emerald-900/20 border-green-500/30'
+        }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-400 animate-pulse"></div>
-              <h3 className="text-xs sm:text-sm font-bold text-green-300">
-                🆓 Free - Full Access
+              <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-pulse ${
+                effectiveTier === 'premium+' 
+                  ? 'bg-purple-400'
+                  : effectiveTier === 'premium'
+                  ? 'bg-yellow-400'
+                  : 'bg-green-400'
+              }`}></div>
+              <h3 className={`text-xs sm:text-sm font-bold ${
+                effectiveTier === 'premium+' 
+                  ? 'text-purple-300'
+                  : effectiveTier === 'premium'
+                  ? 'text-yellow-300'
+                  : 'text-green-300'
+              }`}>
+                {effectiveTier === 'premium+' 
+                  ? '👑 Premium+ - Full Access'
+                  : effectiveTier === 'premium'
+                  ? '⭐ Premium - Full Access'
+                  : '🆓 Free - Full Access'}
               </h3>
               <div className="flex items-center space-x-1 sm:space-x-2">
-                <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium bg-green-600/20 text-green-300">
+                <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${
+                  effectiveTier === 'premium+' 
+                    ? 'bg-purple-600/20 text-purple-300'
+                    : effectiveTier === 'premium'
+                    ? 'bg-yellow-600/20 text-yellow-300'
+                    : 'bg-green-600/20 text-green-300'
+                }`}>
                   {portfolioMeta.total}/{subscriptionLimits.maxPortfolios} Portfolios
                 </span>
-                <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium bg-green-600/20 text-green-300">
+                <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium ${
+                  effectiveTier === 'premium+' 
+                    ? 'bg-purple-600/20 text-purple-300'
+                    : effectiveTier === 'premium'
+                    ? 'bg-yellow-600/20 text-yellow-300'
+                    : 'bg-green-600/20 text-green-300'
+                }`}>
                   {showMultiPortfolio && selectedMultiPortfolio 
                     ? `${selectedMultiPortfolio.stocks.length}/${subscriptionLimits.maxStocksPerPortfolio}` 
                     : `${filteredPortfolio.length}/${effectiveTier === 'free' ? 10 : subscriptionLimits.maxStocksPerPortfolio}`} Stocks
@@ -783,7 +817,13 @@ export default function Dashboard() {
             )}
         {/* Stock/Portfolio Counters - Show Actual Limits */}
             {user && (
-          <div className="px-4 py-4 rounded-lg text-base font-semibold flex flex-col space-y-3 bg-green-900/30 text-green-300 border border-green-500/30">
+          <div className={`px-4 py-4 rounded-lg text-base font-semibold flex flex-col space-y-3 border ${
+            effectiveTier === 'premium+' 
+              ? 'bg-purple-900/30 text-purple-300 border-purple-500/30'
+              : effectiveTier === 'premium'
+              ? 'bg-yellow-900/30 text-yellow-300 border-yellow-500/30'
+              : 'bg-green-900/30 text-green-300 border-green-500/30'
+          }`}>
             <div className="flex items-center space-x-3">
               <span className="opacity-70 text-lg">Stocks:</span>
               <span className="font-bold text-xl">
