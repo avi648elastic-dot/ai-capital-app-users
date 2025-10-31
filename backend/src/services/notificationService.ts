@@ -144,11 +144,29 @@ class NotificationService {
   }> {
     const query: any = {};
     
+    // Build user filtering conditions
     if (filters.userId) {
       // Users can only see their own notifications + global notifications (userId: null)
+      query.$and = [
+        {
+          $or: [
+            { userId: filters.userId }, // User's own notifications
+            { userId: null } // Global notifications (admin-created)
+          ]
+        },
+        {
+          // Remove expired notifications
+          $or: [
+            { expiresAt: { $exists: false } },
+            { expiresAt: { $gt: new Date() } }
+          ]
+        }
+      ];
+    } else {
+      // If no userId, still filter expired notifications
       query.$or = [
-        { userId: filters.userId }, // User's own notifications
-        { userId: null } // Global notifications (admin-created)
+        { expiresAt: { $exists: false } },
+        { expiresAt: { $gt: new Date() } }
       ];
     }
     
@@ -160,13 +178,6 @@ class NotificationService {
     if (filters.unreadOnly) {
       query.readAt = { $exists: false };
     }
-
-    // Remove expired notifications
-    query.$or = [
-      ...(query.$or || []),
-      { expiresAt: { $exists: false } },
-      { expiresAt: { $gt: new Date() } }
-    ];
 
     // Get user's portfolio to filter relevant notifications
     let userPortfolioTickers: string[] = [];
