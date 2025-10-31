@@ -6,6 +6,7 @@ import { googleFinanceFormulasService } from '../services/googleFinanceFormulasS
 import { decisionEngine } from '../services/decisionEngine';
 import { loggerService } from '../services/loggerService';
 import { redisService } from '../services/redisService';
+import { volatilityService } from '../services/volatilityService';
 
 const router = express.Router();
 
@@ -137,11 +138,85 @@ router.get('/summary', authenticateToken, async (req, res) => {
     const winningStocks = portfolio.filter(s => s.currentPrice > s.entryPrice).length;
     const losingStocks = portfolio.filter(s => s.currentPrice < s.entryPrice).length;
     
-    // 4. Determine risk level based on volatility
+    // 4. Get risk management insights (from risk analytics)
+    let riskManagementData: any = null;
+    let avgRiskScore = 0;
+    let highRiskStocksCount = 0;
+    let diversificationScore = 0;
+    let concentrationRisk: 'Low' | 'Medium' | 'High' = 'Low';
+    
+    try {
+      // Fetch volatility data for risk scoring
+      const volatilityMap = await volatilityService.calculateMultipleStockVolatilities(tickers);
+      
+      // Calculate risk scores for each stock (similar to risk-analytics endpoint)
+      const stockRiskScores = portfolio.map(stock => {
+        const stockPrice = stock.currentPrice || stock.entryPrice;
+        const value = stockPrice * stock.shares;
+        const weight = totalValue > 0 ? (value / totalValue) * 100 : 0;
+        
+        const volatilityData = volatilityMap.get(stock.ticker);
+        const volatility = volatilityData?.volatility || 0;
+        const volatilityRiskLevel = volatilityData?.riskLevel || 'Low';
+        
+        // Calculate risk score (0-5 scale)
+        let riskScore = 0;
+        if (volatility > 35) riskScore += 2;
+        else if (volatility > 25) riskScore += 1.5;
+        else if (volatility > 15) riskScore += 0.5;
+        
+        // Portfolio weight risk
+        if (weight > 30) riskScore += 1;
+        else if (weight > 20) riskScore += 0.5;
+        
+        // Cap at 5
+        riskScore = Math.min(5, Math.max(0, riskScore));
+        
+        // Determine risk level
+        let calculatedRiskLevel = 'Low';
+        if (riskScore >= 4 || volatilityRiskLevel === 'High' || volatilityRiskLevel === 'Extreme') {
+          calculatedRiskLevel = 'High';
+        } else if (riskScore >= 2 || volatilityRiskLevel === 'Medium') {
+          calculatedRiskLevel = 'Medium';
+        }
+        
+        return {
+          ticker: stock.ticker,
+          riskScore,
+          riskLevel: calculatedRiskLevel,
+          weight
+        };
+      });
+      
+      avgRiskScore = stockRiskScores.reduce((sum, s) => sum + s.riskScore, 0) / stockRiskScores.length;
+      highRiskStocksCount = stockRiskScores.filter(s => s.riskLevel === 'High' || s.riskLevel === 'Extreme').length;
+      
+      // Diversification score (based on unique sectors)
+      const uniqueSectors = new Set(portfolio.map(stock => stock.sector || 'Unknown')).size;
+      diversificationScore = Math.min((uniqueSectors / portfolio.length) * 100, 100);
+      
+      // Concentration risk
+      const maxWeight = Math.max(...stockRiskScores.map(s => s.weight));
+      concentrationRisk = maxWeight > 30 ? 'High' : maxWeight > 20 ? 'Medium' : 'Low';
+      
+      riskManagementData = {
+        avgRiskScore: parseFloat(avgRiskScore.toFixed(1)),
+        highRiskStocks: highRiskStocksCount,
+        diversificationScore: parseFloat(diversificationScore.toFixed(0)),
+        concentrationRisk,
+        riskScoreBreakdown: stockRiskScores
+      };
+      
+      loggerService.info(`✅ [PORTFOLIO DETAILS] Risk management data calculated: avgScore=${avgRiskScore.toFixed(1)}, highRisk=${highRiskStocksCount}`);
+    } catch (error) {
+      loggerService.warn('⚠️ [PORTFOLIO DETAILS] Could not fetch risk management data:', error);
+    }
+    
+    // Determine risk level based on volatility and risk management data
     let riskLevel: 'LOW' | 'MEDIUM' | 'HIGH' = 'LOW';
-    if (portfolioVolatility > 40) {
+    if (portfolioVolatility > 40 || (riskManagementData && avgRiskScore >= 4)) {
       riskLevel = 'HIGH';
-    } else if (portfolioVolatility > 25) {
+    } else if (portfolioVolatility > 25 || (riskManagementData && avgRiskScore >= 2.5)) {
       riskLevel = 'MEDIUM';
     }
     
@@ -260,6 +335,12 @@ router.get('/summary', authenticateToken, async (req, res) => {
         riskLevel,
         totalValue,
         totalPnLPercent
+      },
+      riskManagement: riskManagementData || {
+        avgRiskScore: 0,
+        highRiskStocks: 0,
+        diversificationScore: 0,
+        concentrationRisk: 'Low'
       }
     };
     

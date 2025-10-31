@@ -1253,6 +1253,22 @@ router.get('/risk-analytics', authenticateToken, requireSubscription, async (req
       return sum + (stockPrice * stock.shares);
     }, 0);
     
+    // Fetch metrics data for all stocks in parallel (for drawdown calculation)
+    console.log('📊 [RISK] Fetching metrics for drawdown calculation...');
+    const metricsPromises = tickers.map(async (ticker) => {
+      try {
+        const metricsData = await getMetrics(ticker);
+        return { ticker, metrics: metricsData.metrics };
+      } catch (error) {
+        loggerService.warn(`⚠️ [RISK] Could not get metrics for ${ticker}:`, error);
+        return { ticker, metrics: null };
+      }
+    });
+    const metricsResults = await Promise.all(metricsPromises);
+    const metricsMap = new Map(
+      metricsResults.map(result => [result.ticker, result.metrics])
+    );
+
     // Calculate individual stock risks with REAL volatility and drawdown data
     const stockRisks = portfolio.map(stock => {
       const stockPrice = stock.currentPrice || stock.entryPrice;
@@ -1273,10 +1289,23 @@ router.get('/risk-analytics', authenticateToken, requireSubscription, async (req
       else if (volatility > 25) riskScore += 1.5;  // High volatility
       else if (volatility > 15) riskScore += 0.5;  // Medium volatility
       
-      // 2. Recent Drawdown (0-2 points): Calculate from current price vs recent high
-      const recentDrawdown = Math.max(0, ((stock.currentPrice / stock.currentPrice) - 1) * 100);
-      if (recentDrawdown < -20) riskScore += 2;
-      else if (recentDrawdown < -10) riskScore += 1;
+      // 2. Recent Drawdown (0-2 points): Calculate from current price vs recent high (30-day high)
+      // Get historical high from metrics engine
+      let recentDrawdown = 0;
+      const stockMetrics = metricsMap.get(stock.ticker);
+      if (stockMetrics && stockMetrics["30d"]) {
+        const top30D = stockMetrics["30d"].topPrice || stock.currentPrice;
+        // Calculate drawdown: negative percentage from high
+        recentDrawdown = ((stock.currentPrice - top30D) / top30D) * 100;
+        if (recentDrawdown < -20) riskScore += 2;
+        else if (recentDrawdown < -10) riskScore += 1;
+      } else {
+        // Fallback: use top30D from stock data if available
+        const top30D = stock.top30D || stock.currentPrice;
+        recentDrawdown = ((stock.currentPrice - top30D) / top30D) * 100;
+        if (recentDrawdown < -20) riskScore += 2;
+        else if (recentDrawdown < -10) riskScore += 1;
+      }
       
       // 3. Portfolio Weight (0-1 point): Higher concentration = higher risk
       if (weight > 30) riskScore += 1;
