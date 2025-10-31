@@ -26,6 +26,7 @@ import { realtimePriceService, PriceUpdate } from '@/lib/realtimePriceService';
 import Tooltip from '@/components/Tooltip';
 import NotificationBanner from '@/components/NotificationBanner';
 import MobileFloatingActionButton from '@/components/MobileFloatingActionButton';
+import PortfolioDetails from '@/components/PortfolioDetails';
 import { usePortfolio, useUserProfile } from '@/hooks/useSWRData';
 
 interface User {
@@ -779,6 +780,11 @@ export default function Dashboard() {
             <LazyMarketOverview />
           </ErrorBoundary>
         </div>
+
+        {/* Portfolio Details Section - NEW */}
+        <ErrorBoundary label="portfolio-details">
+          <PortfolioDetails />
+        </ErrorBoundary>
 
         {/* Portfolio Summary */}
         <ErrorBoundary label="summary">
