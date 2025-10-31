@@ -4,6 +4,7 @@ import User from '../models/User';
 import { authenticateToken, requireSubscription } from '../middleware/auth';
 import { portfolioGenerator } from '../services/portfolioGenerator';
 import { volatilityService } from '../services/volatilityService';
+import { getMetrics } from '../utils/metrics.engine';
 
 const router = express.Router();
 
@@ -87,15 +88,58 @@ router.get('/', authenticateToken, requireSubscription, async (req, res) => {
           })
         );
         
-        // 🚨 CRITICAL FIX: Calculate portfolio volatility
+        // 🚨 CRITICAL FIX: Calculate portfolio volatility using performance metrics engine
         let portfolioVolatility = portfolio.volatility || 0;
         try {
           const tickers = portfolio.stocks.map((stock: any) => stock.ticker);
           if (tickers.length > 0) {
-            const portfolioVolatilityMetrics = await volatilityService.calculatePortfolioVolatility(tickers);
-            if (portfolioVolatilityMetrics) {
-              portfolioVolatility = portfolioVolatilityMetrics.volatility;
-              console.log(`📊 [PORTFOLIOS] Portfolio ${portfolio.portfolioId} volatility: ${portfolioVolatility.toFixed(2)}%`);
+            // Use performance metrics engine for accurate volatility calculation
+            // Get weighted average volatility from 90-day metrics (most stable)
+            const metricsPromises = tickers.map(async (ticker: string) => {
+              try {
+                const cachedData = await getMetrics(ticker);
+                const metrics90D = cachedData.metrics["90d"];
+                if (metrics90D && metrics90D.volatilityAnnual > 0) {
+                  // Get stock weight (proportion of portfolio value)
+                  const stock = portfolio.stocks.find((s: any) => s.ticker === ticker);
+                  if (!stock) return null;
+                  
+                  const stockValue = stock.currentPrice * stock.shares;
+                  // Calculate total portfolio value from stocks
+                  const portfolioValue = portfolio.stocks.reduce((sum: number, s: any) => 
+                    sum + (s.currentPrice * s.shares), 0
+                  ) || 1;
+                  const weight = stockValue / portfolioValue;
+                  return {
+                    volatility: metrics90D.volatilityAnnual,
+                    weight: weight
+                  };
+                }
+              } catch (error) {
+                console.warn(`⚠️ [PORTFOLIOS] Could not get metrics for ${ticker}:`, error);
+              }
+              return null;
+            });
+            
+            const metricsResults = await Promise.all(metricsPromises);
+            const validMetrics = metricsResults.filter(m => m !== null) as Array<{ volatility: number; weight: number }>;
+            
+            if (validMetrics.length > 0) {
+              // Calculate weighted average volatility
+              const totalWeight = validMetrics.reduce((sum, m) => sum + m.weight, 0);
+              if (totalWeight > 0) {
+                portfolioVolatility = validMetrics.reduce((sum, m) => 
+                  sum + (m.volatility * m.weight / totalWeight), 0
+                );
+                console.log(`📊 [PORTFOLIOS] Portfolio ${portfolio.portfolioId} volatility (from metrics engine): ${portfolioVolatility.toFixed(2)}% (${validMetrics.length}/${tickers.length} stocks)`);
+              }
+            } else {
+              // Fallback to volatility service if metrics engine fails
+              const portfolioVolatilityMetrics = await volatilityService.calculatePortfolioVolatility(tickers);
+              if (portfolioVolatilityMetrics) {
+                portfolioVolatility = portfolioVolatilityMetrics.volatility;
+                console.log(`📊 [PORTFOLIOS] Portfolio ${portfolio.portfolioId} volatility (fallback): ${portfolioVolatility.toFixed(2)}%`);
+              }
             }
           }
         } catch (error) {

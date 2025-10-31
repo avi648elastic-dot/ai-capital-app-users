@@ -50,7 +50,7 @@ export default function ResponsiveNavigation({
       label: t('navigation.analytics'), 
       icon: BarChart3,
       children: [
-        { id: 'performance', label: t('navigation.performance'), icon: TrendingUp, href: '/analytics/performance', beta: true },
+        { id: 'performance', label: t('navigation.performance'), icon: TrendingUp, href: '/analytics/performance' },
         { id: 'portfolio-analysis', label: t('navigation.portfolioAnalysis'), icon: PieChart, href: '/analytics/portfolio-analysis', premium: true, beta: true },
         { id: 'watchlist', label: t('navigation.watchlist'), icon: Eye, href: '/watchlist', premiumPlus: true },
         { id: 'risk-management', label: t('navigation.riskManagement'), icon: Shield, href: '/risk-management', premiumPlus: true, beta: true },
