@@ -1346,48 +1346,188 @@ router.get('/risk-analytics', authenticateToken, requireSubscription, async (req
     const maxWeight = Math.max(...stockRisks.map(stock => stock.weight));
     const concentrationRisk = maxWeight > 30 ? 'High' : maxWeight > 20 ? 'Medium' : 'Low';
     
-    // Generate recommendations
+    // Generate comprehensive recommendations with position sizing and rebalancing
     const recommendations = [];
     
+    // Calculate optimal position sizes based on risk-adjusted returns
+    const positionRecommendations = stockRisks.map(stock => {
+      const optimalWeight = 20; // Target 20% per position for balanced portfolio
+      const currentWeight = stock.weight;
+      const riskAdjustedReturn = stock.pnlPercent / (stock.volatility || 1); // Return per unit of risk
+      
+      // Calculate recommendation
+      let action: 'REDUCE' | 'INCREASE' | 'HOLD' | 'TAKE_PROFIT' = 'HOLD';
+      let targetWeight = currentWeight;
+      let reason = '';
+      let priority: 'HIGH' | 'MEDIUM' | 'LOW' = 'LOW';
+      let estimatedProfit = 0;
+      
+      // High risk + large position = REDUCE or TAKE_PROFIT
+      if ((stock.riskLevel === 'High' || stock.riskLevel === 'Extreme') && currentWeight > 25) {
+        if (stock.pnlPercent > 10) {
+          // Profitable high-risk position: Take profit
+          action = 'TAKE_PROFIT';
+          targetWeight = Math.max(15, currentWeight * 0.5); // Reduce to 15% or cut in half
+          reason = `High-risk position with ${stock.pnlPercent.toFixed(1)}% profit. Take profit to secure gains and reduce risk exposure.`;
+          priority = 'HIGH';
+          estimatedProfit = (stock.currentPrice * stock.shares) * ((currentWeight - targetWeight) / 100) * (stock.pnlPercent / 100);
+        } else {
+          // Losing high-risk position: Reduce
+          action = 'REDUCE';
+          targetWeight = Math.max(10, currentWeight * 0.6); // Reduce to 10% or 60% of current
+          reason = `Dangerous position: ${currentWeight.toFixed(1)}% allocation with high risk (${stock.volatility.toFixed(1)}% volatility). Too much money at risk.`;
+          priority = 'CRITICAL';
+        }
+      }
+      // Medium risk + very large position = REDUCE
+      else if (currentWeight > 30 && stock.riskLevel === 'Medium') {
+        action = 'REDUCE';
+        targetWeight = 20; // Target balanced allocation
+        reason = `Position too large (${currentWeight.toFixed(1)}% of portfolio). Reduce to 20% to improve diversification and reduce concentration risk.`;
+        priority = 'HIGH';
+      }
+      // High risk + medium position = REDUCE
+      else if ((stock.riskLevel === 'High' || stock.riskLevel === 'Extreme') && currentWeight > 15) {
+        action = 'REDUCE';
+        targetWeight = Math.max(10, currentWeight * 0.7); // Reduce by 30%
+        reason = `High-risk position (${stock.volatility.toFixed(1)}% volatility) with ${currentWeight.toFixed(1)}% allocation. Reduce exposure to protect capital.`;
+        priority = 'HIGH';
+      }
+      // Good risk-adjusted return + small position = INCREASE (if room available)
+      else if (riskAdjustedReturn > 2 && currentWeight < 10 && avgRiskScore < 3) {
+        action = 'INCREASE';
+        targetWeight = Math.min(15, currentWeight * 1.5); // Increase to 15% or 50% more
+        reason = `Strong risk-adjusted returns (${riskAdjustedReturn.toFixed(1)}x) with low current allocation (${currentWeight.toFixed(1)}%). Consider increasing position size.`;
+        priority = 'MEDIUM';
+      }
+      // Very large profitable position = TAKE_PROFIT
+      else if (currentWeight > 25 && stock.pnlPercent > 15) {
+        action = 'TAKE_PROFIT';
+        targetWeight = 20; // Reduce to balanced allocation
+        reason = `Large profitable position (${stock.pnlPercent.toFixed(1)}% profit, ${currentWeight.toFixed(1)}% of portfolio). Lock in profits and rebalance.`;
+        priority = 'MEDIUM';
+        estimatedProfit = (stock.currentPrice * stock.shares) * ((currentWeight - targetWeight) / 100) * (stock.pnlPercent / 100);
+      }
+      // Optimal position = HOLD
+      else {
+        action = 'HOLD';
+        targetWeight = currentWeight;
+        reason = `Position size (${currentWeight.toFixed(1)}%) and risk level (${stock.riskLevel}) are within acceptable range.`;
+        priority = 'LOW';
+      }
+      
+      // Calculate shares to buy/sell
+      const currentShares = stock.shares;
+      const targetValue = totalValue * (targetWeight / 100);
+      const targetShares = Math.floor(targetValue / stock.currentPrice);
+      const sharesToTrade = targetShares - currentShares;
+      
+      return {
+        ticker: stock.ticker,
+        currentWeight: parseFloat(currentWeight.toFixed(1)),
+        targetWeight: parseFloat(targetWeight.toFixed(1)),
+        currentShares,
+        targetShares,
+        sharesToTrade,
+        action,
+        reason,
+        priority,
+        riskLevel: stock.riskLevel,
+        riskScore: stock.riskScore,
+        volatility: stock.volatility,
+        pnlPercent: stock.pnlPercent,
+        riskAdjustedReturn: parseFloat(riskAdjustedReturn.toFixed(2)),
+        estimatedProfit: parseFloat(estimatedProfit.toFixed(2)),
+        currentValue: stock.currentPrice * stock.shares,
+        targetValue: parseFloat(targetValue.toFixed(2))
+      };
+    });
+    
+    // Sort by priority: CRITICAL > HIGH > MEDIUM > LOW
+    const priorityOrder = { 'CRITICAL': 4, 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
+    positionRecommendations.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+    
+    // Calculate total estimated profit from rebalancing
+    const totalEstimatedProfit = positionRecommendations
+      .filter(p => p.action === 'TAKE_PROFIT')
+      .reduce((sum, p) => sum + p.estimatedProfit, 0);
+    
+    // Generate portfolio-level recommendations
     if (concentrationRisk === 'High') {
+      const maxPosition = stockRisks.find(s => s.weight === maxWeight);
       recommendations.push({
         type: 'warning',
+        priority: 'HIGH',
         title: 'High Portfolio Concentration',
-        message: 'Consider diversifying your portfolio to reduce concentration risk.',
-        icon: 'AlertTriangle'
+        message: `${maxPosition?.ticker || 'A position'} represents ${maxWeight.toFixed(1)}% of your portfolio. Consider reducing to 20% or less to minimize concentration risk.`,
+        icon: 'AlertTriangle',
+        action: 'REDUCE',
+        ticker: maxPosition?.ticker,
+        suggestedReduction: `${(maxWeight - 20).toFixed(1)}%`
       });
     }
     
     if (diversificationScore < 50) {
       recommendations.push({
         type: 'info',
+        priority: 'MEDIUM',
         title: 'Improve Diversification',
-        message: 'Add stocks from different sectors to improve portfolio diversification.',
-        icon: 'Target'
+        message: `Your portfolio has ${uniqueSectors} sectors out of ${portfolio.length} stocks (${diversificationScore.toFixed(0)}% diversification). Add stocks from different sectors to reduce sector-specific risk.`,
+        icon: 'Target',
+        action: 'DIVERSIFY',
+        targetDiversification: '70%+'
       });
     }
     
     if (highRiskStocks > 0) {
+      const highRiskPositions = stockRisks.filter(s => s.riskLevel === 'High' || s.riskLevel === 'Extreme');
+      const highRiskTotal = highRiskPositions.reduce((sum, s) => sum + s.weight, 0);
       recommendations.push({
         type: 'warning',
-        title: `${highRiskStocks} High-Risk Stock${highRiskStocks > 1 ? 's' : ''}`,
-        message: 'Review high-risk positions and consider reducing exposure.',
-        icon: 'TrendingDown'
+        priority: highRiskTotal > 30 ? 'HIGH' : 'MEDIUM',
+        title: `${highRiskStocks} High-Risk Position${highRiskStocks > 1 ? 's' : ''} (${highRiskTotal.toFixed(1)}% of portfolio)`,
+        message: `You have ${highRiskStocks} high-risk position${highRiskStocks > 1 ? 's' : ''} representing ${highRiskTotal.toFixed(1)}% of your portfolio. Consider reducing exposure to these positions to protect capital.`,
+        icon: 'TrendingDown',
+        action: 'REDUCE',
+        affectedPositions: highRiskPositions.map(s => s.ticker).join(', '),
+        suggestedReduction: `${Math.max(0, highRiskTotal - 20).toFixed(1)}%`
       });
     }
+    
+    // Add profit-taking recommendation if applicable
+    if (totalEstimatedProfit > 0) {
+      recommendations.push({
+        type: 'info',
+        priority: 'MEDIUM',
+        title: 'Profit-Taking Opportunity',
+        message: `By rebalancing large profitable positions, you could secure approximately $${totalEstimatedProfit.toFixed(2)} in profits while reducing risk exposure.`,
+        icon: 'TrendingUp',
+        action: 'TAKE_PROFIT',
+        estimatedProfit: parseFloat(totalEstimatedProfit.toFixed(2))
+      });
+    }
+    
+    // Portfolio rebalancing summary
+    const positionsToReduce = positionRecommendations.filter(p => p.action === 'REDUCE' || p.action === 'TAKE_PROFIT');
+    const positionsToIncrease = positionRecommendations.filter(p => p.action === 'INCREASE');
+    const totalCapitalToRelease = positionsToReduce.reduce((sum, p) => sum + (p.currentValue - p.targetValue), 0);
+    const totalCapitalNeeded = positionsToIncrease.reduce((sum, p) => sum + (p.targetValue - p.currentValue), 0);
 
     console.log('✅ [RISK] Risk analytics calculated:', {
       avgRiskScore: avgRiskScore.toFixed(1),
       highRiskStocks,
       diversificationScore: diversificationScore.toFixed(0) + '%',
-      stockCount: stockRisks.length
+      stockCount: stockRisks.length,
+      positionsToReduce: positionsToReduce.length,
+      positionsToIncrease: positionsToIncrease.length,
+      totalEstimatedProfit: totalEstimatedProfit.toFixed(2)
     });
-    console.log('📊 [RISK] Sample stockRisks data:', stockRisks.slice(0, 2).map(s => ({
-      ticker: s.ticker,
-      weight: s.weight,
-      pnlPercent: s.pnlPercent,
-      riskLevel: s.riskLevel,
-      riskScore: s.riskScore
+    console.log('📊 [RISK] Position recommendations:', positionRecommendations.filter(p => p.action !== 'HOLD').slice(0, 3).map(p => ({
+      ticker: p.ticker,
+      action: p.action,
+      currentWeight: p.currentWeight,
+      targetWeight: p.targetWeight,
+      priority: p.priority
     })));
     
     res.json({ 
@@ -1396,7 +1536,16 @@ router.get('/risk-analytics', authenticateToken, requireSubscription, async (req
       highRiskStocks,
       concentrationRisk,
       stockRisks,
-      recommendations
+      recommendations,
+      positionRecommendations: positionRecommendations.filter(p => p.action !== 'HOLD'), // Only show actionable recommendations
+      rebalancingSummary: {
+        positionsToReduce: positionsToReduce.length,
+        positionsToIncrease: positionsToIncrease.length,
+        totalCapitalToRelease: parseFloat(totalCapitalToRelease.toFixed(2)),
+        totalCapitalNeeded: parseFloat(totalCapitalNeeded.toFixed(2)),
+        estimatedProfit: parseFloat(totalEstimatedProfit.toFixed(2)),
+        rebalancingNeeded: positionsToReduce.length > 0 || positionsToIncrease.length > 0
+      }
     });
   } catch (error) {
     console.error('❌ [RISK] Error in risk analytics:', error);
