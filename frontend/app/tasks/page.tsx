@@ -241,11 +241,13 @@ export default function PublicTasksPage() {
     try {
       // Persist to backend so it survives refresh
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
-      console.log('💾 [TASKS] Saving timeline:', { taskId: editingTask, startDate: editDates.startDate, endDate: editDates.endDate });
+      const currentTask = tasks.find(t => t.id === editingTask);
+      const taskTitle = currentTask?.title || '';
+      console.log('💾 [TASKS] Saving timeline:', { taskId: editingTask, title: taskTitle, startDate: editDates.startDate, endDate: editDates.endDate });
       const res = await fetch(`${apiUrl}/api/tasks/${editingTask}/timeline`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ startDate: editDates.startDate, endDate: editDates.endDate })
+        body: JSON.stringify({ startDate: editDates.startDate, endDate: editDates.endDate, title: taskTitle })
       });
       if (res.ok) {
         const data = await res.json();
@@ -262,11 +264,11 @@ export default function PublicTasksPage() {
       } else {
         const errorText = await res.text();
         console.error('❌ [TASKS] Timeline save failed:', res.status, errorText);
-        alert('Failed to save dates. Please try again.');
+        alert(`Failed to save dates: ${errorText || res.status}`);
       }
     } catch (e) {
       console.error('❌ [TASKS] Timeline save error:', e);
-      alert('Error saving dates. Please try again.');
+      alert(`Error saving dates. ${e instanceof Error ? e.message : ''}`);
     } finally {
       setEditingTask(null);
       setEditDates({ startDate: '', endDate: '' });

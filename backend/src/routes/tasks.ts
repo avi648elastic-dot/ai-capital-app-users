@@ -6,6 +6,19 @@ import TaskOverride from '../models/TaskOverride';
 
 const router = Router();
 
+// Minimal CORS for this router (in addition to app-level CORS)
+router.use((req, res, next) => {
+  const origin = (req.headers.origin as string) || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
+
 interface Task {
   id: string;
   title: string;
@@ -435,17 +448,21 @@ router.get('/stats', async (req: Request, res: Response) => {
 router.post('/:id/timeline', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { startDate, endDate, estimatedDays } = req.body;
+    const { startDate, endDate, estimatedDays, title } = req.body;
 
-    console.log(`💾 [TASKS API] Saving timeline for task ID ${id}:`, { startDate, endDate, estimatedDays });
+    console.log(`💾 [TASKS API] Saving timeline for task ID ${id}:`, { startDate, endDate, estimatedDays, title });
 
     const tasks = await loadTasks();
-    const task = tasks.find(t => t.id === id);
+    let task = tasks.find(t => t.id === id);
+    // Fallback: if not found by ID, try matching by provided title
+    if (!task && title) {
+      task = tasks.find(t => t.title === title);
+    }
     if (!task) {
-      console.error(`❌ [TASKS API] Task ${id} not found`);
+      console.error(`❌ [TASKS API] Task not found. id=${id}, title=${title}`);
       res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
       res.setHeader('Access-Control-Allow-Credentials', 'true');
-      return res.status(404).json({ success: false, message: 'Task not found' });
+      return res.status(404).json({ success: false, message: 'Task not found (id/title mismatch). Refresh the page and try again.' });
     }
 
     console.log(`✅ [TASKS API] Found task: "${task.title}" (ID: ${id})`);
