@@ -132,8 +132,20 @@ router.post('/import-portfolio', authenticateToken, async (req, res) => {
     }
 
     console.log('🔍 [IMPORT PORTFOLIO] Completing onboarding...');
+    // Grant 30-day premium+ trial when onboarding completes
+    const now = new Date();
+    const trialEndDate = new Date(now);
+    trialEndDate.setDate(trialEndDate.getDate() + 30); // 30 days from now
+    
     user.onboardingCompleted = true;
+    user.subscriptionTier = 'premium+';
+    user.subscriptionActive = true;
+    user.trialStartDate = now;
+    user.trialEndDate = trialEndDate;
+    user.isTrialActive = true;
+    
     await user.save();
+    console.log(`✅ [IMPORT PORTFOLIO] User granted 30-day premium+ trial (expires: ${trialEndDate.toISOString()})`);
 
     console.log('✅ [IMPORT PORTFOLIO] Import completed successfully');
     return res.json({
@@ -257,16 +269,26 @@ router.post('/generate-portfolio', authenticateToken, async (req, res) => {
     }
 
     // עדכון פרטי המשתמש וסימון סיום Onboarding
+    // Grant 30-day premium+ trial when onboarding completes
     console.log('🔍 [GENERATE PORTFOLIO] Updating user...');
     try {
+      const now = new Date();
+      const trialEndDate = new Date(now);
+      trialEndDate.setDate(trialEndDate.getDate() + 30); // 30 days from now
+      
       await User.findByIdAndUpdate(req.user!._id, {
         portfolioType,
         portfolioSource: 'ai-generated',
         totalCapital: Number(totalCapital),
         riskTolerance: Number(riskTolerance) || 7,
         onboardingCompleted: true,
+        subscriptionTier: 'premium+',
+        subscriptionActive: true,
+        trialStartDate: now,
+        trialEndDate: trialEndDate,
+        isTrialActive: true,
       });
-      console.log('✅ [GENERATE PORTFOLIO] User updated');
+      console.log(`✅ [GENERATE PORTFOLIO] User granted 30-day premium+ trial (expires: ${trialEndDate.toISOString()})`);
     } catch (userError) {
       console.error('❌ [GENERATE PORTFOLIO] Error updating user:', userError);
       // Continue anyway - portfolio is saved
@@ -329,7 +351,20 @@ router.post('/confirm-portfolio', authenticateToken, async (req, res) => {
       items.push(item);
     }
 
-    await User.findByIdAndUpdate(req.user!._id, { onboardingCompleted: true });
+    // Grant 30-day premium+ trial when onboarding completes
+    const now = new Date();
+    const trialEndDate = new Date(now);
+    trialEndDate.setDate(trialEndDate.getDate() + 30); // 30 days from now
+    
+    await User.findByIdAndUpdate(req.user!._id, { 
+      onboardingCompleted: true,
+      subscriptionTier: 'premium+',
+      subscriptionActive: true,
+      trialStartDate: now,
+      trialEndDate: trialEndDate,
+      isTrialActive: true,
+    });
+    console.log(`✅ [CONFIRM PORTFOLIO] User granted 30-day premium+ trial (expires: ${trialEndDate.toISOString()})`);
 
     return res.json({
       message: 'Portfolio confirmed and saved successfully',
@@ -346,11 +381,22 @@ router.post('/confirm-portfolio', authenticateToken, async (req, res) => {
  */
 router.post('/skip', authenticateToken, async (req, res) => {
   try {
+    // Grant 30-day premium+ trial when skipping onboarding (test mode)
+    const now = new Date();
+    const trialEndDate = new Date(now);
+    trialEndDate.setDate(trialEndDate.getDate() + 30); // 30 days from now
+    
     await User.findByIdAndUpdate(req.user!._id, {
       onboardingCompleted: true,
       portfolioType: 'solid',
       portfolioSource: 'imported',
+      subscriptionTier: 'premium+',
+      subscriptionActive: true,
+      trialStartDate: now,
+      trialEndDate: trialEndDate,
+      isTrialActive: true,
     });
+    console.log(`✅ [SKIP ONBOARDING] User granted 30-day premium+ trial (expires: ${trialEndDate.toISOString()})`);
 
     return res.json({ message: 'Onboarding skipped successfully' });
   } catch (error) {

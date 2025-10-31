@@ -50,36 +50,40 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   }
 };
 
-export const requireSubscription = (req: AuthRequest, res: Response, next: NextFunction) => {
-  // 🆓 FREE APP MODE: Bypass all subscription checks - app is free for Google Play approval
-  // TO RE-ENABLE RESTRICTIONS AFTER GOOGLE APPROVAL: Comment out the next() below and uncomment the old logic
-  console.log('✅ [SUBSCRIPTION] FREE MODE - All features unlocked');
-  console.log('✅ [SUBSCRIPTION] Request method:', req.method);
-  console.log('✅ [SUBSCRIPTION] Request URL:', req.url);
-  
-  // Only check authentication, not subscription tier
+export const requireSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  // Check authentication
   if (!req.user) {
     return res.status(401).json({ message: 'Authentication required' });
   }
-  
-  next();
-  
-  // UNCOMMENT THIS CODE BLOCK TO RE-ENABLE SUBSCRIPTION RESTRICTIONS:
-  /*
-  // TEMPORARY FIX: Bypass subscription check for ALL delete and post operations
-  if (req.method === 'DELETE' || req.method === 'POST') {
-    console.log('🔧 [SUBSCRIPTION] TEMPORARY BYPASS for operation');
-    console.log('🔧 [SUBSCRIPTION] Request URL:', req.url);
+
+  // Admins always have access
+  if (req.user.isAdmin === true || req.user.role === 'admin') {
     return next();
   }
-  
-  // Allow access for all authenticated users (both free and premium)
-  // Premium features will be checked at the individual route level
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
+
+  try {
+    // Check effective subscription tier (includes trial logic)
+    const { getEffectiveSubscriptionTier } = await import('../utils/subscriptionHelper');
+    const tier = await getEffectiveSubscriptionTier(req.user._id.toString());
+    
+    // Allow access for premium and premium+ users (trial users get premium+)
+    if (tier === 'premium' || tier === 'premium+') {
+      return next();
+    }
+    
+    // Free users need to upgrade
+    return res.status(403).json({ 
+      message: 'Premium subscription required',
+      requiredTier: 'premium',
+      currentTier: tier
+    });
+  } catch (error) {
+    // If helper fails, check subscriptionActive as fallback
+    if (req.user.subscriptionActive || req.user.isTrialActive) {
+      return next();
+    }
+    return res.status(403).json({ message: 'Premium subscription required' });
   }
-  next();
-  */
 };
 
 export const authenticateAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {

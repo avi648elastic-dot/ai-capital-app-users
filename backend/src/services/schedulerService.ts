@@ -8,6 +8,7 @@ import notificationService from './notificationService';
 import { redisService } from './redisService';
 import { cronLockService } from './cronLockService';
 import { loggerService } from './loggerService';
+import User from '../models/User';
 import Portfolio from '../models/Portfolio';
 
 export class SchedulerService {
@@ -113,11 +114,24 @@ export class SchedulerService {
       timezone: 'America/New_York'
     });
 
+    // Check and downgrade expired trial users daily at midnight UTC
+    cron.schedule('0 0 * * *', async () => {
+      loggerService.info('🎁 [SCHEDULER] Daily trial expiration check triggered');
+      await cronLockService.withLock(
+        'trial-expiration-check',
+        () => this.checkTrialExpiration(),
+        { ttl: 3600, maxRetries: 2 } // 1 hour lock, 2 retries
+      );
+    }, {
+      timezone: 'UTC'
+    });
+
     console.log('✅ [SCHEDULER] Scheduled updates configured');
     console.log('📅 [SCHEDULER] Stock data updates: Every 15 minutes (9:30 AM - 4:00 PM EST)');
     console.log('📅 [SCHEDULER] Portfolio decisions: Every 5 minutes (9:30 AM - 4:00 PM EST)');
     console.log('📅 [SCHEDULER] Portfolio volatilities: Daily at 6:00 PM EST');
     console.log('📅 [SCHEDULER] Risk management: Every 2 minutes (9:30 AM - 4:00 PM EST)');
+    console.log('📅 [SCHEDULER] Trial expiration check: Daily at midnight UTC');
   }
 
   private async updateStockData() {
@@ -429,6 +443,78 @@ export class SchedulerService {
     const nextUpdate = new Date(est);
     nextUpdate.setMinutes(nextUpdate.getMinutes() + 5);
     return nextUpdate.toLocaleString("en-US", {timeZone: "America/New_York"});
+  }
+
+  /**
+   * Check and downgrade users whose trial period has expired
+   */
+  private async checkTrialExpiration(): Promise<void> {
+    try {
+      loggerService.info('🎁 [TRIAL CHECK] Checking for expired trial users...');
+      const now = new Date();
+      
+      // Find all users with active trials that have expired
+      const expiredTrialUsers = await User.find({
+        isTrialActive: true,
+        trialEndDate: { $lt: now }, // Trial ended before now
+        subscriptionTier: 'premium+',
+        // Don't downgrade users who have paid subscriptions
+        $or: [
+          { stripeSubscriptionId: { $exists: false } },
+          { stripeSubscriptionId: null },
+          { subscriptionStatus: { $ne: 'active' } }
+        ]
+      });
+
+      loggerService.info(`📊 [TRIAL CHECK] Found ${expiredTrialUsers.length} expired trial users to downgrade`);
+
+      let downgradedCount = 0;
+      let skippedAdminCount = 0;
+
+      for (const user of expiredTrialUsers) {
+        try {
+          // Don't downgrade admin users
+          if (user.isAdmin === true || user.role === 'admin') {
+            skippedAdminCount++;
+            loggerService.info(`⏭️ [TRIAL CHECK] Skipping admin user: ${user.email}`);
+            continue;
+          }
+
+          // Downgrade to free tier
+          await User.findByIdAndUpdate(user._id, {
+            subscriptionTier: 'free',
+            subscriptionActive: false,
+            isTrialActive: false,
+            subscriptionStatus: 'canceled'
+          });
+
+          downgradedCount++;
+          loggerService.info(`✅ [TRIAL CHECK] Downgraded user to free: ${user.email} (trial ended: ${user.trialEndDate?.toISOString()})`);
+        } catch (error) {
+          loggerService.error(`❌ [TRIAL CHECK] Error downgrading user ${user.email}:`, error);
+        }
+      }
+
+      loggerService.info(`✅ [TRIAL CHECK] Completed: ${downgradedCount} users downgraded, ${skippedAdminCount} admins skipped`);
+      
+      // Also check for users whose trial is about to expire soon (for notifications)
+      const soonToExpire = new Date(now);
+      soonToExpire.setDate(soonToExpire.getDate() + 3); // 3 days from now
+      
+      const usersExpiringSoon = await User.find({
+        isTrialActive: true,
+        trialEndDate: { $gte: now, $lte: soonToExpire },
+        subscriptionTier: 'premium+'
+      });
+
+      if (usersExpiringSoon.length > 0) {
+        loggerService.info(`⚠️ [TRIAL CHECK] ${usersExpiringSoon.length} users have trials expiring within 3 days`);
+        // TODO: Send notification emails to these users
+      }
+
+    } catch (error) {
+      loggerService.error('❌ [TRIAL CHECK] Error checking trial expiration:', error);
+    }
   }
 
   /**

@@ -47,6 +47,11 @@ export interface IUser extends Document {
   stripeSubscriptionId?: string; // Current Stripe subscription ID
   subscriptionStatus?: 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing'; // Subscription status
   subscriptionEndDate?: Date; // When subscription ends/renews
+  
+  // 🎁 TRIAL PERIOD FIELDS
+  trialStartDate?: Date; // When trial started (onboarding completion)
+  trialEndDate?: Date; // When trial ends (30 days from start)
+  isTrialActive?: boolean; // Whether user is currently in trial period
 }
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -96,6 +101,11 @@ const UserSchema: Schema<IUser> = new Schema(
     stripeSubscriptionId: { type: String },
     subscriptionStatus: { type: String, enum: ['active', 'canceled', 'past_due', 'incomplete', 'trialing'] },
     subscriptionEndDate: { type: Date },
+    
+    // 🎁 TRIAL PERIOD FIELDS
+    trialStartDate: { type: Date }, // When trial started
+    trialEndDate: { type: Date }, // When trial ends (30 days from start)
+    isTrialActive: { type: Boolean, default: false }, // Whether user is in trial
   },
   { timestamps: true }
 );
@@ -120,17 +130,28 @@ UserSchema.index({ subscriptionStatus: 1 }); // For subscription status queries
 // 🔒 Pre-save hook for portfolio limits validation
 UserSchema.pre('save', async function(next) {
   try {
+    // Admins bypass all limits
+    if (this.isAdmin === true || this.role === 'admin') {
+      return next();
+    }
+
+    // Check effective subscription tier (includes trial logic)
+    let effectiveTier = this.subscriptionTier;
+    if (this.isTrialActive && this.trialEndDate && new Date() < this.trialEndDate) {
+      effectiveTier = 'premium+'; // Trial users get premium+ access
+    }
+
     // Validate subscription tier limits
-    if (this.subscriptionTier === 'free') {
+    if (effectiveTier === 'free') {
       // Free users: max 10 stocks total, 1 portfolio type
       const Portfolio = mongoose.model('Portfolio');
       const stockCount = await Portfolio.countDocuments({ userId: this._id });
       
       if (stockCount > 10) {
-        const error = new Error('Free users are limited to 10 stocks total');
+        const error = new Error('Free users are limited to 10 stocks total. Upgrade to Premium to add more stocks.');
         return next(error);
       }
-    } else if (this.subscriptionTier === 'premium') {
+    } else if (effectiveTier === 'premium') {
       // Premium users: max 15 stocks per portfolio, 3 portfolios each type
       const Portfolio = mongoose.model('Portfolio');
       const solidPortfolios = await Portfolio.countDocuments({ 
@@ -143,10 +164,10 @@ UserSchema.pre('save', async function(next) {
       });
       
       if (solidPortfolios > 3 || riskyPortfolios > 3) {
-        const error = new Error('Premium users are limited to 3 portfolios of each type');
+        const error = new Error('Premium users are limited to 3 portfolios of each type. Upgrade to Premium+ for more portfolios.');
         return next(error);
       }
-    } else if (this.subscriptionTier === 'premium+') {
+    } else if (effectiveTier === 'premium+') {
       // Premium+ users: max 20 stocks per portfolio, 5 portfolios each type
       const Portfolio = mongoose.model('Portfolio');
       const solidPortfolios = await Portfolio.countDocuments({ 
@@ -159,7 +180,7 @@ UserSchema.pre('save', async function(next) {
       });
       
       if (solidPortfolios > 5 || riskyPortfolios > 5) {
-        const error = new Error('Premium+ users are limited to 5 portfolios of each type');
+        const error = new Error('Premium+ users are limited to 5 portfolios of each type.');
         return next(error);
       }
     }

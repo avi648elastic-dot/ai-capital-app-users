@@ -12,25 +12,7 @@ export interface SubscriptionLimits {
 }
 
 export const getSubscriptionLimits = (subscriptionTier: string): SubscriptionLimits => {
-  // 🆓 FREE APP MODE: Grant unlimited access to all features for all users
-  // This allows the app to be approved as free on Google Play Store
-  // TO RE-ENABLE RESTRICTIONS AFTER GOOGLE APPROVAL: Remove this block and uncomment the switch statement below
-  console.log('✅ [SUBSCRIPTION] FREE MODE - Unlimited access for all users');
-  
-  return {
-    maxPortfolios: 999, // Unlimited
-    maxStocksPerPortfolio: 999, // Unlimited
-    hasPortfolioAnalysis: true,
-    hasRiskManagement: true,
-    hasWatchlist: true,
-    hasLiveNotifications: true,
-    hasAdvancedBacktesting: true,
-    hasWhiteLabel: true,
-    hasApiAccess: true,
-  };
-  
-  // UNCOMMENT THIS CODE BLOCK TO RE-ENABLE SUBSCRIPTION RESTRICTIONS:
-  /*
+  // Subscription restrictions are now active
   switch (subscriptionTier) {
     case 'free':
       return {
@@ -84,23 +66,16 @@ export const getSubscriptionLimits = (subscriptionTier: string): SubscriptionLim
         hasApiAccess: false,
       };
   }
-  */
 };
 
 export const canCreatePortfolio = (currentPortfolios: number, subscriptionTier: string): boolean => {
-  // 🆓 FREE APP MODE: Always allow portfolio creation
-  return true;
-  // TO RE-ENABLE: Uncomment below and comment above
-  // const limits = getSubscriptionLimits(subscriptionTier);
-  // return currentPortfolios < limits.maxPortfolios;
+  const limits = getSubscriptionLimits(subscriptionTier);
+  return currentPortfolios < limits.maxPortfolios;
 };
 
 export const canAddStock = (currentStocks: number, subscriptionTier: string): boolean => {
-  // 🆓 FREE APP MODE: Always allow adding stocks
-  return true;
-  // TO RE-ENABLE: Uncomment below and comment above
-  // const limits = getSubscriptionLimits(subscriptionTier);
-  // return currentStocks < limits.maxStocksPerPortfolio;
+  const limits = getSubscriptionLimits(subscriptionTier);
+  return currentStocks < limits.maxStocksPerPortfolio;
 };
 
 export const getUpgradeMessage = (subscriptionTier: string, feature: string): string => {

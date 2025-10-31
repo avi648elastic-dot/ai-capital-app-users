@@ -80,40 +80,48 @@ PortfolioSchema.pre('save', async function(next) {
     // Ensure ticker is uppercase
     this.ticker = this.ticker.toUpperCase();
 
-    next();
-    
-    // UNCOMMENT TO RE-ENABLE SUBSCRIPTION LIMITS:
-    /*
-    // Check stock limits based on subscription tier
-    if (user.subscriptionTier === 'free') {
+    // Admins bypass all limits
+    if (user.isAdmin === true || user.role === 'admin') {
+      return next();
+    }
+
+    // Check effective subscription tier (includes trial logic)
+    let effectiveTier = user.subscriptionTier;
+    if (user.isTrialActive && user.trialEndDate && new Date() < user.trialEndDate) {
+      effectiveTier = 'premium+'; // Trial users get premium+ access
+    }
+
+    // Check stock limits based on effective subscription tier
+    if (effectiveTier === 'free') {
       // Free users: max 10 stocks total
       const stockCount = await mongoose.model('Portfolio').countDocuments({ userId: this.userId });
       if (stockCount >= 10) {
-        const error = new Error('Free users are limited to 10 stocks total');
+        const error = new Error('Free users are limited to 10 stocks total. Upgrade to Premium to add more stocks.');
         return next(error);
       }
-    } else if (user.subscriptionTier === 'premium') {
+    } else if (effectiveTier === 'premium') {
       // Premium users: max 15 stocks per portfolio
       const portfolioStockCount = await mongoose.model('Portfolio').countDocuments({ 
         userId: this.userId, 
         portfolioId: this.portfolioId 
       });
       if (portfolioStockCount >= 15) {
-        const error = new Error('Premium users are limited to 15 stocks per portfolio');
+        const error = new Error('Premium users are limited to 15 stocks per portfolio. Upgrade to Premium+ to add more stocks.');
         return next(error);
       }
-    } else if (user.subscriptionTier === 'premium+') {
+    } else if (effectiveTier === 'premium+') {
       // Premium+ users: max 20 stocks per portfolio
       const portfolioStockCount = await mongoose.model('Portfolio').countDocuments({ 
         userId: this.userId, 
         portfolioId: this.portfolioId 
       });
       if (portfolioStockCount >= 20) {
-        const error = new Error('Premium+ users are limited to 20 stocks per portfolio');
+        const error = new Error('Premium+ users are limited to 20 stocks per portfolio.');
         return next(error);
       }
     }
-    */
+
+    next();
   } catch (error) {
     next(error as Error);
   }
