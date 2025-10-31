@@ -203,46 +203,46 @@ export default function PortfolioAnalysis() {
     let color = 'text-blue-400';
 
     if (totalPnLPercent > 10 && positiveStocks > negativeStocks && avgVolatility < 20) {
-      // Excellent performance
+      // Excellent performance - Professional Wall Street analyst tone
       mood = 'excellent';
       icon = Smile;
-      message = "Outstanding performance! Your portfolio is showing strong gains with good diversification.";
-      recommendation = "Your solid investment strategy is paying off. Consider taking some profits on your best performers and reinvesting in undervalued opportunities.";
+      message = "Strong Alpha Generation with Robust Risk-Adjusted Returns";
+      recommendation = "Your portfolio demonstrates exceptional execution with compelling risk-adjusted returns. Consider systematic profit-taking on extended positions while maintaining core exposure to high-conviction names. Evaluate rotating capital into relative value opportunities across less crowded sectors.";
       color = 'text-green-400';
     } else if (totalPnLPercent > 5 && positiveStocks >= negativeStocks) {
-      // Good performance
+      // Good performance - Professional tone
       mood = 'good';
       icon = Smile;
-      message = "Good work! Your portfolio is performing well with positive momentum.";
-      recommendation = "Keep monitoring your positions. Consider rebalancing if any single stock becomes too dominant in your portfolio.";
+      message = "Solid Momentum with Constructive Price Action";
+      recommendation = "Portfolio exhibits healthy momentum with favorable risk/reward dynamics. Monitor position sizing and consider tactical rebalancing if single-stock concentration exceeds optimal risk parameters. Maintain disciplined approach to portfolio construction.";
       color = 'text-green-300';
     } else if (totalPnLPercent < -10 || negativeStocks > positiveStocks * 1.5) {
-      // Poor performance
+      // Poor performance - Professional but concerned tone
       mood = 'poor';
       icon = Frown;
-      message = "I'm concerned about your portfolio's recent performance. Several positions are underperforming.";
-      recommendation = "Consider reviewing your stop-loss levels and cutting losses on consistently declining positions. Look for opportunities to rebalance into more stable sectors.";
+      message = "Underperformance Signals Require Tactical Adjustment";
+      recommendation = "Multiple positions are trading below entry levels, suggesting either timing issues or fundamental deterioration. Execute disciplined risk management: review stop-loss parameters, trim underperformers with broken technicals, and consider reallocating capital to defensive sectors or cash until risk-off conditions subside.";
       color = 'text-red-400';
     } else if (avgVolatility > 30) {
-      // High volatility
+      // High volatility - Professional warning tone
       mood = 'warning';
       icon = AlertCircle;
-      message = "Your portfolio shows high volatility. This could lead to significant swings in value.";
-      recommendation = "Consider adding more stable, dividend-paying stocks to reduce overall portfolio risk. Diversification across sectors is key.";
+      message = "Elevated Volatility Indicates High Beta Exposure";
+      recommendation = "Portfolio exhibits elevated volatility metrics that may expose capital to outsized drawdowns during market corrections. Consider incorporating lower-beta defensive positions, utility stocks, or quality dividend payers to reduce portfolio-wide volatility while maintaining growth exposure.";
       color = 'text-yellow-400';
     } else if (techConcentration > 60) {
-      // Over-concentrated in tech
+      // Over-concentrated in tech - Professional tone
       mood = 'warning';
       icon = AlertCircle;
-      message = "Your portfolio is heavily concentrated in technology stocks, which increases sector risk.";
-      recommendation = "Diversify into other sectors like healthcare, financials, or consumer staples to reduce concentration risk and improve stability.";
+      message = "Sector Concentration Risk Requires Diversification";
+      recommendation = "Heavy technology sector weighting creates single-factor risk exposure. Tactically diversify across non-correlated sectors—healthcare, financials, consumer staples—to reduce concentration risk and improve portfolio resilience during sector rotation cycles.";
       color = 'text-yellow-400';
     } else {
-      // Neutral
+      // Neutral - Professional balanced tone
       mood = 'neutral';
       icon = Bot;
-      message = "Your portfolio shows mixed signals. Some positions are performing well while others need attention.";
-      recommendation = "Focus on your best-performing stocks and consider whether underperformers still fit your investment thesis.";
+      message = "Mixed Performance Signals Require Selective Position Management";
+      recommendation = "Portfolio exhibits divergent performance across holdings. Focus on positions with strong fundamental support and technical momentum while evaluating underperformers against original investment thesis. Consider tactical trimming of laggards and reallocating to winners if conviction remains high.";
       color = 'text-blue-400';
     }
 
@@ -436,7 +436,15 @@ export default function PortfolioAnalysis() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-white font-semibold">{sector.percentage || 0}%</div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="group relative">
+                          <div className="text-white font-semibold">{sector.percentage || 0}%</div>
+                          <div className="hidden group-hover:block absolute right-0 bottom-full mb-2 w-56 p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-300 z-20 shadow-xl">
+                            Portfolio allocation: {sector.percentage || 0}% of your total portfolio value is invested in {sector.sector} sector.
+                          </div>
+                        </div>
+                        <HelpCircle className="w-3.5 h-3.5 text-slate-500 cursor-help" />
+                      </div>
                       <div className="text-sm text-slate-400">${(sector.value || 0).toLocaleString()}</div>
                     </div>
                   </div>
@@ -448,18 +456,26 @@ export default function PortfolioAnalysis() {
                   </div>
                     <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-400">Stocks: {(sector.stocks || []).join(', ')}</span>
-                    <div className={`flex items-center space-x-1 ${
-                      (parseFloat(sector.performance90D || sector.performance30D) || 0) >= 10 ? 'text-green-400' : 
-                      (parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? 'text-green-300' : 
-                      (parseFloat(sector.performance90D || sector.performance30D) || 0) >= -10 ? 'text-red-300' : 'text-red-400'
-                    }`}>
-                      {(parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? (
-                        <TrendingUp className="w-3 h-3" />
-                      ) : (
-                        <TrendingDown className="w-3 h-3" />
-                      )}
-                      <span>{(parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance90D || sector.performance30D) || 0).toFixed(2)}%</span>
-                      <span className="text-slate-500">90D</span>
+                    <div className="flex items-center space-x-1.5">
+                      <div className={`flex items-center space-x-1 ${
+                        (parseFloat(sector.performance90D || sector.performance30D) || 0) >= 10 ? 'text-green-400' : 
+                        (parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? 'text-green-300' : 
+                        (parseFloat(sector.performance90D || sector.performance30D) || 0) >= -10 ? 'text-red-300' : 'text-red-400'
+                      }`}>
+                        {(parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? (
+                          <TrendingUp className="w-3 h-3" />
+                        ) : (
+                          <TrendingDown className="w-3 h-3" />
+                        )}
+                        <span>{(parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance90D || sector.performance30D) || 0).toFixed(2)}%</span>
+                        <span className="text-slate-500">90D</span>
+                      </div>
+                      <div className="group relative">
+                        <HelpCircle className="w-3 h-3 text-slate-500 cursor-help" />
+                        <div className="hidden group-hover:block absolute right-0 bottom-full mb-2 w-64 p-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-300 z-20 shadow-xl">
+                          Based on {sector.etfSymbol || 'sector ETF'} market performance over the last 90 calendar days. Calculated using closing prices only.
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -619,7 +635,7 @@ export default function PortfolioAnalysis() {
           <div className="card p-4 sm:p-6">
             <h3 className="text-base sm:text-lg font-semibold text-white mb-4 flex items-center">
               <Bot className="w-5 h-5 mr-2" />
-              AI-Capital Analysis
+              Portfolio Intelligence Analysis
             </h3>
             <div className="space-y-4">
               {aiAnalysis ? (

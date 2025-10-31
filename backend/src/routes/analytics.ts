@@ -287,23 +287,31 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         'Communication Services': 'XLC'
       };
       
-      // Calculate real 90d returns for each sector ETF in parallel
+      // Calculate real 30d and 90d returns for each sector ETF in parallel using metrics engine
+      // This ensures accurate calendar-day calculations with closing prices only
       const sectorReturnsPromises = sectorAllocation.map(async (sector) => {
         const etfSymbol = sectorETFs[sector.sector] || sector.etfSymbol;
         if (!etfSymbol) return sector; // Skip if no ETF
         
         try {
-          // Get 90d metrics from metrics engine (cached, fast)
+          // Get metrics from metrics engine (cached, fast, accurate)
+          // Metrics engine uses calendar days and closing prices only
           const metricsData = await getMetrics(etfSymbol);
+          const metrics30D = metricsData.metrics["30d"];
           const metrics90D = metricsData.metrics["90d"];
           
+          if (metrics30D) {
+            sector.performance30D = metrics30D.returnPct; // Accurate 30d return
+            loggerService.info(`✅ [ANALYTICS] ${sector.sector} (${etfSymbol}): 30d return = ${metrics30D.returnPct.toFixed(2)}%`);
+          }
+          
           if (metrics90D) {
-            sector.performance90D = metrics90D.returnPct;
+            sector.performance90D = metrics90D.returnPct; // Accurate 90d return
             loggerService.info(`✅ [ANALYTICS] ${sector.sector} (${etfSymbol}): 90d return = ${metrics90D.returnPct.toFixed(2)}%`);
           }
         } catch (error) {
-          loggerService.warn(`⚠️ [ANALYTICS] Could not fetch 90d metrics for ${sector.sector} ETF (${etfSymbol}):`, error);
-          // Keep existing performance90D if available
+          loggerService.warn(`⚠️ [ANALYTICS] Could not fetch metrics for ${sector.sector} ETF (${etfSymbol}):`, error);
+          // Keep existing performance values if available
         }
         
         return sector;
