@@ -92,8 +92,12 @@ export default function Dashboard() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const router = useRouter();
 
-  // Get subscription limits
-  const subscriptionLimits = getSubscriptionLimits(user?.subscriptionTier || 'free');
+  // Get subscription limits - account for trial status
+  // If user is in trial, they get premium+ access
+  const effectiveTier = (user?.isTrialActive && user?.trialEndDate && new Date() < new Date(user.trialEndDate))
+    ? 'premium+'
+    : (user?.subscriptionTier || 'free');
+  const subscriptionLimits = getSubscriptionLimits(effectiveTier);
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -246,6 +250,49 @@ export default function Dashboard() {
       setSelectedPortfolioId('');
     }
   }, [showMultiPortfolio]);
+
+  // Calculate portfolioMeta from portfolio data (for single-view mode)
+  useEffect(() => {
+    if (!showMultiPortfolio && portfolio.length > 0) {
+      // Count unique portfolios by type
+      const uniquePortfolios = new Set(portfolio.map((p: any) => p.portfolioId || `${p.portfolioType}-1`));
+      const totalPortfolios = uniquePortfolios.size;
+      
+      // Count portfolios by type
+      const solidPortfolios = new Set(
+        portfolio
+          .filter((p: any) => {
+            const pid = p.portfolioId || `${p.portfolioType}-1`;
+            return p.portfolioType === 'solid';
+          })
+          .map((p: any) => p.portfolioId || `${p.portfolioType}-1`)
+      ).size;
+      
+      const riskyPortfolios = new Set(
+        portfolio
+          .filter((p: any) => {
+            const pid = p.portfolioId || `${p.portfolioType}-1`;
+            return p.portfolioType === 'risky';
+          })
+          .map((p: any) => p.portfolioId || `${p.portfolioType}-1`)
+      ).size;
+      
+      setPortfolioMeta({ 
+        total: totalPortfolios, 
+        solid: solidPortfolios, 
+        risky: riskyPortfolios 
+      });
+      
+      console.log('📊 [DASHBOARD] Calculated portfolioMeta from portfolio:', {
+        total: totalPortfolios,
+        solid: solidPortfolios,
+        risky: riskyPortfolios
+      });
+    } else if (!showMultiPortfolio && portfolio.length === 0) {
+      // Reset when portfolio is empty
+      setPortfolioMeta({ total: 0, solid: 0, risky: 0 });
+    }
+  }, [portfolio, showMultiPortfolio]);
 
   // 🚀 PERFORMANCE OPTIMIZED: Portfolio fetching with caching and shorter timeout
   const fetchPortfolio = async (useCache = true) => {
@@ -627,10 +674,12 @@ export default function Dashboard() {
               </h3>
               <div className="flex items-center space-x-1 sm:space-x-2">
                 <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium bg-green-600/20 text-green-300">
-                  ∞ Portfolios
+                  {portfolioMeta.total}/{subscriptionLimits.maxPortfolios} Portfolios
                 </span>
                 <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs font-medium bg-green-600/20 text-green-300">
-                  ∞ Stocks
+                  {showMultiPortfolio && selectedMultiPortfolio 
+                    ? `${selectedMultiPortfolio.stocks.length}/${subscriptionLimits.maxStocksPerPortfolio}` 
+                    : `${filteredPortfolio.length}/${effectiveTier === 'free' ? 10 : subscriptionLimits.maxStocksPerPortfolio}`} Stocks
                 </span>
               </div>
             </div>
@@ -732,15 +781,15 @@ export default function Dashboard() {
                 </button>
               </div>
             )}
-        {/* Stock/Portfolio Counters - Free App Mode */}
+        {/* Stock/Portfolio Counters - Show Actual Limits */}
             {user && (
           <div className="px-4 py-4 rounded-lg text-base font-semibold flex flex-col space-y-3 bg-green-900/30 text-green-300 border border-green-500/30">
             <div className="flex items-center space-x-3">
               <span className="opacity-70 text-lg">Stocks:</span>
               <span className="font-bold text-xl">
                       {showMultiPortfolio && selectedMultiPortfolio 
-                      ? `${selectedMultiPortfolio.stocks.length}/∞`
-                      : `${filteredPortfolio.length}/∞`
+                      ? `${selectedMultiPortfolio.stocks.length}/${subscriptionLimits.maxStocksPerPortfolio}`
+                      : `${filteredPortfolio.length}/${effectiveTier === 'free' ? 10 : subscriptionLimits.maxStocksPerPortfolio}`
                     }
                   </span>
                   {showMultiPortfolio && selectedMultiPortfolio && (
@@ -749,9 +798,9 @@ export default function Dashboard() {
                     </span>
                   )}
             </div>
-            {/* Free App Mode - Show all portfolio info */}
+            {/* Show Portfolio Limits with Portfolio Kinds */}
             <div className="text-base opacity-80">
-              {t('common.portfolios')}: {portfolioMeta.total}/∞ ({portfolioMeta.solid} {t('common.solid')} · {portfolioMeta.risky} {t('common.risky')})
+              {t('common.portfolios')}: {portfolioMeta.total}/{subscriptionLimits.maxPortfolios} ({portfolioMeta.solid} {t('common.solid')} · {portfolioMeta.risky} {t('common.risky')})
             </div>
               </div>
             )}
