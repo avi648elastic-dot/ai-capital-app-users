@@ -173,38 +173,44 @@ router.get('/', authenticateToken, async (req, res) => {
     const tickers = [...new Set(portfolio.map(item => item.ticker))];
     loggerService.info(`🔍 [PERFORMANCE] Analyzing ${tickers.length} stocks: ${tickers.join(', ')}`);
     
-    // Fetch real daily price data for all stocks using Yahoo Finance
-    loggerService.info(`🔍 [PERFORMANCE] Fetching real daily data for ${tickers.length} stocks: ${tickers.join(', ')}`);
+    // Fetch real stock metrics using SAME service as decision engine
+    loggerService.info(`🔍 [PERFORMANCE] Fetching real metrics for ${tickers.length} stocks using googleFinanceFormulasService`);
     console.log(`🔍 [PERFORMANCE] Tickers: ${tickers.join(', ')}, Days: ${days}`);
     
-    let stockMetricsMap: Map<string, any> = new Map();
+    // Fetch stock metrics and price history in parallel for better performance
+    const stockMetricsMap: Map<string, any> = new Map();
+    const priceHistoryMap: Map<string, { date: string; price: number }[]> = new Map();
     
     try {
-      // TEMPORARY: Skip Google Finance and use placeholder data directly
-      console.log(`🔄 [PERFORMANCE] Using placeholder data directly...`);
+      // Fetch stock metrics and price history in parallel
+      const fetchPromises = tickers.map(async (ticker) => {
+        try {
+          // Get current metrics (same as decision engine)
+          const stockMetrics = await googleFinanceFormulasService.getStockMetrics(ticker);
+          
+          // Get daily price history for return calculations
+          const priceHistory = await historicalDataService.getStockHistory(ticker, 90);
+          
+          // Sort prices by date (oldest first) for accurate return calculations
+          const sortedPrices = priceHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          
+          stockMetricsMap.set(ticker, stockMetrics);
+          priceHistoryMap.set(ticker, sortedPrices);
+          
+          loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${stockMetrics.current.toFixed(2)}, DataSource=${stockMetrics.dataSource}, History=${sortedPrices.length} days`);
+        } catch (error) {
+          loggerService.error(`❌ [PERFORMANCE] Failed to fetch ${ticker}:`, error);
+          // Continue with other stocks even if one fails
+        }
+      });
       
-      // Create placeholder data immediately
-      stockMetricsMap = new Map();
-      for (const ticker of tickers) {
-        const placeholderData = {
-          current: 100 + Math.random() * 50, // Random price
-          top30D: 120 + Math.random() * 30,
-          top60D: 130 + Math.random() * 40,
-          thisMonthPercent: (Math.random() - 0.5) * 40, // -20% to +20%
-          lastMonthPercent: (Math.random() - 0.5) * 30, // -15% to +15%
-          volatility: 0.2 + Math.random() * 0.3, // 20% to 50%
-          dataSource: 'placeholder'
-        };
-        stockMetricsMap.set(ticker, placeholderData);
-      }
-      console.log(`✅ [PERFORMANCE] Created placeholder data for ${stockMetricsMap.size} stocks`);
+      await Promise.all(fetchPromises);
+      
+      loggerService.info(`✅ [PERFORMANCE] Successfully fetched data for ${stockMetricsMap.size}/${tickers.length} stocks`);
+      
     } catch (error) {
-      console.error(`❌ [PERFORMANCE] Placeholder data creation failed:`, error);
-      loggerService.error(`❌ [PERFORMANCE] Placeholder data creation failed:`, error);
-      
-      // Last resort - empty map
-      stockMetricsMap = new Map();
-      console.log(`⚠️ [PERFORMANCE] Using empty data map`);
+      loggerService.error(`❌ [PERFORMANCE] Error fetching stock data:`, error);
+      // Continue with empty maps if fetch fails - will use fallback below
     }
     
     loggerService.info(`📊 [PERFORMANCE] Retrieved data for ${stockMetricsMap.size}/${tickers.length} stocks`);
@@ -213,13 +219,14 @@ router.get('/', authenticateToken, async (req, res) => {
     for (const ticker of tickers) {
       if (stockMetricsMap.has(ticker)) {
         const data = stockMetricsMap.get(ticker)!;
-        loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${data.current.toFixed(2)}, Volatility=${(data.volatility * 100).toFixed(2)}%, Source=${data.dataSource}`);
+        const history = priceHistoryMap.get(ticker) || [];
+        loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${data.current.toFixed(2)}, Volatility=${data.volatility.toFixed(2)}%, Source=${data.dataSource}, History=${history.length} days`);
       } else {
         loggerService.warn(`❌ [PERFORMANCE] ${ticker}: No data available from any API`);
       }
     }
     
-    // Use real-time calculated metrics directly
+    // Calculate real returns from price history
     const stockMetrics: Record<string, any> = {};
     let totalPortfolioValue = 0;
     let totalPortfolioReturn = 0;
@@ -228,47 +235,129 @@ router.get('/', authenticateToken, async (req, res) => {
 
     for (const stock of portfolio) {
       const stockData = stockMetricsMap.get(stock.ticker);
-      if (!stockData) {
-        loggerService.warn(`⚠️ [PERFORMANCE] No real-time data for ${stock.ticker} - using fallback`);
-        
-        // Add placeholder data so frontend doesn't break
-        const estimatedReturn = (Math.random() - 0.5) * 40; // -20% to +20% random return
-        const estimatedVolatility = 15 + Math.random() * 25; // 15% to 40% volatility
-        const estimatedSharpe = estimatedVolatility > 0 ? (estimatedReturn - 2.0) / estimatedVolatility : 0;
-        const estimatedMaxDD = Math.abs(estimatedReturn) * 0.8; // 80% of return as max drawdown
-        
-        stockMetrics[stock.ticker] = {
-          totalReturn: estimatedReturn,
-          volatility: estimatedVolatility,
-          volatilityMetrics: null,
-          sharpeRatio: estimatedSharpe,
-          maxDrawdown: estimatedMaxDD,
-          topPrice: stock.currentPrice * (1 + Math.abs(estimatedReturn) / 100),
-          currentPrice: stock.currentPrice,
-          error: 'No real-time data available'
-        };
+      const priceHistory = priceHistoryMap.get(stock.ticker) || [];
+      
+      if (!stockData || priceHistory.length === 0) {
+        loggerService.warn(`⚠️ [PERFORMANCE] No real-time data or price history for ${stock.ticker} - skipping`);
+        // Skip this stock - don't add placeholder data
         continue;
       }
 
-      // ULTRA-SIMPLE: Use hardcoded values to avoid any calculation errors
+      // Calculate real return for requested timeframe from actual price history
+      const currentPrice = stockData.current;
+      const historyLength = priceHistory.length;
+      
+      // Get price N days ago (if available, otherwise use oldest available)
+      // Price history is sorted oldest first:
+      // - index 0 = oldest price
+      // - index (historyLength - 1) = newest price in history
+      // For N days ago from newest: index = (historyLength - 1) - N
+      let startPrice = currentPrice;
+      let startPriceDaysAgo = 0;
+      
+      if (days <= historyLength && historyLength > 0) {
+        // We have enough history - use price from N days ago from the most recent
+        const targetIndex = Math.max(0, (historyLength - 1) - days);
+        startPrice = priceHistory[targetIndex].price;
+        startPriceDaysAgo = days;
+      } else if (historyLength > 0) {
+        // Use oldest available price if we don't have enough history
+        startPrice = priceHistory[0].price;
+        startPriceDaysAgo = historyLength;
+      }
+      
+      // Calculate total return: ((current - start) / start) * 100
+      let totalReturn = 0;
+      if (startPrice > 0) {
+        totalReturn = ((currentPrice - startPrice) / startPrice) * 100;
+      }
+      
+      // Use real volatility from stockData (already calculated by googleFinanceFormulasService)
+      const volatility = stockData.volatility || 0;
+      
+      // For now, set placeholder values for Sharpe and Max Drawdown (will be fixed in next phase)
+      // These will be calculated properly after return calculation is approved
+      const sharpeRatio = 0; // Placeholder - will calculate in next phase
+      const maxDrawdown = 0; // Placeholder - will calculate in next phase
+      
       const metrics = {
-        totalReturn: 15.5, // Fixed return
-        volatility: 25.3, // Fixed volatility
+        totalReturn: totalReturn,
+        volatility: volatility,
         volatilityMetrics: null,
-        sharpeRatio: 1.2, // Fixed Sharpe ratio
-        maxDrawdown: 8.7, // Fixed max drawdown
+        sharpeRatio: sharpeRatio,
+        maxDrawdown: maxDrawdown,
         topPrice: stockData.top60D || stockData.top30D || stockData.current,
-        currentPrice: stockData.current
+        currentPrice: currentPrice,
+        return7D: 0, // Will calculate in next iteration
+        return30D: 0, // Will calculate in next iteration
+        return60D: 0, // Will calculate in next iteration
+        return90D: 0, // Will calculate in next iteration
+        dataSource: stockData.dataSource,
+        historyLength: historyLength,
+        startPrice: startPrice,
+        startPriceDaysAgo: startPriceDaysAgo
       };
+      
+      // Calculate returns for all timeframes (7/30/60/90 days) from price history
+      // Price history is sorted oldest first, so:
+      // - index 0 = oldest (90 days ago if we have 90 days)
+      // - index (historyLength - 1) = newest in history
+      // - For N days ago from newest: index = (historyLength - 1) - N
+      
+      if (historyLength >= 7) {
+        // Get price 7 days ago from the most recent price in history
+        const index7DaysAgo = Math.max(0, historyLength - 1 - 7);
+        const price7DAgo = priceHistory[index7DaysAgo].price;
+        if (price7DAgo > 0) {
+          metrics.return7D = ((currentPrice - price7DAgo) / price7DAgo) * 100;
+        }
+      }
+      
+      if (historyLength >= 30) {
+        // Get price 30 days ago from the most recent price in history
+        const index30DaysAgo = Math.max(0, historyLength - 1 - 30);
+        const price30DAgo = priceHistory[index30DaysAgo].price;
+        if (price30DAgo > 0) {
+          metrics.return30D = ((currentPrice - price30DAgo) / price30DAgo) * 100;
+        }
+      }
+      
+      if (historyLength >= 60) {
+        // Get price 60 days ago from the most recent price in history
+        const index60DaysAgo = Math.max(0, historyLength - 1 - 60);
+        const price60DAgo = priceHistory[index60DaysAgo].price;
+        if (price60DAgo > 0) {
+          metrics.return60D = ((currentPrice - price60DAgo) / price60DAgo) * 100;
+        }
+      }
+      
+      if (historyLength >= 90) {
+        // Get price 90 days ago (oldest price in history)
+        const price90DAgo = priceHistory[0].price;
+        if (price90DAgo > 0) {
+          metrics.return90D = ((currentPrice - price90DAgo) / price90DAgo) * 100;
+        }
+      } else if (historyLength > 0) {
+        // If we have some history but less than 90 days, use oldest available
+        const priceOldest = priceHistory[0].price;
+        if (priceOldest > 0) {
+          metrics.return90D = ((currentPrice - priceOldest) / priceOldest) * 100;
+        }
+      }
 
-      loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} metrics:`, {
+      loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} calculated metrics:`, {
         timeframe: `${days}d`,
-        return: metrics.totalReturn.toFixed(2) + '%',
-        volatility: metrics.volatility.toFixed(2) + '%',
-        sharpe: metrics.sharpeRatio.toFixed(2),
-        maxDD: metrics.maxDrawdown.toFixed(2) + '%',
-        currentPrice: '$' + metrics.currentPrice.toFixed(2),
-        dataSource: stockData.dataSource
+        return: totalReturn.toFixed(2) + '%',
+        return7D: metrics.return7D.toFixed(2) + '%',
+        return30D: metrics.return30D.toFixed(2) + '%',
+        return60D: metrics.return60D.toFixed(2) + '%',
+        return90D: metrics.return90D.toFixed(2) + '%',
+        volatility: volatility.toFixed(2) + '%',
+        currentPrice: '$' + currentPrice.toFixed(2),
+        startPrice: '$' + startPrice.toFixed(2),
+        startPriceDaysAgo: startPriceDaysAgo,
+        dataSource: stockData.dataSource,
+        historyLength: historyLength
       });
 
       stockMetrics[stock.ticker] = metrics;
@@ -284,9 +373,9 @@ router.get('/', authenticateToken, async (req, res) => {
       const stockWeight = totalPortfolioValueCalc > 0 ? stockValue / totalPortfolioValueCalc : 0;
       
       totalPortfolioValue += stockValue;
-      totalPortfolioReturn += metrics.totalReturn * stockWeight;
-      totalWeightedVolatility += metrics.volatility * stockWeight;
-      portfolioMaxDrawdown = Math.max(portfolioMaxDrawdown, metrics.maxDrawdown);
+      totalPortfolioReturn += totalReturn * stockWeight;
+      totalWeightedVolatility += volatility * stockWeight;
+      portfolioMaxDrawdown = Math.max(portfolioMaxDrawdown, maxDrawdown);
     }
 
     // Calculate portfolio Sharpe ratio
@@ -328,11 +417,25 @@ router.get('/', authenticateToken, async (req, res) => {
       stocksAnalyzed: stockMetricsMap.size
     });
     
+    // Determine data source from stock metrics (use most common source)
+    const dataSourceCounts: Record<string, number> = {};
+    for (const metrics of Object.values(stockMetrics)) {
+      const source = metrics.dataSource || 'unknown';
+      dataSourceCounts[source] = (dataSourceCounts[source] || 0) + 1;
+    }
+    const primaryDataSource = Object.keys(dataSourceCounts).reduce((a, b) => 
+      dataSourceCounts[a] > dataSourceCounts[b] ? a : b, 'googleFinanceFormulasService'
+    );
+    
     const response = {
       portfolioMetrics,
       stockMetrics,
       timeframe: `${days}d`,
-      dataSource: 'Yahoo Finance Real-Time Data',
+      dataSource: primaryDataSource === 'alpha_vantage' ? 'Alpha Vantage' :
+                  primaryDataSource === 'finnhub' ? 'Finnhub' :
+                  primaryDataSource === 'fmp' ? 'Financial Modeling Prep' :
+                  primaryDataSource === 'fallback' ? 'Fallback Data (APIs unavailable)' :
+                  'Google Finance Formulas Service (Real-Time Data)',
       timestamp: new Date().toISOString(),
       dataPoints: Array.from(stockMetricsMap.keys()),
       cacheStats: googleFinanceFormulasService.getCacheStats(),
@@ -340,7 +443,8 @@ router.get('/', authenticateToken, async (req, res) => {
         portfolioCount: portfolio.length,
         stockDataCount: stockMetricsMap.size,
         calculatedMetrics: Object.keys(stockMetrics).length,
-        tickers: tickers
+        tickers: tickers,
+        dataSourceBreakdown: dataSourceCounts
       }
     };
     
