@@ -252,10 +252,11 @@ router.get('/', authenticateToken, async (req, res) => {
         continue;
       }
       
-      // Use most recent price from history OR current price (whichever is more recent)
-      // Most recent in history = last element
-      const mostRecentPriceInHistory = priceHistory[historyLength - 1].price;
-      const endPrice = currentPrice; // Use current price from API as most accurate
+      // Get current price from stockData (real-time API price)
+      const currentPrice = stockData.current;
+      
+      // Use current price from API as end price (most accurate real-time price)
+      const endPrice = currentPrice;
       
       // Helper function to calculate volatility from price window
       const calculateVolatilityForWindow = (prices: { price: number }[], windowDays: number): number => {
