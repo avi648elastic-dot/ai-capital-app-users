@@ -243,119 +243,150 @@ router.get('/', authenticateToken, async (req, res) => {
         continue;
       }
 
-      // Calculate real return for requested timeframe from actual price history
-      const currentPrice = stockData.current;
+      // Calculate returns and volatility per timeframe from actual price history
+      // Price history is sorted oldest first (index 0 = oldest, index length-1 = newest)
       const historyLength = priceHistory.length;
       
-      // Get price N days ago (if available, otherwise use oldest available)
-      // Price history is sorted oldest first:
-      // - index 0 = oldest price
-      // - index (historyLength - 1) = newest price in history
-      // For N days ago from newest: index = (historyLength - 1) - N
-      let startPrice = currentPrice;
-      let startPriceDaysAgo = 0;
-      
-      if (days <= historyLength && historyLength > 0) {
-        // We have enough history - use price from N days ago from the most recent
-        const targetIndex = Math.max(0, (historyLength - 1) - days);
-        startPrice = priceHistory[targetIndex].price;
-        startPriceDaysAgo = days;
-      } else if (historyLength > 0) {
-        // Use oldest available price if we don't have enough history
-        startPrice = priceHistory[0].price;
-        startPriceDaysAgo = historyLength;
+      if (historyLength < 2) {
+        loggerService.warn(`⚠️ [PERFORMANCE] Insufficient price history for ${stock.ticker} (${historyLength} days) - skipping`);
+        continue;
       }
       
-      // Calculate total return: ((current - start) / start) * 100
-      let totalReturn = 0;
-      if (startPrice > 0) {
-        totalReturn = ((currentPrice - startPrice) / startPrice) * 100;
-      }
+      // Use most recent price from history OR current price (whichever is more recent)
+      // Most recent in history = last element
+      const mostRecentPriceInHistory = priceHistory[historyLength - 1].price;
+      const endPrice = currentPrice; // Use current price from API as most accurate
       
-      // Use real volatility from stockData (already calculated by googleFinanceFormulasService)
-      const volatility = stockData.volatility || 0;
+      // Helper function to calculate volatility from price window
+      const calculateVolatilityForWindow = (prices: { price: number }[], windowDays: number): number => {
+        if (prices.length < 2) return 0;
+        
+        // Calculate daily log returns: r_t = ln(P_t / P_{t-1})
+        // Note: prices are sorted oldest first, so we go from old to new
+        const logReturns: number[] = [];
+        for (let i = 1; i < prices.length; i++) {
+          if (prices[i].price > 0 && prices[i - 1].price > 0) {
+            const logReturn = Math.log(prices[i].price / prices[i - 1].price);
+            logReturns.push(logReturn);
+          }
+        }
+        
+        if (logReturns.length < 2) return 0;
+        
+        // Calculate standard deviation of log returns
+        const meanReturn = logReturns.reduce((sum, ret) => sum + ret, 0) / logReturns.length;
+        const variance = logReturns.reduce((sum, ret) => sum + Math.pow(ret - meanReturn, 2), 0) / logReturns.length;
+        const dailyVolatility = Math.sqrt(variance);
+        
+        // Annualize: σ_annual = σ_daily * sqrt(252) * 100 (convert to percentage)
+        const annualizedVolatility = dailyVolatility * Math.sqrt(252) * 100;
+        
+        return annualizedVolatility;
+      };
+      
+      // Helper function to calculate return and dollar return for a timeframe
+      const calculateReturnForTimeframe = (windowDays: number): { returnPercent: number; returnDollar: number; volatility: number; startPrice: number; endPrice: number } => {
+        let startPrice = endPrice;
+        let volatility = 0;
+        
+        // Price history is sorted oldest first:
+        // - index 0 = oldest (e.g., 90 days ago if we have 90 days)
+        // - index (historyLength - 1) = newest in history (e.g., yesterday)
+        // For N days ago from newest: index = (historyLength - 1) - N
+        // But we need at least N trading days of history
+        
+        if (historyLength >= windowDays) {
+          // Get price N days ago from the most recent price in history
+          // Most recent in history is at index (historyLength - 1)
+          // N days ago would be at index (historyLength - 1) - (windowDays - 1)
+          // Example: 90 days history, want 7 days ago:
+          //   index 89 (most recent) - (7-1) = index 83 (7 days ago)
+          // But we want exactly N days, so: index (historyLength - windowDays)
+          const startIndex = Math.max(0, historyLength - windowDays);
+          startPrice = priceHistory[startIndex].price;
+          
+          // Get price window for volatility calculation (from start to end)
+          // Include all prices from startIndex to end (historyLength - 1)
+          const priceWindow = priceHistory.slice(startIndex);
+          volatility = calculateVolatilityForWindow(priceWindow, windowDays);
+        } else if (historyLength > 0) {
+          // Use oldest available if we don't have enough history
+          startPrice = priceHistory[0].price;
+          volatility = calculateVolatilityForWindow(priceHistory, historyLength);
+        }
+        
+        // Calculate return: ((end / start) - 1) * 100
+        const returnPercent = startPrice > 0 ? ((endPrice / startPrice) - 1) * 100 : 0;
+        // Calculate dollar return: end - start
+        const returnDollar = endPrice - startPrice;
+        
+        return { returnPercent, returnDollar, volatility, startPrice, endPrice };
+      };
+      
+      // Calculate metrics for requested timeframe
+      const requestedMetrics = calculateReturnForTimeframe(days);
+      
+      // Calculate metrics for all timeframes (7/30/60/90 days)
+      const metrics7D = calculateReturnForTimeframe(7);
+      const metrics30D = calculateReturnForTimeframe(30);
+      const metrics60D = calculateReturnForTimeframe(60);
+      const metrics90D = calculateReturnForTimeframe(90);
+      
+      // Use volatility from requested timeframe (or closest available)
+      const volatility = requestedMetrics.volatility || metrics90D.volatility || metrics30D.volatility || 0;
       
       // For now, set placeholder values for Sharpe and Max Drawdown (will be fixed in next phase)
-      // These will be calculated properly after return calculation is approved
       const sharpeRatio = 0; // Placeholder - will calculate in next phase
       const maxDrawdown = 0; // Placeholder - will calculate in next phase
       
       const metrics = {
-        totalReturn: totalReturn,
-        volatility: volatility,
+        totalReturn: requestedMetrics.returnPercent,
+        returnDollar: requestedMetrics.returnDollar, // Dollar return per share for requested timeframe
+        volatility: volatility, // Volatility for requested timeframe
+        volatility7D: metrics7D.volatility,
+        volatility30D: metrics30D.volatility,
+        volatility90D: metrics90D.volatility,
         volatilityMetrics: null,
         sharpeRatio: sharpeRatio,
         maxDrawdown: maxDrawdown,
         topPrice: stockData.top60D || stockData.top30D || stockData.current,
-        currentPrice: currentPrice,
-        return7D: 0, // Will calculate in next iteration
-        return30D: 0, // Will calculate in next iteration
-        return60D: 0, // Will calculate in next iteration
-        return90D: 0, // Will calculate in next iteration
+        currentPrice: endPrice,
+        // Return percentages for all timeframes
+        return7D: metrics7D.returnPercent,
+        return7DDollar: metrics7D.returnDollar,
+        return30D: metrics30D.returnPercent,
+        return30DDollar: metrics30D.returnDollar,
+        return60D: metrics60D.returnPercent,
+        return60DDollar: metrics60D.returnDollar,
+        return90D: metrics90D.returnPercent,
+        return90DDollar: metrics90D.returnDollar,
+        // Start prices for each timeframe
+        startPrice7D: metrics7D.startPrice,
+        startPrice30D: metrics30D.startPrice,
+        startPrice60D: metrics60D.startPrice,
+        startPrice90D: metrics90D.startPrice,
         dataSource: stockData.dataSource,
-        historyLength: historyLength,
-        startPrice: startPrice,
-        startPriceDaysAgo: startPriceDaysAgo
+        historyLength: historyLength
       };
-      
-      // Calculate returns for all timeframes (7/30/60/90 days) from price history
-      // Price history is sorted oldest first, so:
-      // - index 0 = oldest (90 days ago if we have 90 days)
-      // - index (historyLength - 1) = newest in history
-      // - For N days ago from newest: index = (historyLength - 1) - N
-      
-      if (historyLength >= 7) {
-        // Get price 7 days ago from the most recent price in history
-        const index7DaysAgo = Math.max(0, historyLength - 1 - 7);
-        const price7DAgo = priceHistory[index7DaysAgo].price;
-        if (price7DAgo > 0) {
-          metrics.return7D = ((currentPrice - price7DAgo) / price7DAgo) * 100;
-        }
-      }
-      
-      if (historyLength >= 30) {
-        // Get price 30 days ago from the most recent price in history
-        const index30DaysAgo = Math.max(0, historyLength - 1 - 30);
-        const price30DAgo = priceHistory[index30DaysAgo].price;
-        if (price30DAgo > 0) {
-          metrics.return30D = ((currentPrice - price30DAgo) / price30DAgo) * 100;
-        }
-      }
-      
-      if (historyLength >= 60) {
-        // Get price 60 days ago from the most recent price in history
-        const index60DaysAgo = Math.max(0, historyLength - 1 - 60);
-        const price60DAgo = priceHistory[index60DaysAgo].price;
-        if (price60DAgo > 0) {
-          metrics.return60D = ((currentPrice - price60DAgo) / price60DAgo) * 100;
-        }
-      }
-      
-      if (historyLength >= 90) {
-        // Get price 90 days ago (oldest price in history)
-        const price90DAgo = priceHistory[0].price;
-        if (price90DAgo > 0) {
-          metrics.return90D = ((currentPrice - price90DAgo) / price90DAgo) * 100;
-        }
-      } else if (historyLength > 0) {
-        // If we have some history but less than 90 days, use oldest available
-        const priceOldest = priceHistory[0].price;
-        if (priceOldest > 0) {
-          metrics.return90D = ((currentPrice - priceOldest) / priceOldest) * 100;
-        }
-      }
 
       loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} calculated metrics:`, {
         timeframe: `${days}d`,
-        return: totalReturn.toFixed(2) + '%',
+        return: requestedMetrics.returnPercent.toFixed(2) + '%',
+        returnDollar: '$' + requestedMetrics.returnDollar.toFixed(2),
         return7D: metrics.return7D.toFixed(2) + '%',
+        return7DDollar: '$' + metrics.return7DDollar.toFixed(2),
         return30D: metrics.return30D.toFixed(2) + '%',
+        return30DDollar: '$' + metrics.return30DDollar.toFixed(2),
         return60D: metrics.return60D.toFixed(2) + '%',
+        return60DDollar: '$' + metrics.return60DDollar.toFixed(2),
         return90D: metrics.return90D.toFixed(2) + '%',
+        return90DDollar: '$' + metrics.return90DDollar.toFixed(2),
         volatility: volatility.toFixed(2) + '%',
-        currentPrice: '$' + currentPrice.toFixed(2),
-        startPrice: '$' + startPrice.toFixed(2),
-        startPriceDaysAgo: startPriceDaysAgo,
+        volatility7D: metrics.volatility7D.toFixed(2) + '%',
+        volatility30D: metrics.volatility30D.toFixed(2) + '%',
+        volatility90D: metrics.volatility90D.toFixed(2) + '%',
+        currentPrice: '$' + endPrice.toFixed(2),
+        startPrice: '$' + requestedMetrics.startPrice.toFixed(2),
         dataSource: stockData.dataSource,
         historyLength: historyLength
       });
@@ -373,7 +404,7 @@ router.get('/', authenticateToken, async (req, res) => {
       const stockWeight = totalPortfolioValueCalc > 0 ? stockValue / totalPortfolioValueCalc : 0;
       
       totalPortfolioValue += stockValue;
-      totalPortfolioReturn += totalReturn * stockWeight;
+      totalPortfolioReturn += requestedMetrics.returnPercent * stockWeight;
       totalWeightedVolatility += volatility * stockWeight;
       portfolioMaxDrawdown = Math.max(portfolioMaxDrawdown, maxDrawdown);
     }
