@@ -4,9 +4,10 @@ import { authenticateToken } from '../middleware/auth';
 import { googleFinanceFormulasService } from '../services/googleFinanceFormulasService';
 import { volatilityService } from '../services/volatilityService';
 import { loggerService } from '../services/loggerService';
-import { historicalDataService } from '../services/historicalDataService';
+import { historicalDataService, HistoricalPrice } from '../services/historicalDataService';
 import { redisService } from '../services/redisService';
 import { realTimePerformanceService } from '../services/realTimePerformanceService';
+import { computeMetricsForWindow, Bar, WindowKey } from '../utils/metrics';
 
 const router = express.Router();
 
@@ -179,25 +180,31 @@ router.get('/', authenticateToken, async (req, res) => {
     
     // Fetch stock metrics and price history in parallel for better performance
     const stockMetricsMap: Map<string, any> = new Map();
-    const priceHistoryMap: Map<string, { date: string; price: number }[]> = new Map();
+    const priceHistoryMap: Map<string, Bar[]> = new Map();
     
     try {
       // Fetch stock metrics and price history in parallel
       const fetchPromises = tickers.map(async (ticker) => {
         try {
-          // Get current metrics (same as decision engine)
-          const stockMetrics = await googleFinanceFormulasService.getStockMetrics(ticker);
+      // Get current metrics (same as decision engine)
+      const stockMetrics = await googleFinanceFormulasService.getStockMetrics(ticker);
+      
+      // Get full historical data (needed for Bar[] format with high/low/open/close)
+      const historicalData = await historicalDataService.getHistoricalData(ticker, 90);
+      
+      // Convert to Bar[] format for metrics module
+      const bars: Bar[] = historicalData.map(item => ({
+        t: item.date,
+        open: item.open,
+        high: item.high,
+        low: item.low,
+        close: item.close
+      }));
+      
+      stockMetricsMap.set(ticker, stockMetrics);
+      priceHistoryMap.set(ticker, bars);
           
-          // Get daily price history for return calculations
-          const priceHistory = await historicalDataService.getStockHistory(ticker, 90);
-          
-          // Sort prices by date (oldest first) for accurate return calculations
-          const sortedPrices = priceHistory.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-          
-          stockMetricsMap.set(ticker, stockMetrics);
-          priceHistoryMap.set(ticker, sortedPrices);
-          
-          loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${stockMetrics.current.toFixed(2)}, DataSource=${stockMetrics.dataSource}, History=${sortedPrices.length} days`);
+          loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${stockMetrics.current.toFixed(2)}, DataSource=${stockMetrics.dataSource}, History=${bars.length} days`);
         } catch (error) {
           loggerService.error(`❌ [PERFORMANCE] Failed to fetch ${ticker}:`, error);
           // Continue with other stocks even if one fails
@@ -231,148 +238,126 @@ router.get('/', authenticateToken, async (req, res) => {
     let totalPortfolioValue = 0;
     let totalPortfolioReturn = 0;
     let totalWeightedVolatility = 0;
-    let portfolioMaxDrawdown = 0;
+    let portfolioMaxDrawdown = 0; // Will be updated with Math.min (more negative = worse)
 
     for (const stock of portfolio) {
       const stockData = stockMetricsMap.get(stock.ticker);
-      const priceHistory = priceHistoryMap.get(stock.ticker) || [];
+      const bars = priceHistoryMap.get(stock.ticker) || [];
       
-      if (!stockData || priceHistory.length === 0) {
+      if (!stockData || bars.length === 0) {
         loggerService.warn(`⚠️ [PERFORMANCE] No real-time data or price history for ${stock.ticker} - skipping`);
-        // Skip this stock - don't add placeholder data
         continue;
       }
 
-      // Calculate returns and volatility per timeframe from actual price history
-      // Price history is sorted oldest first (index 0 = oldest, index length-1 = newest)
-      const historyLength = priceHistory.length;
-      
-      if (historyLength < 2) {
-        loggerService.warn(`⚠️ [PERFORMANCE] Insufficient price history for ${stock.ticker} (${historyLength} days) - skipping`);
-        continue;
-      }
-      
       // Get current price from stockData (real-time API price)
       const currentPrice = stockData.current;
       
-      // Use current price from API as end price (most accurate real-time price)
-      const endPrice = currentPrice;
+      // Convert requested days to WindowKey
+      const requestedWindow: WindowKey = days <= 7 ? "7d" : days <= 30 ? "30d" : days <= 60 ? "60d" : "90d";
       
-      // Helper function to calculate volatility from price window
-      const calculateVolatilityForWindow = (prices: { price: number }[], windowDays: number): number => {
-        if (prices.length < 2) return 0;
+      // Calculate metrics for all timeframes using the new metrics module
+      // Note: We need to add current price as the most recent bar since it might be more recent than history
+      const allBars = [...bars];
+      if (bars.length > 0) {
+        const lastBar = bars[bars.length - 1];
+        const lastBarDate = new Date(lastBar.t);
+        const today = new Date();
         
-        // Calculate daily log returns: r_t = ln(P_t / P_{t-1})
-        // Note: prices are sorted oldest first, so we go from old to new
-        const logReturns: number[] = [];
-        for (let i = 1; i < prices.length; i++) {
-          if (prices[i].price > 0 && prices[i - 1].price > 0) {
-            const logReturn = Math.log(prices[i].price / prices[i - 1].price);
-            logReturns.push(logReturn);
-          }
+        // Only add current price if it's different/newer than last bar
+        if (today.getTime() - lastBarDate.getTime() > 3600000) { // More than 1 hour difference
+          allBars.push({
+            t: today.toISOString().split('T')[0],
+            close: currentPrice,
+            high: currentPrice * 1.005, // Estimate high
+            low: currentPrice * 0.995,  // Estimate low
+          });
+        } else {
+          // Update last bar with current price if within 1 hour
+          allBars[allBars.length - 1] = {
+            ...lastBar,
+            close: currentPrice,
+            high: Math.max(lastBar.high || currentPrice, currentPrice * 1.005),
+            low: Math.min(lastBar.low || currentPrice, currentPrice * 0.995),
+          };
         }
-        
-        if (logReturns.length < 2) return 0;
-        
-        // Calculate standard deviation of log returns
-        const meanReturn = logReturns.reduce((sum, ret) => sum + ret, 0) / logReturns.length;
-        const variance = logReturns.reduce((sum, ret) => sum + Math.pow(ret - meanReturn, 2), 0) / logReturns.length;
-        const dailyVolatility = Math.sqrt(variance);
-        
-        // Annualize: σ_annual = σ_daily * sqrt(252) * 100 (convert to percentage)
-        const annualizedVolatility = dailyVolatility * Math.sqrt(252) * 100;
-        
-        return annualizedVolatility;
-      };
+      }
       
-      // Helper function to calculate return and dollar return for a timeframe
-      const calculateReturnForTimeframe = (windowDays: number): { returnPercent: number; returnDollar: number; volatility: number; startPrice: number; endPrice: number } => {
-        let startPrice = endPrice;
-        let volatility = 0;
-        
-        // Price history is sorted oldest first:
-        // - index 0 = oldest (e.g., 90 days ago if we have 90 days)
-        // - index (historyLength - 1) = newest in history (e.g., yesterday)
-        // For N days ago from newest: index = (historyLength - 1) - N
-        // But we need at least N trading days of history
-        
-        if (historyLength >= windowDays) {
-          // Get price N days ago from the most recent price in history
-          // Most recent in history is at index (historyLength - 1)
-          // N days ago would be at index (historyLength - 1) - (windowDays - 1)
-          // Example: 90 days history, want 7 days ago:
-          //   index 89 (most recent) - (7-1) = index 83 (7 days ago)
-          // But we want exactly N days, so: index (historyLength - windowDays)
-          const startIndex = Math.max(0, historyLength - windowDays);
-          startPrice = priceHistory[startIndex].price;
-          
-          // Get price window for volatility calculation (from start to end)
-          // Include all prices from startIndex to end (historyLength - 1)
-          const priceWindow = priceHistory.slice(startIndex);
-          volatility = calculateVolatilityForWindow(priceWindow, windowDays);
-        } else if (historyLength > 0) {
-          // Use oldest available if we don't have enough history
-          startPrice = priceHistory[0].price;
-          volatility = calculateVolatilityForWindow(priceHistory, historyLength);
-        }
-        
-        // Calculate return: ((end / start) - 1) * 100
-        const returnPercent = startPrice > 0 ? ((endPrice / startPrice) - 1) * 100 : 0;
-        // Calculate dollar return: end - start
-        const returnDollar = endPrice - startPrice;
-        
-        return { returnPercent, returnDollar, volatility, startPrice, endPrice };
-      };
+      // Calculate metrics for each timeframe
+      let metrics7D, metrics30D, metrics60D, metrics90D, requestedMetrics;
+      const riskFreeRate = 0.02; // 2% annual risk-free rate
       
-      // Calculate metrics for requested timeframe
-      const requestedMetrics = calculateReturnForTimeframe(days);
+      try {
+        metrics7D = computeMetricsForWindow(stock.ticker, allBars, "7d", "high", riskFreeRate);
+      } catch (e) {
+        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate 7d metrics for ${stock.ticker}:`, e);
+        metrics7D = null;
+      }
       
-      // Calculate metrics for all timeframes (7/30/60/90 days)
-      const metrics7D = calculateReturnForTimeframe(7);
-      const metrics30D = calculateReturnForTimeframe(30);
-      const metrics60D = calculateReturnForTimeframe(60);
-      const metrics90D = calculateReturnForTimeframe(90);
+      try {
+        metrics30D = computeMetricsForWindow(stock.ticker, allBars, "30d", "high", riskFreeRate);
+      } catch (e) {
+        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate 30d metrics for ${stock.ticker}:`, e);
+        metrics30D = null;
+      }
       
-      // Use volatility from requested timeframe (or closest available)
-      const volatility = requestedMetrics.volatility || metrics90D.volatility || metrics30D.volatility || 0;
+      try {
+        metrics60D = computeMetricsForWindow(stock.ticker, allBars, "60d", "high", riskFreeRate);
+      } catch (e) {
+        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate 60d metrics for ${stock.ticker}:`, e);
+        metrics60D = null;
+      }
       
-      // For now, set placeholder values for Sharpe and Max Drawdown (will be fixed in next phase)
-      const sharpeRatio = 0; // Placeholder - will calculate in next phase
-      const maxDrawdown = 0; // Placeholder - will calculate in next phase
+      try {
+        metrics90D = computeMetricsForWindow(stock.ticker, allBars, "90d", "high", riskFreeRate);
+      } catch (e) {
+        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate 90d metrics for ${stock.ticker}:`, e);
+        metrics90D = null;
+      }
       
+      try {
+        requestedMetrics = computeMetricsForWindow(stock.ticker, allBars, requestedWindow, "high", riskFreeRate);
+      } catch (e) {
+        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate ${requestedWindow} metrics for ${stock.ticker}:`, e);
+        requestedMetrics = metrics90D || metrics30D || metrics7D || null;
+      }
+      
+      if (!requestedMetrics) {
+        loggerService.warn(`⚠️ [PERFORMANCE] No valid metrics calculated for ${stock.ticker} - skipping`);
+        continue;
+      }
+      
+      // Build metrics object matching expected format
       const metrics = {
-        totalReturn: requestedMetrics.returnPercent,
-        returnDollar: requestedMetrics.returnDollar, // Dollar return per share for requested timeframe
-        volatility: volatility, // Volatility for requested timeframe
-        volatility7D: metrics7D.volatility,
-        volatility30D: metrics30D.volatility,
-        volatility90D: metrics90D.volatility,
+        totalReturn: requestedMetrics.returnPct,
+        returnDollar: requestedMetrics.returnDollar,
+        volatility: requestedMetrics.volatilityAnnual,
+        volatility7D: metrics7D?.volatilityAnnual || 0,
+        volatility30D: metrics30D?.volatilityAnnual || 0,
+        volatility90D: metrics90D?.volatilityAnnual || 0,
         volatilityMetrics: null,
-        sharpeRatio: sharpeRatio,
-        maxDrawdown: maxDrawdown,
-        topPrice: stockData.top60D || stockData.top30D || stockData.current,
-        currentPrice: endPrice,
-        // Return percentages for all timeframes
-        return7D: metrics7D.returnPercent,
-        return7DDollar: metrics7D.returnDollar,
-        return30D: metrics30D.returnPercent,
-        return30DDollar: metrics30D.returnDollar,
-        return60D: metrics60D.returnPercent,
-        return60DDollar: metrics60D.returnDollar,
-        return90D: metrics90D.returnPercent,
-        return90DDollar: metrics90D.returnDollar,
-        // Start prices for each timeframe
-        startPrice7D: metrics7D.startPrice,
-        startPrice30D: metrics30D.startPrice,
-        startPrice60D: metrics60D.startPrice,
-        startPrice90D: metrics90D.startPrice,
+        sharpeRatio: requestedMetrics.sharpe,
+        maxDrawdown: requestedMetrics.maxDrawdownPct,
+        topPrice: requestedMetrics.topPrice,
+        currentPrice: requestedMetrics.endPrice,
+        return7D: metrics7D?.returnPct || 0,
+        return7DDollar: metrics7D?.returnDollar || 0,
+        return30D: metrics30D?.returnPct || 0,
+        return30DDollar: metrics30D?.returnDollar || 0,
+        return60D: metrics60D?.returnPct || 0,
+        return60DDollar: metrics60D?.returnDollar || 0,
+        return90D: metrics90D?.returnPct || 0,
+        return90DDollar: metrics90D?.returnDollar || 0,
+        startPrice7D: metrics7D?.startPrice || 0,
+        startPrice30D: metrics30D?.startPrice || 0,
+        startPrice60D: metrics60D?.startPrice || 0,
+        startPrice90D: metrics90D?.startPrice || 0,
         dataSource: stockData.dataSource,
-        historyLength: historyLength
+        historyLength: allBars.length
       };
 
       loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} calculated metrics:`, {
-        timeframe: `${days}d`,
-        return: requestedMetrics.returnPercent.toFixed(2) + '%',
+        timeframe: `${days}d (${requestedWindow})`,
+        return: requestedMetrics.returnPct.toFixed(2) + '%',
         returnDollar: '$' + requestedMetrics.returnDollar.toFixed(2),
         return7D: metrics.return7D.toFixed(2) + '%',
         return7DDollar: '$' + metrics.return7DDollar.toFixed(2),
@@ -382,14 +367,16 @@ router.get('/', authenticateToken, async (req, res) => {
         return60DDollar: '$' + metrics.return60DDollar.toFixed(2),
         return90D: metrics.return90D.toFixed(2) + '%',
         return90DDollar: '$' + metrics.return90DDollar.toFixed(2),
-        volatility: volatility.toFixed(2) + '%',
+        volatility: requestedMetrics.volatilityAnnual.toFixed(2) + '%',
         volatility7D: metrics.volatility7D.toFixed(2) + '%',
         volatility30D: metrics.volatility30D.toFixed(2) + '%',
         volatility90D: metrics.volatility90D.toFixed(2) + '%',
-        currentPrice: '$' + endPrice.toFixed(2),
+        sharpe: requestedMetrics.sharpe.toFixed(2),
+        maxDrawdown: requestedMetrics.maxDrawdownPct.toFixed(2) + '%',
+        currentPrice: '$' + requestedMetrics.endPrice.toFixed(2),
         startPrice: '$' + requestedMetrics.startPrice.toFixed(2),
         dataSource: stockData.dataSource,
-        historyLength: historyLength
+        historyLength: allBars.length
       });
 
       stockMetrics[stock.ticker] = metrics;
@@ -405,9 +392,9 @@ router.get('/', authenticateToken, async (req, res) => {
       const stockWeight = totalPortfolioValueCalc > 0 ? stockValue / totalPortfolioValueCalc : 0;
       
       totalPortfolioValue += stockValue;
-      totalPortfolioReturn += requestedMetrics.returnPercent * stockWeight;
-      totalWeightedVolatility += volatility * stockWeight;
-      portfolioMaxDrawdown = Math.max(portfolioMaxDrawdown, maxDrawdown);
+      totalPortfolioReturn += requestedMetrics.returnPct * stockWeight;
+      totalWeightedVolatility += requestedMetrics.volatilityAnnual * stockWeight;
+      portfolioMaxDrawdown = Math.min(portfolioMaxDrawdown, requestedMetrics.maxDrawdownPct); // More negative is worse
     }
 
     // Calculate portfolio Sharpe ratio
