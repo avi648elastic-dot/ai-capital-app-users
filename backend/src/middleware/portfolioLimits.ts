@@ -26,7 +26,7 @@ export const checkPortfolioLimits = async (req: Request, res: Response, next: Ne
     if (user.subscriptionTier === 'premium') {
       maxPortfolios = 3;
     } else if (user.subscriptionTier === 'premium+') {
-      maxPortfolios = 10; // Unlimited for premium+
+      maxPortfolios = 5;
     }
 
     // Check if user is trying to create a new portfolio
@@ -96,9 +96,9 @@ export const checkStockLimits = async (req: Request, res: Response, next: NextFu
     // Check limits based on subscription tier
     let maxStocksPerPortfolio = 10; // Default for free users
     if (user.subscriptionTier === 'premium') {
-      maxStocksPerPortfolio = 5;
+      maxStocksPerPortfolio = 10;
     } else if (user.subscriptionTier === 'premium+') {
-      maxStocksPerPortfolio = 20;
+      maxStocksPerPortfolio = 15;
     }
 
     // Check if user is trying to add a new stock

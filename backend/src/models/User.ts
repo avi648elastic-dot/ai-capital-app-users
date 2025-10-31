@@ -161,19 +161,12 @@ UserSchema.pre('save', async function(next) {
         return next(error);
       }
     } else if (effectiveTier === 'premium+') {
-      // Premium+ users: max 20 stocks per portfolio, 5 portfolios each type
+      // Premium+ users: max 5 portfolios total
       const Portfolio = mongoose.model('Portfolio');
-      const solidPortfolios = await Portfolio.countDocuments({ 
-        userId: this._id, 
-        portfolioType: 'solid' 
-      });
-      const riskyPortfolios = await Portfolio.countDocuments({ 
-        userId: this._id, 
-        portfolioType: 'risky' 
-      });
+      const totalPortfolios = await Portfolio.distinct('portfolioId', { userId: this._id });
       
-      if (solidPortfolios > 5 || riskyPortfolios > 5) {
-        const error = new Error('Premium+ users are limited to 5 portfolios of each type.');
+      if (totalPortfolios.length >= 5) {
+        const error = new Error('Premium+ users are limited to 5 portfolios.');
         return next(error);
       }
     }

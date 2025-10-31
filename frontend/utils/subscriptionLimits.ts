@@ -30,7 +30,7 @@ export const getSubscriptionLimits = (subscriptionTier: string): SubscriptionLim
     case 'premium':
       return {
         maxPortfolios: 3,
-        maxStocksPerPortfolio: 5,
+        maxStocksPerPortfolio: 10,
         hasPortfolioAnalysis: true,
         hasRiskManagement: false, // Premium+ only
         hasWatchlist: false, // Premium+ only
@@ -42,8 +42,8 @@ export const getSubscriptionLimits = (subscriptionTier: string): SubscriptionLim
     
     case 'premium+':
       return {
-        maxPortfolios: 10, // 5 Solid + 5 Risky
-        maxStocksPerPortfolio: 20,
+        maxPortfolios: 5,
+        maxStocksPerPortfolio: 15,
         hasPortfolioAnalysis: true,
         hasRiskManagement: true,
         hasWatchlist: true,

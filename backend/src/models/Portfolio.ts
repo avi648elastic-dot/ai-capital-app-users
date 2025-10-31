@@ -100,23 +100,23 @@ PortfolioSchema.pre('save', async function(next) {
         return next(error);
       }
     } else if (effectiveTier === 'premium') {
-      // Premium users: max 5 stocks per portfolio
+      // Premium users: max 10 stocks per portfolio
       const portfolioStockCount = await mongoose.model('Portfolio').countDocuments({ 
         userId: this.userId, 
         portfolioId: this.portfolioId 
       });
-      if (portfolioStockCount >= 5) {
-        const error = new Error('Premium users are limited to 5 stocks per portfolio. Upgrade to Premium+ to add more stocks.');
+      if (portfolioStockCount >= 10) {
+        const error = new Error('Premium users are limited to 10 stocks per portfolio. Upgrade to Premium+ to add more stocks.');
         return next(error);
       }
     } else if (effectiveTier === 'premium+') {
-      // Premium+ users: max 20 stocks per portfolio
+      // Premium+ users: max 15 stocks per portfolio
       const portfolioStockCount = await mongoose.model('Portfolio').countDocuments({ 
         userId: this.userId, 
         portfolioId: this.portfolioId 
       });
-      if (portfolioStockCount >= 20) {
-        const error = new Error('Premium+ users are limited to 20 stocks per portfolio.');
+      if (portfolioStockCount >= 15) {
+        const error = new Error('Premium+ users are limited to 15 stocks per portfolio.');
         return next(error);
       }
     }
