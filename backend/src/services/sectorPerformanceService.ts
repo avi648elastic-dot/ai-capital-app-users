@@ -361,7 +361,7 @@ export class SectorPerformanceService {
         'PG', 'KO', 'PEP', 'WMT', 'COST', 'CL', 'KMB', 'GIS', 'K', 'HSY', 'WBA', 'CVS', 'KR', 'TGT', 'WMT', 'COST', 'CLX', 'CHD', 'K', 'CAG'
       ],
       'Industrials': [
-        'BA', 'CAT', 'HON', 'UPS', 'GE', 'MMM', 'LMT', 'RTX', 'DE', 'EMR', 'FDX', 'UPS', 'LMT', 'RTX', 'NOC', 'GD', 'TDG', 'ITW', 'ETN', 'PH', 'SHMD', 'SHMD.IL'
+        'BA', 'CAT', 'HON', 'UPS', 'GE', 'MMM', 'LMT', 'RTX', 'DE', 'EMR', 'FDX', 'UPS', 'LMT', 'RTX', 'NOC', 'GD', 'TDG', 'ITW', 'ETN', 'PH', 'SHMD', 'SHMD.IL', 'CBAT'
       ],
       'Materials': [
         'LIN', 'APD', 'SHW', 'FCX', 'NEM', 'DOW', 'PPG', 'ECL', 'DD', 'IFF', 'NUE', 'X', 'CLF', 'AA', 'FCX', 'NEM', 'GOLD', 'ABX', 'AEM', 'KGC'

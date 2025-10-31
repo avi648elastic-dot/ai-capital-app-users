@@ -132,6 +132,7 @@ class SectorService {
     'GD': 'Industrial',
     'MMM': 'Industrial',
     'SHMD': 'Industrial',
+    'CBAT': 'Industrial', // CBAK Energy Technology Inc - battery/energy storage industrial equipment
     
     // Consumer Staples
     'PG': 'Consumer Staples',

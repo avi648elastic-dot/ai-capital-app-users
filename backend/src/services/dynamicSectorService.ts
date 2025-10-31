@@ -153,6 +153,7 @@ class DynamicSectorService {
       'GE': 'Industrials', 'MMM': 'Industrials', 'CAT': 'Industrials', 'BA': 'Industrials',
       'HON': 'Industrials', 'LMT': 'Industrials', 'GD': 'Industrials', 'RTX': 'Industrials',
       'UPS': 'Industrials', 'FDX': 'Industrials', 'DE': 'Industrials', 'ETN': 'Industrials',
+      'SHMD': 'Industrials', 'CBAT': 'Industrials', // CBAK Energy Technology Inc - battery/energy storage industrial
 
       // Materials
       'LIN': 'Materials', 'APD': 'Materials', 'ECL': 'Materials', 'SHW': 'Materials',
@@ -165,7 +166,13 @@ class DynamicSectorService {
       'DISH': 'Communication Services', 'LUMN': 'Communication Services'
     };
 
-    return hardcodedMap[ticker] || 'Other';
+    // Never return 'Other' - use hardcoded map or default to Technology
+    const sector = hardcodedMap[ticker];
+    if (sector) return sector;
+    
+    // Default to Technology instead of 'Other'
+    console.warn(`⚠️ [DYNAMIC SECTOR] No hardcoded sector for ${ticker}, defaulting to Technology`);
+    return 'Technology';
   }
 
   private mapSectorName(apiSector: string): string {
@@ -185,7 +192,19 @@ class DynamicSectorService {
       'Telecommunications': 'Communication Services'
     };
 
-    return sectorMap[apiSector] || 'Other';
+    // Never return 'Other' - map to closest standard sector or default to Technology
+    const mapped = sectorMap[apiSector];
+    if (mapped) return mapped;
+    
+    // If sector not in map but contains keywords, infer the sector
+    const sectorLower = apiSector.toLowerCase();
+    if (sectorLower.includes('industrial') || sectorLower.includes('machinery') || sectorLower.includes('aerospace')) {
+      return 'Industrials';
+    }
+    
+    // Default to Technology instead of 'Other'
+    console.warn(`⚠️ [DYNAMIC SECTOR] Unknown sector "${apiSector}", defaulting to Technology`);
+    return 'Technology';
   }
 
   // Get all cached sectors

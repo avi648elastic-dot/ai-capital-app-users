@@ -14,6 +14,8 @@ import HistoricalPortfolioService from '../services/historicalPortfolioService';
 import BalanceSheetAnalysisService from '../services/balanceSheetAnalysisService';
 import { EarningsService } from '../services/earningsService';
 import { volatilityService } from '../services/volatilityService';
+import { getMetrics } from '../utils/metrics.engine';
+import { loggerService } from '../services/loggerService';
 
 const router = express.Router();
 
@@ -264,7 +266,52 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       // This avoids delay - sector segmentation will show instantly
       console.log('⚡ [ANALYTICS] Loading sector allocation immediately from DB...');
       sectorAllocation = await sectorPerformanceService.getSectorAllocation(portfolio);
-      console.log('✅ [ANALYTICS] Sector allocation loaded instantly:', sectorAllocation.length, 'sectors');
+      
+      // FILTER OUT "Other" sector - never show it
+      sectorAllocation = sectorAllocation.filter(sector => sector.sector !== 'Other' && sector.sector !== 'Unknown');
+      
+      // Update sector allocation with real 30d returns from ETF metrics engine
+      loggerService.info(`📊 [ANALYTICS] Calculating real 30d sector returns using metrics engine...`);
+      const sectorETFs: Record<string, string> = {
+        'Technology': 'XLK',
+        'Healthcare': 'XLV',
+        'Financial Services': 'XLF',
+        'Consumer Discretionary': 'XLY',
+        'Energy': 'XLE',
+        'Industrial': 'XLI',
+        'Industrials': 'XLI',
+        'Consumer Staples': 'XLP',
+        'Utilities': 'XLU',
+        'Real Estate': 'XLRE',
+        'Materials': 'XLB',
+        'Communication Services': 'XLC'
+      };
+      
+      // Calculate real 30d returns for each sector ETF in parallel
+      const sectorReturnsPromises = sectorAllocation.map(async (sector) => {
+        const etfSymbol = sectorETFs[sector.sector] || sector.etfSymbol;
+        if (!etfSymbol) return sector; // Skip if no ETF
+        
+        try {
+          // Get 30d metrics from metrics engine (cached, fast)
+          const metricsData = await getMetrics(etfSymbol);
+          const metrics30D = metricsData.metrics["30d"];
+          
+          if (metrics30D) {
+            sector.performance30D = metrics30D.returnPct;
+            loggerService.info(`✅ [ANALYTICS] ${sector.sector} (${etfSymbol}): 30d return = ${metrics30D.returnPct.toFixed(2)}%`);
+          }
+        } catch (error) {
+          loggerService.warn(`⚠️ [ANALYTICS] Could not fetch 30d metrics for ${sector.sector} ETF (${etfSymbol}):`, error);
+          // Keep existing performance30D if available
+        }
+        
+        return sector;
+      });
+      
+      sectorAllocation = await Promise.all(sectorReturnsPromises);
+      
+      console.log('✅ [ANALYTICS] Sector allocation loaded instantly:', sectorAllocation.length, 'sectors (filtered out Other/Unknown, real 30d returns calculated)');
     } catch (error) {
       console.error('❌ [ANALYTICS] Sector allocation error:', error);
       sectorAllocation = [];
@@ -477,20 +524,79 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     const totalPnL = totalPortfolioValue - totalInitialInvestment;
     const totalPnLPercent = totalInitialInvestment > 0 ? (totalPnL / totalInitialInvestment) * 100 : 0;
     
-    // Calculate performance metrics from real data
+    // Calculate REAL performance metrics using metrics engine (30d calculations)
+    loggerService.info(`📊 [ANALYTICS] Calculating real 30d performance metrics using metrics engine...`);
+    const tickers = [...new Set(portfolio.map(item => item.ticker))];
+    let performance30D = 0;
+    let avgVolatility30D = 0;
+    let portfolioVolatility30D = 0;
+    
+    try {
+      // Get metrics for all stocks in parallel
+      const metricsPromises = tickers.map(async (ticker) => {
+        try {
+          const metricsData = await getMetrics(ticker);
+          return {
+            ticker,
+            metrics30D: metricsData.metrics["30d"],
+            metrics90D: metricsData.metrics["90d"]
+          };
+        } catch (error) {
+          loggerService.warn(`⚠️ [ANALYTICS] Could not get metrics for ${ticker}:`, error);
+          return null;
+        }
+      });
+      
+      const metricsResults = await Promise.all(metricsPromises);
+      const validMetrics = metricsResults.filter(m => m !== null) as Array<{ ticker: string; metrics30D: any; metrics90D: any }>;
+      
+      if (validMetrics.length > 0) {
+        // Calculate weighted 30d portfolio return
+        let totalWeightedReturn = 0;
+        let totalWeightedVol = 0;
+        let totalWeight = 0;
+        
+        for (const stock of portfolio) {
+          const metrics = validMetrics.find(m => m.ticker === stock.ticker);
+          if (metrics && metrics.metrics30D) {
+            const stockValue = stock.currentPrice * stock.shares;
+            const weight = totalPortfolioValue > 0 ? stockValue / totalPortfolioValue : 0;
+            
+            totalWeightedReturn += metrics.metrics30D.returnPct * weight;
+            totalWeightedVol += metrics.metrics30D.volatilityAnnual * weight;
+            totalWeight += weight;
+          }
+        }
+        
+        if (totalWeight > 0) {
+          performance30D = totalWeightedReturn / totalWeight;
+          portfolioVolatility30D = totalWeightedVol / totalWeight;
+        }
+        
+        // Calculate average volatility from individual stocks
+        avgVolatility30D = validMetrics.reduce((sum, m) => sum + (m.metrics30D?.volatilityAnnual || 0), 0) / validMetrics.length;
+        
+        loggerService.info(`✅ [ANALYTICS] Calculated real 30d metrics: Return=${performance30D.toFixed(2)}%, Volatility=${portfolioVolatility30D.toFixed(2)}%`);
+      }
+    } catch (error) {
+      loggerService.error(`❌ [ANALYTICS] Error calculating 30d performance metrics:`, error);
+    }
+    
     const winningStocks = portfolioData.filter(stock => stock.currentPrice > stock.entryPrice).length;
     const losingStocks = portfolioData.filter(stock => stock.currentPrice < stock.entryPrice).length;
-    const avgVolatility = portfolioData.reduce((sum, stock) => sum + (stock.volatility || 0), 0) / portfolioData.length;
+    const avgVolatility = avgVolatility30D > 0 ? avgVolatility30D : portfolioData.reduce((sum, stock) => sum + (stock.volatility || 0), 0) / portfolioData.length;
     
-    // Update the portfolio analysis with real calculated values
+    // Update the portfolio analysis with real calculated values (including 30d metrics)
     realTimeMetrics = {
       totalPortfolioValue,
       totalInitialInvestment,
       totalPnL,
       totalPnLPercent,
+      performance30D: performance30D || totalPnLPercent, // Use real 30d return if available
       winningStocks,
       losingStocks,
-      avgVolatility,
+      avgVolatility: avgVolatility,
+      portfolioVolatility30D: portfolioVolatility30D || avgVolatility,
       stockCount: portfolioData.length
     };
     
@@ -571,15 +677,17 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     }
 
     const comprehensiveAnalysis = {
-      sectorAllocation: sectorAllocation, // Use real sector allocation data
+      sectorAllocation: sectorAllocation, // Use real sector allocation data with real 30d returns
       totalPortfolioValue: realTimeMetrics?.totalPortfolioValue || sectorAnalysis.totalValue,
       totalInitialInvestment: realTimeMetrics?.totalInitialInvestment || 0,
       totalPnL: realTimeMetrics?.totalPnL || 0,
       totalPnLPercent: realTimeMetrics?.totalPnLPercent || sectorAnalysis.performance90D,
+      performance30D: realTimeMetrics?.performance30D || realTimeMetrics?.totalPnLPercent || sectorAnalysis.performance90D, // Real 30d return from metrics engine
       performance90D: sectorAnalysis.performance90D,
       riskScore: riskAssessment.riskScore,
       concentrationRisk: sectorAnalysis.riskMetrics.concentration,
       diversificationScore: sectorAnalysis.riskMetrics.diversification,
+      portfolioVolatility30D: realTimeMetrics?.portfolioVolatility30D || avgVolatility, // Real 30d volatility from metrics engine
       portfolioPerformance,
       sectorPerformance,
       riskAssessment,
