@@ -16,6 +16,7 @@ import { EarningsService } from '../services/earningsService';
 import { volatilityService } from '../services/volatilityService';
 import { getMetrics } from '../utils/metrics.engine';
 import { loggerService } from '../services/loggerService';
+import { redisService } from '../services/redisService';
 
 const router = express.Router();
 
@@ -228,6 +229,24 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
   try {
     const userId = (req as any).user!._id;
     console.log('🔍 [ANALYTICS] Fetching comprehensive analytics for user:', userId);
+    
+    // CRITICAL: Check cache first (instant response)
+    // Cache key includes userId and today's date (refreshes once per day automatically)
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const cacheKey = `analytics:portfolio-analysis:${userId}:${today}`;
+    
+    try {
+      const cached = await redisService.get(cacheKey);
+      if (cached) {
+        console.log('🚀 [ANALYTICS] Cache HIT - returning instant response');
+        loggerService.info(`✅ [ANALYTICS] Cache hit for user ${userId}`);
+        return res.json(JSON.parse(cached));
+      }
+      console.log('🚀 [ANALYTICS] Cache MISS - computing fresh data');
+    } catch (cacheError) {
+      console.warn('⚠️ [ANALYTICS] Cache check failed, continuing without cache:', cacheError);
+      // Continue without cache if Redis fails
+    }
     
     // Get user's default portfolio (first portfolio)
     const portfolio = await Portfolio.find({ userId }).sort({ createdAt: 1 });
@@ -750,6 +769,19 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     }
 
     console.log('✅ [ANALYTICS] Comprehensive analytics generated successfully.');
+    
+    // CRITICAL: Cache the response for instant future loads
+    // Cache for 12 hours (43200 seconds) - refreshes once per day since key includes date
+    // This ensures instant load when users open the page (opened once a day/week)
+    try {
+      await redisService.set(cacheKey, JSON.stringify(comprehensiveAnalysis), 43200 * 1000); // 12 hours in milliseconds
+      console.log('✅ [ANALYTICS] Response cached for instant future loads (12 hours TTL)');
+      loggerService.info(`💾 [ANALYTICS] Cached portfolio analysis for user ${userId} (12h TTL)`);
+    } catch (cacheError) {
+      console.warn('⚠️ [ANALYTICS] Failed to cache response (non-critical):', cacheError);
+      // Continue without caching if Redis fails
+    }
+    
     res.json(comprehensiveAnalysis);
 
   } catch (error) {
