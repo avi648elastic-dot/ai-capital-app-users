@@ -21,14 +21,16 @@ interface SectorETFs {
   };
 }
 
-// Sector ETFs mapping for real data
+// Sector ETFs mapping for real data with consistent colors
 const SECTOR_ETFS: SectorETFs = {
   'Technology': { symbol: 'XLK', name: 'Technology Select Sector SPDR Fund', color: 'bg-blue-500' },
   'Healthcare': { symbol: 'XLV', name: 'Health Care Select Sector SPDR Fund', color: 'bg-green-500' },
-  'Financials': { symbol: 'XLF', name: 'Financial Select Sector SPDR Fund', color: 'bg-purple-500' },
+  'Financial Services': { symbol: 'XLF', name: 'Financial Select Sector SPDR Fund', color: 'bg-yellow-500' },
+  'Financials': { symbol: 'XLF', name: 'Financial Select Sector SPDR Fund', color: 'bg-yellow-500' },
   'Energy': { symbol: 'XLE', name: 'Energy Select Sector SPDR Fund', color: 'bg-orange-500' },
-  'Consumer Discretionary': { symbol: 'XLY', name: 'Consumer Discretionary Select Sector SPDR Fund', color: 'bg-pink-500' },
-  'Consumer Staples': { symbol: 'XLP', name: 'Consumer Staples Select Sector SPDR Fund', color: 'bg-yellow-500' },
+  'Consumer Discretionary': { symbol: 'XLY', name: 'Consumer Discretionary Select Sector SPDR Fund', color: 'bg-purple-500' },
+  'Consumer Staples': { symbol: 'XLP', name: 'Consumer Staples Select Sector SPDR Fund', color: 'bg-pink-500' },
+  'Industrial': { symbol: 'XLI', name: 'Industrial Select Sector SPDR Fund', color: 'bg-cyan-500' },
   'Industrials': { symbol: 'XLI', name: 'Industrial Select Sector SPDR Fund', color: 'bg-cyan-500' },
   'Materials': { symbol: 'XLB', name: 'Materials Select Sector SPDR Fund', color: 'bg-indigo-500' },
   'Real Estate': { symbol: 'XLRE', name: 'Real Estate Select Sector SPDR Fund', color: 'bg-teal-500' },
@@ -436,13 +438,24 @@ export class SectorPerformanceService {
       const performance = performanceMap.get(sector);
       const etfInfo = SECTOR_ETFS[sector];
 
+      // Normalize sector name for color lookup (handle both "Industrial" and "Industrials")
+      let normalizedSector = sector;
+      if (sector === 'Industrial' || sector === 'Industrials') {
+        normalizedSector = 'Industrials';
+      }
+      if (sector === 'Financial Services' || sector === 'Financials') {
+        normalizedSector = 'Financial Services';
+      }
+      
+      const sectorInfo = SECTOR_ETFS[normalizedSector] || SECTOR_ETFS[sector] || null;
+      
       return {
         sector,
-        etfSymbol: etfInfo?.symbol || '',
+        etfSymbol: sectorInfo?.symbol || etfInfo?.symbol || '',
         percentage: Math.round(percentage * 10) / 10,
         value: Math.round(data.value),
         stocks: data.stocks,
-        color: etfInfo?.color || 'bg-gray-500',
+        color: sectorInfo?.color || etfInfo?.color || 'bg-gray-500',
         performance90D: performance?.performance90D || 0,
         performance30D: performance?.performance30D || 0,
         performance7D: performance?.performance7D || 0

@@ -199,14 +199,16 @@ class SectorService {
     'Technology': 'bg-blue-500',
     'Healthcare': 'bg-green-500',
     'Financial Services': 'bg-yellow-500',
+    'Financials': 'bg-yellow-500',
     'Consumer Discretionary': 'bg-purple-500',
-    'Energy': 'bg-red-500',
-    'Industrial': 'bg-orange-500',
+    'Energy': 'bg-orange-500',
+    'Industrial': 'bg-cyan-500',
+    'Industrials': 'bg-cyan-500',
     'Consumer Staples': 'bg-pink-500',
-    'Utilities': 'bg-cyan-500',
-    'Real Estate': 'bg-indigo-500',
-    'Materials': 'bg-amber-500',
-    'Communication Services': 'bg-teal-500'
+    'Utilities': 'bg-red-500',
+    'Real Estate': 'bg-teal-500',
+    'Materials': 'bg-indigo-500',
+    'Communication Services': 'bg-violet-500'
   };
 
   private sectorETFs: Record<string, string> = {

@@ -449,17 +449,17 @@ export default function PortfolioAnalysis() {
                     <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-400">Stocks: {(sector.stocks || []).join(', ')}</span>
                     <div className={`flex items-center space-x-1 ${
-                      (parseFloat(sector.performance30D || sector.performance90D) || 0) >= 5 ? 'text-green-400' : 
-                      (parseFloat(sector.performance30D || sector.performance90D) || 0) >= 0 ? 'text-green-300' : 
-                      (parseFloat(sector.performance30D || sector.performance90D) || 0) >= -5 ? 'text-red-300' : 'text-red-400'
+                      (parseFloat(sector.performance90D || sector.performance30D) || 0) >= 10 ? 'text-green-400' : 
+                      (parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? 'text-green-300' : 
+                      (parseFloat(sector.performance90D || sector.performance30D) || 0) >= -10 ? 'text-red-300' : 'text-red-400'
                     }`}>
-                      {(parseFloat(sector.performance30D || sector.performance90D) || 0) >= 0 ? (
+                      {(parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? (
                         <TrendingUp className="w-3 h-3" />
                       ) : (
                         <TrendingDown className="w-3 h-3" />
                       )}
-                      <span>{(parseFloat(sector.performance30D || sector.performance90D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance30D || sector.performance90D) || 0).toFixed(2)}%</span>
-                      <span className="text-slate-500">30D</span>
+                      <span>{(parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance90D || sector.performance30D) || 0).toFixed(2)}%</span>
+                      <span className="text-slate-500">90D</span>
                     </div>
                   </div>
                 </div>
@@ -594,14 +594,14 @@ export default function PortfolioAnalysis() {
                             : 'bg-green-400'
                       }`} style={{ width: `${riskAssessment.riskScore * 10}%` }}></div>
                     </div>
-                    {riskAssessment.recommendations.length > 0 && (
+                    {riskAssessment.recommendations && riskAssessment.recommendations.length > 0 && (
                       <div className="mt-3">
                         <div className="text-xs text-slate-400 mb-1">Recommendations:</div>
-                        <ul className="text-xs text-slate-300 space-y-1">
-                          {riskAssessment.recommendations.slice(0, 2).map((rec: string, index: number) => (
+                        <ul className="text-xs text-slate-300 space-y-1.5">
+                          {riskAssessment.recommendations.slice(0, 3).map((rec: string, index: number) => (
                             <li key={index} className="flex items-start">
-                              <span className="text-blue-400 mr-1">•</span>
-                              {rec}
+                              <span className="text-blue-400 mr-1.5 mt-0.5">•</span>
+                              <span className="flex-1 leading-relaxed">{rec}</span>
                             </li>
                           ))}
                         </ul>
@@ -690,7 +690,7 @@ export default function PortfolioAnalysis() {
           <div className="lg:col-span-2 card p-6">
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <BarChart3 className="w-5 h-5 mr-2" />
-              Sector Performance Summary (30 Days)
+              Sector Performance Summary (90 Days)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sectorPerformance && sectorPerformance.length > 0 ? (
@@ -710,16 +710,16 @@ export default function PortfolioAnalysis() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`text-sm font-semibold ${
-                          (parseFloat(sector.performance30D || sector.performance90D) || 0) >= 5 ? 'text-green-400' : 
-                          (parseFloat(sector.performance30D || sector.performance90D) || 0) >= 0 ? 'text-green-300' : 
-                          (parseFloat(sector.performance30D || sector.performance90D) || 0) >= -5 ? 'text-red-300' : 'text-red-400'
+                          (parseFloat(sector.performance90D || sector.performance30D) || 0) >= 10 ? 'text-green-400' : 
+                          (parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? 'text-green-300' : 
+                          (parseFloat(sector.performance90D || sector.performance30D) || 0) >= -10 ? 'text-red-300' : 'text-red-400'
                         }`}>
-                          {(parseFloat(sector.performance30D || sector.performance90D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance30D || sector.performance90D) || 0).toFixed(2)}%
+                          {(parseFloat(sector.performance90D || sector.performance30D) || 0) >= 0 ? '+' : ''}{(parseFloat(sector.performance90D || sector.performance30D) || 0).toFixed(2)}%
                         </span>
-                        {(parseFloat(sector.performance30D || sector.performance90D) || 0) >= 5 && (
+                        {(parseFloat(sector.performance90D || sector.performance30D) || 0) >= 10 && (
                           <span className="text-xs text-green-400">✨</span>
                         )}
-                        {(parseFloat(sector.performance30D || sector.performance90D) || 0) < -5 && (
+                        {(parseFloat(sector.performance90D || sector.performance30D) || 0) < -10 && (
                           <span className="text-xs text-red-400">⚠️</span>
                         )}
                       </div>

@@ -270,8 +270,8 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       // FILTER OUT "Other" sector - never show it
       sectorAllocation = sectorAllocation.filter(sector => sector.sector !== 'Other' && sector.sector !== 'Unknown');
       
-      // Update sector allocation with real 30d returns from ETF metrics engine
-      loggerService.info(`📊 [ANALYTICS] Calculating real 30d sector returns using metrics engine...`);
+      // Update sector allocation with real 90d returns from ETF metrics engine
+      loggerService.info(`📊 [ANALYTICS] Calculating real 90d sector returns using metrics engine...`);
       const sectorETFs: Record<string, string> = {
         'Technology': 'XLK',
         'Healthcare': 'XLV',
@@ -287,23 +287,23 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         'Communication Services': 'XLC'
       };
       
-      // Calculate real 30d returns for each sector ETF in parallel
+      // Calculate real 90d returns for each sector ETF in parallel
       const sectorReturnsPromises = sectorAllocation.map(async (sector) => {
         const etfSymbol = sectorETFs[sector.sector] || sector.etfSymbol;
         if (!etfSymbol) return sector; // Skip if no ETF
         
         try {
-          // Get 30d metrics from metrics engine (cached, fast)
+          // Get 90d metrics from metrics engine (cached, fast)
           const metricsData = await getMetrics(etfSymbol);
-          const metrics30D = metricsData.metrics["30d"];
+          const metrics90D = metricsData.metrics["90d"];
           
-          if (metrics30D) {
-            sector.performance30D = metrics30D.returnPct;
-            loggerService.info(`✅ [ANALYTICS] ${sector.sector} (${etfSymbol}): 30d return = ${metrics30D.returnPct.toFixed(2)}%`);
+          if (metrics90D) {
+            sector.performance90D = metrics90D.returnPct;
+            loggerService.info(`✅ [ANALYTICS] ${sector.sector} (${etfSymbol}): 90d return = ${metrics90D.returnPct.toFixed(2)}%`);
           }
         } catch (error) {
-          loggerService.warn(`⚠️ [ANALYTICS] Could not fetch 30d metrics for ${sector.sector} ETF (${etfSymbol}):`, error);
-          // Keep existing performance30D if available
+          loggerService.warn(`⚠️ [ANALYTICS] Could not fetch 90d metrics for ${sector.sector} ETF (${etfSymbol}):`, error);
+          // Keep existing performance90D if available
         }
         
         return sector;
@@ -311,7 +311,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       
       sectorAllocation = await Promise.all(sectorReturnsPromises);
       
-      console.log('✅ [ANALYTICS] Sector allocation loaded instantly:', sectorAllocation.length, 'sectors (filtered out Other/Unknown, real 30d returns calculated)');
+      console.log('✅ [ANALYTICS] Sector allocation loaded instantly:', sectorAllocation.length, 'sectors (filtered out Other/Unknown, real 90d returns calculated)');
     } catch (error) {
       console.error('❌ [ANALYTICS] Sector allocation error:', error);
       sectorAllocation = [];
@@ -690,8 +690,8 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       }));
     }
 
-    // Calculate risk assessment
-    const riskAssessment = calculateRiskAssessment(portfolio, sectorAnalysis);
+    // Calculate enhanced risk assessment with comprehensive data
+    const riskAssessment = await calculateRiskAssessment(portfolio, sectorAnalysis, portfolioData, realTimeMetrics, sectorAllocation);
 
     // Determine what data is available and what failed
     const dataStatus: { portfolioPerformance: string; sectorPerformance: string; issues: string[] } = {
@@ -775,61 +775,209 @@ router.get('/portfolio-performance', authenticateToken, requireSubscription, asy
   }
 });
 
-// Calculate risk assessment
-function calculateRiskAssessment(portfolio: any[], sectorAnalysis: any) {
+// Enhanced risk assessment with comprehensive portfolio data
+async function calculateRiskAssessment(portfolio: any[], sectorAnalysis: any, portfolioData?: any[], realTimeMetrics?: any, sectorAllocation?: any[]) {
   const totalValue = portfolio.reduce((sum, stock) => sum + (stock.currentPrice * stock.shares), 0);
   const totalInitial = portfolio.reduce((sum, stock) => sum + (stock.entryPrice * stock.shares), 0);
   const totalPnLPercent = totalInitial > 0 ? ((totalValue - totalInitial) / totalInitial) * 100 : 0;
 
-  // Calculate volatility-based risk
-  const volatilities = portfolio.map(stock => {
-    const priceChange = Math.abs(stock.currentPrice - stock.entryPrice) / stock.entryPrice;
-    return priceChange * 100;
-  });
-  const avgVolatility = volatilities.reduce((sum, vol) => sum + vol, 0) / volatilities.length;
+  // Get 90d metrics for each stock using metrics engine
+  const { getMetrics } = await import('../utils/metrics.engine');
+  const tickers = [...new Set(portfolio.map(stock => stock.ticker))];
+  const stockMetrics: Map<string, any> = new Map();
+  
+  try {
+    const metricsPromises = tickers.map(async (ticker) => {
+      try {
+        const metricsData = await getMetrics(ticker);
+        return { ticker, metrics: metricsData.metrics };
+      } catch (error) {
+        loggerService.warn(`⚠️ [RISK] Could not get metrics for ${ticker}:`, error);
+        return null;
+      }
+    });
+    
+    const metricsResults = await Promise.all(metricsPromises);
+    metricsResults.forEach(result => {
+      if (result) {
+        stockMetrics.set(result.ticker, result.metrics);
+      }
+    });
+  } catch (error) {
+    loggerService.warn(`⚠️ [RISK] Error fetching stock metrics:`, error);
+  }
 
-  // Calculate concentration risk
-  const maxSectorAllocation = Math.max(...sectorAnalysis.sectorAllocation.map((s: any) => s.percentage));
+  // Calculate volatility-based risk from real metrics
+  let avgVolatility = 0;
+  let avgMaxDrawdown = 0;
+  let avgSharpe = 0;
+  let highVolatilityCount = 0;
+  
+  if (stockMetrics.size > 0) {
+    const volatilities: number[] = [];
+    const drawdowns: number[] = [];
+    const sharpes: number[] = [];
+    
+    tickers.forEach(ticker => {
+      const metrics = stockMetrics.get(ticker);
+      if (metrics && metrics["90d"]) {
+        volatilities.push(metrics["90d"].volatilityAnnual || 0);
+        drawdowns.push(Math.abs(metrics["90d"].maxDrawdownPct || 0));
+        sharpes.push(metrics["90d"].sharpe || 0);
+        
+        if (metrics["90d"].volatilityAnnual > 30) {
+          highVolatilityCount++;
+        }
+      }
+    });
+    
+    if (volatilities.length > 0) {
+      avgVolatility = volatilities.reduce((sum, vol) => sum + vol, 0) / volatilities.length;
+      avgMaxDrawdown = drawdowns.reduce((sum, dd) => sum + dd, 0) / drawdowns.length;
+      avgSharpe = sharpes.reduce((sum, s) => sum + s, 0) / sharpes.length;
+    }
+  } else {
+    // Fallback to simple price change volatility
+    const volatilities = portfolio.map(stock => {
+      const priceChange = Math.abs(stock.currentPrice - stock.entryPrice) / stock.entryPrice;
+      return priceChange * 100;
+    });
+    avgVolatility = volatilities.reduce((sum, vol) => sum + vol, 0) / volatilities.length;
+  }
+
+  // Calculate concentration risk from sector allocation
+  const maxSectorAllocation = sectorAnalysis.sectorAllocation.length > 0 
+    ? Math.max(...sectorAnalysis.sectorAllocation.map((s: any) => s.percentage))
+    : 0;
   const concentrationRisk = maxSectorAllocation;
 
-  // Calculate diversification score
+  // Calculate diversification score (more nuanced)
   const numSectors = sectorAnalysis.sectorAllocation.length;
-  const diversificationScore = Math.min(10, numSectors * 2);
+  const numStocks = portfolio.length;
+  const idealSectorsPerStock = 0.5; // Ideal: 2 stocks per sector
+  const diversificationScore = Math.min(10, (numSectors / Math.max(numStocks * idealSectorsPerStock, 1)) * 10);
 
-  // Overall risk assessment
+  // Calculate sector performance risk (if sectors are underperforming)
+  let sectorRisk = 0;
+  if (sectorAllocation && sectorAllocation.length > 0) {
+    const underperformingSectors = sectorAllocation.filter((s: any) => 
+      (s.performance90D || 0) < -5
+    ).length;
+    const sectorRiskPercent = (underperformingSectors / sectorAllocation.length) * 100;
+    if (sectorRiskPercent > 50) sectorRisk = 2;
+    else if (sectorRiskPercent > 30) sectorRisk = 1;
+  }
+
+  // Calculate portfolio-level metrics
+  const portfolioVolatility = realTimeMetrics?.portfolioVolatility30D || avgVolatility;
+  const winningStocks = portfolioData ? portfolioData.filter(stock => stock.currentPrice > stock.entryPrice).length : 0;
+  const losingStocks = portfolioData ? portfolioData.filter(stock => stock.currentPrice < stock.entryPrice).length : 0;
+  const winRate = numStocks > 0 ? (winningStocks / numStocks) * 100 : 0;
+
+  // Enhanced risk score calculation (0-10 scale)
+  let riskScore = 1; // Base risk
+  
+  // Volatility component (0-3 points)
+  if (portfolioVolatility > 50) riskScore += 3;
+  else if (portfolioVolatility > 35) riskScore += 2.5;
+  else if (portfolioVolatility > 25) riskScore += 2;
+  else if (portfolioVolatility > 15) riskScore += 1;
+  else if (portfolioVolatility > 10) riskScore += 0.5;
+
+  // Max drawdown component (0-2 points)
+  if (avgMaxDrawdown > 30) riskScore += 2;
+  else if (avgMaxDrawdown > 20) riskScore += 1.5;
+  else if (avgMaxDrawdown > 10) riskScore += 1;
+
+  // Concentration risk component (0-2 points)
+  if (concentrationRisk > 50) riskScore += 2;
+  else if (concentrationRisk > 40) riskScore += 1.5;
+  else if (concentrationRisk > 30) riskScore += 1;
+  else if (concentrationRisk > 20) riskScore += 0.5;
+
+  // Diversification component (0-1 point, inverse)
+  if (diversificationScore < 3) riskScore += 1;
+  else if (diversificationScore < 5) riskScore += 0.5;
+
+  // Performance component (0-1 point)
+  if (totalPnLPercent < -15) riskScore += 1;
+  else if (totalPnLPercent < -10) riskScore += 0.75;
+  else if (totalPnLPercent < -5) riskScore += 0.5;
+  else if (totalPnLPercent < 0) riskScore += 0.25;
+
+  // Sector risk component (0-1 point)
+  riskScore += sectorRisk;
+
+  // Cap at 10
+  riskScore = Math.min(10, Math.max(1, Math.round(riskScore * 10) / 10));
+
+  // Determine overall risk level
   let overallRisk = 'Low';
-  let riskScore = 1;
-
-  if (avgVolatility > 20 || concentrationRisk > 40 || totalPnLPercent < -10) {
+  if (riskScore >= 7 || portfolioVolatility > 40 || concentrationRisk > 50 || totalPnLPercent < -15) {
     overallRisk = 'High';
-    riskScore = 8;
-  } else if (avgVolatility > 10 || concentrationRisk > 25 || totalPnLPercent < -5) {
+  } else if (riskScore >= 4 || portfolioVolatility > 20 || concentrationRisk > 30 || totalPnLPercent < -5) {
     overallRisk = 'Medium';
-    riskScore = 5;
   }
 
-  // Generate recommendations
+  // Generate comprehensive recommendations
   const recommendations = [];
-  if (concentrationRisk > 30) {
-    recommendations.push('Consider diversifying across more sectors to reduce concentration risk');
+  
+  if (concentrationRisk > 35) {
+    recommendations.push(`High concentration in single sector (${maxSectorAllocation.toFixed(1)}%) - diversify across more sectors`);
   }
-  if (avgVolatility > 15) {
-    recommendations.push('High volatility detected - consider adding more stable stocks');
+  
+  if (portfolioVolatility > 30) {
+    recommendations.push(`High portfolio volatility (${portfolioVolatility.toFixed(1)}%) - consider adding defensive stocks`);
   }
+  
+  if (avgMaxDrawdown > 20) {
+    recommendations.push(`Significant drawdown risk (avg -${avgMaxDrawdown.toFixed(1)}%) - review stop-loss levels`);
+  }
+  
   if (diversificationScore < 5) {
-    recommendations.push('Add stocks from different sectors to improve diversification');
+    recommendations.push(`Limited diversification (${numSectors} sectors for ${numStocks} stocks) - add stocks from different sectors`);
   }
-  if (totalPnLPercent < -5) {
-    recommendations.push('Portfolio is underperforming - review individual stock positions');
+  
+  if (highVolatilityCount > numStocks * 0.5) {
+    recommendations.push(`${highVolatilityCount} high-volatility stocks detected - balance with stable positions`);
+  }
+  
+  if (winRate < 40 && numStocks > 3) {
+    recommendations.push(`Low win rate (${winRate.toFixed(0)}%) - review underperforming positions`);
+  }
+  
+  if (totalPnLPercent < -10) {
+    recommendations.push(`Portfolio underperforming (${totalPnLPercent.toFixed(1)}%) - consider rebalancing`);
+  }
+  
+  if (avgSharpe < 0 && stockMetrics.size > 0) {
+    recommendations.push(`Negative Sharpe ratio indicates poor risk-adjusted returns - review portfolio strategy`);
+  }
+  
+  if (sectorRisk > 0 && sectorAllocation) {
+    const underperforming = sectorAllocation.filter((s: any) => (s.performance90D || 0) < -5);
+    if (underperforming.length > 0) {
+      recommendations.push(`${underperforming.length} sector(s) underperforming - review sector allocation`);
+    }
+  }
+  
+  // If no specific issues, provide positive feedback
+  if (recommendations.length === 0) {
+    recommendations.push('Portfolio shows balanced risk characteristics');
   }
 
   return {
     overallRisk,
-    riskScore: Math.round(riskScore),
-    concentrationRisk: Math.round(concentrationRisk),
-    diversificationScore: Math.round(diversificationScore),
+    riskScore: Math.round(riskScore * 10) / 10,
+    concentrationRisk: Math.round(concentrationRisk * 10) / 10,
+    diversificationScore: Math.round(diversificationScore * 10) / 10,
     avgVolatility: Math.round(avgVolatility * 100) / 100,
-    recommendations
+    portfolioVolatility: Math.round(portfolioVolatility * 100) / 100,
+    avgMaxDrawdown: Math.round(avgMaxDrawdown * 100) / 100,
+    avgSharpe: Math.round(avgSharpe * 100) / 100,
+    winRate: Math.round(winRate * 10) / 10,
+    highVolatilityCount,
+    recommendations: recommendations.slice(0, 5) // Limit to top 5 recommendations
   };
 }
 
