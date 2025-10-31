@@ -431,7 +431,7 @@ export class SectorPerformanceService {
             sector = 'Technology';
             console.warn(`⚠️ [SECTOR ALLOCATION] ${stock.ticker} not found in mapping, assigning to Technology as fallback`);
           }
-        } else {
+        } else if (sectorInfo) {
           console.log(`📊 [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from ${sectorInfo.source})`);
         }
         
