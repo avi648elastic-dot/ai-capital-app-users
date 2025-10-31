@@ -45,20 +45,28 @@ export async function loadCache(symbol: string): Promise<CachedData | null> {
 
 /** Fetches + computes + caches all windows for one symbol */
 export async function updateCache(symbol: string): Promise<CachedData> {
-  loggerService.info(`🔄 [METRICS ENGINE] Updating cache for ${symbol}`);
+  loggerService.info(`🔄 [METRICS ENGINE] Updating cache for ${symbol} - fetching fresh data...`);
   
   try {
-    // Get current price and data source
+    const startTime = Date.now();
+    
+    // Get current price and data source (always fetch fresh for daily updates)
+    loggerService.info(`📊 [METRICS ENGINE] ${symbol}: Fetching current price...`);
     const stockMetrics = await googleFinanceFormulasService.getStockMetrics(symbol);
     const currentPrice = stockMetrics.current;
     const dataSource = stockMetrics.dataSource;
+    loggerService.info(`✅ [METRICS ENGINE] ${symbol}: Current price = $${currentPrice.toFixed(2)} (${dataSource})`);
     
-    // Get full historical data (needed for Bar[] format with high/low/open/close)
+    // Get full historical data (always fetch fresh to ensure latest data)
+    // Force fetch from API by requesting more days than typical cache window
+    loggerService.info(`📊 [METRICS ENGINE] ${symbol}: Fetching 120 days of historical data...`);
     const historicalData = await historicalDataService.getHistoricalData(symbol, 120); // 120d to cover 90d window
     
     if (historicalData.length === 0) {
       throw new Error(`No historical data available for ${symbol}`);
     }
+    
+    loggerService.info(`✅ [METRICS ENGINE] ${symbol}: Retrieved ${historicalData.length} days of historical data`);
     
     // Convert to Bar[] format for metrics module
     const bars: Bar[] = historicalData.map(item => ({
@@ -69,32 +77,54 @@ export async function updateCache(symbol: string): Promise<CachedData> {
       close: item.close
     }));
     
-    // Add current price as most recent bar if needed
-    if (bars.length > 0) {
-      const lastBar = bars[bars.length - 1];
-      const lastBarDate = new Date(lastBar.t);
-      const today = new Date();
-      
-      // Only add current price if it's different/newer than last bar
-      if (today.getTime() - lastBarDate.getTime() > 3600000) { // More than 1 hour difference
-        bars.push({
-          t: today.toISOString().split('T')[0],
-          close: currentPrice,
-          high: currentPrice * 1.005, // Estimate high
-          low: currentPrice * 0.995,  // Estimate low
-        });
-      } else {
-        // Update last bar with current price if within 1 hour
+    // Sort bars by date to ensure chronological order
+    bars.sort((a, b) => {
+      const dateA = new Date(a.t).getTime();
+      const dateB = new Date(b.t).getTime();
+      return dateA - dateB;
+    });
+    
+    // Always update with current price as the most recent bar
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const lastBar = bars[bars.length - 1];
+    const lastBarDate = lastBar ? new Date(lastBar.t).toISOString().split('T')[0] : null;
+    
+    // If last bar is not today, add/update with current price
+    if (lastBarDate !== todayStr) {
+      if (lastBar && today.getTime() - new Date(lastBar.t).getTime() < 3600000) {
+        // Update last bar if it's within 1 hour (intraday update)
         bars[bars.length - 1] = {
           ...lastBar,
           close: currentPrice,
-          high: Math.max(lastBar.high || currentPrice, currentPrice * 1.005),
-          low: Math.min(lastBar.low || currentPrice, currentPrice * 0.995),
+          high: Math.max(lastBar.high || currentPrice, currentPrice),
+          low: Math.min(lastBar.low || currentPrice, currentPrice),
         };
+        loggerService.info(`🔄 [METRICS ENGINE] ${symbol}: Updated last bar with current price`);
+      } else {
+        // Add new bar for today
+        bars.push({
+          t: todayStr,
+          close: currentPrice,
+          high: currentPrice * 1.01, // Estimate 1% high
+          low: currentPrice * 0.99,  // Estimate 1% low
+          open: currentPrice, // Use current as open estimate
+        });
+        loggerService.info(`➕ [METRICS ENGINE] ${symbol}: Added today's bar with current price`);
       }
+    } else {
+      // Last bar is today, update with current price
+      bars[bars.length - 1] = {
+        ...lastBar,
+        close: currentPrice,
+        high: Math.max(lastBar.high || currentPrice, currentPrice),
+        low: Math.min(lastBar.low || currentPrice, currentPrice),
+      };
+      loggerService.info(`🔄 [METRICS ENGINE] ${symbol}: Updated today's bar with current price`);
     }
     
     // Calculate metrics for all timeframes
+    loggerService.info(`🧮 [METRICS ENGINE] ${symbol}: Calculating metrics for all timeframes (7d, 30d, 60d, 90d)...`);
     const riskFreeRate = 0.02; // 2% annual risk-free rate
     const metrics: Record<WindowKey, any> = {
       "7d": computeMetricsForWindow(symbol, bars, "7d", "high", riskFreeRate),
@@ -102,6 +132,13 @@ export async function updateCache(symbol: string): Promise<CachedData> {
       "60d": computeMetricsForWindow(symbol, bars, "60d", "high", riskFreeRate),
       "90d": computeMetricsForWindow(symbol, bars, "90d", "high", riskFreeRate),
     };
+    
+    const calcTime = Date.now() - startTime;
+    loggerService.info(`✅ [METRICS ENGINE] ${symbol}: Calculated all metrics in ${calcTime}ms`, {
+      "7d": `${metrics["7d"].returnPct.toFixed(2)}% return, ${metrics["7d"].volatilityAnnual.toFixed(2)}% vol`,
+      "30d": `${metrics["30d"].returnPct.toFixed(2)}% return, ${metrics["30d"].volatilityAnnual.toFixed(2)}% vol`,
+      "90d": `${metrics["90d"].returnPct.toFixed(2)}% return, ${metrics["90d"].volatilityAnnual.toFixed(2)}% vol`,
+    });
     
     const data: CachedData = {
       date: todayKey(),
@@ -112,12 +149,17 @@ export async function updateCache(symbol: string): Promise<CachedData> {
       dataSource
     };
     
-    // Cache for 24 hours (until next day)
-    const cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    // Cache until end of day (midnight + 1 hour buffer for timezone safety)
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const cacheExpiry = tomorrow.getTime() - now.getTime() + (60 * 60 * 1000); // Add 1 hour buffer
+    
     const key = cacheKey(symbol);
     await redisService.set(key, JSON.stringify(data), cacheExpiry);
     
-    loggerService.info(`✅ [METRICS ENGINE] Cached metrics for ${symbol} (${data.date})`);
+    loggerService.info(`💾 [METRICS ENGINE] ${symbol}: Cached metrics until ${tomorrow.toISOString()} (${Math.round(cacheExpiry / 1000 / 60)} minutes)`);
     return data;
     
   } catch (error) {
