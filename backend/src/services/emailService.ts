@@ -235,6 +235,24 @@ class EmailService {
   }
 
   /**
+   * Send trial expiration reminder email
+   */
+  async sendTrialExpirationEmail(to: string, data: TrialExpirationEmailData): Promise<boolean> {
+    const html = this.generateTrialExpirationTemplate(data);
+    const subject = data.daysRemaining === 1
+      ? 'AiCapital: Your Premium+ Trial Ends Tomorrow!'
+      : data.daysRemaining <= 3
+      ? `AiCapital: Your Premium+ Trial Expires in ${data.daysRemaining} Days`
+      : `AiCapital: Your Premium+ Trial Expires in ${data.daysRemaining} Days`;
+    
+    return this.sendEmail({
+      to,
+      subject,
+      html
+    });
+  }
+
+  /**
    * Generate welcome email template
    */
   private generateWelcomeEmailTemplate(data: WelcomeEmailData): string {
