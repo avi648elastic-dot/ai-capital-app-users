@@ -39,6 +39,25 @@ interface PortfolioDetailsData {
       weight: number;
     }>;
   };
+  stockQualityAnalysis?: Array<{
+    ticker: string;
+    qualityScore: number;
+    qualityLevel: 'EXCELLENT' | 'GOOD' | 'FAIR' | 'POOR';
+    currentWeight: number;
+    recommendation: 'INCREASE' | 'REDUCE' | 'HOLD';
+    recommendationReason: string;
+    comparisonRank: number;
+  }>;
+  investmentRecommendations?: Array<{
+    ticker: string;
+    action: 'INCREASE' | 'REDUCE' | 'HOLD';
+    reason: string;
+    priority: 'HIGH' | 'MEDIUM' | 'LOW';
+    currentWeight: number;
+    suggestedWeight: number;
+    qualityScore: number;
+    qualityLevel: string;
+  }>;
 }
 
 export default function PortfolioDetails() {
@@ -356,6 +375,180 @@ export default function PortfolioDetails() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Investment Recommendations Based on Quality - NEW */}
+        {data.investmentRecommendations && data.investmentRecommendations.length > 0 && (
+          <div className="mt-6 p-6 bg-gradient-to-br from-slate-800/95 via-blue-900/20 to-slate-900/95 rounded-2xl border border-slate-700/50 shadow-2xl">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-pink-500/30 flex items-center justify-center border border-blue-400/40">
+                <Target className="w-6 h-6 text-blue-300" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Investment Recommendations</h2>
+                <p className="text-sm text-slate-400">Based on quality analysis comparing all positions</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              {data.investmentRecommendations.map((rec, index) => {
+                const getActionColor = (action: string) => {
+                  switch (action) {
+                    case 'INCREASE':
+                      return 'bg-green-900/30 border-green-500/50';
+                    case 'REDUCE':
+                      return 'bg-red-900/30 border-red-500/50';
+                    default:
+                      return 'bg-slate-800/50 border-slate-700/50';
+                  }
+                };
+                
+                const getActionIcon = (action: string) => {
+                  switch (action) {
+                    case 'INCREASE':
+                      return <ArrowUp className="w-5 h-5 text-green-400" />;
+                    case 'REDUCE':
+                      return <ArrowDown className="w-5 h-5 text-red-400" />;
+                    default:
+                      return <Activity className="w-5 h-5 text-slate-400" />;
+                  }
+                };
+                
+                const getQualityColor = (level: string) => {
+                  switch (level) {
+                    case 'EXCELLENT':
+                      return 'text-green-400 bg-green-500/20';
+                    case 'GOOD':
+                      return 'text-blue-400 bg-blue-500/20';
+                    case 'FAIR':
+                      return 'text-yellow-400 bg-yellow-500/20';
+                    case 'POOR':
+                      return 'text-red-400 bg-red-500/20';
+                    default:
+                      return 'text-slate-400 bg-slate-500/20';
+                  }
+                };
+                
+                const getPriorityColor = (priority: string) => {
+                  switch (priority) {
+                    case 'HIGH':
+                      return 'bg-red-500/20 text-red-400 border-red-500/30';
+                    case 'MEDIUM':
+                      return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+                    default:
+                      return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+                  }
+                };
+                
+                return (
+                  <div key={index} className={`p-5 rounded-xl border ${getActionColor(rec.action)}`}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center space-x-3">
+                        {getActionIcon(rec.action)}
+                        <div>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h3 className="font-bold text-white text-lg">{rec.ticker}</h3>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getQualityColor(rec.qualityLevel)}`}>
+                              {rec.qualityLevel} Quality ({rec.qualityScore}/100)
+                            </span>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(rec.priority)}`}>
+                              {rec.priority} Priority
+                            </span>
+                          </div>
+                          <p className="text-slate-300 text-sm mt-1">{rec.reason}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-700/50">
+                      <div>
+                        <div className="text-xs text-slate-400 mb-1">Current Allocation</div>
+                        <div className="text-lg font-bold text-white">{rec.currentWeight}%</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 mb-1">Suggested Allocation</div>
+                        <div className={`text-lg font-bold ${
+                          rec.action === 'INCREASE' ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {rec.suggestedWeight}%
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 mb-1">Change</div>
+                        <div className={`text-lg font-bold ${
+                          rec.action === 'INCREASE' ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {rec.action === 'INCREASE' ? '+' : '-'}{Math.abs(rec.suggestedWeight - rec.currentWeight).toFixed(1)}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Stock Quality Comparison Table */}
+            {data.stockQualityAnalysis && data.stockQualityAnalysis.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-slate-700/50">
+                <h3 className="text-lg font-semibold text-white mb-4">Portfolio Quality Comparison</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-700">
+                        <th className="text-left py-3 px-4 text-slate-400">Rank</th>
+                        <th className="text-left py-3 px-4 text-slate-400">Stock</th>
+                        <th className="text-left py-3 px-4 text-slate-400">Quality</th>
+                        <th className="text-left py-3 px-4 text-slate-400">Score</th>
+                        <th className="text-left py-3 px-4 text-slate-400">Allocation</th>
+                        <th className="text-left py-3 px-4 text-slate-400">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.stockQualityAnalysis.map((stock, idx) => {
+                        const getQualityColor = (level: string) => {
+                          switch (level) {
+                            case 'EXCELLENT':
+                              return 'text-green-400 bg-green-500/20';
+                            case 'GOOD':
+                              return 'text-blue-400 bg-blue-500/20';
+                            case 'FAIR':
+                              return 'text-yellow-400 bg-yellow-500/20';
+                            case 'POOR':
+                              return 'text-red-400 bg-red-500/20';
+                            default:
+                              return 'text-slate-400 bg-slate-500/20';
+                          }
+                        };
+                        
+                        return (
+                          <tr key={idx} className="border-b border-slate-800">
+                            <td className="py-3 px-4 text-white font-bold">#{stock.comparisonRank}</td>
+                            <td className="py-3 px-4 text-white font-semibold">{stock.ticker}</td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getQualityColor(stock.qualityLevel)}`}>
+                                {stock.qualityLevel}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-white">{stock.qualityScore}/100</td>
+                            <td className="py-3 px-4 text-white">{stock.currentWeight}%</td>
+                            <td className="py-3 px-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                stock.recommendation === 'INCREASE' ? 'bg-green-500/20 text-green-400' :
+                                stock.recommendation === 'REDUCE' ? 'bg-red-500/20 text-red-400' :
+                                'bg-slate-500/20 text-slate-400'
+                              }`}>
+                                {stock.recommendation}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
