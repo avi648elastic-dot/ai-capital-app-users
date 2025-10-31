@@ -50,7 +50,8 @@ export const cacheMiddleware = (options: CacheOptions = {}) => {
       // Override res.json to cache the response
       res.json = function(data: any) {
         // Cache the response asynchronously
-        redisService.set(cacheKey, JSON.stringify(data), ttl)
+        // Convert seconds to milliseconds (redisService.set expects milliseconds)
+        redisService.set(cacheKey, JSON.stringify(data), ttl * 1000)
           .then(() => {
             loggerService.info(`Cached response for key: ${cacheKey}, TTL: ${ttl}s`);
           })

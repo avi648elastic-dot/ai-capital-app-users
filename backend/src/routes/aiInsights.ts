@@ -51,8 +51,8 @@ router.get('/', authenticateToken, async (req, res) => {
     // Generate AI insights
     const analysis = await aiInsightsService.generatePortfolioInsights(userId, portfolio);
 
-    // Cache the results for 1 hour
-    await redisService.set(cacheKey, JSON.stringify(analysis), 3600);
+    // Cache the results for 1 hour (convert seconds to milliseconds)
+    await redisService.set(cacheKey, JSON.stringify(analysis), 3600 * 1000);
 
     res.json({
       success: true,
@@ -137,8 +137,8 @@ router.post('/refresh', authenticateToken, async (req, res) => {
     // Generate fresh insights
     const analysis = await aiInsightsService.generatePortfolioInsights(userId, portfolio);
 
-    // Cache the results
-    await redisService.set(cacheKey, JSON.stringify(analysis), 3600);
+    // Cache the results (convert seconds to milliseconds)
+    await redisService.set(cacheKey, JSON.stringify(analysis), 3600 * 1000);
 
     res.json({
       success: true,
