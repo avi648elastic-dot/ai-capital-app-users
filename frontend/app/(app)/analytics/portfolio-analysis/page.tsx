@@ -426,7 +426,14 @@ export default function PortfolioAnalysis() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
-                      <span className="text-white font-medium">{sector.sector}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white font-medium">{sector.sector}</span>
+                        {sector.etfSymbol && (
+                          <span className="text-xs text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded">
+                            {sector.etfSymbol}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="text-right">
                       <div className="text-white font-semibold">{sector.percentage || 0}%</div>
@@ -692,7 +699,14 @@ export default function PortfolioAnalysis() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         <div className={`w-3 h-3 rounded-full ${sector.color}`}></div>
-                        <span className="text-white font-medium text-sm">{sector.sector}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-medium text-sm">{sector.sector}</span>
+                          {sector.etfSymbol && (
+                            <span className="text-xs text-slate-400 bg-slate-700 px-1.5 py-0.5 rounded">
+                              {sector.etfSymbol}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className={`text-sm font-semibold ${

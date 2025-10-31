@@ -450,13 +450,44 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
         }
       });
 
-                           // CRITICAL FIX: Always generate fresh performance data based on REAL stock prices
-       // This ensures we have realistic Best Day/Worst Day metrics and actual P&L
-       console.log('📊 [ANALYTICS] Generating fresh performance data based on real stock prices...');
-       portfolioPerformance = generateMonthlyPortfolioPerformance(portfolioData, 4); // 4 weeks of data
-       
-       console.log('✅ [ANALYTICS] Generated fresh performance data:', portfolioPerformance.length, 'data points');
-       console.log('📊 [ANALYTICS] Performance data sample:', portfolioPerformance.slice(0, 2));
+      // CRITICAL FIX: Generate real 30-day portfolio performance using historical data service
+      // This ensures we have REAL historical portfolio values, not dummy data
+      loggerService.info(`📊 [ANALYTICS] Generating real 30-day portfolio performance from historical data...`);
+      
+      try {
+        // Get real 30-day portfolio performance from historical data service
+        const realPerformance = await historicalDataService.calculatePortfolioPerformance(
+          portfolio,
+          30, // Last 30 days
+          userId.toString()
+        );
+        
+        if (realPerformance && realPerformance.length > 0) {
+          // Format for frontend chart component
+          portfolioPerformance = realPerformance.map(item => ({
+            date: item.date,
+            totalValue: item.totalValue,
+            totalPnL: item.totalPnL,
+            totalPnLPercent: item.totalPnLPercent,
+            dailyChange: item.dailyChange,
+            dailyChangePercent: item.dailyChangePercent
+          }));
+          
+          loggerService.info(`✅ [ANALYTICS] Generated real 30-day portfolio performance: ${portfolioPerformance.length} data points`);
+          loggerService.info(`📊 [ANALYTICS] Performance range: ${Math.min(...portfolioPerformance.map(p => p.totalValue)).toFixed(2)} - ${Math.max(...portfolioPerformance.map(p => p.totalValue)).toFixed(2)}`);
+        } else {
+          // Fallback: Generate from stock data if historical service fails
+          loggerService.warn(`⚠️ [ANALYTICS] Historical service returned no data, generating from stock data...`);
+          portfolioPerformance = generateMonthlyPortfolioPerformance(portfolioData, 4); // 4 weeks of data
+        }
+      } catch (error) {
+        loggerService.error(`❌ [ANALYTICS] Error generating real portfolio performance:`, error);
+        // Fallback: Generate from stock data
+        portfolioPerformance = generateMonthlyPortfolioPerformance(portfolioData, 4); // 4 weeks of data
+      }
+      
+      console.log('✅ [ANALYTICS] Generated portfolio performance data:', portfolioPerformance.length, 'data points');
+      console.log('📊 [ANALYTICS] Performance data sample:', portfolioPerformance.slice(0, 2));
        
        // Save today's snapshot for historical tracking
        try {
