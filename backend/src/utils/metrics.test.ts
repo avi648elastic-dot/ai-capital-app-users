@@ -28,7 +28,7 @@ const data = {
 
 const windows: WindowKey[] = ["7d","30d","60d","90d"];
 
-for (const symbol in data) {
+for (const symbol of Object.keys(data) as Array<keyof typeof data>) {
   for (const w of windows) {
     const m = computeMetricsForWindow(symbol, data[symbol], w, "high");
     console.log(`${symbol} ${w}:`, m);
