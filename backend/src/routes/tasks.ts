@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import TaskTimeline from '../models/TaskTimeline';
+import TaskOverride from '../models/TaskOverride';
 
 const router = Router();
 
@@ -76,6 +77,48 @@ async function saveTimeline(title: string, data: { startDate?: string; endDate?:
     console.log(`✅ [TASKS] Saved timeline for "${title}" to MongoDB`);
   } catch (error) {
     console.error(`❌ [TASKS] Error saving timeline for "${title}":`, error);
+    throw error;
+  }
+}
+
+// Load task overrides from MongoDB
+async function loadOverrideMap(): Promise<Record<string, { title?: string; description?: string }>> {
+  try {
+    const overrides = await TaskOverride.find({}).lean();
+    console.log(`📊 [TASKS] Loaded ${overrides.length} task overrides from MongoDB`);
+    const map: Record<string, { title?: string; description?: string }> = {};
+    overrides.forEach(ov => {
+      if (ov.taskId && (ov.title || ov.description)) {
+        map[ov.taskId] = {
+          title: ov.title || undefined,
+          description: ov.description || undefined
+        };
+        console.log(`✅ [TASKS] Loaded override for task ID "${ov.taskId}": title="${ov.title}", description="${ov.description?.substring(0, 50)}..."`);
+      }
+    });
+    return map;
+  } catch (error) {
+    console.error('❌ [TASKS] Error loading task overrides from MongoDB:', error);
+    return {};
+  }
+}
+
+// Save task override to MongoDB
+async function saveTaskOverride(taskId: string, originalTitle: string, data: { title?: string; description?: string }) {
+  try {
+    await TaskOverride.findOneAndUpdate(
+      { taskId: taskId },
+      {
+        taskId: taskId,
+        originalTitle: originalTitle,
+        title: data.title || null,
+        description: data.description || null
+      },
+      { upsert: true, new: true }
+    );
+    console.log(`✅ [TASKS] Saved override for task ID "${taskId}" to MongoDB`);
+  } catch (error) {
+    console.error(`❌ [TASKS] Error saving override for task ID "${taskId}":`, error);
     throw error;
   }
 }
@@ -234,11 +277,46 @@ async function loadTasks(): Promise<Task[]> {
       });
     });
 
+    // Merge task overrides (title/description) from MongoDB FIRST
+    // This ensures titles are updated before we try to match timelines
+    const overrideMap = await loadOverrideMap();
+    console.log(`🔗 [TASKS] Merging ${Object.keys(overrideMap).length} task overrides into ${tasks.length} tasks`);
+    const titleMapping: Record<string, string> = {}; // Track title changes for timeline updates
+    tasks.forEach(t => {
+      const ov = overrideMap[t.id];
+      if (ov) {
+        if (ov.title) {
+          const oldTitle = t.title;
+          t.title = ov.title;
+          titleMapping[oldTitle] = ov.title; // Track the title change
+          console.log(`✅ [TASKS] Applied title override for task ID "${t.id}": "${oldTitle}" -> "${ov.title}"`);
+        }
+        if (ov.description !== undefined) {
+          t.description = ov.description;
+          console.log(`✅ [TASKS] Applied description override for task ID "${t.id}"`);
+        }
+      }
+    });
+
     // Merge timeline overrides from MongoDB
+    // Now match timelines using current titles (which may have been updated above)
     const timelineMap = await loadTimelineMap();
     console.log(`🔗 [TASKS] Merging ${Object.keys(timelineMap).length} timelines into ${tasks.length} tasks`);
     tasks.forEach(t => {
-      const tl = timelineMap[t.title];
+      // Try to find timeline by current title first
+      let tl = timelineMap[t.title];
+      // If not found, try to find by old title (if title was changed)
+      if (!tl) {
+        const oldTitle = Object.keys(titleMapping).find(old => titleMapping[old] === t.title);
+        if (oldTitle) {
+          tl = timelineMap[oldTitle];
+          // Move timeline entry to new title
+          if (tl) {
+            timelineMap[t.title] = tl;
+            delete timelineMap[oldTitle];
+          }
+        }
+      }
       if (tl) {
         const hadDates = !!(t.startDate || t.endDate);
         t.startDate = tl.startDate || t.startDate;
@@ -393,6 +471,73 @@ router.post('/:id/timeline', async (req: Request, res: Response) => {
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.status(500).json({ message: 'Error updating task timeline', error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+// POST update task title and description
+router.post('/:id/update', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+
+    console.log(`💾 [TASKS API] Updating task ID ${id}:`, { title, description });
+
+    const tasks = await loadTasks();
+    const task = tasks.find(t => t.id === id);
+    if (!task) {
+      console.error(`❌ [TASKS API] Task ${id} not found`);
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      return res.status(404).json({ success: false, message: 'Task not found' });
+    }
+
+    console.log(`✅ [TASKS API] Found task: "${task.title}" (ID: ${id})`);
+
+    const originalTitle = task.title;
+    const updateData: { title?: string; description?: string } = {};
+
+    // Only update fields that are provided
+    if (title !== undefined && title !== null) {
+      updateData.title = title.trim();
+    }
+    if (description !== undefined && description !== null) {
+      updateData.description = description.trim();
+    }
+
+    // Save override to MongoDB
+    await saveTaskOverride(id, originalTitle, updateData);
+
+    // If title changed, update the timeline entry with the new title
+    if (updateData.title && updateData.title !== originalTitle) {
+      const timeline = await TaskTimeline.findOne({ taskTitle: originalTitle }).lean();
+      if (timeline) {
+        // Update timeline entry with new title
+        await TaskTimeline.findOneAndUpdate(
+          { taskTitle: originalTitle },
+          { taskTitle: updateData.title },
+          { upsert: false }
+        );
+        console.log(`✅ [TASKS API] Updated timeline entry: "${originalTitle}" -> "${updateData.title}"`);
+      }
+    }
+
+    // Reload tasks to get updated data
+    const updatedTasks = await loadTasks();
+    const updatedTask = updatedTasks.find(t => t.id === id);
+    if (!updatedTask) {
+      res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      return res.status(500).json({ success: false, message: 'Failed to reload updated task' });
+    }
+
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.json({ success: true, task: updatedTask });
+  } catch (error) {
+    console.error('❌ [TASKS API] Error updating task:', error);
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.status(500).json({ message: 'Error updating task', error: error instanceof Error ? error.message : 'Unknown error' });
   }
 });
 

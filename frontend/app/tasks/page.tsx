@@ -20,7 +20,9 @@ export default function PublicTasksPage() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editingTask, setEditingTask] = useState<string | null>(null);
+  const [editingTaskDetails, setEditingTaskDetails] = useState<string | null>(null);
   const [editDates, setEditDates] = useState({ startDate: '', endDate: '' });
+  const [editDetails, setEditDetails] = useState({ title: '', description: '' });
   const [showAdd, setShowAdd] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
@@ -190,6 +192,50 @@ export default function PublicTasksPage() {
     setEditingTask(task.id);
   };
 
+  const handleEditDetails = (task: Task) => {
+    setEditDetails({
+      title: task.title,
+      description: task.description
+    });
+    setEditingTaskDetails(task.id);
+  };
+
+  const saveDetails = async () => {
+    if (!editingTaskDetails) return;
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://ai-capital-app7.onrender.com';
+      console.log('💾 [TASKS] Saving task details:', { taskId: editingTaskDetails, title: editDetails.title, description: editDetails.description });
+      const res = await fetch(`${apiUrl}/api/tasks/${editingTaskDetails}/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editDetails.title, description: editDetails.description })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        console.log('✅ [TASKS] Task details saved successfully:', data);
+        const updated = data.task as any;
+        // Update local state immediately
+        setTasks(tasks.map(task => 
+          task.id === editingTaskDetails 
+            ? { ...task, title: updated.title, description: updated.description } 
+            : task
+        ));
+        // Refresh from server to ensure we have the latest data
+        await fetchTasks();
+      } else {
+        const errorText = await res.text();
+        console.error('❌ [TASKS] Task details save failed:', res.status, errorText);
+        alert('Failed to save changes. Please try again.');
+      }
+    } catch (e) {
+      console.error('❌ [TASKS] Task details save error:', e);
+      alert('Error saving changes. Please try again.');
+    } finally {
+      setEditingTaskDetails(null);
+      setEditDetails({ title: '', description: '' });
+    }
+  };
+
   const saveDates = async () => {
     if (!editingTask) return;
     try {
@@ -334,29 +380,83 @@ export default function PublicTasksPage() {
                 <div key={task.id} className="bg-slate-800 rounded-lg p-4 sm:p-6 border border-slate-700">
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        <span className="text-2xl">{statusIcon}</span>
-                        <h3 className="text-lg font-semibold text-white">{task.title}</h3>
-                        <span className={`px-2 py-1 rounded text-xs font-bold text-white ${priorityColor}`}>
-                          {task.priority.toUpperCase()}
-                        </span>
-                      </div>
-                      <p className="text-slate-400 text-sm mb-3">{task.description}</p>
-                      <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
-                        <span>📁 {task.category}</span>
-                        {task.startDate && <span>📅 Start: {formatDate(task.startDate)}</span>}
-                        {task.endDate && <span>🏁 End: {formatDate(task.endDate)}</span>}
-                        {task.startDate && task.endDate && (
-                          <span>⏱️ {getDaysBetween(task.startDate, task.endDate)} days</span>
-                        )}
-                      </div>
+                      {editingTaskDetails === task.id ? (
+                        <div className="space-y-3 mb-3">
+                          <div>
+                            <label className="block text-sm text-slate-300 mb-1">Title</label>
+                            <input
+                              type="text"
+                              value={editDetails.title}
+                              onChange={e => setEditDetails({ ...editDetails, title: e.target.value })}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded text-white text-sm"
+                              placeholder="Task title"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-slate-300 mb-1">Description</label>
+                            <textarea
+                              value={editDetails.description}
+                              onChange={e => setEditDetails({ ...editDetails, description: e.target.value })}
+                              className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded text-white text-sm"
+                              placeholder="Task description"
+                              rows={3}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={saveDetails}
+                              className="px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded text-sm text-white"
+                            >
+                              ✅ Save
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingTaskDetails(null);
+                                setEditDetails({ title: '', description: '' });
+                              }}
+                              className="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded text-sm text-white"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
+                            <span className="text-2xl">{statusIcon}</span>
+                            <h3 className="text-lg font-semibold text-white">{task.title}</h3>
+                            <span className={`px-2 py-1 rounded text-xs font-bold text-white ${priorityColor}`}>
+                              {task.priority.toUpperCase()}
+                            </span>
+                          </div>
+                          <p className="text-slate-400 text-sm mb-3">{task.description}</p>
+                          <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
+                            <span>📁 {task.category}</span>
+                            {task.startDate && <span>📅 Start: {formatDate(task.startDate)}</span>}
+                            {task.endDate && <span>🏁 End: {formatDate(task.endDate)}</span>}
+                            {task.startDate && task.endDate && (
+                              <span>⏱️ {getDaysBetween(task.startDate, task.endDate)} days</span>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <button
-                      onClick={() => handleSetDates(task)}
-                      className="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700 text-sm whitespace-nowrap"
-                    >
-                      {task.startDate && task.endDate ? '✏️ Edit Dates' : '📅 Set Timeline'}
-                    </button>
+                    {editingTaskDetails !== task.id && (
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => handleEditDetails(task)}
+                          className="px-4 py-2 bg-purple-600 rounded text-white hover:bg-purple-700 text-sm whitespace-nowrap"
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleSetDates(task)}
+                          className="px-4 py-2 bg-blue-600 rounded text-white hover:bg-blue-700 text-sm whitespace-nowrap"
+                        >
+                          {task.startDate && task.endDate ? '📅 Edit Dates' : '📅 Set Timeline'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Inline Date Editor */}
