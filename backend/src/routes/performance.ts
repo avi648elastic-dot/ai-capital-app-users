@@ -8,6 +8,7 @@ import { historicalDataService, HistoricalPrice } from '../services/historicalDa
 import { redisService } from '../services/redisService';
 import { realTimePerformanceService } from '../services/realTimePerformanceService';
 import { computeMetricsForWindow, Bar, WindowKey } from '../utils/metrics';
+import { getMetrics } from '../utils/metrics.engine';
 
 const router = express.Router();
 
@@ -178,33 +179,24 @@ router.get('/', authenticateToken, async (req, res) => {
     loggerService.info(`🔍 [PERFORMANCE] Fetching real metrics for ${tickers.length} stocks using googleFinanceFormulasService`);
     console.log(`🔍 [PERFORMANCE] Tickers: ${tickers.join(', ')}, Days: ${days}`);
     
-    // Fetch stock metrics and price history in parallel for better performance
+    // Use caching engine for metrics (loads from cache or computes if needed)
     const stockMetricsMap: Map<string, any> = new Map();
-    const priceHistoryMap: Map<string, Bar[]> = new Map();
+    const cachedMetricsMap: Map<string, any> = new Map(); // Store cached metrics per ticker
     
     try {
-      // Fetch stock metrics and price history in parallel
+      // Fetch cached metrics (or compute if not cached) in parallel
       const fetchPromises = tickers.map(async (ticker) => {
         try {
-      // Get current metrics (same as decision engine)
-      const stockMetrics = await googleFinanceFormulasService.getStockMetrics(ticker);
-      
-      // Get full historical data (needed for Bar[] format with high/low/open/close)
-      const historicalData = await historicalDataService.getHistoricalData(ticker, 90);
-      
-      // Convert to Bar[] format for metrics module
-      const bars: Bar[] = historicalData.map(item => ({
-        t: item.date,
-        open: item.open,
-        high: item.high,
-        low: item.low,
-        close: item.close
-      }));
-      
-      stockMetricsMap.set(ticker, stockMetrics);
-      priceHistoryMap.set(ticker, bars);
+              // Use caching engine - automatically loads cache or fetches if needed
+          const cachedData = await getMetrics(ticker);
           
-          loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${stockMetrics.current.toFixed(2)}, DataSource=${stockMetrics.dataSource}, History=${bars.length} days`);
+          stockMetricsMap.set(ticker, {
+            current: cachedData.currentPrice,
+            dataSource: cachedData.dataSource
+          });
+          cachedMetricsMap.set(ticker, cachedData); // Store full cached data
+          
+          loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${cachedData.currentPrice.toFixed(2)}, DataSource=${cachedData.dataSource}, History=${cachedData.bars.length} days, Cached=${cachedData.date === new Date().toISOString().slice(0, 10)}`);
         } catch (error) {
           loggerService.error(`❌ [PERFORMANCE] Failed to fetch ${ticker}:`, error);
           // Continue with other stocks even if one fails
@@ -226,8 +218,8 @@ router.get('/', authenticateToken, async (req, res) => {
     for (const ticker of tickers) {
       if (stockMetricsMap.has(ticker)) {
         const data = stockMetricsMap.get(ticker)!;
-        const history = priceHistoryMap.get(ticker) || [];
-        loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${data.current.toFixed(2)}, Volatility=${data.volatility.toFixed(2)}%, Source=${data.dataSource}, History=${history.length} days`);
+        const cached = cachedMetricsMap.get(ticker);
+        loggerService.info(`✅ [PERFORMANCE] ${ticker}: Current=$${data.current.toFixed(2)}, Source=${data.dataSource}, History=${cached?.bars.length || 0} days`);
       } else {
         loggerService.warn(`❌ [PERFORMANCE] ${ticker}: No data available from any API`);
       }
@@ -242,87 +234,25 @@ router.get('/', authenticateToken, async (req, res) => {
 
     for (const stock of portfolio) {
       const stockData = stockMetricsMap.get(stock.ticker);
-      const bars = priceHistoryMap.get(stock.ticker) || [];
+      const cachedData = cachedMetricsMap.get(stock.ticker);
       
-      if (!stockData || bars.length === 0) {
-        loggerService.warn(`⚠️ [PERFORMANCE] No real-time data or price history for ${stock.ticker} - skipping`);
+      if (!stockData || !cachedData) {
+        loggerService.warn(`⚠️ [PERFORMANCE] No cached data for ${stock.ticker} - skipping`);
         continue;
       }
 
-      // Get current price from stockData (real-time API price)
-      const currentPrice = stockData.current;
-      
       // Convert requested days to WindowKey
       const requestedWindow: WindowKey = days <= 7 ? "7d" : days <= 30 ? "30d" : days <= 60 ? "60d" : "90d";
       
-      // Calculate metrics for all timeframes using the new metrics module
-      // Note: We need to add current price as the most recent bar since it might be more recent than history
-      const allBars = [...bars];
-      if (bars.length > 0) {
-        const lastBar = bars[bars.length - 1];
-        const lastBarDate = new Date(lastBar.t);
-        const today = new Date();
-        
-        // Only add current price if it's different/newer than last bar
-        if (today.getTime() - lastBarDate.getTime() > 3600000) { // More than 1 hour difference
-          allBars.push({
-            t: today.toISOString().split('T')[0],
-            close: currentPrice,
-            high: currentPrice * 1.005, // Estimate high
-            low: currentPrice * 0.995,  // Estimate low
-          });
-        } else {
-          // Update last bar with current price if within 1 hour
-          allBars[allBars.length - 1] = {
-            ...lastBar,
-            close: currentPrice,
-            high: Math.max(lastBar.high || currentPrice, currentPrice * 1.005),
-            low: Math.min(lastBar.low || currentPrice, currentPrice * 0.995),
-          };
-        }
-      }
-      
-      // Calculate metrics for each timeframe
-      let metrics7D, metrics30D, metrics60D, metrics90D, requestedMetrics;
-      const riskFreeRate = 0.02; // 2% annual risk-free rate
-      
-      try {
-        metrics7D = computeMetricsForWindow(stock.ticker, allBars, "7d", "high", riskFreeRate);
-      } catch (e) {
-        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate 7d metrics for ${stock.ticker}:`, e);
-        metrics7D = null;
-      }
-      
-      try {
-        metrics30D = computeMetricsForWindow(stock.ticker, allBars, "30d", "high", riskFreeRate);
-      } catch (e) {
-        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate 30d metrics for ${stock.ticker}:`, e);
-        metrics30D = null;
-      }
-      
-      try {
-        metrics60D = computeMetricsForWindow(stock.ticker, allBars, "60d", "high", riskFreeRate);
-      } catch (e) {
-        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate 60d metrics for ${stock.ticker}:`, e);
-        metrics60D = null;
-      }
-      
-      try {
-        metrics90D = computeMetricsForWindow(stock.ticker, allBars, "90d", "high", riskFreeRate);
-      } catch (e) {
-        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate 90d metrics for ${stock.ticker}:`, e);
-        metrics90D = null;
-      }
-      
-      try {
-        requestedMetrics = computeMetricsForWindow(stock.ticker, allBars, requestedWindow, "high", riskFreeRate);
-      } catch (e) {
-        loggerService.warn(`⚠️ [PERFORMANCE] Could not calculate ${requestedWindow} metrics for ${stock.ticker}:`, e);
-        requestedMetrics = metrics90D || metrics30D || metrics7D || null;
-      }
+      // Use pre-calculated metrics from cache (already computed for all timeframes)
+      const metrics7D = cachedData.metrics["7d"];
+      const metrics30D = cachedData.metrics["30d"];
+      const metrics60D = cachedData.metrics["60d"];
+      const metrics90D = cachedData.metrics["90d"];
+      const requestedMetrics = cachedData.metrics[requestedWindow] || metrics90D || metrics30D || metrics7D;
       
       if (!requestedMetrics) {
-        loggerService.warn(`⚠️ [PERFORMANCE] No valid metrics calculated for ${stock.ticker} - skipping`);
+        loggerService.warn(`⚠️ [PERFORMANCE] No valid metrics for ${stock.ticker} - skipping`);
         continue;
       }
       
@@ -352,10 +282,10 @@ router.get('/', authenticateToken, async (req, res) => {
         startPrice60D: metrics60D?.startPrice || 0,
         startPrice90D: metrics90D?.startPrice || 0,
         dataSource: stockData.dataSource,
-        historyLength: allBars.length
+        historyLength: cachedData.bars.length
       };
 
-      loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} calculated metrics:`, {
+      loggerService.info(`📊 [PERFORMANCE] ${stock.ticker} calculated metrics (cached):`, {
         timeframe: `${days}d (${requestedWindow})`,
         return: requestedMetrics.returnPct.toFixed(2) + '%',
         returnDollar: '$' + requestedMetrics.returnDollar.toFixed(2),
@@ -376,7 +306,8 @@ router.get('/', authenticateToken, async (req, res) => {
         currentPrice: '$' + requestedMetrics.endPrice.toFixed(2),
         startPrice: '$' + requestedMetrics.startPrice.toFixed(2),
         dataSource: stockData.dataSource,
-        historyLength: allBars.length
+        historyLength: cachedData.bars.length,
+        cacheDate: cachedData.date
       });
 
       stockMetrics[stock.ticker] = metrics;
