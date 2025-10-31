@@ -161,16 +161,27 @@ export class PortfolioGenerator {
     
     loggerService.info(`📊 [PORTFOLIO GENERATOR] Got ${filteredStocks.length} valid ${portfolioType} stocks with real data`);
     
+    if (filteredStocks.length === 0) {
+      loggerService.warn(`⚠️ [PORTFOLIO GENERATOR] No valid ${portfolioType} stocks found after filtering - volatility/metrics services may have failed`);
+      return [];
+    }
+    
     // Sort by performance (thisMonthPercent) and select top performers
+    loggerService.info(`📊 [PORTFOLIO GENERATOR] Sorting ${filteredStocks.length} stocks by this month's performance...`);
     const sortedStocks = filteredStocks
       .sort((a, b) => b.metrics.thisMonthPercent - a.metrics.thisMonthPercent);
     
+    loggerService.info(`📊 [PORTFOLIO GENERATOR] Top performers: ${sortedStocks.slice(0, 3).map(s => `${s.symbol} (${s.metrics.thisMonthPercent.toFixed(2)}%)`).join(', ')}`);
+    
     // Take top 8 to ensure we have enough, then randomly select 6
-    const topStocks = sortedStocks.slice(0, Math.min(8, sortedStocks.length));
+    const topCount = Math.min(8, sortedStocks.length);
+    const topStocks = sortedStocks.slice(0, topCount);
+    loggerService.info(`📊 [PORTFOLIO GENERATOR] Taking top ${topCount} performers, shuffling for variety...`);
     const shuffled = topStocks.sort(() => Math.random() - 0.5);
     
     // Convert to StockData format
-    const selectedStocks: StockData[] = shuffled.slice(0, 6).map(stock => ({
+    const selectedCount = Math.min(6, shuffled.length);
+    const selectedStocks: StockData[] = shuffled.slice(0, selectedCount).map(stock => ({
       symbol: stock.symbol,
       current: stock.metrics.current,
       top30D: stock.metrics.top30D,
@@ -181,8 +192,8 @@ export class PortfolioGenerator {
       marketCap: stock.metrics.marketCap
     }));
     
-    loggerService.info(`✅ [PORTFOLIO GENERATOR] Selected ${portfolioType} stocks with real volatility:`, 
-      selectedStocks.map(s => `${s.symbol} (${(s.volatility * 100).toFixed(1)}%)`));
+    loggerService.info(`✅ [PORTFOLIO GENERATOR] Final selection: ${selectedCount} ${portfolioType} stocks:`, 
+      selectedStocks.map(s => `${s.symbol} (vol: ${(s.volatility * 100).toFixed(1)}%, perf: ${s.thisMonthPercent.toFixed(2)}%)`));
     
     return selectedStocks;
   }
@@ -254,11 +265,14 @@ export class PortfolioGenerator {
    * 📈 Enhanced portfolio generation with real-time volatility data
    */
   async generatePortfolio(portfolioType: 'solid' | 'risky', totalCapital: number, riskTolerance: number = 7): Promise<GeneratedStock[]> {
-    loggerService.info(`🚀 [PORTFOLIO GENERATOR] Generating ${portfolioType} portfolio with ${totalCapital} capital`);
+    loggerService.info(`🚀 [PORTFOLIO GENERATOR] Starting portfolio generation for ${portfolioType} portfolio with $${totalCapital} capital`);
+    loggerService.info(`📊 [PORTFOLIO GENERATOR] Risk tolerance: ${riskTolerance}`);
     
     try {
       // Try to use real-time volatility data first
+      loggerService.info(`🔍 [PORTFOLIO GENERATOR] Step 1: Selecting stocks with real-time volatility data...`);
       const stocks = await this.selectStocksWithVolatility(portfolioType);
+      loggerService.info(`✅ [PORTFOLIO GENERATOR] Selected ${stocks.length} stocks with volatility data`);
       
       if (stocks.length === 0) {
         loggerService.warn(`⚠️ [PORTFOLIO GENERATOR] No stocks found with volatility data, falling back to legacy method`);
@@ -267,20 +281,37 @@ export class PortfolioGenerator {
           await this.initializeStockDatabase();
         }
         const fallbackStocks = this.selectStocks(portfolioType);
-        return this.generateFromStocks(fallbackStocks, portfolioType, totalCapital, riskTolerance);
+        loggerService.info(`📊 [PORTFOLIO GENERATOR] Fallback: Using ${fallbackStocks.length} stocks from legacy method`);
+        const result = await this.generateFromStocks(fallbackStocks, portfolioType, totalCapital, riskTolerance);
+        loggerService.info(`✅ [PORTFOLIO GENERATOR] Generated ${result.length} portfolio items using fallback method`);
+        return result;
       }
       
-      return this.generateFromStocks(stocks, portfolioType, totalCapital, riskTolerance);
+      loggerService.info(`📊 [PORTFOLIO GENERATOR] Step 2: Generating portfolio from ${stocks.length} selected stocks...`);
+      const result = await this.generateFromStocks(stocks, portfolioType, totalCapital, riskTolerance);
+      loggerService.info(`✅ [PORTFOLIO GENERATOR] Successfully generated ${result.length} portfolio items`);
+      loggerService.info(`📊 [PORTFOLIO GENERATOR] Generated stocks: ${result.map(s => s.ticker).join(', ')}`);
+      return result;
       
     } catch (error) {
-      loggerService.error(`❌ [PORTFOLIO GENERATOR] Error with volatility-based selection, falling back:`, error);
+      loggerService.error(`❌ [PORTFOLIO GENERATOR] Error with volatility-based selection:`, error);
+      loggerService.error(`⚠️ [PORTFOLIO GENERATOR] Error details:`, { message: (error as Error).message, stack: (error as Error).stack });
       
       // Fallback to legacy method
-      if (this.stockDatabase.length === 0) {
-        await this.initializeStockDatabase();
+      try {
+        loggerService.info(`🔄 [PORTFOLIO GENERATOR] Attempting fallback to legacy method...`);
+        if (this.stockDatabase.length === 0) {
+          await this.initializeStockDatabase();
+        }
+        const fallbackStocks = this.selectStocks(portfolioType);
+        loggerService.info(`📊 [PORTFOLIO GENERATOR] Fallback: Using ${fallbackStocks.length} stocks from legacy method`);
+        const result = await this.generateFromStocks(fallbackStocks, portfolioType, totalCapital, riskTolerance);
+        loggerService.info(`✅ [PORTFOLIO GENERATOR] Fallback successful: Generated ${result.length} portfolio items`);
+        return result;
+      } catch (fallbackError) {
+        loggerService.error(`❌ [PORTFOLIO GENERATOR] Fallback also failed:`, fallbackError);
+        throw fallbackError;
       }
-      const fallbackStocks = this.selectStocks(portfolioType);
-      return this.generateFromStocks(fallbackStocks, portfolioType, totalCapital, riskTolerance);
     }
   }
 
