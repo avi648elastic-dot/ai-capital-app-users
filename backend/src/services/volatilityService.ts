@@ -35,8 +35,16 @@ class VolatilityService {
         return null;
       }
 
-      // Use the volatility from our 90-day data (already annualized)
-      const annualizedVolatility = stockData.volatility * 100; // Convert to percentage
+      // CRITICAL FIX: Check if volatility is already in percentage format
+      // googleFinanceFormulasService returns volatility as percentage (already * 100)
+      // So we don't multiply again if it's already > 1 (likely percentage)
+      let annualizedVolatility = stockData.volatility > 1 ? stockData.volatility : stockData.volatility * 100;
+      
+      // Cap volatility at reasonable maximum (500% to catch extreme errors)
+      if (annualizedVolatility > 500) {
+        loggerService.warn(`⚠️ [VOLATILITY] Capping extreme volatility for ${symbol}: ${annualizedVolatility.toFixed(2)}% -> 500%`);
+        annualizedVolatility = 500;
+      }
       
       // Calculate daily and monthly volatility
       const dailyVolatility = annualizedVolatility / Math.sqrt(252); // 252 trading days per year
@@ -100,8 +108,19 @@ class VolatilityService {
         const stockData = stockMetricsMap.get(ticker);
         
         if (stockData) {
-          const volatility = stockData.volatility * 100; // Convert to percentage
-          stockVolatilities.push(volatility);
+          // CRITICAL FIX: Check if volatility is already in percentage format
+          // googleFinanceFormulasService returns volatility as percentage (already * 100)
+          // So we don't multiply again if it's already > 1 (likely percentage)
+          const volatility = stockData.volatility > 1 ? stockData.volatility : stockData.volatility * 100;
+          
+          // Cap volatility at reasonable maximum (500% to catch extreme errors)
+          const cappedVolatility = Math.min(volatility, 500);
+          
+          if (cappedVolatility !== volatility) {
+            loggerService.warn(`⚠️ [VOLATILITY] Capped extreme volatility for ${ticker}: ${volatility.toFixed(2)}% -> ${cappedVolatility.toFixed(2)}%`);
+          }
+          
+          stockVolatilities.push(cappedVolatility);
           
           // Use provided weights or equal weights
           const weight = weights ? weights[i] : (1 / tickers.length);

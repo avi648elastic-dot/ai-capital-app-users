@@ -365,33 +365,8 @@ export class SectorPerformanceService {
 
     console.log(`✅ [SECTOR ALLOCATION] Got sector info for ${sectorInfoMap.size}/${tickers.length} stocks`);
 
-    // If we got sector info, use it (automatic/professional)
-    if (sectorInfoMap.size > 0) {
-      portfolio.forEach(stock => {
-        const value = stock.currentPrice * stock.shares;
-        totalPortfolioValue += value;
-
-        const sectorInfo = sectorInfoMap.get(stock.ticker);
-        if (sectorInfo) {
-          const sector = sectorInfo.sector;
-          if (!sectorTotals[sector]) {
-            sectorTotals[sector] = { value: 0, stocks: [] };
-          }
-          sectorTotals[sector].value += value;
-          if (!sectorTotals[sector].stocks.includes(stock.ticker)) {
-            sectorTotals[sector].stocks.push(stock.ticker);
-          }
-          console.log(`📊 [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from ${sectorInfo.source})`);
-        }
-      });
-    }
-
-    // Fallback to hardcoded mapping for stocks not found
-    if (sectorTotals['Other'] || sectorInfoMap.size < tickers.length) {
-      console.log('🔄 [SECTOR ALLOCATION] Using fallback mapping for unmapped stocks...');
-      
-      // Comprehensive sector mapping to eliminate "Other" categories (fallback)
-      const sectorMapping: { [key: string]: string[] } = {
+    // Comprehensive sector mapping to eliminate "Other" categories (fallback)
+    const sectorMapping: { [key: string]: string[] } = {
       'Technology': [
         'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'ADBE', 'CRM', 'ORCL', 'INTC', 'AMD', 'QCOM', 'AVGO', 'TXN', 'CSCO', 'NOW', 'SNOW', 'PLTR', 'HIMX'
       ],
@@ -425,47 +400,49 @@ export class SectorPerformanceService {
       'Communication Services': [
         'GOOGL', 'META', 'NFLX', 'CMCSA', 'VZ', 'T', 'DIS', 'CHTR', 'TMUS', 'NFLX', 'TWTR', 'SNAP', 'PINS', 'ROKU', 'SPOT', 'MTCH', 'ZM', 'TEAM', 'OKTA', 'CRWD'
       ]
-      };
+    };
 
-      // Calculate sector values for unmapped stocks using fallback
+    // If we got sector info, use it (automatic/professional) BUT override "Other" classifications
+    if (sectorInfoMap.size > 0) {
       portfolio.forEach(stock => {
         const value = stock.currentPrice * stock.shares;
         totalPortfolioValue += value;
 
-        // Skip if already mapped from API
-        if (sectorInfoMap.has(stock.ticker)) {
-          console.log(`⏭️ [SECTOR ALLOCATION] Skipping ${stock.ticker} (already mapped from API)`);
-          return;
-        }
-
-        console.log(`🔍 [SECTOR ALLOCATION] Looking up ${stock.ticker} in fallback mapping...`);
-
-        // Find which sector this stock belongs to using fallback mapping
-        let found = false;
-        for (const [sector, tickers] of Object.entries(sectorMapping)) {
-          if (tickers.includes(stock.ticker)) {
-            if (!sectorTotals[sector]) {
-              sectorTotals[sector] = { value: 0, stocks: [] };
+        const sectorInfo = sectorInfoMap.get(stock.ticker);
+        let sector = sectorInfo?.sector;
+        
+        // CRITICAL FIX: Override "Other" classifications from API with fallback mapping
+        if (!sector || sector === 'Other' || sector === 'Unknown') {
+          console.log(`🔄 [SECTOR ALLOCATION] Overriding "Other/Unknown" classification for ${stock.ticker}, using fallback mapping...`);
+          
+          // Find which sector this stock belongs to using fallback mapping
+          let found = false;
+          for (const [sectorName, tickers] of Object.entries(sectorMapping)) {
+            if (tickers.includes(stock.ticker)) {
+              sector = sectorName;
+              found = true;
+              console.log(`✅ [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from fallback mapping, overriding API "Other")`);
+              break;
             }
-            sectorTotals[sector].value += value;
-            if (!sectorTotals[sector].stocks.includes(stock.ticker)) {
-              sectorTotals[sector].stocks.push(stock.ticker);
-            }
-            console.log(`✅ [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from fallback mapping)`);
-            found = true;
-            break;
           }
+          
+          // Last resort: assign to Technology instead of creating 'Other' category
+          if (!found) {
+            sector = 'Technology';
+            console.warn(`⚠️ [SECTOR ALLOCATION] ${stock.ticker} not found in mapping, assigning to Technology as fallback`);
+          }
+        } else {
+          console.log(`📊 [SECTOR ALLOCATION] ${stock.ticker} -> ${sector} (from ${sectorInfo.source})`);
         }
         
-        if (!found) {
-          // Last resort: assign to Technology instead of creating 'Other' category
-          console.warn(`⚠️ [SECTOR ALLOCATION] ${stock.ticker} not found in mapping, assigning to Technology as fallback`);
-          if (!sectorTotals['Technology']) {
-            sectorTotals['Technology'] = { value: 0, stocks: [] };
+        // Add to sector totals
+        if (sector) {
+          if (!sectorTotals[sector]) {
+            sectorTotals[sector] = { value: 0, stocks: [] };
           }
-          sectorTotals['Technology'].value += value;
-          if (!sectorTotals['Technology'].stocks.includes(stock.ticker)) {
-            sectorTotals['Technology'].stocks.push(stock.ticker);
+          sectorTotals[sector].value += value;
+          if (!sectorTotals[sector].stocks.includes(stock.ticker)) {
+            sectorTotals[sector].stocks.push(stock.ticker);
           }
         }
       });
@@ -480,8 +457,13 @@ export class SectorPerformanceService {
     const sectorPerformance = await this.getSectorPerformance();
     const performanceMap = new Map(sectorPerformance.map(sp => [sp.sector, sp]));
 
+    // CRITICAL FIX: Filter out "Other" and "Unknown" sectors before converting to array
+    const validSectorTotals = Object.entries(sectorTotals).filter(([sector]) => 
+      sector !== 'Other' && sector !== 'Unknown'
+    );
+
     // Convert to array format
-    const sectorAllocation = Object.entries(sectorTotals).map(([sector, data]) => {
+    const sectorAllocation = validSectorTotals.map(([sector, data]) => {
       const percentage = totalPortfolioValue > 0 ? (data.value / totalPortfolioValue) * 100 : 0;
       const performance = performanceMap.get(sector);
       const etfInfo = SECTOR_ETFS[sector];
