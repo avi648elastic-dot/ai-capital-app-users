@@ -152,19 +152,12 @@ UserSchema.pre('save', async function(next) {
         return next(error);
       }
     } else if (effectiveTier === 'premium') {
-      // Premium users: max 15 stocks per portfolio, 3 portfolios each type
+      // Premium users: max 3 portfolios total
       const Portfolio = mongoose.model('Portfolio');
-      const solidPortfolios = await Portfolio.countDocuments({ 
-        userId: this._id, 
-        portfolioType: 'solid' 
-      });
-      const riskyPortfolios = await Portfolio.countDocuments({ 
-        userId: this._id, 
-        portfolioType: 'risky' 
-      });
+      const totalPortfolios = await Portfolio.distinct('portfolioId', { userId: this._id });
       
-      if (solidPortfolios > 3 || riskyPortfolios > 3) {
-        const error = new Error('Premium users are limited to 3 portfolios of each type. Upgrade to Premium+ for more portfolios.');
+      if (totalPortfolios.length >= 3) {
+        const error = new Error('Premium users are limited to 3 portfolios. Upgrade to Premium+ for more portfolios.');
         return next(error);
       }
     } else if (effectiveTier === 'premium+') {

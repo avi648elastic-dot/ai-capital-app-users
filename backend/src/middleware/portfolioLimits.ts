@@ -96,7 +96,7 @@ export const checkStockLimits = async (req: Request, res: Response, next: NextFu
     // Check limits based on subscription tier
     let maxStocksPerPortfolio = 10; // Default for free users
     if (user.subscriptionTier === 'premium') {
-      maxStocksPerPortfolio = 15;
+      maxStocksPerPortfolio = 5;
     } else if (user.subscriptionTier === 'premium+') {
       maxStocksPerPortfolio = 20;
     }
