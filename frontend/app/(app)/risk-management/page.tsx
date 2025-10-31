@@ -448,8 +448,8 @@ export default function RiskManagement() {
                     <tr key={index} className="border-b border-slate-800">
                       <td className="py-3 px-4">
                         <div>
-                          <div className="font-semibold text-white">{stock.ticker}</div>
-                          <div className="text-sm text-slate-400">{stock.shares} shares</div>
+                          <div className="font-semibold text-white">{stock.ticker || 'N/A'}</div>
+                          <div className="text-sm text-slate-400">{stock.shares || 0} shares</div>
                         </div>
                       </td>
                       <td className="py-3 px-4 text-white">{stock.weight.toFixed(1)}%</td>

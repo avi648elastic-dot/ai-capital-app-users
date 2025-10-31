@@ -1322,7 +1322,12 @@ router.get('/risk-analytics', authenticateToken, requireSubscription, async (req
       const finalRiskLevel = (riskLevel === 'Extreme' || riskLevel === 'High') ? riskLevel : calculatedRiskLevel;
       
       return {
-        ...stock,
+        ticker: stock.ticker || stock.symbol || 'UNKNOWN', // Explicit ticker field
+        shares: stock.shares || 0,
+        currentPrice: stock.currentPrice || stock.entryPrice,
+        entryPrice: stock.entryPrice,
+        stopLoss: stock.stopLoss,
+        takeProfit: stock.takeProfit,
         weight: parseFloat(weight.toFixed(1)),
         pnlPercent: parseFloat(pnlPercent.toFixed(1)),
         riskScore: parseFloat(riskScore.toFixed(1)),
