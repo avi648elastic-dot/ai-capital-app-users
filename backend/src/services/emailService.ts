@@ -25,6 +25,12 @@ interface NotificationEmailData {
   };
 }
 
+interface TrialExpirationEmailData {
+  name: string;
+  daysRemaining: number;
+  trialEndDate: Date;
+}
+
 /**
  * Professional Email Service
  * Supports multiple email providers (Gmail, SendGrid, AWS SES, Custom SMTP)
@@ -441,6 +447,112 @@ class EmailService {
             </div>
             
             <p style="color: #64748b; font-size: 14px;">This link will expire in 24 hours.</p>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Generate trial expiration email template
+   */
+  private generateTrialExpirationTemplate(data: TrialExpirationEmailData): string {
+    const endDate = new Date(data.trialEndDate).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    
+    const urgencyColor = data.daysRemaining === 1 
+      ? '#EF4444' // Red for urgent
+      : data.daysRemaining <= 3
+      ? '#F59E0B' // Orange for warning
+      : '#8B5CF6'; // Purple for info
+    
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Trial Expiration Reminder</title>
+        </head>
+        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 0; background-color: #f5f5f5;">
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700;">AiCapital</h1>
+            <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px;">AI-Powered Portfolio Management</p>
+          </div>
+          
+          <!-- Main Content -->
+          <div style="background: white; padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: ${urgencyColor}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <span style="font-size: 40px;">⏰</span>
+              </div>
+              <h2 style="color: #1e293b; margin: 0 0 10px 0; font-size: 24px;">${data.daysRemaining === 1 ? 'Your Trial Ends Tomorrow!' : `Your Trial Expires in ${data.daysRemaining} Days`}</h2>
+            </div>
+            
+            <p style="color: #475569; font-size: 16px; margin: 0 0 20px 0;">
+              Hi ${data.name},
+            </p>
+            
+            <p style="color: #475569; font-size: 16px; margin: 0 0 20px 0;">
+              ${data.daysRemaining === 1 
+                ? 'Your Premium+ trial period ends tomorrow! To continue enjoying all premium features, upgrade now.'
+                : data.daysRemaining <= 3
+                ? `Your Premium+ trial expires in ${data.daysRemaining} days (${endDate}). Don't lose access to premium features - upgrade now!`
+                : `Your Premium+ trial expires on ${endDate} (${data.daysRemaining} days remaining). Upgrade now to keep all premium features!`}
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 25px; border-radius: 12px; margin: 30px 0; border-left: 4px solid ${urgencyColor};">
+              <h3 style="color: #1e293b; margin: 0 0 15px 0; font-size: 18px;">🎁 What You'll Keep with Premium+:</h3>
+              <ul style="color: #475569; margin: 0; padding-left: 20px; line-height: 1.8;">
+                <li><strong>5 Portfolios:</strong> Manage multiple investment strategies</li>
+                <li><strong>15 Stocks per Portfolio:</strong> Build comprehensive portfolios</li>
+                <li><strong>Advanced Analytics:</strong> Portfolio analysis & risk management</li>
+                <li><strong>Priority Support:</strong> Get help when you need it</li>
+                <li><strong>All Premium Features:</strong> Unlock the full power of AI-Capital</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0 30px 0;">
+              <a href="${process.env.FRONTEND_URL}/subscription/upgrade" 
+                 style="background: linear-gradient(135deg, ${urgencyColor} 0%, ${data.daysRemaining === 1 ? '#DC2626' : data.daysRemaining <= 3 ? '#D97706' : '#764ba2'} 100%); 
+                        color: white; 
+                        padding: 16px 40px; 
+                        text-decoration: none; 
+                        border-radius: 8px; 
+                        font-weight: 600; 
+                        font-size: 16px; 
+                        display: inline-block;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);">
+                ${data.daysRemaining === 1 ? '⚡ Upgrade Now - Last Day!' : 'Upgrade to Premium+ →'}
+              </a>
+            </div>
+            
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 30px; text-align: center;">
+              <p style="color: #64748b; margin: 0 0 10px 0; font-size: 14px; line-height: 1.6;">
+                <strong>Questions?</strong> Contact us at 
+                <a href="mailto:support@ai-capital.com" style="color: #667eea; text-decoration: none;">support@ai-capital.com</a>
+              </p>
+              <p style="color: #64748b; margin: 0; font-size: 12px;">
+                Trial ends: ${endDate}
+              </p>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background: #1e293b; padding: 30px; text-align: center; color: #94a3b8;">
+            <p style="margin: 0 0 15px 0; font-size: 14px;">
+              © ${new Date().getFullYear()} AiCapital. All rights reserved.
+            </p>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #334155;">
+              <a href="${process.env.FRONTEND_URL}" style="color: #667eea; text-decoration: none; margin: 0 10px; font-size: 12px;">Visit Website</a>
+              <span style="color: #475569;">•</span>
+              <a href="${process.env.FRONTEND_URL}/settings" style="color: #667eea; text-decoration: none; margin: 0 10px; font-size: 12px;">Email Preferences</a>
+            </div>
           </div>
         </body>
       </html>

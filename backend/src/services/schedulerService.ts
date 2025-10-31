@@ -8,6 +8,7 @@ import notificationService from './notificationService';
 import { redisService } from './redisService';
 import { cronLockService } from './cronLockService';
 import { loggerService } from './loggerService';
+import emailService from './emailService';
 import User from '../models/User';
 import Portfolio from '../models/Portfolio';
 
@@ -498,22 +499,91 @@ export class SchedulerService {
       loggerService.info(`✅ [TRIAL CHECK] Completed: ${downgradedCount} users downgraded, ${skippedAdminCount} admins skipped`);
       
       // Also check for users whose trial is about to expire soon (for notifications)
-      const soonToExpire = new Date(now);
-      soonToExpire.setDate(soonToExpire.getDate() + 3); // 3 days from now
-      
-      const usersExpiringSoon = await User.find({
-        isTrialActive: true,
-        trialEndDate: { $gte: now, $lte: soonToExpire },
-        subscriptionTier: 'premium+'
-      });
-
-      if (usersExpiringSoon.length > 0) {
-        loggerService.info(`⚠️ [TRIAL CHECK] ${usersExpiringSoon.length} users have trials expiring within 3 days`);
-        // TODO: Send notification emails to these users
-      }
+      // Check for users expiring in 7 days, 3 days, and 1 day
+      await this.sendTrialExpirationReminders(now);
 
     } catch (error) {
       loggerService.error('❌ [TRIAL CHECK] Error checking trial expiration:', error);
+    }
+  }
+
+  /**
+   * Send trial expiration reminder emails
+   * Checks for users expiring in 7 days, 3 days, and 1 day
+   */
+  private async sendTrialExpirationReminders(now: Date): Promise<void> {
+    try {
+      loggerService.info('📧 [TRIAL REMINDERS] Checking for users whose trial is expiring soon...');
+      
+      // Define reminder thresholds: 7 days, 3 days, and 1 day
+      const reminderDays = [7, 3, 1];
+      
+      for (const daysThreshold of reminderDays) {
+        const targetDate = new Date(now);
+        targetDate.setDate(targetDate.getDate() + daysThreshold);
+        
+        // Find users whose trial expires exactly on this date (within 24 hours)
+        const startOfDay = new Date(targetDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(targetDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+        const usersExpiringOnDate = await User.find({
+          isTrialActive: true,
+          trialEndDate: { $gte: startOfDay, $lte: endOfDay },
+          subscriptionTier: 'premium+',
+          // Don't send to users who already have paid subscriptions
+          $or: [
+            { stripeSubscriptionId: { $exists: false } },
+            { stripeSubscriptionId: null },
+            { subscriptionStatus: { $ne: 'active' } }
+          ]
+        });
+        
+        loggerService.info(`📧 [TRIAL REMINDERS] Found ${usersExpiringOnDate.length} users expiring in ${daysThreshold} day(s)`);
+        
+        let emailsSent = 0;
+        let emailsFailed = 0;
+        
+        for (const user of usersExpiringOnDate) {
+          try {
+            // Check if user wants to receive email updates
+            if (user.emailUpdates === false) {
+              loggerService.info(`⏭️ [TRIAL REMINDERS] Skipping ${user.email} - email updates disabled`);
+              continue;
+            }
+            
+            // Calculate exact days remaining
+            const daysRemaining = Math.ceil((user.trialEndDate!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (daysRemaining !== daysThreshold) {
+              // Skip if not exactly at threshold (to avoid duplicate emails)
+              continue;
+            }
+            
+            const success = await emailService.sendTrialExpirationEmail(user.email, {
+              name: user.name,
+              daysRemaining: daysRemaining,
+              trialEndDate: user.trialEndDate!
+            });
+            
+            if (success) {
+              emailsSent++;
+              loggerService.info(`✅ [TRIAL REMINDERS] Sent ${daysThreshold}-day reminder to ${user.email}`);
+            } else {
+              emailsFailed++;
+              loggerService.warn(`⚠️ [TRIAL REMINDERS] Failed to send reminder to ${user.email}`);
+            }
+          } catch (error) {
+            emailsFailed++;
+            loggerService.error(`❌ [TRIAL REMINDERS] Error sending reminder to ${user.email}:`, error);
+          }
+        }
+        
+        loggerService.info(`✅ [TRIAL REMINDERS] ${daysThreshold}-day reminders: ${emailsSent} sent, ${emailsFailed} failed`);
+      }
+    } catch (error) {
+      loggerService.error('❌ [TRIAL REMINDERS] Error sending trial expiration reminders:', error);
     }
   }
 

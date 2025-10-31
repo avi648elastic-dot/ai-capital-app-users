@@ -98,6 +98,19 @@ export default function Dashboard() {
     ? 'premium+'
     : (user?.subscriptionTier || 'free');
   const subscriptionLimits = getSubscriptionLimits(effectiveTier);
+  
+  // Calculate trial days remaining
+  const getTrialDaysRemaining = (): number | null => {
+    if (!user?.isTrialActive || !user?.trialEndDate) return null;
+    const now = new Date();
+    const endDate = new Date(user.trialEndDate);
+    if (endDate <= now) return 0;
+    const diffTime = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+  
+  const trialDaysRemaining = getTrialDaysRemaining();
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -718,6 +731,38 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+          {/* Trial Countdown - Show days remaining */}
+          {trialDaysRemaining !== null && user?.isTrialActive && (
+            <div className={`mt-3 pt-3 border-t ${
+              effectiveTier === 'premium+' 
+                ? 'border-purple-500/30'
+                : 'border-green-500/30'
+            }`}>
+              <div className="flex items-center justify-center space-x-2">
+                <span className={`text-xs sm:text-sm font-semibold ${
+                  trialDaysRemaining <= 3 
+                    ? 'text-red-300'
+                    : trialDaysRemaining <= 7
+                    ? 'text-orange-300'
+                    : 'text-purple-300'
+                }`}>
+                  ⏰ Trial expires in {trialDaysRemaining} {trialDaysRemaining === 1 ? 'day' : 'days'}
+                </span>
+                {trialDaysRemaining <= 7 && (
+                  <a 
+                    href="/subscription/upgrade"
+                    className={`px-2 py-1 rounded text-[10px] sm:text-xs font-medium ${
+                      effectiveTier === 'premium+' 
+                        ? 'bg-purple-600/30 text-purple-200 hover:bg-purple-600/50'
+                        : 'bg-green-600/30 text-green-200 hover:bg-green-600/50'
+                    } transition-colors`}
+                  >
+                    Upgrade Now
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {process.env.NODE_ENV !== 'production' && debugInfo && (
