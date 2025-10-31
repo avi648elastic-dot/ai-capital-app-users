@@ -1357,7 +1357,7 @@ router.get('/risk-analytics', authenticateToken, requireSubscription, async (req
       let action: 'REDUCE' | 'INCREASE' | 'HOLD' | 'TAKE_PROFIT' = 'HOLD';
       let targetWeight = currentWeight;
       let reason = '';
-      let priority: 'HIGH' | 'MEDIUM' | 'LOW' = 'LOW';
+      let priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' = 'LOW';
       let estimatedProfit = 0;
       
       // High risk + large position = REDUCE or TAKE_PROFIT
