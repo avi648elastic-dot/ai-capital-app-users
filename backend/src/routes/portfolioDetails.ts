@@ -154,13 +154,24 @@ router.get('/summary', authenticateToken, async (req, res) => {
       loggerService.warn('⚠️ [PORTFOLIO DETAILS] Could not fetch decision engine data');
     }
     
-    // 3. Calculate portfolio statistics
+    // 3. Calculate portfolio statistics (Total P&L since entry)
     const totalValue = portfolio.reduce((sum, s) => sum + (s.currentPrice * s.shares), 0);
     const totalCost = portfolio.reduce((sum, s) => sum + (s.entryPrice * s.shares), 0);
     const totalPnL = totalValue - totalCost;
     const totalPnLPercent = totalCost > 0 ? (totalPnL / totalCost) * 100 : 0;
     const winningStocks = portfolio.filter(s => s.currentPrice > s.entryPrice).length;
     const losingStocks = portfolio.filter(s => s.currentPrice < s.entryPrice).length;
+    
+    // Log detailed P&L breakdown for verification
+    loggerService.info(`💰 [PORTFOLIO DETAILS] P&L Calculation Breakdown:`);
+    portfolio.forEach(stock => {
+      const stockCost = stock.entryPrice * stock.shares;
+      const stockValue = stock.currentPrice * stock.shares;
+      const stockPnL = stockValue - stockCost;
+      const stockPnLPercent = stockCost > 0 ? (stockPnL / stockCost) * 100 : 0;
+      loggerService.info(`   ${stock.ticker}: Entry=$${stock.entryPrice.toFixed(2)}, Current=$${stock.currentPrice.toFixed(2)}, Shares=${stock.shares}, Total P&L=${stockPnLPercent >= 0 ? '+' : ''}${stockPnLPercent.toFixed(2)}% ($${stockPnL.toFixed(2)})`);
+    });
+    loggerService.info(`💰 [PORTFOLIO DETAILS] TOTAL: Entry Cost=$${totalCost.toFixed(2)}, Current Value=$${totalValue.toFixed(2)}, Total P&L=${totalPnLPercent >= 0 ? '+' : ''}${totalPnLPercent.toFixed(2)}% ($${totalPnL.toFixed(2)})`);
     
     // 4. Get risk management insights (from risk analytics)
     let riskManagementData: any = null;
