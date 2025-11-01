@@ -464,12 +464,20 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
     >
       {/* Dropdown positioned below the notification button (desktop) or fullscreen (mobile) */}
       <div 
-        className={`fixed bg-white dark:bg-slate-800 shadow-2xl flex flex-col overflow-hidden ${
+        className={`fixed bg-white dark:bg-slate-800 shadow-2xl flex flex-col ${
           isMobile 
-            ? 'inset-0 w-full h-full rounded-none' 
-            : 'rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-sm'
+            ? 'inset-0 rounded-none overflow-y-auto' 
+            : 'rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden'
         }`}
         style={isMobile ? {
+          width: '100vw',
+          height: '100vh',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
           pointerEvents: 'auto',
           zIndex: 20002
         } : {

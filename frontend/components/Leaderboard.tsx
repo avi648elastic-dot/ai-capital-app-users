@@ -102,12 +102,20 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false, butt
     >
       {/* Dropdown positioned below the button (desktop) or fullscreen (mobile) */}
       <div 
-        className={`fixed bg-slate-900 shadow-2xl overflow-hidden ${
+        className={`fixed bg-slate-900 shadow-2xl ${
           isMobile 
-            ? 'inset-0 w-full h-full rounded-none' 
-            : 'rounded-xl border border-slate-700 w-full max-w-2xl'
+            ? 'inset-0 rounded-none overflow-y-auto' 
+            : 'rounded-xl border border-slate-700 overflow-hidden'
         }`}
         style={isMobile ? {
+          width: '100vw',
+          height: '100vh',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
           pointerEvents: 'auto',
           zIndex: 20002
         } : {
