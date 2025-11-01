@@ -17,6 +17,8 @@ export default function MobileHeader({ title, subtitle, unreadCount = 0, onNotif
   const { isMobile } = useDevice();
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [notificationButtonRef, setNotificationButtonRef] = useState<HTMLButtonElement | null>(null);
+  const [leaderboardButtonRef, setLeaderboardButtonRef] = useState<HTMLButtonElement | null>(null);
 
   // Only show on mobile devices
   if (!isMobile) {
