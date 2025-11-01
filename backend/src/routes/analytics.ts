@@ -731,14 +731,23 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       }));
     }
 
+    // CRITICAL: Log sector allocation BEFORE passing to risk assessment
+    loggerService.info(`📊 [ANALYTICS] Sector Allocation BEFORE Risk Assessment:`);
+    loggerService.info(`   sectorAllocation is ${sectorAllocation ? 'DEFINED' : 'UNDEFINED'}, length: ${sectorAllocation?.length || 0}`);
+    if (sectorAllocation && sectorAllocation.length > 0) {
+      sectorAllocation.forEach(sector => {
+        loggerService.info(`   ${sector.sector}: ${sector.percentage.toFixed(1)}% ($${sector.value.toFixed(2)})`);
+      });
+    } else {
+      loggerService.error(`❌ [ANALYTICS] sectorAllocation is empty or undefined! Using fallback data.`);
+    }
+    
     // Calculate enhanced risk assessment with comprehensive data (use updated sectorAllocation with real percentages)
     const riskAssessment = await calculateRiskAssessment(portfolio, sectorAnalysis, portfolioData, realTimeMetrics, sectorAllocation);
     
-    // Log sector allocation percentages for verification
-    loggerService.info(`📊 [ANALYTICS] Sector Allocation for Risk Assessment:`);
-    sectorAllocation.forEach(sector => {
-      loggerService.info(`   ${sector.sector}: ${sector.percentage.toFixed(1)}% ($${sector.value.toFixed(2)})`);
-    });
+    // Log what risk assessment calculated
+    loggerService.info(`📊 [ANALYTICS] Risk Assessment Result: ${riskAssessment.concentrationRisk.toFixed(1)}% concentration`);
+    loggerService.info(`📊 [ANALYTICS] Risk Recommendations: ${riskAssessment.recommendations[0] || 'None'}`);
 
     // Determine what data is available and what failed
     const dataStatus: { portfolioPerformance: string; sectorPerformance: string; issues: string[] } = {
