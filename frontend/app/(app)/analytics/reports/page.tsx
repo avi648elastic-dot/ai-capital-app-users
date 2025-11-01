@@ -150,32 +150,97 @@ export default function Reports() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Balance Sheet + News */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Balance Sheet Health Analysis - MOVED TO TOP */}
+            {/* Balance Sheet Health Analysis - Buffett-Style Compact Report */}
             {portfolio.length > 0 && balanceSheetAnalyses.length > 0 && (
-              <div className="card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                  <Building2 className="w-5 h-5 mr-2" />
-                  Balance Sheet Health Analysis
-                </h3>
-                <p className="text-xs text-slate-400 mb-4">
-                  Fundamental analysis based on 13 financial criteria (must pass 8/10 to be considered healthy)
-                </p>
-                <div className="space-y-3">
+              <div className="card p-5">
+                <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-700/50">
+                  <div className="flex items-center space-x-2">
+                    <Building2 className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-base font-bold text-white">Fundamental Analysis Report</h3>
+                  </div>
+                  <span className="text-xs text-slate-400">13-Point Financial Health Check</span>
+                </div>
+                
+                <div className="space-y-4">
                   {balanceSheetAnalyses.map((analysis, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700/30">
-                      <div className="flex items-center space-x-3">
-                        <div className="text-white font-bold">{analysis.ticker}</div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          analysis.healthStatus === 'HEALTHY' 
-                            ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                            : analysis.healthStatus === 'MODERATE'
-                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        }`}>
-                          {analysis.healthStatus}
-                        </span>
+                    <div key={index} className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30 hover:border-blue-500/30 transition-all">
+                      {/* Header Row */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="text-lg font-bold text-white">{analysis.ticker}</div>
+                          <span className={`px-2.5 py-1 rounded text-xs font-bold ${
+                            analysis.healthStatus === 'HEALTHY' 
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/40' 
+                              : analysis.healthStatus === 'MODERATE'
+                              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
+                              : 'bg-red-500/20 text-red-400 border border-red-500/40'
+                          }`}>
+                            {analysis.healthStatus}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-blue-400">{analysis.score}/13</div>
+                        </div>
                       </div>
-                      <div className="text-white font-bold">{analysis.score}/13</div>
+
+                      {/* Pass Status */}
+                      {analysis.analysis?.passStatus && (
+                        <div className={`px-3 py-2 rounded-lg text-xs font-medium mb-3 ${
+                          analysis.analysis.passStatus.includes('PASS') 
+                            ? 'bg-green-900/20 border border-green-500/20 text-green-300' 
+                            : 'bg-red-900/20 border border-red-500/20 text-red-300'
+                        }`}>
+                          {analysis.analysis.passStatus}
+                        </div>
+                      )}
+
+                      {/* Compact Strengths/Weaknesses Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Strengths */}
+                        {analysis.analysis?.strengths && analysis.analysis.strengths.length > 0 && (
+                          <div>
+                            <div className="text-[10px] font-bold text-green-400 uppercase tracking-wide mb-2">Strengths</div>
+                            <ul className="space-y-1">
+                              {analysis.analysis.strengths.slice(0, 3).map((strength: string, idx: number) => (
+                                <li key={idx} className="text-xs text-slate-300 flex items-start">
+                                  <span className="text-green-400 mr-1.5 text-sm">✔</span>
+                                  <span className="flex-1">{strength}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Weaknesses/Cautions */}
+                        <div>
+                          {analysis.analysis?.weaknesses && analysis.analysis.weaknesses.length > 0 && (
+                            <div className="mb-3">
+                              <div className="text-[10px] font-bold text-red-400 uppercase tracking-wide mb-2">Weaknesses</div>
+                              <ul className="space-y-1">
+                                {analysis.analysis.weaknesses.slice(0, 2).map((weakness: string, idx: number) => (
+                                  <li key={idx} className="text-xs text-slate-300 flex items-start">
+                                    <span className="text-red-400 mr-1.5 text-sm">✘</span>
+                                    <span className="flex-1">{weakness}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {analysis.analysis?.cautions && analysis.analysis.cautions.length > 0 && (
+                            <div>
+                              <div className="text-[10px] font-bold text-yellow-400 uppercase tracking-wide mb-2">Cautions</div>
+                              <ul className="space-y-1">
+                                {analysis.analysis.cautions.slice(0, 2).map((caution: string, idx: number) => (
+                                  <li key={idx} className="text-xs text-slate-300 flex items-start">
+                                    <span className="text-yellow-400 mr-1.5 text-sm">▲</span>
+                                    <span className="flex-1">{caution}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
