@@ -614,12 +614,27 @@ export default function PortfolioAnalysis() {
                       <div className="mt-3">
                         <div className="text-xs text-slate-400 mb-1">Recommendations:</div>
                         <ul className="text-xs text-slate-300 space-y-1.5">
-                          {riskAssessment.recommendations.slice(0, 3).map((rec: string, index: number) => (
-                            <li key={index} className="flex items-start">
-                              <span className="text-blue-400 mr-1.5 mt-0.5">•</span>
-                              <span className="flex-1 leading-relaxed">{rec}</span>
-                            </li>
-                          ))}
+                          {riskAssessment.recommendations.slice(0, 3).map((rec: string, index: number) => {
+                            // CRITICAL FIX: Replace the concentration percentage with the correct one from sectorData
+                            let displayRec = rec;
+                            if (rec.includes('High concentration') && sectorData.length > 0) {
+                              const maxSector = sectorData.reduce((max, sector) => 
+                                parseFloat(sector.percentage) > parseFloat(max.percentage) ? sector : max
+                              , sectorData[0]);
+                              const maxPercentage = parseFloat(maxSector.percentage);
+                              const sectorName = maxSector.sector;
+                              
+                              // Replace with correct percentage and sector name
+                              displayRec = `High concentration in ${sectorName} sector (${maxPercentage.toFixed(1)}%) - diversify across more sectors`;
+                            }
+                            
+                            return (
+                              <li key={index} className="flex items-start">
+                                <span className="text-blue-400 mr-1.5 mt-0.5">•</span>
+                                <span className="flex-1 leading-relaxed">{displayRec}</span>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     )}
