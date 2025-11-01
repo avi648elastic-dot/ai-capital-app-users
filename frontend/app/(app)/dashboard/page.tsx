@@ -781,15 +781,14 @@ export default function Dashboard() {
           </ErrorBoundary>
         </div>
 
-        {/* Portfolio Details Section - NEW */}
-        <ErrorBoundary label="portfolio-details">
-          <PortfolioDetails />
-        </ErrorBoundary>
-
-        {/* Portfolio Summary */}
+        {/* Portfolio Summary with AI Insights */}
         <ErrorBoundary label="summary">
           <div data-tutorial="portfolio-summary">
             <LazyPortfolioSummary totals={totals} />
+            {/* AI Insights integrated below totals */}
+            <div className="mt-3">
+              <PortfolioDetails />
+            </div>
           </div>
         </ErrorBoundary>
 
