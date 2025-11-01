@@ -763,8 +763,16 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       dataStatus.issues.push('Sector performance data unavailable - historical APIs not responding');
     }
 
+    // CRITICAL: Calculate concentration risk DIRECTLY from sectorAllocation (the data we're already displaying)
+    const maxSectorPercentage = sectorAllocation.length > 0 
+      ? Math.max(...sectorAllocation.map(s => s.percentage))
+      : 0;
+    const topSector = sectorAllocation.find(s => s.percentage === maxSectorPercentage);
+    
+    loggerService.info(`✅ [ANALYTICS] Using sector allocation for concentration: ${topSector?.sector} = ${maxSectorPercentage.toFixed(1)}%`);
+    
     const comprehensiveAnalysis = {
-      sectorAllocation: sectorAllocation, // Use real sector allocation data with real 30d returns
+      sectorAllocation: sectorAllocation, // Use real sector allocation data with real 90d returns
       totalPortfolioValue: realTimeMetrics?.totalPortfolioValue || sectorAnalysis.totalValue,
       totalInitialInvestment: realTimeMetrics?.totalInitialInvestment || 0,
       totalPnL: realTimeMetrics?.totalPnL || 0,
@@ -772,7 +780,7 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       performance30D: realTimeMetrics?.performance30D || realTimeMetrics?.totalPnLPercent || sectorAnalysis.performance90D, // Real 30d return from metrics engine
       performance90D: sectorAnalysis.performance90D,
       riskScore: riskAssessment.riskScore,
-      concentrationRisk: sectorAnalysis.riskMetrics.concentration,
+      concentrationRisk: maxSectorPercentage, // Use the SAME percentage shown in sector segmentation
       diversificationScore: sectorAnalysis.riskMetrics.diversification,
       portfolioVolatility30D: realTimeMetrics?.portfolioVolatility30D || avgVolatility, // Real 30d volatility from metrics engine
       portfolioPerformance,
