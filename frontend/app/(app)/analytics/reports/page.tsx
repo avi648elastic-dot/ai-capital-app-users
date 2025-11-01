@@ -150,100 +150,106 @@ export default function Reports() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column: Balance Sheet + News */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Balance Sheet Health Analysis - Buffett-Style Compact Report */}
-            {portfolio.length > 0 && balanceSheetAnalyses.length > 0 && (
-              <div className="card p-5">
-                <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-700/50">
-                  <div className="flex items-center space-x-2">
-                    <Building2 className="w-5 h-5 text-blue-400" />
-                    <h3 className="text-base font-bold text-white">Fundamental Analysis Report</h3>
+            {/* Balance Sheet Health Analysis - ORIGINAL MOVED TO TOP & ENHANCED */}
+            {portfolio.length > 0 && (
+              <div className="card p-6 bg-gradient-to-br from-slate-800/95 via-blue-900/10 to-slate-900/95 border border-blue-500/20">
+                <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-700/50">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/30 to-purple-500/30 flex items-center justify-center border border-blue-400/40">
+                      <Building2 className="w-5 h-5 text-blue-300" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Balance Sheet Health Analysis</h3>
+                      <p className="text-xs text-slate-400">Warren Buffett's 13-Point Financial Scorecard</p>
+                    </div>
                   </div>
-                  <span className="text-xs text-slate-400">13-Point Financial Health Check</span>
                 </div>
+                <p className="text-sm text-slate-300 mb-5 bg-blue-900/20 p-3 rounded-lg border border-blue-500/30">
+                  📊 <span className="font-semibold">Fundamental analysis</span> based on 13 financial criteria. Must pass <span className="text-green-400 font-bold">8/13</span> to be considered healthy for investment.
+                </p>
                 
-                <div className="space-y-4">
-                  {balanceSheetAnalyses.map((analysis, index) => (
-                    <div key={index} className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/30 hover:border-blue-500/30 transition-all">
-                      {/* Header Row */}
-                      <div className="flex items-center justify-between mb-3">
+                {balanceSheetAnalyses.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-slate-400 mb-2">Loading financial data...</p>
+                    <p className="text-xs text-slate-500">
+                      Analyzing balance sheets from FMP, Alpha Vantage, and Finnhub APIs
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    {balanceSheetAnalyses.map((analysis, index) => (
+                    <div key={index} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/40 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
+                      {/* Stock Header */}
+                      <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-3">
-                          <div className="text-lg font-bold text-white">{analysis.ticker}</div>
-                          <span className={`px-2.5 py-1 rounded text-xs font-bold ${
-                            analysis.healthStatus === 'HEALTHY' 
-                              ? 'bg-green-500/20 text-green-400 border border-green-500/40' 
-                              : analysis.healthStatus === 'MODERATE'
-                              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
-                              : 'bg-red-500/20 text-red-400 border border-red-500/40'
+                          <span className="text-2xl font-bold text-white">{analysis.ticker}</span>
+                          <span className={`px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg ${
+                            analysis.eligible 
+                              ? 'bg-green-500/30 text-green-300 border-2 border-green-400/50' 
+                              : 'bg-red-500/30 text-red-300 border-2 border-red-400/50'
                           }`}>
-                            {analysis.healthStatus}
+                            {analysis.eligible ? '✅ HEALTHY' : '⚠️ WEAK'}
                           </span>
                         </div>
                         <div className="text-right">
-                          <div className="text-xl font-bold text-blue-400">{analysis.score}/13</div>
+                          <div className={`text-3xl font-black ${
+                            analysis.eligible ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {analysis.score}/{analysis.maxScore}
+                          </div>
+                          <div className="text-xs text-slate-400 font-semibold">BUFFETT SCORE</div>
                         </div>
                       </div>
 
-                      {/* Pass Status */}
-                      {analysis.analysis?.passStatus && (
-                        <div className={`px-3 py-2 rounded-lg text-xs font-medium mb-3 ${
-                          analysis.analysis.passStatus.includes('PASS') 
-                            ? 'bg-green-900/20 border border-green-500/20 text-green-300' 
-                            : 'bg-red-900/20 border border-red-500/20 text-red-300'
-                        }`}>
-                          {analysis.analysis.passStatus}
+                      {/* Recommendation */}
+                      {analysis.recommendation && (
+                        <div className="mb-4 px-4 py-3 rounded-lg bg-blue-900/30 border border-blue-500/30">
+                          <div className="text-sm font-semibold text-blue-300">
+                            💡 {analysis.recommendation}
+                          </div>
                         </div>
                       )}
 
-                      {/* Compact Strengths/Weaknesses Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {/* Strengths & Red Flags Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Strengths */}
-                        {analysis.analysis?.strengths && analysis.analysis.strengths.length > 0 && (
-                          <div>
-                            <div className="text-[10px] font-bold text-green-400 uppercase tracking-wide mb-2">Strengths</div>
-                            <ul className="space-y-1">
-                              {analysis.analysis.strengths.slice(0, 3).map((strength: string, idx: number) => (
-                                <li key={idx} className="text-xs text-slate-300 flex items-start">
-                                  <span className="text-green-400 mr-1.5 text-sm">✔</span>
-                                  <span className="flex-1">{strength}</span>
-                                </li>
+                        {analysis.reasons && analysis.reasons.length > 0 && (
+                          <div className="bg-green-900/10 rounded-lg p-4 border border-green-500/30">
+                            <h5 className="text-xs font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center">
+                              <span className="mr-2">✔</span> STRENGTHS
+                            </h5>
+                            <div className="space-y-2">
+                              {analysis.reasons.map((reason: string, idx: number) => (
+                                <div key={idx} className="text-sm text-slate-200 flex items-start leading-relaxed">
+                                  <span className="text-green-400 mr-2 font-bold">•</span>
+                                  <span>{reason}</span>
+                                </div>
                               ))}
-                            </ul>
+                            </div>
                           </div>
                         )}
 
-                        {/* Weaknesses/Cautions */}
-                        <div>
-                          {analysis.analysis?.weaknesses && analysis.analysis.weaknesses.length > 0 && (
-                            <div className="mb-3">
-                              <div className="text-[10px] font-bold text-red-400 uppercase tracking-wide mb-2">Weaknesses</div>
-                              <ul className="space-y-1">
-                                {analysis.analysis.weaknesses.slice(0, 2).map((weakness: string, idx: number) => (
-                                  <li key={idx} className="text-xs text-slate-300 flex items-start">
-                                    <span className="text-red-400 mr-1.5 text-sm">✘</span>
-                                    <span className="flex-1">{weakness}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                        {/* Red Flags */}
+                        {analysis.redFlags && analysis.redFlags.length > 0 && (
+                          <div className="bg-red-900/10 rounded-lg p-4 border border-red-500/30">
+                            <h5 className="text-xs font-bold text-red-400 uppercase tracking-wider mb-3 flex items-center">
+                              <span className="mr-2">✘</span> RED FLAGS
+                            </h5>
+                            <div className="space-y-2">
+                              {analysis.redFlags.map((flag: string, idx: number) => (
+                                <div key={idx} className="text-sm text-slate-200 flex items-start leading-relaxed">
+                                  <span className="text-red-400 mr-2 font-bold">•</span>
+                                  <span>{flag}</span>
+                                </div>
+                              ))}
                             </div>
-                          )}
-                          {analysis.analysis?.cautions && analysis.analysis.cautions.length > 0 && (
-                            <div>
-                              <div className="text-[10px] font-bold text-yellow-400 uppercase tracking-wide mb-2">Cautions</div>
-                              <ul className="space-y-1">
-                                {analysis.analysis.cautions.slice(0, 2).map((caution: string, idx: number) => (
-                                  <li key={idx} className="text-xs text-slate-300 flex items-start">
-                                    <span className="text-yellow-400 mr-1.5 text-sm">▲</span>
-                                    <span className="flex-1">{caution}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -391,93 +397,6 @@ export default function Reports() {
             </div>
           </div>
         </div>
-
-        {/* Balance Sheet Health Section */}
-        {portfolio.length > 0 && (
-          <div className="mt-8">
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-                <Building2 className="w-5 h-5 mr-2" />
-                Balance Sheet Health Analysis
-              </h3>
-              <p className="text-sm text-slate-400 mb-4">
-                Fundamental analysis based on 13 financial criteria (must pass 8/13 to be considered healthy)
-              </p>
-              
-              {balanceSheetAnalyses.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-slate-400 mb-2">No financial data available</p>
-                  <p className="text-xs text-slate-500">
-                    Financial data is fetched from external APIs (FMP, Alpha Vantage, Finnhub)
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {balanceSheetAnalyses.map((analysis, index) => (
-                  <div key={index} className="border border-slate-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-white font-semibold text-lg">{analysis.ticker}</span>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          analysis.eligible 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-red-500/20 text-red-400'
-                        }`}>
-                          {analysis.eligible ? 'HEALTHY' : 'WEAK'}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <div className={`text-2xl font-bold ${
-                          analysis.eligible ? 'text-green-400' : 'text-red-400'
-                        }`}>
-                          {analysis.score}/{analysis.maxScore}
-                        </div>
-                        <div className="text-xs text-slate-400">Score</div>
-                      </div>
-                    </div>
-
-                    {analysis.recommendation && (
-                      <div className="mb-3">
-                        <span className="text-sm font-medium text-blue-400">
-                          {analysis.recommendation}
-                        </span>
-                      </div>
-                    )}
-
-                    {analysis.reasons && analysis.reasons.length > 0 && (
-                      <div className="mb-3">
-                        <h5 className="text-xs font-semibold text-slate-400 mb-2">STRENGTHS:</h5>
-                        <div className="space-y-1">
-                          {analysis.reasons.slice(0, 3).map((reason: string, idx: number) => (
-                            <div key={idx} className="text-xs text-green-300 flex items-start">
-                              <span className="mr-1">•</span>
-                              <span>{reason}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {analysis.redFlags && analysis.redFlags.length > 0 && (
-                      <div>
-                        <h5 className="text-xs font-semibold text-slate-400 mb-2">RED FLAGS:</h5>
-                        <div className="space-y-1">
-                          {analysis.redFlags.slice(0, 3).map((flag: string, idx: number) => (
-                            <div key={idx} className="text-xs text-red-300 flex items-start">
-                              <span className="mr-1">•</span>
-                              <span>{flag}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
     </div>
   );
 }
