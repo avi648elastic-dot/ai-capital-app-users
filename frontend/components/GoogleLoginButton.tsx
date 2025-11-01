@@ -64,43 +64,92 @@ export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginBut
       return;
     }
 
-    if (typeof window !== 'undefined' && window.google) {
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: (response: any) => {
-          handleGoogleLogin(response.credential);
-        },
-      });
+    console.log('🔑 [GOOGLE OAUTH] Initializing with Client ID:', clientId);
 
-      window.google.accounts.id.renderButton(
-        document.getElementById('google-signin-button'),
-        {
-          theme: 'outline',
-          size: 'large',
-          width: '100%',
-          text: 'continue_with',
-          shape: 'rectangular',
+    if (typeof window !== 'undefined' && window.google) {
+      try {
+        console.log('✅ [GOOGLE OAUTH] Google SDK loaded, initializing...');
+        
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: (response: any) => {
+            console.log('🔐 [GOOGLE OAUTH] User signed in, credential received');
+            handleGoogleLogin(response.credential);
+          },
+          auto_select: false,
+          cancel_on_tap_outside: true
+        });
+
+        const buttonElement = document.getElementById('google-signin-button');
+        if (buttonElement) {
+          console.log('🎨 [GOOGLE OAUTH] Rendering Google button...');
+          window.google.accounts.id.renderButton(
+            buttonElement,
+            {
+              theme: 'outline',
+              size: 'large',
+              width: buttonElement.offsetWidth || 300,
+              text: 'continue_with',
+              shape: 'rectangular',
+              logo_alignment: 'left'
+            }
+          );
+          console.log('✅ [GOOGLE OAUTH] Button rendered successfully');
+        } else {
+          console.error('❌ [GOOGLE OAUTH] Button container not found');
         }
-      );
+      } catch (error) {
+        console.error('❌ [GOOGLE OAUTH] Initialization error:', error);
+      }
+    } else {
+      console.warn('⚠️ [GOOGLE OAUTH] Google SDK not loaded yet');
     }
   };
 
   // Load Google Identity Services script
   const loadGoogleScript = () => {
-    if (document.getElementById('google-script')) return;
+    if (document.getElementById('google-script')) {
+      console.log('⏭️ [GOOGLE OAUTH] Script already loaded');
+      // If script exists but Google not initialized, try initializing
+      if (window.google) {
+        initializeGoogleSignIn();
+      }
+      return;
+    }
 
+    console.log('📥 [GOOGLE OAUTH] Loading Google SDK script...');
     const script = document.createElement('script');
     script.id = 'google-script';
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
-    script.onload = initializeGoogleSignIn;
+    script.onload = () => {
+      console.log('✅ [GOOGLE OAUTH] Script loaded successfully');
+      // Wait a bit for Google SDK to fully initialize
+      setTimeout(() => {
+        initializeGoogleSignIn();
+      }, 100);
+    };
+    script.onerror = () => {
+      console.error('❌ [GOOGLE OAUTH] Failed to load Google SDK script');
+    };
     document.head.appendChild(script);
   };
 
   // Initialize on component mount
   React.useEffect(() => {
+    console.log('🚀 [GOOGLE OAUTH] Component mounted, loading script...');
     loadGoogleScript();
+    
+    // Retry initialization after 1 second if Google SDK not ready
+    const retryTimer = setTimeout(() => {
+      if (window.google && !document.getElementById('google-signin-button')?.querySelector('iframe')) {
+        console.log('🔄 [GOOGLE OAUTH] Retrying initialization...');
+        initializeGoogleSignIn();
+      }
+    }, 1000);
+    
+    return () => clearTimeout(retryTimer);
   }, []);
 
   // Check if Google OAuth is properly configured

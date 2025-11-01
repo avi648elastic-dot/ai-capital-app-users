@@ -315,21 +315,30 @@ router.post('/google', async (req: Request, res: Response) => {
     let user = await User.findOne({ email: userData.email });
 
     if (!user) {
-      // Create new user
+      // Create new user with 30-day Premium+ trial
+      const trialStartDate = new Date();
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + 30); // 30 days from now
+
       user = new User({
         name: userData.name,
         email: userData.email,
         password: '', // No password for OAuth users
-        subscriptionActive: false,
-        subscriptionTier: 'free',
+        subscriptionActive: true, // Trial is active
+        subscriptionTier: 'premium+', // Start with premium+ during trial
         onboardingCompleted: false,
         googleId: credential.substring(0, 50), // Store part of credential as ID
         avatar: userData.picture,
-        isEmailVerified: userData.email_verified
+        isEmailVerified: userData.email_verified,
+        // Grant 30-day Premium+ trial for new Google users
+        isTrialActive: true,
+        trialStartDate,
+        trialEndDate
       });
 
       await user.save();
-      console.log('✅ [GOOGLE OAUTH] New user created:', user.email);
+      console.log('✅ [GOOGLE OAUTH] New user created with 30-day Premium+ trial:', user.email);
+      console.log(`🎁 [GOOGLE OAUTH] Trial expires: ${trialEndDate.toISOString()}`);
       
       // Send welcome email for new users
       try {
