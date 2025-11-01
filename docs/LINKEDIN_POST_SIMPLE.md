@@ -136,7 +136,7 @@ Comment with a number! 👇
 
 ---
 
-#FinTech #AI #InvestmentTech #MachineLearning #TypeScript #React #NodeJS #Portfolio #StockMarket
+#FinTech #AI #Investing #PortfolioManagement #Innovation #Startup #MachineLearning #DataAnalytics #StockMarket #BetaLaunch #WebDevelopment #SelfTaught #AIAssistedCoding #ChatGPT #CursorAI #OpenAI #SoloPreneur #EducationalProject #TypeScript #ReactJS #NodeJS #MongoDB #ProjectManagement
 
 ---
 

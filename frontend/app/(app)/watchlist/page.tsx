@@ -368,7 +368,7 @@ export default function Watchlist() {
                         ...prev,
                         [item.id]: { ...prev[item.id], high: e.target.value }
                       }))}
-                      className="flex-1 px-3 py-2 text-sm font-bold bg-slate-800 [data-theme='light']:bg-white border-2 border-emerald-500/50 [data-theme='light']:border-emerald-300 rounded-lg text-white [data-theme='light']:text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="flex-1 min-w-0 max-w-full px-3 py-2 text-sm font-bold bg-slate-800 [data-theme='light']:bg-white border-2 border-emerald-500/50 [data-theme='light']:border-emerald-300 rounded-lg text-white [data-theme='light']:text-gray-900 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     />
                     <button
                       onClick={async () => {
@@ -440,7 +440,7 @@ export default function Watchlist() {
                         ...prev,
                         [item.id]: { ...prev[item.id], low: e.target.value }
                       }))}
-                      className="flex-1 px-3 py-2 text-sm font-bold bg-slate-800 [data-theme='light']:bg-white border-2 border-red-500/50 [data-theme='light']:border-red-300 rounded-lg text-white [data-theme='light']:text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="flex-1 min-w-0 max-w-full px-3 py-2 text-sm font-bold bg-slate-800 [data-theme='light']:bg-white border-2 border-red-500/50 [data-theme='light']:border-red-300 rounded-lg text-white [data-theme='light']:text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                     <button
                       onClick={async () => {

@@ -447,7 +447,7 @@ Drop a comment below! 👇
 
 ---
 
-#FinTech #AI #PortfolioManagement #InvestmentTechnology #MachineLearning #StockMarket #ReactJS #NodeJS #MongoDB #TypeScript #QuantitativeFinance #AlgoTrading
+#FinTech #AI #PortfolioManagement #MachineLearning #StockMarket #InvestmentTechnology #SelfTaught #AIAssistedCoding #ChatGPT #OpenAI #CursorAI #SoloPreneur #EducationalProject #BetaLaunch #Innovation #TypeScript #ReactJS #NodeJS #MongoDB #WebDevelopment #QuantitativeFinance #AlgoTrading #ProjectManagement #Startup
 
 ---
 

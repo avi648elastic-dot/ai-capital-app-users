@@ -77,7 +77,7 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[20000] flex items-center justify-center p-2 sm:p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[20000] flex items-start md:items-center justify-end md:justify-center p-0 md:p-4"
       onClick={(e) => {
         // Close on backdrop click
         if (e.target === e.currentTarget) {
@@ -87,11 +87,13 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
       style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
     >
       <div 
-        className={`bg-slate-900 rounded-none sm:rounded-xl border-0 sm:border border-slate-700 shadow-2xl ${isMobile ? 'w-full h-full m-0' : 'max-w-2xl'} overflow-hidden relative mx-auto z-[20001]`}
+        className={`bg-slate-900 rounded-none md:rounded-xl border-0 md:border border-slate-700 shadow-2xl ${isMobile ? 'w-full max-w-md h-full md:h-auto' : 'max-w-2xl'} overflow-hidden relative z-[20001]`}
         style={{ 
           width: isMobile ? '100%' : 'calc(100% - 2rem)',
-          maxWidth: isMobile ? '100%' : '700px',
-          maxHeight: isMobile ? '100vh' : '85vh'
+          maxWidth: isMobile ? '400px' : '700px',
+          maxHeight: isMobile ? '100vh' : '85vh',
+          marginTop: isMobile ? '0' : 'auto',
+          marginRight: isMobile ? '0' : 'auto'
         }}
       >
         {/* Header - Compact with always visible close */}
