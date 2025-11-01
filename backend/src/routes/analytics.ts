@@ -232,20 +232,34 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
     
     // CRITICAL: Check cache first (instant response)
     // Cache key includes userId and today's date (refreshes once per day automatically)
+    // Allow force refresh via ?refresh=true query parameter
+    const forceRefresh = req.query.refresh === 'true';
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const cacheKey = `analytics:portfolio-analysis:${userId}:${today}`;
     
-    try {
-      const cached = await redisService.get(cacheKey);
-      if (cached) {
-        console.log('🚀 [ANALYTICS] Cache HIT - returning instant response');
-        loggerService.info(`✅ [ANALYTICS] Cache hit for user ${userId}`);
-        return res.json(JSON.parse(cached));
+    if (!forceRefresh) {
+      try {
+        const cached = await redisService.get(cacheKey);
+        if (cached) {
+          console.log('🚀 [ANALYTICS] Cache HIT - returning instant response');
+          loggerService.info(`✅ [ANALYTICS] Cache hit for user ${userId}`);
+          return res.json(JSON.parse(cached));
+        }
+        console.log('🚀 [ANALYTICS] Cache MISS - computing fresh data');
+      } catch (cacheError) {
+        console.warn('⚠️ [ANALYTICS] Cache check failed, continuing without cache:', cacheError);
+        // Continue without cache if Redis fails
       }
-      console.log('🚀 [ANALYTICS] Cache MISS - computing fresh data');
-    } catch (cacheError) {
-      console.warn('⚠️ [ANALYTICS] Cache check failed, continuing without cache:', cacheError);
-      // Continue without cache if Redis fails
+    } else {
+      console.log('🔄 [ANALYTICS] Force refresh requested - bypassing cache');
+      loggerService.info(`🔄 [ANALYTICS] Force refresh for user ${userId}`);
+      // Delete the old cache to ensure fresh data
+      try {
+        await redisService.del(cacheKey);
+        loggerService.info(`🗑️ [ANALYTICS] Deleted cached data for user ${userId}`);
+      } catch (deleteError) {
+        console.warn('⚠️ [ANALYTICS] Failed to delete cache (non-critical)');
+      }
     }
     
     // Get user's default portfolio (first portfolio)
