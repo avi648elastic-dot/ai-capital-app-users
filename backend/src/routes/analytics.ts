@@ -907,14 +907,26 @@ async function calculateRiskAssessment(portfolio: any[], sectorAnalysis: any, po
 
   // Calculate concentration risk from sector allocation (use updated sectorAllocation, not sectorAnalysis)
   // CRITICAL FIX: Use the passed sectorAllocation parameter which has the real percentages
-  const maxSectorAllocation = sectorAllocation && sectorAllocation.length > 0 
-    ? Math.max(...sectorAllocation.map((s: any) => s.percentage))
-    : (sectorAnalysis.sectorAllocation.length > 0 
-        ? Math.max(...sectorAnalysis.sectorAllocation.map((s: any) => s.percentage))
-        : 0);
+  let maxSectorAllocation = 0;
+  let topSectorName = 'Unknown';
+  
+  if (sectorAllocation && sectorAllocation.length > 0) {
+    // Use updated sectorAllocation (has correct percentages)
+    maxSectorAllocation = Math.max(...sectorAllocation.map((s: any) => s.percentage));
+    const topSector = sectorAllocation.find((s: any) => s.percentage === maxSectorAllocation);
+    topSectorName = topSector?.sector || 'Unknown';
+    loggerService.info(`📊 [RISK ASSESSMENT] Using updated sectorAllocation - Top sector: ${topSectorName} = ${maxSectorAllocation.toFixed(1)}%`);
+  } else if (sectorAnalysis.sectorAllocation.length > 0) {
+    // Fallback to sectorAnalysis if sectorAllocation not available
+    maxSectorAllocation = Math.max(...sectorAnalysis.sectorAllocation.map((s: any) => s.percentage));
+    const topSector = sectorAnalysis.sectorAllocation.find((s: any) => s.percentage === maxSectorAllocation);
+    topSectorName = topSector?.sector || 'Unknown';
+    loggerService.warn(`⚠️ [RISK ASSESSMENT] Using fallback sectorAnalysis - Top sector: ${topSectorName} = ${maxSectorAllocation.toFixed(1)}%`);
+  }
+  
   const concentrationRisk = maxSectorAllocation;
   
-  loggerService.info(`📊 [RISK ASSESSMENT] Max sector allocation: ${maxSectorAllocation.toFixed(1)}%`);
+  loggerService.info(`📊 [RISK ASSESSMENT] Concentration Risk: ${concentrationRisk.toFixed(1)}% in ${topSectorName} sector`);
 
   // Calculate diversification score (more nuanced)
   const numSectors = sectorAnalysis.sectorAllocation.length;
@@ -987,7 +999,17 @@ async function calculateRiskAssessment(portfolio: any[], sectorAnalysis: any, po
   // Generate comprehensive recommendations
   const recommendations = [];
   
-  if (concentrationRisk > 35) {
+  // Add sector concentration recommendation with WHICH sector
+  if (concentrationRisk > 35 && sectorAllocation && sectorAllocation.length > 0) {
+    const topSector = sectorAllocation.reduce((max, sector) => 
+      sector.percentage > max.percentage ? sector : max
+    , sectorAllocation[0]);
+    
+    loggerService.info(`📊 [RISK ASSESSMENT] Top sector: ${topSector.sector} with ${topSector.percentage.toFixed(1)}%`);
+    
+    recommendations.push(`High concentration in ${topSector.sector} sector (${topSector.percentage.toFixed(1)}%) - diversify across more sectors`);
+  } else if (concentrationRisk > 35) {
+    // Fallback if sectorAllocation not available
     recommendations.push(`High concentration in single sector (${maxSectorAllocation.toFixed(1)}%) - diversify across more sectors`);
   }
   
