@@ -440,7 +440,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   return createPortal(
     <div 
-      className={`fixed inset-0 z-[20000] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-start md:items-center justify-end md:justify-center ${isMobile ? 'p-0' : 'p-2 sm:p-4'}`}
+      className={`fixed inset-0 z-[20000] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-start justify-end ${isMobile ? 'p-0' : 'p-2 sm:p-4'}`}
       onClick={(e) => {
         if (isMobile && e.target === e.currentTarget) {
           onClose();
@@ -449,9 +449,8 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
     >
       <div 
-        className={`${isMobile ? 'w-full max-w-md h-full md:h-auto rounded-none md:rounded-lg m-0' : 'max-w-sm rounded-lg mx-auto'} bg-white dark:bg-slate-800 shadow-2xl border-0 md:border border-slate-200 dark:border-slate-700 ${isMobile ? 'max-h-full' : 'max-h-[85vh]'} flex flex-col overflow-hidden relative z-[20001]`}
+        className={`${isMobile ? 'w-full max-w-md h-full rounded-none' : 'w-full max-w-sm rounded-lg'} bg-white dark:bg-slate-800 shadow-2xl border-0 md:border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden relative z-[20001]`}
         style={{ 
-          width: isMobile ? '100%' : 'calc(100% - 2rem)',
           maxWidth: isMobile ? '400px' : '400px',
           maxHeight: isMobile ? '100vh' : '85vh'
         }}
