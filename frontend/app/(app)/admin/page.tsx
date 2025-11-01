@@ -21,6 +21,9 @@ interface User {
   canUseTrainingStocks?: boolean;
   createdAt: string;
   lastLogin?: string;
+  isTrialActive?: boolean;
+  trialStartDate?: string;
+  trialEndDate?: string;
   portfolioStats: {
     totalCost: number;
     totalValue: number;
@@ -207,6 +210,16 @@ export default function AdminDashboard() {
       style: 'currency',
       currency: 'USD',
     }).format(amount);
+  };
+
+  const getTrialDaysRemaining = (user: User): number | null => {
+    if (!user.isTrialActive || !user.trialEndDate) return null;
+    const now = new Date();
+    const endDate = new Date(user.trialEndDate);
+    if (endDate <= now) return 0;
+    const diffTime = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
   };
 
   const formatPercent = (percent: number) => {
@@ -523,6 +536,17 @@ export default function AdminDashboard() {
                   }`}>
                     {user.onboardingCompleted ? '✅ Onboarded' : '⏳ Pending'}
                   </span>
+                  {user.isTrialActive && getTrialDaysRemaining(user) !== null && (
+                    <span className={`px-2 py-1 text-xs font-bold rounded-full ${
+                      getTrialDaysRemaining(user)! <= 3 
+                        ? 'text-red-300 bg-red-900/50 border border-red-500/30' 
+                        : getTrialDaysRemaining(user)! <= 7
+                        ? 'text-orange-300 bg-orange-900/50 border border-orange-500/30'
+                        : 'text-purple-300 bg-purple-900/50 border border-purple-500/30'
+                    }`}>
+                      🎁 Trial: {getTrialDaysRemaining(user)}d left
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -652,6 +676,17 @@ export default function AdminDashboard() {
                           <span className="inline-flex px-2 py-1 text-xs font-bold rounded-full text-red-300 bg-red-900/50 border border-red-500/30">
                             <Shield className="w-3 h-3 mr-1" />
                             ADMIN
+                          </span>
+                        )}
+                        {user.isTrialActive && getTrialDaysRemaining(user) !== null && (
+                          <span className={`inline-flex px-2 py-1 text-xs font-bold rounded-full ${
+                            getTrialDaysRemaining(user)! <= 3 
+                              ? 'text-red-300 bg-red-900/50 border border-red-500/30' 
+                              : getTrialDaysRemaining(user)! <= 7
+                              ? 'text-orange-300 bg-orange-900/50 border border-orange-500/30'
+                              : 'text-purple-300 bg-purple-900/50 border border-purple-500/30'
+                          }`}>
+                            🎁 Trial: {getTrialDaysRemaining(user)}d left
                           </span>
                         )}
                       </div>

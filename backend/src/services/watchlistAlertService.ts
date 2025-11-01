@@ -108,30 +108,31 @@ class WatchlistAlertService {
       }
 
       const currentPrice = metrics.current;
-      const alert = item.priceAlert;
-      let alertTriggered = false;
-      let alertType: 'high' | 'low' | 'both' | null = null;
-      let triggeredPrice = 0;
-      let message = '';
-
-      // Check high price alert
-      if ((alert.type === 'high' || alert.type === 'both') && alert.highPrice && currentPrice >= alert.highPrice) {
-        alertTriggered = true;
-        alertType = 'high';
-        triggeredPrice = alert.highPrice;
-        message = `🚀 ${item.ticker} hit HIGH target! Price: $${currentPrice.toFixed(2)} (Target: $${alert.highPrice.toFixed(2)})`;
-      }
-
-      // Check low price alert
-      if ((alert.type === 'low' || alert.type === 'both') && alert.lowPrice && currentPrice <= alert.lowPrice) {
-        alertTriggered = true;
-        alertType = 'low';
-        triggeredPrice = alert.lowPrice;
-        message = `📉 ${item.ticker} hit LOW target! Price: $${currentPrice.toFixed(2)} (Target: $${alert.lowPrice.toFixed(2)})`;
-      }
-
-      if (alertTriggered) {
-        await this.triggerAlert(item, currentPrice, alertType!, triggeredPrice, message);
+      
+      // CRITICAL FIX: Update lastPrice BEFORE checking (needed for threshold crossing detection)
+      const previousPrice = item.lastPrice;
+      item.lastPrice = currentPrice;
+      
+      // Use the Watchlist model's checkPriceAlert method (with threshold crossing logic)
+      const alertResult = item.checkPriceAlert(currentPrice);
+      
+      if (alertResult.triggered) {
+        const alert = item.priceAlert;
+        const alertType = alertResult.type!;
+        const triggeredPrice = alertType === 'high' ? alert.highPrice : alert.lowPrice;
+        
+        loggerService.info(`🔔 [WATCHLIST ALERTS] Alert triggered for ${item.ticker}`, {
+          type: alertType,
+          previousPrice,
+          currentPrice,
+          threshold: triggeredPrice,
+          crossedThreshold: true
+        });
+        
+        await this.triggerAlert(item, currentPrice, alertType, triggeredPrice, alertResult.message!);
+      } else {
+        // Save the updated lastPrice even if no alert triggered
+        await item.save();
       }
 
     } catch (error) {
