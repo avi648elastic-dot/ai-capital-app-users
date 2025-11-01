@@ -22,14 +22,28 @@ interface LeaderboardProps {
   isVisible: boolean;
   onClose: () => void;
   isMobile?: boolean;
+  buttonRef?: HTMLButtonElement | null;
 }
 
-export default function Leaderboard({ isVisible, onClose, isMobile = false }: LeaderboardProps) {
+export default function Leaderboard({ isVisible, onClose, isMobile = false, buttonRef }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [position, setPosition] = useState({ top: 70, right: 20 });
+  
   useEffect(() => { setMounted(true); }, []);
+  
+  // Calculate position based on button location
+  useEffect(() => {
+    if (buttonRef && isVisible) {
+      const rect = buttonRef.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 5, // 5px below button
+        right: window.innerWidth - rect.right // Align right edges
+      });
+    }
+  }, [buttonRef, isVisible]);
 
   useEffect(() => {
     if (isVisible) {
@@ -90,10 +104,10 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
       <div 
         className={`absolute bg-slate-900 rounded-xl border border-slate-700 shadow-2xl overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-2xl'}`}
         style={{ 
-          top: isMobile ? '60px' : '70px', // Position below header
-          right: isMobile ? '10px' : '20px', // Align with button on right
+          top: `${position.top}px`,
+          right: `${position.right}px`,
           maxWidth: isMobile ? '95vw' : '700px',
-          maxHeight: 'calc(100vh - 80px)', // Leave space from top and bottom
+          maxHeight: `calc(100vh - ${position.top + 20}px)`, // Dynamic height based on position
           pointerEvents: 'auto'
         }}
       >

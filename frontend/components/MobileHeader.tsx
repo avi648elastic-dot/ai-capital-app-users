@@ -43,6 +43,7 @@ export default function MobileHeader({ title, subtitle, unreadCount = 0, onNotif
           <div className="flex items-center space-x-2">
             {/* Trophy/Leaderboard Button */}
             <button
+              ref={setLeaderboardButtonRef}
               onClick={() => setShowLeaderboard(true)}
               className="relative w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all active:scale-95"
               title="View Leaderboard"
@@ -52,6 +53,7 @@ export default function MobileHeader({ title, subtitle, unreadCount = 0, onNotif
             
             {/* Notification Bell */}
             <button
+              ref={setNotificationButtonRef}
               onClick={handleNotificationClick}
               className="relative w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all active:scale-95"
             >
@@ -66,20 +68,22 @@ export default function MobileHeader({ title, subtitle, unreadCount = 0, onNotif
         </div>
       </div>
       
-      {/* MOBILE NOTIFICATION PANEL - FULL SCREEN */}
+      {/* MOBILE NOTIFICATION PANEL - DROPDOWN FROM BUTTON */}
       {showNotificationPanel && (
         <NotificationPanel 
           isVisible={showNotificationPanel}
           onClose={() => setShowNotificationPanel(false)}
           isMobile={true}
+          buttonRef={notificationButtonRef}
         />
       )}
 
-      {/* MOBILE LEADERBOARD MODAL - FULL SCREEN */}
+      {/* MOBILE LEADERBOARD MODAL - DROPDOWN FROM BUTTON */}
       <Leaderboard 
         isVisible={showLeaderboard}
         onClose={() => setShowLeaderboard(false)}
         isMobile={true}
+        buttonRef={leaderboardButtonRef}
       />
     </>
   );

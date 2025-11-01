@@ -28,16 +28,29 @@ interface NotificationPanelProps {
   onClose: () => void;
   isMobile?: boolean;
   onNotificationCountChange?: (count: number) => void;
+  buttonRef?: HTMLButtonElement | null;
 }
 
-export default function NotificationPanel({ isVisible, onClose, isMobile = false, onNotificationCountChange }: NotificationPanelProps) {
+export default function NotificationPanel({ isVisible, onClose, isMobile = false, onNotificationCountChange, buttonRef }: NotificationPanelProps) {
   const { t } = useLanguage();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [position, setPosition] = useState({ top: 70, right: 20 });
 
   useEffect(() => { setMounted(true); }, []);
+  
+  // Calculate position based on button location
+  useEffect(() => {
+    if (buttonRef && isVisible) {
+      const rect = buttonRef.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 5, // 5px below button
+        right: window.innerWidth - rect.right // Align right edges
+      });
+    }
+  }, [buttonRef, isVisible]);
 
   useEffect(() => {
     if (isVisible) {
@@ -453,10 +466,10 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       <div 
         className={`absolute bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-sm'}`}
         style={{ 
-          top: isMobile ? '60px' : '70px', // Position below header
-          right: isMobile ? '10px' : '20px', // Align with notification button on right
+          top: `${position.top}px`,
+          right: `${position.right}px`,
           maxWidth: isMobile ? '95vw' : '400px',
-          maxHeight: 'calc(100vh - 80px)', // Leave space from top and bottom
+          maxHeight: `calc(100vh - ${position.top + 20}px)`, // Dynamic height based on position
           pointerEvents: 'auto'
         }}
       >
