@@ -573,7 +573,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
             </div>
           ) : (
             <div className="divide-y divide-slate-200 dark:divide-slate-700">
-              {notifications.map((notification) => (
+              {notifications.filter(n => n && n.id).map((notification) => (
                 <div
                   key={notification.id}
                   className={`p-2 sm:p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
@@ -582,7 +582,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
                 >
                   <div className="flex items-start gap-2">
                     <span className="text-base flex-shrink-0">
-                      {getTypeIcon(notification.type)}
+                      {getTypeIcon(notification?.type || 'info')}
                     </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-1">
@@ -590,11 +590,11 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
                           className={`text-xs sm:text-sm font-medium cursor-pointer truncate ${!notification.readAt ? 'text-slate-900 dark:text-slate-100' : 'text-slate-700 dark:text-slate-300'}`}
                           onClick={() => markAsRead(notification.id)}
                         >
-                          {notification.title}
+                          {notification?.title || 'Notification'}
                         </h4>
                         <div className="flex items-center gap-1 flex-shrink-0">
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded border ${getPriorityColor(notification.priority)}`}>
-                            {notification.priority}
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded border ${getPriorityColor(notification?.priority || 'low')}`}>
+                            {notification?.priority || 'low'}
                           </span>
                           <button
                             onClick={(e) => {
@@ -614,7 +614,7 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
                         className={`text-xs cursor-pointer line-clamp-2 ${!notification.readAt ? 'text-slate-800 dark:text-slate-200' : 'text-slate-600 dark:text-slate-400'}`}
                         onClick={() => markAsRead(notification.id)}
                       >
-                        {notification.message}
+                        {notification?.message || ''}
                       </p>
                       {notification.actionData && (
                         <div className="mt-1.5 p-1.5 bg-slate-100 dark:bg-slate-700 rounded text-[10px]">
