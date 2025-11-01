@@ -1212,13 +1212,46 @@ router.get('/news', authenticateToken, async (req, res) => {
         if (response.data && Array.isArray(response.data) && response.data.length > 0) {
           response.data.slice(0, 5).forEach((article: any) => {
             try {
+              const headline = (article.headline || article.summary || '').toLowerCase();
+              const summary = (article.summary || '').toLowerCase();
+              
+              // Analyze sentiment from headline and summary using keyword matching
+              const bullishKeywords = ['surge', 'soar', 'rally', 'gain', 'beat', 'exceed', 'upgrade', 'bullish', 'growth', 'profit', 'strong', 'rise', 'up', 'positive', 'outperform', 'buy', 'success'];
+              const bearishKeywords = ['plunge', 'drop', 'fall', 'miss', 'decline', 'downgrade', 'bearish', 'loss', 'weak', 'down', 'negative', 'underperform', 'sell', 'fail', 'concern', 'warning'];
+              
+              let sentimentScore = 0;
+              bullishKeywords.forEach(word => {
+                if (headline.includes(word)) sentimentScore += 2;
+                if (summary.includes(word)) sentimentScore += 1;
+              });
+              bearishKeywords.forEach(word => {
+                if (headline.includes(word)) sentimentScore -= 2;
+                if (summary.includes(word)) sentimentScore -= 1;
+              });
+              
+              const sentiment = sentimentScore >= 3 ? 'positive' : 
+                               sentimentScore <= -3 ? 'negative' : 'neutral';
+              
+              // Generate actionable insight based on sentiment and headline
+              let insight = '';
+              if (sentiment === 'positive') {
+                insight = `Positive development for ${ticker}. ${headline.includes('earnings') || headline.includes('profit') ? 'Strong earnings could drive price higher.' : headline.includes('upgrade') ? 'Analyst upgrade may attract institutional buyers.' : 'Market sentiment improving - monitor for entry/add opportunities.'}`;
+              } else if (sentiment === 'negative') {
+                insight = `Negative news for ${ticker}. ${headline.includes('earnings') || headline.includes('miss') ? 'Weak earnings may pressure stock price.' : headline.includes('downgrade') ? 'Analyst downgrade could trigger selling.' : 'Market concerns rising - review position and consider risk management.'}`;
+              } else {
+                insight = `Neutral update on ${ticker}. ${headline.includes('earnings') ? 'Earnings in line with expectations.' : headline.includes('analyst') ? 'No significant rating change.' : 'Monitor for trend development.'}`;
+              }
+              
               allNews.push({
                 title: article.headline || article.summary || 'No title',
+                summary: article.summary || article.headline || '',
                 source: article.source || 'Finnhub',
                 date: article.datetime ? new Date(article.datetime * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                 ticker: ticker,
                 url: article.url || '#',
-                sentiment: 'neutral'
+                sentiment,
+                sentimentScore,
+                insight
               });
             } catch (parseError: any) {
               console.warn(`Error parsing FINNHUB article for ${ticker}:`, parseError?.message);
@@ -1251,14 +1284,31 @@ router.get('/news', authenticateToken, async (req, res) => {
                     );
                     
                     if (articleDate >= oneYearAgo && articleDate <= today) {
+                      const sentiment = article.overall_sentiment_score >= 0.35 ? 'positive' : 
+                                       article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral';
+                      const sentimentScore = article.overall_sentiment_score || 0;
+                      
+                      // Generate actionable insight
+                      let insight = '';
+                      const titleLower = (article.title || '').toLowerCase();
+                      if (sentiment === 'positive') {
+                        insight = `Bullish signal for ${ticker}. ${titleLower.includes('earnings') ? 'Strong earnings momentum.' : titleLower.includes('analyst') ? 'Positive analyst coverage.' : 'Favorable market sentiment - potential upside.'}`;
+                      } else if (sentiment === 'negative') {
+                        insight = `Bearish signal for ${ticker}. ${titleLower.includes('earnings') ? 'Earnings concerns noted.' : titleLower.includes('analyst') ? 'Negative analyst view.' : 'Adverse sentiment - exercise caution.'}`;
+                      } else {
+                        insight = `Mixed signals on ${ticker}. ${titleLower.includes('earnings') ? 'Earnings met expectations.' : 'No clear directional bias - monitor developments.'}`;
+                      }
+                      
                       allNews.push({
                         title: article.title || 'No title',
+                        summary: article.summary || '',
                         source: article.source || 'Unknown',
                         date: article.time_published ? article.time_published.slice(0, 10) : new Date().toISOString().split('T')[0],
                         ticker: ticker,
                         url: article.url || '#',
-                        sentiment: article.overall_sentiment_score >= 0.35 ? 'positive' : 
-                                   article.overall_sentiment_score <= -0.35 ? 'negative' : 'neutral'
+                        sentiment,
+                        sentimentScore,
+                        insight
                       });
                     }
                   } catch (parseError: any) {

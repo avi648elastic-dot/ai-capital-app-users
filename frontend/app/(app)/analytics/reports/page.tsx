@@ -309,17 +309,80 @@ export default function Reports() {
                   </div>
                 ) : (
                   news.map((article, index) => (
-                    <div key={index} className="border-b border-slate-800 pb-4 last:border-b-0">
+                    <div key={index} className={`border-l-4 rounded-lg p-4 mb-4 last:mb-0 ${
+                      article.sentiment === 'positive' 
+                        ? 'border-green-500 bg-green-900/10' 
+                        : article.sentiment === 'negative'
+                        ? 'border-red-500 bg-red-900/10'
+                        : 'border-slate-600 bg-slate-800/30'
+                    }`}>
                       <div className="flex items-start space-x-3">
-                        {getReportTypeIcon(article.sentiment === 'positive' ? 'earnings' : 'news')}
-                        <div className="flex-1">
-                          <h4 className="text-white font-medium mb-1">{article.title}</h4>
-                          <div className="flex items-center space-x-4 text-sm text-slate-400">
-                            <span>{article.source}</span>
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          article.sentiment === 'positive' 
+                            ? 'bg-green-500/20' 
+                            : article.sentiment === 'negative'
+                            ? 'bg-red-500/20'
+                            : 'bg-slate-700/30'
+                        }`}>
+                          {getReportTypeIcon(article.sentiment === 'positive' ? 'earnings' : 'news')}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {/* Header */}
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="text-white font-semibold text-sm leading-tight flex-1 pr-2">{article.title}</h4>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase flex-shrink-0 ${
+                              article.sentiment === 'positive' 
+                                ? 'bg-green-500/30 text-green-300' 
+                                : article.sentiment === 'negative'
+                                ? 'bg-red-500/30 text-red-300'
+                                : 'bg-slate-600/30 text-slate-300'
+                            }`}>
+                              {article.sentiment}
+                            </span>
+                          </div>
+                          
+                          {/* Actionable Insight */}
+                          {article.insight && (
+                            <div className={`mb-2 px-3 py-2 rounded-lg text-xs leading-relaxed ${
+                              article.sentiment === 'positive' 
+                                ? 'bg-green-900/20 text-green-200 border border-green-500/20' 
+                                : article.sentiment === 'negative'
+                                ? 'bg-red-900/20 text-red-200 border border-red-500/20'
+                                : 'bg-slate-800/50 text-slate-300 border border-slate-600/20'
+                            }`}>
+                              <span className="font-semibold">💡 Investment Impact:</span> {article.insight}
+                            </div>
+                          )}
+                          
+                          {/* Summary */}
+                          {article.summary && article.summary !== article.title && (
+                            <p className="text-xs text-slate-400 mb-2 line-clamp-2 leading-relaxed">
+                              {article.summary}
+                            </p>
+                          )}
+                          
+                          {/* Meta Info */}
+                          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
+                            <span className="flex items-center">
+                              📰 {article.source}
+                            </span>
                             <span>•</span>
-                            <span>{article.ticker}</span>
+                            <span className="font-mono font-semibold text-blue-400">{article.ticker}</span>
                             <span>•</span>
                             <span>{article.date}</span>
+                            {article.url && article.url !== '#' && (
+                              <>
+                                <span>•</span>
+                                <a 
+                                  href={article.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-400 hover:text-blue-300 hover:underline"
+                                >
+                                  Read full article →
+                                </a>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
