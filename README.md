@@ -3,19 +3,24 @@
 [![Production Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)](https://ai-capital-app7.vercel.app)
 [![Backend](https://img.shields.io/badge/Backend-Render-blue)](https://ai-capital-app7.onrender.com)
 [![Frontend](https://img.shields.io/badge/Frontend-Vercel-purple)](https://ai-capital-app7.vercel.app)
-[![Deployments](https://img.shields.io/badge/Deployments-425%2B%20Commits-orange)](https://github.com/avi648elastic-dot/ai-capital-app-users/commits/main)
-[![Progress](https://img.shields.io/badge/Progress-85%25%20Complete-green)](./TODO_REMAINING.md)
+[![Deployments](https://img.shields.io/badge/Deployments-450%2B%20Commits-orange)](https://github.com/avi648elastic-dot/ai-capital-app-users/commits/main)
+[![Progress](https://img.shields.io/badge/Progress-95%25%20Complete-green)](./TODO_REMAINING.md)
 
-> **Revolutionary AI-Powered Investment Platform** featuring real-time decision engines, advanced portfolio analytics, multi-API data integration, and professional-grade risk management tools designed for serious investors and institutional clients.
+> **Revolutionary AI-Powered Investment Platform** featuring 6 intelligent engines, real-time analytics, institutional-grade risk management, and professional financial analysis tools designed for serious investors and institutional clients.
+
+## 🎁 **30-Day Premium+ Free Trial**
+New users get **full access** to all features for 30 days! Try all 6 intelligent engines, unlimited portfolios, and advanced analytics risk-free.
+
+👉 **[Try it now](https://ai-capital-app7.vercel.app)** - No credit card required
 
 ---
 
 ## 📋 Table of Contents
 
 - [🎯 Executive Summary](#-executive-summary)
+- [🧠 The 6 Intelligent Engines](#-the-6-intelligent-engines)
 - [✨ Core Features & Capabilities](#-core-features--capabilities)
 - [🏗️ Enterprise Architecture](#️-enterprise-architecture)
-- [🧠 Advanced AI Decision Engine](#-advanced-ai-decision-engine)
 - [📊 Professional Analytics Suite](#-professional-analytics-suite)
 - [🔧 Technology Stack](#-technology-stack)
 - [🚀 Quick Start & Deployment](#-quick-start--deployment)
@@ -41,7 +46,11 @@
 - **Total Addressable Market (TAM)**: $8.2B global wealth management software market
 - **Serviceable Addressable Market (SAM)**: $2.1B AI-powered investment platforms
 - **Target Market**: Individual investors ($50K+ portfolios) and small-to-medium institutional clients
-- **Competitive Advantage**: Proprietary AI decision engine replicating proven Google Finance algorithms
+- **Competitive Advantage**: 
+  - 6 proprietary intelligent engines working in unison
+  - 99% reduction in API calls through intelligent caching
+  - Institutional-grade analytics at consumer pricing
+  - 30-day risk-free trial with full Premium+ access
 
 ### 🎯 **Value Proposition**
 
@@ -49,6 +58,383 @@
 - **For Financial Advisors**: Scalable client management with automated decision support
 - **For Institutions**: Customizable AI engine for proprietary investment strategies
 - **For Developers**: Comprehensive API suite for third-party integrations
+
+---
+
+## 🧠 The 6 Intelligent Engines
+
+AI Capital is powered by **6 interconnected intelligent engines** that work together to provide institutional-grade portfolio management:
+
+### 1️⃣ **Performance Analysis Engine** (`metrics.engine.ts`)
+
+**Purpose:** Calculate precise financial metrics across multiple timeframes with minimal API calls.
+
+**How It Works:**
+```typescript
+// Daily Computation & Caching Engine
+export async function getMetrics(symbol: string): Promise<CachedData> {
+  // Check if today's data exists in cache
+  const cached = loadCache(symbol);
+  if (cached && cached.date === today) return cached;
+  
+  // Fetch 120 days of historical data (once per day)
+  const bars = await fetchStockHistory(symbol, 120);
+  
+  // Calculate all timeframes in parallel
+  const metrics = {
+    "7d": computeMetricsForWindow(symbol, bars, "7d"),
+    "30d": computeMetricsForWindow(symbol, bars, "30d"),
+    "60d": computeMetricsForWindow(symbol, bars, "60d"),
+    "90d": computeMetricsForWindow(symbol, bars, "90d")
+  };
+  
+  // Cache until end of day + 1 hour buffer
+  saveCache(symbol, { date: today, bars, metrics });
+  return { date: today, bars, metrics };
+}
+```
+
+**Calculations Per Timeframe:**
+- **Return %**: `((priceEnd / priceStart) - 1) × 100`
+- **Return $**: `priceEnd - priceStart`
+- **Volatility (Annualized)**: `σ(log returns) × √252`
+- **Sharpe Ratio**: `(avgReturn - riskFreeRate) / volatility`
+- **Max Drawdown**: Peak-to-trough decline percentage
+- **Top Price**: Highest price within the window
+
+**Key Features:**
+- ✅ Single API call per stock per day (99% reduction in API usage)
+- ✅ All timeframes calculated simultaneously
+- ✅ Data cached until next day (instant subsequent loads)
+- ✅ Redis fallback caching for reliability
+
+---
+
+### 2️⃣ **AI Decision Engine** (`decisionEngine.ts`)
+
+**Purpose:** Generate BUY/HOLD/SELL signals using multi-factor analysis.
+
+**How It Works:**
+```typescript
+// Multi-Factor Scoring Algorithm
+const score = calculateAdvancedScore({
+  // 30% Weight: Resistance Level Analysis
+  resistanceScore: (currentPrice / top60D) × 100,
+  
+  // 25% Weight: Momentum Analysis
+  momentumScore: (thisMonth% × 0.4) + (lastMonth% × 0.3),
+  
+  // 20% Weight: Volatility-Adjusted Performance
+  volatilityAdjustment: pnlPercent / (volatility + 1),
+  
+  // 15% Weight: Market Context
+  marketBeta: calculateBeta(stockData, marketIndex),
+  
+  // 10% Weight: Portfolio Diversification
+  diversificationBonus: calculateDiversification(portfolio)
+});
+
+// Decision Thresholds:
+if (score >= 1.5) return "BUY";     // Strong buy signal
+if (score <= -1.5) return "SELL";   // Strong sell signal
+return "HOLD";                       // Neutral zone
+```
+
+**Data Sources:**
+- 90 days of price history
+- Real-time price updates (10-minute cache)
+- Alpha Vantage → Finnhub → FMP fallback chain
+
+**Key Features:**
+- ✅ Dynamic stock analysis (works with any ticker)
+- ✅ No pre-loaded lists required
+- ✅ Circuit breaker pattern for API failures
+- ✅ Confidence scoring for each decision
+
+---
+
+### 3️⃣ **Risk Management Engine** (`riskManagementService.ts`)
+
+**Purpose:** Optimize position sizing to maximize profit while minimizing risk.
+
+**How It Works:**
+```typescript
+// Risk Score Calculation (0-5 scale)
+let riskScore = 0;
+
+// 1. Volatility Risk (0-2 points)
+if (volatility > 35%) riskScore += 2;      // Extreme volatility
+else if (volatility > 25%) riskScore += 1.5;  // High volatility
+else if (volatility > 15%) riskScore += 0.5;  // Medium volatility
+
+// 2. Drawdown Risk (0-2 points)
+const drawdown = (currentPrice - top30DPrice) / top30DPrice × 100;
+if (drawdown < -20%) riskScore += 2;       // Large drawdown
+else if (drawdown < -10%) riskScore += 1;  // Moderate drawdown
+
+// 3. Position Weight Risk (0-1 point)
+if (weight > 30%) riskScore += 1;          // Too concentrated
+else if (weight > 20%) riskScore += 0.5;   // Getting concentrated
+
+// Risk Level: Low (0-2), Medium (2-3.5), High (3.5-5)
+```
+
+**Position Sizing Recommendations:**
+```typescript
+// High quality + low allocation = INCREASE
+if (qualityScore > 75 && weight < 15%) {
+  recommendation = "INCREASE to 20%";
+  priority = "HIGH";
+}
+
+// Poor quality + high allocation = REDUCE
+if (qualityScore < 40 && weight > 15%) {
+  recommendation = "REDUCE to 10%";
+  priority = "HIGH";
+  reason = "High volatility (45%), poor returns (-8%), negative Sharpe ratio";
+}
+
+// Profitable high-risk position = TAKE_PROFIT
+if (riskLevel === "High" && weight > 25% && profit > 10%) {
+  recommendation = "TAKE_PROFIT - Reduce to 15%";
+  estimatedProfit = calculateProfit(currentWeight, targetWeight);
+}
+```
+
+**Rebalancing Summary:**
+- Positions to reduce/increase
+- Capital to release/reallocate
+- Estimated profit from rebalancing
+- Risk-adjusted return per position
+
+**Key Features:**
+- ✅ Automatic position sizing recommendations
+- ✅ Risk-adjusted return calculations
+- ✅ Concentration risk detection
+- ✅ Profit-taking opportunity identification
+
+---
+
+### 4️⃣ **Portfolio Analysis Engine** (`sectorPerformanceService.ts`)
+
+**Purpose:** Analyze sector allocation and track real ETF performance.
+
+**How It Works:**
+```typescript
+// Sector Classification & ETF Mapping
+const SECTOR_ETFS = {
+  'Technology': { etf: 'XLK', color: '#3B82F6' },
+  'Industrials': { etf: 'XLI', color: '#10B981' },
+  'Consumer Discretionary': { etf: 'XLY', color: '#F59E0B' },
+  'Energy': { etf: 'XLE', color: '#EF4444' },
+  'Healthcare': { etf: 'XLV', color: '#8B5CF6' },
+  'Financials': { etf: 'XLF', color: '#EC4899' },
+  // ... more sectors
+};
+
+// Calculate Sector Allocation
+portfolio.forEach(stock => {
+  const sector = dynamicallyclassifySector(stock.ticker);
+  const value = stock.currentPrice × stock.shares;
+  const percentage = (value / totalPortfolioValue) × 100;
+  
+  sectorAllocation[sector] = {
+    percentage,
+    value,
+    etfSymbol: SECTOR_ETFS[sector].etf,
+    color: SECTOR_ETFS[sector].color
+  };
+});
+
+// Fetch Real ETF Returns (90-day)
+for (const sector of sectors) {
+  const etfMetrics = await getMetrics(sector.etfSymbol);
+  sector.performance90D = etfMetrics.metrics["90d"].returnPct;
+}
+```
+
+**Sector Performance Calculation:**
+- Portfolio allocation % (your exposure to each sector)
+- Real ETF 90-day returns (XLK, XLI, XLY, etc.)
+- Weighted portfolio volatility
+- Sector comparison ranking
+
+**AI-Powered Analysis:**
+- Risk assessment based on sector concentration
+- Performance attribution by sector
+- Rebalancing recommendations
+- Sector rotation suggestions
+
+**Key Features:**
+- ✅ Dynamic sector classification (no hardcoding)
+- ✅ Real ETF performance from metrics engine
+- ✅ 12-hour Redis caching for instant loads
+- ✅ Filters out "Other/Unknown" sectors automatically
+
+---
+
+### 5️⃣ **Balance Sheet Health Analysis Engine** (`balanceSheetAnalysisService.ts`)
+
+**Purpose:** Automated financial health scoring based on key metrics.
+
+**How It Works:**
+```typescript
+// Financial Health Checklist
+interface BalanceSheetHealth {
+  // Liquidity (30% weight)
+  currentRatio: {
+    value: number;
+    status: 'GOOD' | 'WARNING' | 'POOR';
+    threshold: 1.5;  // Good if > 1.5
+  };
+  
+  // Solvency (30% weight)
+  debtToEquity: {
+    value: number;
+    status: 'GOOD' | 'WARNING' | 'POOR';
+    threshold: 2.0;  // Good if < 2.0
+  };
+  
+  // Profitability (25% weight)
+  returnOnEquity: {
+    value: number;
+    status: 'GOOD' | 'WARNING' | 'POOR';
+    threshold: 15%;  // Good if > 15%
+  };
+  
+  // Growth (15% weight)
+  revenueGrowth: {
+    value: number;
+    trend: 'IMPROVING' | 'STABLE' | 'DECLINING';
+    yearOverYear: number;
+  };
+}
+
+// Overall Health Score
+healthScore = (
+  liquidityScore × 0.30 +
+  solvencyScore × 0.30 +
+  profitabilityScore × 0.25 +
+  growthScore × 0.15
+);
+```
+
+**Metrics Analyzed:**
+- **Current Ratio**: Current Assets / Current Liabilities
+- **Quick Ratio**: (Current Assets - Inventory) / Current Liabilities
+- **Debt-to-Equity**: Total Debt / Total Equity
+- **Interest Coverage**: EBIT / Interest Expense
+- **Return on Equity (ROE)**: Net Income / Shareholder Equity
+- **Return on Assets (ROA)**: Net Income / Total Assets
+- **Revenue Growth**: Year-over-year revenue change
+- **Earnings Growth**: Year-over-year earnings change
+
+**Trend Detection:**
+- Compares 3 years of data
+- Identifies improving/declining trends
+- Flags significant changes
+
+**Key Features:**
+- ✅ Automated checklist with green/red indicators
+- ✅ Multi-year trend analysis
+- ✅ Professional financial metrics
+- ✅ Integration with Financial Modeling Prep API
+
+---
+
+### 6️⃣ **Stock Quality Scoring Engine** (`portfolioDetails.ts`)
+
+**Purpose:** Rank all portfolio positions and recommend optimal allocation.
+
+**How It Works:**
+```typescript
+// Quality Score Calculation (0-100 scale)
+const qualityScore = 
+  sharpeScore +           // 30% weight
+  returnScore +           // 25% weight
+  volatilityScore +       // 25% weight
+  drawdownScore +         // 10% weight
+  riskAdjustedScore;      // 10% weight
+
+// Component Calculations:
+// 1. Sharpe Ratio Score (0-30 points)
+sharpeScore = normalize(sharpe, -2, 2) × 30;  // -2 to 2 → 0 to 30
+
+// 2. Return Score (0-25 points)
+returnScore = normalize(return30d, -20%, 20%) × 25;
+
+// 3. Volatility Score (0-25 points) - Lower is better
+volatilityScore = 25 - (volatility / 2);  // 0% = 25pts, 50% = 0pts
+
+// 4. Max Drawdown Score (0-10 points) - Lower is better
+drawdownScore = 10 + (maxDrawdown / 10);  // -10% = 0pts, 0% = 10pts
+
+// 5. Risk-Adjusted Return (0-10 points)
+riskAdjustedReturn = return30d / volatility;
+riskAdjustedScore = normalize(riskAdjustedReturn, -2, 2) × 10;
+```
+
+**Quality Levels:**
+- **EXCELLENT** (75-100): Top performers, increase allocation
+- **GOOD** (60-75): Strong performers, maintain allocation
+- **FAIR** (40-60): Average performers, monitor closely
+- **POOR** (0-40): Underperformers, reduce allocation
+
+**Investment Recommendations:**
+```typescript
+// Example Recommendations:
+"AAPL ranks #1 in quality (EXCELLENT, 85/100) with strong risk-adjusted 
+returns. Current allocation (8%) is below optimal. Consider increasing to 
+15% to capitalize on superior performance."
+
+"XYZ ranks #8 in quality (POOR, 32/100) but has 22% allocation. High 
+volatility (45%), poor returns (-8%), negative Sharpe ratio (-0.5). Reduce 
+to 10% and reallocate to higher-quality positions."
+```
+
+**Key Features:**
+- ✅ Ranks all stocks by quality (comparative analysis)
+- ✅ Generates specific INCREASE/REDUCE recommendations
+- ✅ Shows quality comparison table
+- ✅ Prioritizes recommendations by urgency (HIGH/MEDIUM/LOW)
+
+---
+
+## 🔄 How the Engines Work Together
+
+```mermaid
+graph LR
+    A[User Portfolio] --> B[Performance Engine]
+    B --> C[Quality Scoring]
+    A --> D[Decision Engine]
+    D --> E[Risk Management]
+    A --> F[Portfolio Analysis]
+    F --> G[Sector Performance]
+    A --> H[Balance Sheet]
+    
+    C --> E
+    E --> I[Position Sizing]
+    G --> E
+    B --> C
+    H --> C
+    
+    I --> J[Rebalancing Recommendations]
+    E --> J
+    C --> J
+```
+
+**Data Flow Example:**
+1. **User adds AAPL to portfolio**
+2. **Performance Engine** → Calculates 7d/30d/60d/90d metrics (return, volatility, Sharpe, drawdown)
+3. **Decision Engine** → Analyzes 90-day data → Generates BUY/HOLD/SELL signal
+4. **Quality Scoring** → Scores AAPL: 85/100 (EXCELLENT)
+5. **Sector Analysis** → Classifies as Technology sector, fetches XLK performance
+6. **Balance Sheet** → Analyzes AAPL financial health
+7. **Risk Management** → Calculates risk score: 1.5/5 (LOW)
+8. **Position Sizing** → AAPL is 8% of portfolio but quality score is 85
+9. **Recommendation** → "INCREASE to 15%" (HIGH priority)
+
+**Result:** User gets actionable recommendation based on comprehensive multi-engine analysis.
 
 ---
 
@@ -1020,35 +1406,82 @@ interface SystemStatsResponse {
 ### 🎯 **Revenue Streams**
 
 #### **Subscription Tiers**
-- **Free Tier**: Basic portfolio management (5 stocks max)
-  - Price: $0/month
-  - Features: Basic analytics, 1 portfolio, 3 watchlist items, standard support
-  - Target: Individual investors, students
 
-- **Premium Tier**: Advanced features and analytics
-  - Price: $9.99/month
-  - Features: 25 stocks, 3 portfolios, 15 watchlist items, real-time data, advanced analytics, custom alerts
-  - Target: Serious individual investors, small advisors
+**🆓 Free Tier** - Basic Portfolio Management
+- **Price**: $0/month (Forever Free)
+- **Limits**: 1 portfolio, 10 stocks total
+- **Features**: 
+  - Basic performance tracking
+  - Dashboard access
+  - Decision engine signals
+  - Market overview
+- **Target**: Individual investors, beginners, students
 
-- **Premium+ Tier**: Professional-grade tools
-  - Price: $19.99/month
-  - Features: 100 stocks, 10 portfolios, 50 watchlist items, portfolio sharing, advanced risk management, priority support
-  - Target: Financial advisors, small institutions
+**⭐ Premium Tier** - Advanced Analytics
+- **Price**: $29/month or $290/year (save 17%)
+- **Limits**: 3 portfolios, 10 stocks per portfolio (30 stocks total)
+- **Features**: 
+  - All Free features
+  - Performance Analysis Engine (7d/30d/60d/90d metrics)
+  - Portfolio Analysis with sector breakdown
+  - Live notifications
+  - Historical data access
+  - Email support
+- **Target**: Serious individual investors, active traders
 
-- **Enterprise Tier**: Custom solutions
-  - Price: $199/month
-  - Features: Unlimited everything, custom branding, API access, dedicated support
-  - Target: Large institutions, white-label clients
+**👑 Premium+ Tier** - Professional Tools
+- **Price**: $49/month or $490/year (save 16%)
+- **Limits**: 5 portfolios, 15 stocks per portfolio (75 stocks total)
+- **Features**: 
+  - All Premium features
+  - Risk Management Engine (position sizing, rebalancing)
+  - Balance Sheet Health Analysis
+  - Stock Quality Scoring Engine
+  - Watchlist with advanced alerts
+  - Advanced backtesting
+  - White-label capabilities
+  - API access (1,000 calls/day)
+  - Priority support (< 4 hour response)
+- **Target**: Financial advisors, portfolio managers, small institutions
 
-#### **Payment & Subscription Management**
-- **Stripe Integration**: Secure payment processing with automated webhook handling
-- **Plan Enforcement**: Middleware-based limit checking for all user actions
-- **Auto-downgrade**: Inactive subscriptions automatically revert to free tier after 7 days
-- **Billing Portal**: Self-service subscription management with upgrade/downgrade options
-- **Trial Periods**: 14-day free trial for all premium tiers
-  - Price: Custom pricing
-  - Features: Custom AI models, dedicated support, on-premise deployment
-  - Target: Large institutions, hedge funds, family offices
+**🏢 Enterprise Tier** - Custom Solutions
+- **Price**: Custom pricing (starting at $499/month)
+- **Limits**: Unlimited portfolios, unlimited stocks
+- **Features**: 
+  - All Premium+ features
+  - Custom AI models and algorithms
+  - Dedicated account manager
+  - On-premise deployment option
+  - Custom branding and white-label
+  - Unlimited API access
+  - SLA guarantees (99.9% uptime)
+  - 24/7 phone support
+  - Custom integrations
+- **Target**: Large institutions, hedge funds, family offices, RIAs
+
+#### **Trial & Subscription Management**
+
+**🎁 30-Day Premium+ Free Trial**
+- All new users automatically receive 30 days of Premium+ access
+- Full access to all 6 intelligent engines
+- No credit card required for trial
+- Automatic countdown showing days remaining
+- Email reminders at 7, 3, and 1 day before expiration
+- Auto-downgrade to Free tier after trial ends (unless upgraded)
+
+**Payment & Billing:**
+- **Stripe Integration**: Secure payment processing with PCI DSS compliance
+- **Plan Enforcement**: Real-time middleware checking subscription limits
+- **Auto-downgrade**: Daily cron job downgrades expired trials automatically
+- **Billing Portal**: Self-service subscription management
+- **Invoice System**: Automated invoice generation and email delivery
+- **Proration**: Automatic credit/charge when upgrading/downgrading mid-cycle
+
+**Admin Controls:**
+- Admins can manually adjust any user's subscription tier
+- Override subscription limits for special cases
+- Monitor trial conversions and payment metrics
+- Generate subscription reports
 
 #### **Additional Revenue Sources**
 - **API Access**: Third-party developer access
@@ -1528,20 +1961,54 @@ interface SystemStatsResponse {
 
 ---
 
-**Last Updated**: October 12, 2025  
-**Version**: 2.1.0  
-**Status**: Production Ready (90% Complete)  
-**Deployments**: 430+ Commits
+**Last Updated**: November 1, 2025  
+**Version**: 3.0.0  
+**Status**: Production Ready (95% Complete)  
+**Deployments**: 450+ Commits
 
-### 🔥 **Recent Updates (v2.1.0)**
-- ✅ Watchlist price alert system completely fixed with comprehensive logging
-- ✅ Smart API engine with 12 keys (4 Alpha Vantage + 4 Finnhub + 4 FMP)
-- ✅ Complete documentation suite (Architecture, DataProviders, DecisionEngine, Runbook)
-- ✅ Centralized API client with error handling
-- ✅ Public pages (/pricing, /about, /upgrade)
-- ✅ Multi-stage Docker with security improvements
-- ✅ Real-time price updates across all pages
-- ✅ Database optimization with safe index creation
+### 🔥 **Recent Updates (v3.0.0 - Major Release)**
+
+**New Intelligent Engines:**
+- ✅ **Performance Analysis Engine**: Daily metric computation with 99% API call reduction
+- ✅ **Risk Management Engine**: Position sizing and profit optimization recommendations
+- ✅ **Portfolio Analysis Engine**: Real ETF sector performance with 90-day returns
+- ✅ **Balance Sheet Health Engine**: Automated financial health scoring
+- ✅ **Stock Quality Scoring Engine**: Comparative quality ranking (0-100 scale)
+- ✅ **Portfolio Intelligence**: Dashboard summary with investment recommendations
+
+**Subscription System:**
+- ✅ 30-day Premium+ free trial for all new users
+- ✅ Automatic trial countdown with email reminders (7, 3, 1 day)
+- ✅ Daily cron job for trial expiration and auto-downgrade
+- ✅ Subscription restrictions: Free (1/10), Premium (3/10), Premium+ (5/15)
+- ✅ Weekly pre-warming cron job for portfolio data
+
+**Performance Improvements:**
+- ✅ Redis caching for all analytics endpoints (12-hour TTL)
+- ✅ Metrics engine with daily computation (single API call/day/stock)
+- ✅ Instant page loads after first daily computation
+- ✅ Force refresh capability for real-time updates
+
+**Data Accuracy Fixes:**
+- ✅ Fixed volatility calculation (no more 7000%+ errors)
+- ✅ Fixed drawdown calculation using real historical highs
+- ✅ Fixed sector classification (CBAT, SHMD correctly classified)
+- ✅ Fixed ETF returns (XLK, XLI using real closing prices)
+- ✅ Removed "Other/Unknown" sectors from all views
+
+**Bug Fixes:**
+- ✅ Fixed notification security leak between users
+- ✅ Fixed subscription display on dashboard (shows correct tier and limits)
+- ✅ Fixed dashboard volatility (now uses metrics engine)
+- ✅ Fixed task editing and persistence
+- ✅ Fixed cache TTL unit conversion (seconds to milliseconds)
+
+**New Features:**
+- ✅ Portfolio Details section on dashboard with AI recommendations
+- ✅ Investment quality indicators (score, rating, tooltips)
+- ✅ Enhanced AI analysis with professional Wall Street terminology
+- ✅ Stock ticker display in Risk Management table
+- ✅ Detailed logging for all metric calculations
 
 > **🚀 Ready to revolutionize investment portfolio management with cutting-edge AI technology, institutional-grade analytics, and professional-grade tools accessible to all investors!**
 
