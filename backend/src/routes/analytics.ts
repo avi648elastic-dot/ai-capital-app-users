@@ -717,8 +717,14 @@ router.get('/portfolio-analysis', authenticateToken, requireSubscription, async 
       }));
     }
 
-    // Calculate enhanced risk assessment with comprehensive data
+    // Calculate enhanced risk assessment with comprehensive data (use updated sectorAllocation with real percentages)
     const riskAssessment = await calculateRiskAssessment(portfolio, sectorAnalysis, portfolioData, realTimeMetrics, sectorAllocation);
+    
+    // Log sector allocation percentages for verification
+    loggerService.info(`📊 [ANALYTICS] Sector Allocation for Risk Assessment:`);
+    sectorAllocation.forEach(sector => {
+      loggerService.info(`   ${sector.sector}: ${sector.percentage.toFixed(1)}% ($${sector.value.toFixed(2)})`);
+    });
 
     // Determine what data is available and what failed
     const dataStatus: { portfolioPerformance: string; sectorPerformance: string; issues: string[] } = {
@@ -885,11 +891,16 @@ async function calculateRiskAssessment(portfolio: any[], sectorAnalysis: any, po
     avgVolatility = volatilities.reduce((sum, vol) => sum + vol, 0) / volatilities.length;
   }
 
-  // Calculate concentration risk from sector allocation
-  const maxSectorAllocation = sectorAnalysis.sectorAllocation.length > 0 
-    ? Math.max(...sectorAnalysis.sectorAllocation.map((s: any) => s.percentage))
-    : 0;
+  // Calculate concentration risk from sector allocation (use updated sectorAllocation, not sectorAnalysis)
+  // CRITICAL FIX: Use the passed sectorAllocation parameter which has the real percentages
+  const maxSectorAllocation = sectorAllocation && sectorAllocation.length > 0 
+    ? Math.max(...sectorAllocation.map((s: any) => s.percentage))
+    : (sectorAnalysis.sectorAllocation.length > 0 
+        ? Math.max(...sectorAnalysis.sectorAllocation.map((s: any) => s.percentage))
+        : 0);
   const concentrationRisk = maxSectorAllocation;
+  
+  loggerService.info(`📊 [RISK ASSESSMENT] Max sector allocation: ${maxSectorAllocation.toFixed(1)}%`);
 
   // Calculate diversification score (more nuanced)
   const numSectors = sectorAnalysis.sectorAllocation.length;
