@@ -113,6 +113,7 @@ WatchlistSchema.virtual('needsCheck').get(function() {
 });
 
 // Method to check if price alert is triggered
+// CRITICAL FIX: Only trigger when price CROSSES the threshold, not while staying above/below
 WatchlistSchema.methods.checkPriceAlert = function(currentPrice: number): {
   triggered: boolean;
   type?: 'high' | 'low';
@@ -123,10 +124,18 @@ WatchlistSchema.methods.checkPriceAlert = function(currentPrice: number): {
   }
 
   const alert = this.priceAlert;
+  const lastPrice = this.lastPrice;
+  
+  // If we don't have a lastPrice yet, store current price but don't trigger
+  // This prevents false alerts on first check
+  if (lastPrice === undefined || lastPrice === null) {
+    return { triggered: false };
+  }
 
-  // Check high price alert
+  // Check high price alert - only trigger when crossing UPWARD through threshold
   if ((alert.type === 'high' || alert.type === 'both') && alert.highPrice) {
-    if (currentPrice >= alert.highPrice) {
+    const crossedUpward = lastPrice < alert.highPrice && currentPrice >= alert.highPrice;
+    if (crossedUpward) {
       return {
         triggered: true,
         type: 'high',
@@ -135,9 +144,10 @@ WatchlistSchema.methods.checkPriceAlert = function(currentPrice: number): {
     }
   }
 
-  // Check low price alert
+  // Check low price alert - only trigger when crossing DOWNWARD through threshold
   if ((alert.type === 'low' || alert.type === 'both') && alert.lowPrice) {
-    if (currentPrice <= alert.lowPrice) {
+    const crossedDownward = lastPrice > alert.lowPrice && currentPrice <= alert.lowPrice;
+    if (crossedDownward) {
       return {
         triggered: true,
         type: 'low',
