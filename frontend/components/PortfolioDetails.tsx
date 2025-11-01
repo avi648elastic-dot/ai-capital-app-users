@@ -139,10 +139,67 @@ export default function PortfolioDetails() {
         </div>
       </div>
 
-      {/* Top Recommendations - Compact */}
+      {/* Best Solid & Risky Stocks - Compact */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+        {/* Best Long-Term (Solid) */}
+        {data.bestLongTerm.length > 0 && (
+          <div className="bg-green-900/20 rounded-lg p-2 border border-green-500/30">
+            <div className="flex items-center space-x-1 mb-2">
+              <Target className="w-3 h-3 text-green-400" />
+              <span className="text-[10px] font-bold text-green-400 uppercase">Best Long-Term</span>
+            </div>
+            <div className="space-y-1">
+              {data.bestLongTerm.slice(0, 2).map((stock, index) => (
+                <div key={index} className="text-xs">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="font-bold text-white">{stock.ticker}</span>
+                    {stock.metrics?.returnPct !== undefined && (
+                      <span className={`text-[10px] font-semibold ${
+                        stock.metrics.returnPct >= 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        {stock.metrics.returnPct >= 0 ? '+' : ''}{stock.metrics.returnPct.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-300 leading-tight line-clamp-2">{stock.reason}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Best Short-Term (Risky) */}
+        {data.bestShortTerm.length > 0 && (
+          <div className="bg-orange-900/20 rounded-lg p-2 border border-orange-500/30">
+            <div className="flex items-center space-x-1 mb-2">
+              <TrendingUp className="w-3 h-3 text-orange-400" />
+              <span className="text-[10px] font-bold text-orange-400 uppercase">Best Short-Term</span>
+            </div>
+            <div className="space-y-1">
+              {data.bestShortTerm.slice(0, 2).map((stock, index) => (
+                <div key={index} className="text-xs">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="font-bold text-white">{stock.ticker}</span>
+                    {stock.metrics?.returnPct !== undefined && (
+                      <span className={`text-[10px] font-semibold ${
+                        stock.metrics.returnPct >= 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        {stock.metrics.returnPct >= 0 ? '+' : ''}{stock.metrics.returnPct.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-300 leading-tight line-clamp-2">{stock.reason}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Top Action Recommendations - Compact */}
       {data.investmentRecommendations && data.investmentRecommendations.length > 0 && (
         <div className="space-y-2">
-          <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Top Recommendations</div>
+          <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Action Recommendations</div>
           {data.investmentRecommendations.slice(0, 2).map((rec, index) => (
             <div key={index} className={`p-2 rounded border text-xs ${
               rec.action === 'INCREASE' 
