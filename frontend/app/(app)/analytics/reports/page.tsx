@@ -10,6 +10,7 @@ export default function Reports() {
   const [portfolio, setPortfolio] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [news, setNews] = useState<any[]>([]);
+  const [newsInsights, setNewsInsights] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [portfolioMetrics, setPortfolioMetrics] = useState<any>(null);
   const [earnings, setEarnings] = useState<any[]>([]);
@@ -67,8 +68,10 @@ export default function Reports() {
           timeout: 15000
         });
         const newsData = newsRes.data.news || [];
+        const insights = newsRes.data.insights || null;
         setNews(newsData);
-        console.log(`✅ [REPORTS] Loaded ${newsData.length} news articles`);
+        setNewsInsights(insights);
+        console.log(`✅ [REPORTS] Loaded ${newsData.length} news articles with insights`);
       } catch (newsError) {
         console.error('❌ [REPORTS] Error fetching news:', newsError);
         setNews([]);
@@ -145,12 +148,85 @@ export default function Reports() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Latest News */}
+          {/* Left Column: Balance Sheet + News */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Balance Sheet Health Analysis - MOVED TO TOP */}
+            {portfolio.length > 0 && balanceSheetAnalyses.length > 0 && (
+              <div className="card p-6">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <Building2 className="w-5 h-5 mr-2" />
+                  Balance Sheet Health Analysis
+                </h3>
+                <p className="text-xs text-slate-400 mb-4">
+                  Fundamental analysis based on 13 financial criteria (must pass 8/10 to be considered healthy)
+                </p>
+                <div className="space-y-3">
+                  {balanceSheetAnalyses.map((analysis, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border border-slate-700/30">
+                      <div className="flex items-center space-x-3">
+                        <div className="text-white font-bold">{analysis.ticker}</div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          analysis.healthStatus === 'HEALTHY' 
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                            : analysis.healthStatus === 'MODERATE'
+                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        }`}>
+                          {analysis.healthStatus}
+                        </span>
+                      </div>
+                      <div className="text-white font-bold">{analysis.score}/13</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* News Insights Summary - NEW */}
+            {newsInsights && (
+              <div className="card p-6 bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-500/30">
+                <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-blue-400" />
+                  News Intelligence
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/30">
+                    <div className="text-[10px] text-slate-400 mb-1">Total Coverage</div>
+                    <div className="text-lg font-bold text-white">{newsInsights.totalArticles}</div>
+                  </div>
+                  <div className="bg-green-900/20 rounded-lg p-3 border border-green-500/30">
+                    <div className="text-[10px] text-green-400 mb-1">Positive</div>
+                    <div className="text-lg font-bold text-green-400">{newsInsights.sentimentBreakdown.positive}</div>
+                  </div>
+                  <div className="bg-yellow-900/20 rounded-lg p-3 border border-yellow-500/30">
+                    <div className="text-[10px] text-yellow-400 mb-1">Neutral</div>
+                    <div className="text-lg font-bold text-yellow-400">{newsInsights.sentimentBreakdown.neutral}</div>
+                  </div>
+                  <div className="bg-red-900/20 rounded-lg p-3 border border-red-500/30">
+                    <div className="text-[10px] text-red-400 mb-1">Negative</div>
+                    <div className="text-lg font-bold text-red-400">{newsInsights.sentimentBreakdown.negative}</div>
+                  </div>
+                </div>
+                {newsInsights.tickerMentions.length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-xs text-slate-400 mb-2">Most Mentioned Stocks:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {newsInsights.tickerMentions.slice(0, 5).map((mention: any, idx: number) => (
+                        <span key={idx} className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs border border-blue-500/30">
+                          {mention.ticker} ({mention.count})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Latest News - Reduced to 10 articles */}
             <div className="card p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
                 <FileText className="w-5 h-5 mr-2" />
-                Latest News
+                Latest News (Top 10)
               </h3>
               <div className="space-y-4">
                 {news.length === 0 ? (

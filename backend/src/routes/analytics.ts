@@ -1274,12 +1274,31 @@ router.get('/news', authenticateToken, async (req, res) => {
       }
     }
     
-    // Sort by date (most recent first) and limit to latest 20 articles
+    // Sort by date (most recent first) and limit to latest 10 articles (reduced from 20)
     allNews.sort((a, b) => b.date.localeCompare(a.date));
-    const recentNews = allNews.slice(0, 20);
+    const recentNews = allNews.slice(0, 10);
+    
+    // Generate news insights summary
+    const newsInsights = {
+      totalArticles: allNews.length,
+      displayedArticles: recentNews.length,
+      sentimentBreakdown: {
+        positive: allNews.filter(n => n.sentiment === 'positive').length,
+        neutral: allNews.filter(n => n.sentiment === 'neutral').length,
+        negative: allNews.filter(n => n.sentiment === 'negative').length
+      },
+      tickerMentions: tickers.map(ticker => ({
+        ticker,
+        count: allNews.filter(n => n.ticker === ticker).length
+      })).sort((a, b) => b.count - a.count),
+      mostRecentDate: recentNews.length > 0 ? recentNews[0].date : null,
+      oldestDisplayedDate: recentNews.length > 0 ? recentNews[recentNews.length - 1].date : null,
+      topSources: [...new Set(allNews.map(n => n.source))].slice(0, 5)
+    };
     
     console.log(`✅ [NEWS] Fetched ${recentNews.length} news articles for ${tickers.length} portfolio stocks`);
-    res.json({ news: recentNews });
+    console.log(`📊 [NEWS INSIGHTS] Sentiment: ${newsInsights.sentimentBreakdown.positive} positive, ${newsInsights.sentimentBreakdown.neutral} neutral, ${newsInsights.sentimentBreakdown.negative} negative`);
+    res.json({ news: recentNews, insights: newsInsights });
   } catch (error) {
     console.error('❌ [ANALYTICS] Error in news endpoint:', error);
     res.json({ news: [] }); // Return empty array instead of error
