@@ -410,13 +410,51 @@ export default function Reports() {
                   </div>
                 ) : (
                   getUpcomingEarnings().map((earning, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
-                      <div>
-                        <div className="text-white font-medium">{earning.ticker}</div>
-                        <div className="text-sm text-slate-400">{earning.time}</div>
+                    <div key={index} className="bg-slate-800/50 rounded-lg p-4 border border-slate-700/30 hover:border-blue-500/30 transition-all">
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg font-bold text-white">{earning.ticker}</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            earning.source === 'FMP' || earning.source === 'ALPHA_VANTAGE' || earning.source === 'YAHOO'
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                          }`}>
+                            {earning.source === 'FALLBACK' ? 'Estimated' : 'Confirmed'}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold text-blue-400">{earning.date}</div>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm text-slate-300">{earning.date}</div>
+                      
+                      {/* Timing */}
+                      <div className="flex items-center space-x-2 mb-3 text-xs text-slate-400">
+                        <Calendar className="w-3 h-3" />
+                        <span>{earning.time || 'After Market Close'}</span>
+                      </div>
+                      
+                      {/* EPS & Revenue Estimates */}
+                      {(earning.epsEstimate || earning.revenueEstimate) && (
+                        <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-700/30">
+                          {earning.epsEstimate && (
+                            <div className="bg-slate-900/30 rounded p-2">
+                              <div className="text-[9px] text-slate-500 uppercase mb-0.5">EPS Est.</div>
+                              <div className="text-sm font-bold text-white">${earning.epsEstimate.toFixed(2)}</div>
+                            </div>
+                          )}
+                          {earning.revenueEstimate && (
+                            <div className="bg-slate-900/30 rounded p-2">
+                              <div className="text-[9px] text-slate-500 uppercase mb-0.5">Revenue Est.</div>
+                              <div className="text-sm font-bold text-white">${(earning.revenueEstimate / 1000000).toFixed(1)}M</div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Data Source Badge */}
+                      <div className="mt-2 text-[9px] text-slate-500">
+                        Source: {earning.source === 'FMP' ? 'Financial Modeling Prep' : earning.source === 'ALPHA_VANTAGE' ? 'Alpha Vantage' : earning.source === 'YAHOO' ? 'Yahoo Finance' : 'Quarterly Estimate'}
                       </div>
                     </div>
                   ))
