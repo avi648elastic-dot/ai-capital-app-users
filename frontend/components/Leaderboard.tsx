@@ -34,16 +34,16 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false, butt
   
   useEffect(() => { setMounted(true); }, []);
   
-  // Calculate position based on button location
+  // Calculate position based on button location (desktop only)
   useEffect(() => {
-    if (buttonRef && isVisible) {
+    if (buttonRef && isVisible && !isMobile) {
       const rect = buttonRef.getBoundingClientRect();
       setPosition({
         top: rect.bottom + 5, // 5px below button
         right: window.innerWidth - rect.right // Align right edges
       });
     }
-  }, [buttonRef, isVisible]);
+  }, [buttonRef, isVisible, isMobile]);
 
   useEffect(() => {
     if (isVisible) {
@@ -100,13 +100,20 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false, butt
       }}
       style={{ pointerEvents: 'none' }}
     >
-      {/* Dropdown positioned below the button */}
+      {/* Dropdown positioned below the button (desktop) or fullscreen (mobile) */}
       <div 
-        className={`fixed bg-slate-900 rounded-xl border border-slate-700 shadow-2xl overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-2xl'}`}
-        style={{ 
+        className={`fixed bg-slate-900 shadow-2xl overflow-hidden ${
+          isMobile 
+            ? 'inset-0 w-full h-full rounded-none' 
+            : 'rounded-xl border border-slate-700 w-full max-w-2xl'
+        }`}
+        style={isMobile ? {
+          pointerEvents: 'auto',
+          zIndex: 20002
+        } : {
           top: `${position.top}px`,
           right: `${position.right}px`,
-          maxWidth: isMobile ? '95vw' : '700px',
+          maxWidth: '700px',
           maxHeight: `calc(100vh - ${position.top + 20}px)`,
           pointerEvents: 'auto',
           zIndex: 20002

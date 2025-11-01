@@ -41,16 +41,16 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   useEffect(() => { setMounted(true); }, []);
   
-  // Calculate position based on button location
+  // Calculate position based on button location (desktop only)
   useEffect(() => {
-    if (buttonRef && isVisible) {
+    if (buttonRef && isVisible && !isMobile) {
       const rect = buttonRef.getBoundingClientRect();
       setPosition({
         top: rect.bottom + 5, // 5px below button
         right: window.innerWidth - rect.right // Align right edges
       });
     }
-  }, [buttonRef, isVisible]);
+  }, [buttonRef, isVisible, isMobile]);
 
   useEffect(() => {
     if (isVisible) {
@@ -462,13 +462,20 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
       }}
       style={{ pointerEvents: 'none' }}
     >
-      {/* Dropdown positioned below the notification button */}
+      {/* Dropdown positioned below the notification button (desktop) or fullscreen (mobile) */}
       <div 
-        className={`fixed bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-sm'}`}
-        style={{ 
+        className={`fixed bg-white dark:bg-slate-800 shadow-2xl flex flex-col overflow-hidden ${
+          isMobile 
+            ? 'inset-0 w-full h-full rounded-none' 
+            : 'rounded-xl border border-slate-200 dark:border-slate-700 w-full max-w-sm'
+        }`}
+        style={isMobile ? {
+          pointerEvents: 'auto',
+          zIndex: 20002
+        } : {
           top: `${position.top}px`,
           right: `${position.right}px`,
-          maxWidth: isMobile ? '95vw' : '400px',
+          maxWidth: '400px',
           maxHeight: `calc(100vh - ${position.top + 20}px)`,
           pointerEvents: 'auto',
           zIndex: 20002
