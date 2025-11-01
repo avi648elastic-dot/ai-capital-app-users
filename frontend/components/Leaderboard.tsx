@@ -102,13 +102,14 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false, butt
     >
       {/* Dropdown positioned below the button */}
       <div 
-        className={`absolute bg-slate-900 rounded-xl border border-slate-700 shadow-2xl overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-2xl'}`}
+        className={`fixed bg-slate-900 rounded-xl border border-slate-700 shadow-2xl overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-2xl'}`}
         style={{ 
           top: `${position.top}px`,
           right: `${position.right}px`,
           maxWidth: isMobile ? '95vw' : '700px',
-          maxHeight: `calc(100vh - ${position.top + 20}px)`, // Dynamic height based on position
-          pointerEvents: 'auto'
+          maxHeight: `calc(100vh - ${position.top + 20}px)`,
+          pointerEvents: 'auto',
+          zIndex: 20002
         }}
       >
         {/* Header - Compact with always visible close */}

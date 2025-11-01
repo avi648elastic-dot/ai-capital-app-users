@@ -464,13 +464,14 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
     >
       {/* Dropdown positioned below the notification button */}
       <div 
-        className={`absolute bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-sm'}`}
+        className={`fixed bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-sm'}`}
         style={{ 
           top: `${position.top}px`,
           right: `${position.right}px`,
           maxWidth: isMobile ? '95vw' : '400px',
-          maxHeight: `calc(100vh - ${position.top + 20}px)`, // Dynamic height based on position
-          pointerEvents: 'auto'
+          maxHeight: `calc(100vh - ${position.top + 20}px)`,
+          pointerEvents: 'auto',
+          zIndex: 20002
         }}
       >
         {/* Header - Compact */}
