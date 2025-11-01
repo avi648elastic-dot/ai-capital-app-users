@@ -31,9 +31,32 @@ services:
         sync: false
       - key: EMAIL_PASS
         sync: false
+      # API Keys for stock data and earnings
       - key: FINNHUB_API_KEY
         sync: false
+      - key: FINNHUB_API_KEY_1
+        sync: false
+      - key: FINNHUB_API_KEY_2
+        sync: false
       - key: ALPHA_VANTAGE_API_KEY
+        sync: false
+      - key: ALPHA_VANTAGE_API_KEY_1
+        sync: false
+      - key: ALPHA_VANTAGE_API_KEY_2
+        sync: false
+      - key: ALPHA_VANTAGE_API_KEY_3
+        sync: false
+      - key: ALPHA_VANTAGE_API_KEY_4
+        sync: false
+      - key: FMP_API_KEY
+        sync: false
+      - key: FMP_API_KEY_1
+        sync: false
+      - key: FMP_API_KEY_2
+        sync: false
+      - key: FMP_API_KEY_3
+        sync: false
+      - key: FMP_API_KEY_4
         sync: false
       - key: FINANCIAL_MODELING_PREP_API_KEY
         sync: false

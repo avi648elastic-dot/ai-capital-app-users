@@ -127,6 +127,7 @@ export class EarningsService {
       process.env.FMP_API_KEY_3,
       process.env.FMP_API_KEY_4,
       process.env.FMP_API_KEY,
+      process.env.FINANCIAL_MODELING_PREP_API_KEY, // CRITICAL: Render uses this name!
     ].filter(key => key);
 
     if (apiKeys.length === 0) {
