@@ -8,7 +8,7 @@ export interface EarningsData {
   epsActual?: number | null;
   revenueEstimate?: number | null;
   revenueActual?: number | null;
-  source: 'FMP' | 'ALPHA_VANTAGE' | 'YAHOO' | 'FALLBACK';
+  source: 'FMP' | 'ALPHA_VANTAGE' | 'YAHOO' | 'FINNHUB' | 'FALLBACK';
 }
 
 export class EarningsService {
@@ -51,20 +51,26 @@ export class EarningsService {
 
         console.log(`📥 [EARNINGS] ${ticker}: No cache, fetching from APIs...`);
 
-        // Try FMP first (most reliable)
-        console.log(`🔍 [EARNINGS] ${ticker}: Trying FMP API...`);
-        let earnings = await this.fetchFromFMP(ticker);
+        // Try Finnhub first (FREE and working)
+        console.log(`🔍 [EARNINGS] ${ticker}: Trying Finnhub API...`);
+        let earnings = await this.fetchFromFinnhub(ticker);
         
-        // Fallback to Alpha Vantage if FMP fails
+        // Fallback to Yahoo Finance if Finnhub fails
+        if (!earnings || earnings.length === 0) {
+          console.log(`⚠️ [EARNINGS] ${ticker}: Finnhub failed, trying Yahoo Finance...`);
+          earnings = await this.fetchFromYahooFinance(ticker);
+        }
+
+        // Fallback to FMP if both fail (legacy users only)
+        if (!earnings || earnings.length === 0) {
+          console.log(`⚠️ [EARNINGS] ${ticker}: Yahoo failed, trying FMP (legacy)...`);
+          earnings = await this.fetchFromFMP(ticker);
+        }
+
+        // Fallback to Alpha Vantage as last resort
         if (!earnings || earnings.length === 0) {
           console.log(`⚠️ [EARNINGS] ${ticker}: FMP failed, trying Alpha Vantage...`);
           earnings = await this.fetchFromAlphaVantage(ticker);
-        }
-
-        // Fallback to Yahoo Finance if both fail
-        if (!earnings || earnings.length === 0) {
-          console.log(`⚠️ [EARNINGS] ${ticker}: Alpha Vantage failed, trying Yahoo Finance...`);
-          earnings = await this.fetchFromYahooFinance(ticker);
         }
 
         // If all APIs failed, use fallback data
@@ -262,6 +268,89 @@ export class EarningsService {
     }
 
     console.log(`❌ [EARNINGS] Alpha Vantage: All ${apiKeys.length} keys failed for ${ticker}`);
+    return [];
+  }
+
+  /**
+   * Fetch from Finnhub (FREE tier includes earnings calendar)
+   */
+  private async fetchFromFinnhub(ticker: string): Promise<EarningsData[]> {
+    const apiKeys = [
+      process.env.FINNHUB_API_KEY_1,
+      process.env.FINNHUB_API_KEY_2,
+      process.env.FINNHUB_API_KEY,
+    ].filter(key => key);
+
+    if (apiKeys.length === 0) {
+      console.log(`⚠️ [EARNINGS] Finnhub: No API keys configured`);
+      return [];
+    }
+
+    console.log(`🔑 [EARNINGS] Finnhub: Found ${apiKeys.length} API keys, trying up to 2...`);
+
+    for (let i = 0; i < Math.min(apiKeys.length, 2); i++) {
+      try {
+        // Finnhub earnings calendar endpoint
+        // Get earnings for next 30 days
+        const today = new Date();
+        const nextMonth = new Date();
+        nextMonth.setDate(today.getDate() + 90); // Next 90 days
+        
+        const from = today.toISOString().split('T')[0];
+        const to = nextMonth.toISOString().split('T')[0];
+        
+        const url = `https://finnhub.io/api/v1/calendar/earnings?from=${from}&to=${to}&symbol=${ticker}&token=${apiKeys[i]}`;
+        console.log(`🌐 [EARNINGS] Finnhub: Calling API for ${ticker}...`);
+        
+        const response = await axios.get(url, { timeout: 10000 });
+
+        console.log(`📥 [EARNINGS] Finnhub: Response status ${response.status}`);
+        
+        if (response.data && response.data.earningsCalendar && Array.isArray(response.data.earningsCalendar)) {
+          const calendar = response.data.earningsCalendar;
+          
+          if (calendar.length > 0) {
+            console.log(`✅ [EARNINGS] Finnhub: Found ${calendar.length} earnings for ${ticker}`);
+            console.log(`📊 [EARNINGS] Finnhub: Sample data:`, calendar[0]);
+            
+            const earnings = calendar.map((item: any) => ({
+              ticker: item.symbol || ticker,
+              date: item.date,
+              time: item.hour === 'bmo' ? 'Before Market Open' : 
+                    item.hour === 'amc' ? 'After Market Close' : 
+                    item.hour === 'dmh' ? 'During Market Hours' : 
+                    'After Market Close',
+              epsEstimate: item.epsEstimate || null,
+              epsActual: item.epsActual || null,
+              revenueEstimate: item.revenueEstimate || null,
+              revenueActual: item.revenueActual || null,
+              source: 'FINNHUB' as const
+            }));
+            
+            console.log(`✅ [EARNINGS] Finnhub: Parsed ${earnings.length} earnings for ${ticker}`);
+            return earnings;
+          } else {
+            console.warn(`⚠️ [EARNINGS] Finnhub: No earnings found for ${ticker} in next 90 days`);
+          }
+        } else {
+          console.warn(`⚠️ [EARNINGS] Finnhub: Invalid response format for ${ticker}`);
+        }
+      } catch (error: any) {
+        console.error(`❌ [EARNINGS] Finnhub: Error for ${ticker}:`, {
+          status: error?.response?.status,
+          statusText: error?.response?.statusText,
+          message: error?.message,
+          data: error?.response?.data
+        });
+        
+        if (error?.response?.status === 429 || error?.response?.status === 403) {
+          console.warn(`⚠️ [EARNINGS] Finnhub: Rate limited for ${ticker}, trying next key...`);
+          continue;
+        }
+      }
+    }
+
+    console.log(`❌ [EARNINGS] Finnhub: All ${apiKeys.length} keys failed for ${ticker}`);
     return [];
   }
 

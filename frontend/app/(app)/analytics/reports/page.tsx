@@ -416,7 +416,7 @@ export default function Reports() {
                         <div className="flex items-center space-x-2">
                           <span className="text-lg font-bold text-white">{earning.ticker}</span>
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            earning.source === 'FMP' || earning.source === 'ALPHA_VANTAGE' || earning.source === 'YAHOO'
+                            earning.source === 'FMP' || earning.source === 'ALPHA_VANTAGE' || earning.source === 'YAHOO' || earning.source === 'FINNHUB'
                               ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                               : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                           }`}>
@@ -454,7 +454,7 @@ export default function Reports() {
                       
                       {/* Data Source Badge */}
                       <div className="mt-2 text-[9px] text-slate-500">
-                        Source: {earning.source === 'FMP' ? 'Financial Modeling Prep' : earning.source === 'ALPHA_VANTAGE' ? 'Alpha Vantage' : earning.source === 'YAHOO' ? 'Yahoo Finance' : 'Quarterly Estimate'}
+                        Source: {earning.source === 'FMP' ? 'Financial Modeling Prep' : earning.source === 'ALPHA_VANTAGE' ? 'Alpha Vantage' : earning.source === 'YAHOO' ? 'Yahoo Finance' : earning.source === 'FINNHUB' ? 'Finnhub (Free)' : 'Quarterly Estimate'}
                       </div>
                     </div>
                   ))
