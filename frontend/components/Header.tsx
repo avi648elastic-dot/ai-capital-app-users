@@ -26,6 +26,8 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
   const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [notificationButtonRef, setNotificationButtonRef] = useState<HTMLButtonElement | null>(null);
+  const [leaderboardButtonRef, setLeaderboardButtonRef] = useState<HTMLButtonElement | null>(null);
   const router = useRouter();
 
   const handleLogout = () => logout();
@@ -91,6 +93,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
               
               {/* REPUTATION DISPLAY - VISIBLE ON ALL SCREENS */}
               <button
+                ref={setLeaderboardButtonRef}
                 onClick={() => setShowLeaderboard(true)}
                 className="flex items-center space-x-2 bg-slate-800/50 rounded-lg px-2 sm:px-3 py-2 border border-slate-700/50 hover:bg-slate-700/50 transition-colors"
                 title="View Trading Leaderboard"
@@ -115,6 +118,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
               {/* CRITICAL FIX: Enhanced Notification System */}
               <div className="relative">
                 <button
+                  ref={setNotificationButtonRef}
                   onClick={() => setShowNotificationPanel(true)}
                   className="relative p-2 text-slate-400 hover:text-slate-300 transition-colors"
                   title="Notifications"
@@ -135,6 +139,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
                     onClose={() => setShowNotificationPanel(false)}
                     isMobile={false}
                     onNotificationCountChange={setNotificationCount}
+                    buttonRef={notificationButtonRef}
                   />
                 )}
               </div>
@@ -233,6 +238,7 @@ export default function Header({ userName, showNavigation = true, isAdmin = fals
         isVisible={showLeaderboard}
         onClose={() => setShowLeaderboard(false)}
         isMobile={false}
+        buttonRef={leaderboardButtonRef}
       />
     </header>
   );
