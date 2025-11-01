@@ -18,28 +18,34 @@ router.get('/summary', authenticateToken, async (req, res) => {
   try {
     const userId = (req as any).user!._id;
     
-    // Check cache first
+    // Check cache first (but allow force refresh via query param)
+    const forceRefresh = req.query.refresh === 'true';
     const today = new Date().toISOString().split('T')[0];
     const cacheKey = `portfolio-details:${userId}:${today}`;
     
-    try {
-      const cached = await redisService.get(cacheKey);
-      if (cached) {
-        loggerService.info(`✅ [PORTFOLIO DETAILS] Cache hit for user ${userId}`);
-        return res.json(JSON.parse(cached));
+    if (!forceRefresh) {
+      try {
+        const cached = await redisService.get(cacheKey);
+        if (cached) {
+          loggerService.info(`✅ [PORTFOLIO DETAILS] Cache hit for user ${userId}`);
+          return res.json(JSON.parse(cached));
+        }
+      } catch (cacheError) {
+        loggerService.warn('⚠️ [PORTFOLIO DETAILS] Cache check failed, continuing...');
       }
-    } catch (cacheError) {
-      loggerService.warn('⚠️ [PORTFOLIO DETAILS] Cache check failed, continuing...');
+    } else {
+      loggerService.info(`🔄 [PORTFOLIO DETAILS] Force refresh requested for user ${userId}`);
     }
     
     loggerService.info(`🔍 [PORTFOLIO DETAILS] Fetching portfolio summary for user ${userId}`);
     
-    // Get user's portfolio
+    // Get user's portfolio (all positions, not just BUY)
     const portfolio = await Portfolio.find({ 
       userId,
-      action: 'BUY',
       isTraining: { $ne: true }
     }).sort({ createdAt: 1 });
+    
+    loggerService.info(`📊 [PORTFOLIO DETAILS] Found ${portfolio.length} positions for user ${userId}`);
     
     if (portfolio.length === 0) {
       return res.json({
@@ -58,51 +64,69 @@ router.get('/summary', authenticateToken, async (req, res) => {
     // Get unique tickers
     const tickers = [...new Set(portfolio.map(item => item.ticker))];
     
-    // 1. Calculate performance metrics (from Performance Analysis)
+    // 1. Calculate performance metrics (from Performance Analysis) - REAL DATA
     let performance30D = 0;
     let portfolioVolatility = 0;
     let avgSharpeRatio = 0;
     
     try {
+      loggerService.info(`📊 [PORTFOLIO DETAILS] Calculating metrics for ${tickers.length} stocks: ${tickers.join(', ')}`);
+      
       const metricsPromises = tickers.map(async (ticker) => {
         try {
+          loggerService.info(`🔍 [PORTFOLIO DETAILS] Fetching 30d metrics for ${ticker}...`);
           const metricsData = await getMetrics(ticker);
-          return metricsData.metrics["30d"];
+          const metrics30d = metricsData.metrics["30d"];
+          
+          if (metrics30d) {
+            loggerService.info(`✅ [PORTFOLIO DETAILS] ${ticker}: Return=${metrics30d.returnPct.toFixed(2)}%, Vol=${metrics30d.volatilityAnnual.toFixed(2)}%, Sharpe=${metrics30d.sharpe.toFixed(2)}`);
+          }
+          
+          return { ticker, metrics: metrics30d };
         } catch (error) {
-          loggerService.warn(`⚠️ [PORTFOLIO DETAILS] Could not get metrics for ${ticker}`);
-          return null;
+          loggerService.warn(`⚠️ [PORTFOLIO DETAILS] Could not get metrics for ${ticker}:`, error);
+          return { ticker, metrics: null };
         }
       });
       
       const metricsResults = await Promise.all(metricsPromises);
-      const validMetrics = metricsResults.filter(m => m !== null);
+      const validMetrics = metricsResults.filter(m => m.metrics !== null);
+      
+      loggerService.info(`📊 [PORTFOLIO DETAILS] Got valid metrics for ${validMetrics.length}/${tickers.length} stocks`);
       
       if (validMetrics.length > 0) {
-        // Calculate weighted averages
+        // Calculate weighted averages based on position size
         let totalWeight = 0;
         let weightedReturn = 0;
         let weightedVol = 0;
         let totalSharpe = 0;
         
+        const totalPortfolioValue = portfolio.reduce((sum, s) => sum + (s.currentPrice * s.shares), 0);
+        
         portfolio.forEach(stock => {
-          const metrics = validMetrics.find((m, i) => tickers[i] === stock.ticker);
-          if (metrics) {
+          const stockMetrics = validMetrics.find(m => m.ticker === stock.ticker);
+          if (stockMetrics && stockMetrics.metrics) {
             const stockValue = stock.currentPrice * stock.shares;
-            const totalValue = portfolio.reduce((sum, s) => sum + (s.currentPrice * s.shares), 0);
-            const weight = totalValue > 0 ? stockValue / totalValue : 0;
+            const weight = totalPortfolioValue > 0 ? stockValue / totalPortfolioValue : 0;
             
-            weightedReturn += (metrics.returnPct || 0) * weight;
-            weightedVol += (metrics.volatilityAnnual || 0) * weight;
-            totalSharpe += (metrics.sharpe || 0);
+            weightedReturn += (stockMetrics.metrics.returnPct || 0) * weight;
+            weightedVol += (stockMetrics.metrics.volatilityAnnual || 0) * weight;
+            totalSharpe += (stockMetrics.metrics.sharpe || 0);
             totalWeight += weight;
+            
+            loggerService.info(`📊 [PORTFOLIO DETAILS] ${stock.ticker}: Weight=${(weight*100).toFixed(1)}%, Contribution to return=${((stockMetrics.metrics.returnPct || 0) * weight).toFixed(2)}%`);
           }
         });
         
         if (totalWeight > 0) {
-          performance30D = weightedReturn / totalWeight;
-          portfolioVolatility = weightedVol / totalWeight;
+          performance30D = weightedReturn;
+          portfolioVolatility = weightedVol;
           avgSharpeRatio = totalSharpe / validMetrics.length;
+          
+          loggerService.info(`✅ [PORTFOLIO DETAILS] Weighted portfolio metrics calculated: Return=${performance30D.toFixed(2)}%, Vol=${portfolioVolatility.toFixed(2)}%, Sharpe=${avgSharpeRatio.toFixed(2)}`);
         }
+      } else {
+        loggerService.warn(`⚠️ [PORTFOLIO DETAILS] No valid metrics found - portfolio data may be incomplete`);
       }
     } catch (error) {
       loggerService.error('❌ [PORTFOLIO DETAILS] Error calculating performance:', error);
@@ -514,10 +538,10 @@ router.get('/summary', authenticateToken, async (req, res) => {
       investmentRecommendations: investmentRecommendations.slice(0, 5) // Top 5 recommendations
     };
     
-    // Cache for 6 hours
+    // Cache for 6 hours (21600 seconds)
     try {
       await redisService.set(cacheKey, JSON.stringify(result), 6 * 60 * 60 * 1000);
-      loggerService.info(`💾 [PORTFOLIO DETAILS] Cached summary for user ${userId}`);
+      loggerService.info(`💾 [PORTFOLIO DETAILS] Cached summary for user ${userId} until ${new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString()}`);
     } catch (cacheError) {
       loggerService.warn('⚠️ [PORTFOLIO DETAILS] Failed to cache (non-critical)');
     }

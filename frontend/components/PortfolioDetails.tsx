@@ -167,7 +167,7 @@ export default function PortfolioDetails() {
         </div>
 
         {/* Insights Grid - AI-Enhanced Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="group relative bg-gradient-to-br from-green-900/30 to-emerald-900/20 rounded-xl p-4 border border-green-500/30 backdrop-blur-sm hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="relative z-10">
@@ -216,28 +216,6 @@ export default function PortfolioDetails() {
               </div>
             </div>
           </div>
-          {/* Risk Management Card - NEW */}
-          {data.riskManagement && (
-            <div className="group relative bg-gradient-to-br from-red-900/30 to-orange-900/20 rounded-xl p-4 border border-red-500/30 backdrop-blur-sm hover:border-red-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative z-10">
-                <div className="text-xs text-slate-400 mb-2 flex items-center space-x-1">
-                  <Shield className="w-3 h-3" />
-                  <span>Risk Score</span>
-                </div>
-                <div className={`text-xl font-bold ${
-                  data.riskManagement.avgRiskScore >= 4 ? 'text-red-400' :
-                  data.riskManagement.avgRiskScore >= 2.5 ? 'text-yellow-400' :
-                  'text-green-400'
-                }`}>
-                  {data.riskManagement.avgRiskScore.toFixed(1)}/5
-                </div>
-                <div className="text-xs text-slate-500 mt-1">
-                  {data.riskManagement.highRiskStocks} high risk
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Best Stocks Recommendations - AI-Enhanced */}
@@ -325,58 +303,6 @@ export default function PortfolioDetails() {
           </div>
         </div>
 
-        {/* Risk Management Summary - NEW */}
-        {data.riskManagement && (
-          <div className="mt-6 p-5 bg-gradient-to-br from-slate-800/60 to-slate-900/60 rounded-xl border border-slate-700/40 backdrop-blur-sm shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"></div>
-            <div className="relative z-10">
-              <div className="flex items-center space-x-2 mb-4">
-                <Shield className="w-5 h-5 text-red-400" />
-                <h3 className="text-lg font-bold text-white">Risk Management Summary</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/30">
-                  <div className="text-xs text-slate-400 mb-1">Average Risk Score</div>
-                  <div className={`text-lg font-bold ${
-                    data.riskManagement.avgRiskScore >= 4 ? 'text-red-400' :
-                    data.riskManagement.avgRiskScore >= 2.5 ? 'text-yellow-400' :
-                    'text-green-400'
-                  }`}>
-                    {data.riskManagement.avgRiskScore.toFixed(1)}/5
-                  </div>
-                </div>
-                <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/30">
-                  <div className="text-xs text-slate-400 mb-1">High-Risk Positions</div>
-                  <div className={`text-lg font-bold ${
-                    data.riskManagement.highRiskStocks > 0 ? 'text-red-400' : 'text-green-400'
-                  }`}>
-                    {data.riskManagement.highRiskStocks} stocks
-                  </div>
-                </div>
-                <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/30">
-                  <div className="text-xs text-slate-400 mb-1">Diversification</div>
-                  <div className={`text-lg font-bold ${
-                    data.riskManagement.diversificationScore > 70 ? 'text-green-400' :
-                    data.riskManagement.diversificationScore > 40 ? 'text-yellow-400' :
-                    'text-red-400'
-                  }`}>
-                    {data.riskManagement.diversificationScore}%
-                  </div>
-                </div>
-              </div>
-              {data.riskManagement.concentrationRisk !== 'Low' && (
-                <div className="mt-4 p-3 bg-orange-900/20 rounded-lg border border-orange-500/30">
-                  <div className="flex items-center space-x-2">
-                    <AlertCircle className="w-4 h-4 text-orange-400" />
-                    <p className="text-sm text-orange-300">
-                      {data.riskManagement.concentrationRisk} concentration risk detected - consider diversifying positions
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Investment Recommendations Based on Quality - NEW */}
         {data.investmentRecommendations && data.investmentRecommendations.length > 0 && (
