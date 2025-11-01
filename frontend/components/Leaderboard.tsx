@@ -77,20 +77,24 @@ export default function Leaderboard({ isVisible, onClose, isMobile = false }: Le
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[20000] flex items-start justify-end p-0 md:p-4"
+      className="fixed inset-0 z-[20000]"
       onClick={(e) => {
-        // Close on backdrop click
+        // Close on backdrop click (only if clicking outside the dropdown)
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
-      style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
+      style={{ pointerEvents: 'none' }}
     >
+      {/* Dropdown positioned below the button */}
       <div 
-        className={`bg-slate-900 rounded-none md:rounded-xl border-0 md:border border-slate-700 shadow-2xl ${isMobile ? 'w-full max-w-md h-full' : 'w-full max-w-2xl'} overflow-hidden relative z-[20001]`}
+        className={`absolute bg-slate-900 rounded-xl border border-slate-700 shadow-2xl overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-2xl'}`}
         style={{ 
-          maxWidth: isMobile ? '400px' : '700px',
-          maxHeight: isMobile ? '100vh' : '85vh'
+          top: isMobile ? '60px' : '70px', // Position below header
+          right: isMobile ? '10px' : '20px', // Align with button on right
+          maxWidth: isMobile ? '95vw' : '700px',
+          maxHeight: 'calc(100vh - 80px)', // Leave space from top and bottom
+          pointerEvents: 'auto'
         }}
       >
         {/* Header - Compact with always visible close */}

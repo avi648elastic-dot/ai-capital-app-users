@@ -440,19 +440,24 @@ export default function NotificationPanel({ isVisible, onClose, isMobile = false
 
   return createPortal(
     <div 
-      className={`fixed inset-0 z-[20000] ${isMobile ? 'bg-black/70 backdrop-blur-sm' : 'bg-black/20'} flex items-start justify-end ${isMobile ? 'p-0' : 'p-2 sm:p-4'}`}
+      className="fixed inset-0 z-[20000]"
       onClick={(e) => {
-        if (isMobile && e.target === e.currentTarget) {
+        // Close on backdrop click (only if clicking outside the dropdown)
+        if (e.target === e.currentTarget) {
           onClose();
         }
       }}
-      style={{ touchAction: 'none', WebkitOverflowScrolling: 'touch', overflow: 'hidden' }}
+      style={{ pointerEvents: 'none' }}
     >
+      {/* Dropdown positioned below the notification button */}
       <div 
-        className={`${isMobile ? 'w-full max-w-md h-full rounded-none' : 'w-full max-w-sm rounded-lg'} bg-white dark:bg-slate-800 shadow-2xl border-0 md:border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden relative z-[20001]`}
+        className={`absolute bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden ${isMobile ? 'w-full max-w-md' : 'w-full max-w-sm'}`}
         style={{ 
-          maxWidth: isMobile ? '400px' : '400px',
-          maxHeight: isMobile ? '100vh' : '85vh'
+          top: isMobile ? '60px' : '70px', // Position below header
+          right: isMobile ? '10px' : '20px', // Align with notification button on right
+          maxWidth: isMobile ? '95vw' : '400px',
+          maxHeight: 'calc(100vh - 80px)', // Leave space from top and bottom
+          pointerEvents: 'auto'
         }}
       >
         {/* Header - Compact */}
